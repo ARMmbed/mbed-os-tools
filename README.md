@@ -12,7 +12,7 @@ In order to use test suite with FRDM-K64F board you have to first build FRDM-K64
 Next step would be to locate on your disk build directory with mbed SDK and configure test suite so it can fetch built tests from build directory. 
 Step how to achieve that are described in below 'Usage' chapter of this README file.
 
-### Installation
+### Installation from git repository
 Note: test suite is Python 2.7.x applciation so you need to install [Python 2.7](https://www.python.org/download/releases/2.7/) to use it in your system.
 
 To use test suite you need to find suitable location for it in your file system and clone (or install using yotta) test suite repository:
@@ -28,7 +28,12 @@ remote: Total 99 (delta 47), reused 71 (delta 30)
 Unpacking objects: 100% (99/99), done.
 Checking connectivity... done.
 ```
-### Configuration with current K64F build
+### installation from Python 2.7 package
+You can install test suite as separate system command using Python's pip installer:
+```
+pip install https://github.com/PrzemekWirkus/mbed-greentea/releases/download/0.0.1/mbed-testsuite-0.0.1.zip
+```
+### Test suite configuration with current yotta K64F build
 Please make sure mbed SDK is built with yotta. In build directory you should have target specific subdirectory containing build and tests. For example you've built mbed SDK inside c:\Work directory. Your directory structure should contain:
 ```
 C:\Work\build
@@ -48,11 +53,19 @@ To point test suite to directory containing tests please execute below command. 
 ```
 python mbed.py -l c:\Work\build\frdm-k64f-gcc
 ```
+or if you installed test suite using Python's pip:
+```
+mbed -l c:\Work\build\frdm-k64f-gcc
+```
 This will point test suite to location with build's test directory. Test suite will use this location to fetch tests and execute them on target platform.
 
 To confirm link configuration please use **--config** switch:
 ```
 mbed.py --config
+```
+or if you installed test suite using Python's pip:
+```
+mbed --config
 ```
 above command will prompt:
 ```
@@ -63,6 +76,10 @@ Test suite uses lmtools module to detect mbed enabled devices, print current mbe
 To list all devices connected to host computer please first connect mbed enabled board using USB cable to your computer and call from command line below test suite command:
 ```
 python mbed.py --list
+```
+or if you installed test suite using Python's pip:
+```
+mbed --list
 ```
 Above command will display currently connected devices. Detection information should contain platform's name (not available for all platforms yet), mbed disk mount point, mbed serial port name and target id. Target id is unique hexadecimal value.
 You will later use target id to bind test suite's testing session with particular device.
@@ -98,6 +115,10 @@ python mbed.py -r 02400203D94B0E7724B7F3CF
 or
 ```
 python mbed.py -r 0240
+```
+or if you installed test suite using Python's pip:
+```
+mbed -r 0240
 ```
 to test for each target id starting with '0240' (all FRDM-K64F devices).
 Note: You can add switch **--verbose** to see communication between test suite's instrumentation and mbed platform.
