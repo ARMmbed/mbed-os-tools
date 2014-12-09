@@ -17,7 +17,7 @@ Note: test suite is Python 2.7.x applciation so you need to install [Python 2.7]
 
 To use test suite you need to find suitable location for it in your file system and clone (or install using yotta) test suite repository:
 ```
-git clone https://github.com/PrzemekWirkus/mbed-greentea.git
+git clone https://github.com/ARMmbed/mbed-greentea
 ```
 
 ```
