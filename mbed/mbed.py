@@ -343,7 +343,7 @@ class MbedTestFramework_GreenTea(MbedTestFramework):
         return result, "".join(output)
 
 
-if __name__ == '__main__':
+def main():
     parser = optparse.OptionParser()
 
     parser.add_option('-l', '--link-build',
