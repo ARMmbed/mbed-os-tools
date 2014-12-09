@@ -31,7 +31,7 @@ Checking connectivity... done.
 ### installation from Python 2.7 package
 You can install test suite as separate system command using Python's pip installer:
 ```
-pip install https://github.com/PrzemekWirkus/mbed-greentea/releases/download/0.0.1/mbed-testsuite-0.0.1.zip
+pip install https://github.com/ARMmbed/mbed-greentea/releases/download/0.0.1/mbed-testsuite-0.0.1.zip
 ```
 ### Test suite configuration with current yotta K64F build
 Please make sure mbed SDK is built with yotta. In build directory you should have target specific subdirectory containing build and tests. For example you've built mbed SDK inside c:\Work directory. Your directory structure should contain:
