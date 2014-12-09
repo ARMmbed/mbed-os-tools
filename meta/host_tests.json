@@ -1,0 +1,17 @@
+{
+    "mbed-test-basic"            : "host_test",
+    "mbed-test-call_before_main" : "host_test",
+    "mbed-test-cpp"              : "host_test",
+    "mbed-test-detect"           : "detect_auto",
+    "mbed-test-dev_null"         : "dev_null_auto",
+    "mbed-test-div"              : "host_test",
+    "mbed-test-echo"             : "echo",
+    "mbed-test-hello"            : "hello_auto",
+    "mbed-test-rtc"              : "rtc_auto",
+    "mbed-test-stdio"            : "stdio_auto",
+    "mbed-test-ticker"           : "wait_us_auto",
+    "mbed-test-ticker_2"         : "wait_us_auto",
+    "mbed-test-ticker_3"         : "wait_us_auto",
+    "mbed-test-timeout"          : "wait_us_auto",
+    "mbed-test-time_us"          : "wait_us_auto"
+}
