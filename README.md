@@ -24,7 +24,9 @@ You can install test suite as separate system command using Python's pip install
 ```
 pip install mbed-testsuite-0.0.2.zip
 ```
-4. You should be able to use mbed.exe command from your command line:
+You should be now able to use mbed.exe command from your command line. 
+
+YOu can verify if mbed.exe is no your system PATH for example by using where command:
 ```
 where mbed.exe
 ```
