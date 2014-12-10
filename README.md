@@ -24,8 +24,13 @@ You can install test suite as separate system command using Python's pip install
 ```
 pip install mbed-testsuite-0.0.2.zip
 ```
-4. You should be able to use mbed.exe command from your command line.
-
+4. You should be able to use mbed.exe command from your command line:
+```
+where mbed.exe
+```
+```
+C:\Python27\Scripts\mbed.exe
+```
 ### Test suite configuration with current yotta K64F build
 Please make sure mbed SDK is built with yotta. In build directory you should have target specific subdirectory containing build and tests. For example you've built mbed SDK inside c:\Work directory. Your directory structure should contain:
 ```
