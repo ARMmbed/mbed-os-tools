@@ -15,12 +15,23 @@ Step how to achieve that are described in below 'Usage' chapter of this README f
 ### Installation
 Note: test suite is Python 2.7.x applciation so you need to install [Python 2.7](https://www.python.org/download/releases/2.7/) to use it in your system.
 
+### Manual installation
+You can install this application from sources. Just:
+1. git clone <link to this repository>
+2. Go to directory with repo sources
+```
+cd mbed-greentea
+```
+3. Execute pip install command to install package:
+```
+pip setup.py install
+```
 ### installation from Python 2.7 package
 You can install test suite as separate system command using Python's pip installer:
 
-1. Download mbed-testsuite-0.0.2.zip to your machine.
+1. Download mbed-testsuite-0.0.2.zip file located in release tab to your machine.
 2. Go to directory with downloaded zip.
-3. Execute pip install command to install package.
+3. Execute pip install command to install package:
 ```
 pip install mbed-testsuite-0.0.2.zip
 ```
