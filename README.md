@@ -30,18 +30,8 @@ cd mbed-greentea
 pip setup.py install
 ```
 
-### Installation from Python 2.7 package
-You can install test suite as separate system command using Python's pip installer:
-
-1. Download mbed-testsuite-0.0.2.zip file located in release tab to your machine.
-2. Go to directory with downloaded zip.
-3. Execute pip install command to install package:
-```
-pip install mbed-testsuite-0.0.2.zip
-```
 You should be now able to use mbed.exe command from your command line. 
-
-YOu can verify if mbed.exe is no your system PATH for example by using where command:
+You can verify if mbed binary (e.g. mbed.exe) is no your system PATH for example by using where command:
 ```
 where mbed.exe
 ```
