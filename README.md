@@ -17,7 +17,10 @@ Note: test suite is Python 2.7.x applciation so you need to install [Python 2.7]
 
 ### Manual installation
 You can install this application from sources. Just:
-* git clone link_to_this_repository
+* Clone this repository on your machine:
+```
+git clone <link_to_this_repository>
+```
 * Go to directory with repo sources:
 ```
 cd mbed-greentea
