@@ -1,5 +1,5 @@
 ## Descripton
-* mbed SDK test framework ver. 0.0.1 (greentea flavour)
+* mbed SDK test framework preview
 * This preview is used to show how mbed SDK test suite automates work with mbed enabled board. Test suite consis of few modules used to automate testing:
   * lmtools - module used to detect and list mbed devices connected to your host computer for Widnows and Linux (Ubuntu) platforms.
   * host_tests - module used to supervise automated mbed tests. This module is divided into core host test functionality and plugins scheme in which users can add new plugins whenever they want to exterd functionalities like:
