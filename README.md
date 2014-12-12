@@ -26,6 +26,7 @@ cd mbed-greentea
 ```
 pip setup.py install
 ```
+
 ### installation from Python 2.7 package
 You can install test suite as separate system command using Python's pip installer:
 
