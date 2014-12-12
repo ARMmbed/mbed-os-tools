@@ -18,7 +18,7 @@ def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
 setup(name='mbed-testsuite',
-      version='0.0.2',
+      version='0.0.3',
       description=DESCRIPTION,
       long_description=read('README.md'),
       author=OWNER_NAMES,
@@ -28,9 +28,6 @@ setup(name='mbed-testsuite',
       url='https://github.com/mbedmicro/mbed',
       packages=find_packages(),
       license=LICENSE,
-      entry_points={
-        "console_scripts": [
-            "mbed=mbed:main",
-        ],
-      },
+      entry_points={"console_scripts": ["mbed=mbed:main",],},
+      package_data={'mbed_testsuite_meta': ['*.json']},
       install_requires=["PrettyTable>=0.7.2", "PySerial>=2.7"])

@@ -24,6 +24,7 @@ import re
 import sys
 import json
 import optparse
+import pkg_resources
 from time import sleep, time
 from Queue import Queue, Empty
 from threading import Thread
@@ -91,7 +92,7 @@ class MbedTestFramework_GreenTea(MbedTestFramework):
                         'default' : 'bin',
                         'nrf51822' : 'hex'
                        }
-    HOST_TESTS = 'host_tests'
+    HOST_TESTS = pkg_resources.resource_filename('host_tests', '')
 
     configuration = None   # Current test suite configuration (target, toolchain etc.)
 
@@ -168,8 +169,9 @@ class MbedTestFramework_GreenTea(MbedTestFramework):
         """ Executes Command Line Interface calls
         """
         if opts.list:
+            path = pkg_resources.resource_filename('mbed_testsuite_meta', 'targets.json')
             lmtools = lmtools_factory()
-            lmtools.load_mbed_description('meta/targets.json')
+            lmtools.manufacture_ids = lmtools.get_json_data_from_file(path)
             print lmtools
 
         if opts.tests:
@@ -194,11 +196,13 @@ class MbedTestFramework_GreenTea(MbedTestFramework):
             start = time()
 
             tests = self.load_ctest_testsuite()
-            host_tests = self.get_json_data_from_file('meta/host_tests.json')
+            path = pkg_resources.resource_filename('mbed_testsuite_meta', 'host_tests.json')
+            host_tests = self.get_json_data_from_file(path)
 
             target_id = opts.target_id
+            path = pkg_resources.resource_filename('mbed_testsuite_meta', 'targets.json')
             lmtools = lmtools_factory()
-            lmtools.load_mbed_description('meta/targets.json')
+            lmtools.manufacture_ids = lmtools.get_json_data_from_file(path)
             mbeds = lmtools.list_mbeds()
             for mbed in mbeds:
                 if mbed['target_id'].startswith(target_id):

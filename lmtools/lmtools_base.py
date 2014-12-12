@@ -58,6 +58,7 @@ class LmToolsBase:
         """
         targets = self.get_json_data_from_file(file_name)
         self.manufacture_ids = targets if targets is not None else {}
+        return self.manufacture_ids
 
     def err(self, text):
         """ Prints error messages
