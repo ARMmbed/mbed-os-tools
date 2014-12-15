@@ -27,7 +27,7 @@ cd mbed-greentea
 ```
 * Execute pip install command to install package:
 ```
-pip setup.py install
+python setup.py install
 ```
 
 You should be now able to use mbed.exe command from your command line. 
