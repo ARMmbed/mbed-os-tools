@@ -47,6 +47,27 @@ and corresponding toolchain(s).
 .
 ```
 
+### Uninstall
+You can unstall test suite package using pip:
+
+List installed packages and filter for test suite package name:
+```
+$ pip freeze | grep mbed-testsuite
+mbed-testsuite==0.0.2
+```
+
+Uninstall test suite package:
+```
+$ pip uninstall mbed-testsuite
+Uninstalling mbed-testsuite:
+  c:\python27\lib\site-packages\mbed_testsuite-0.0.2-py2.7.egg
+  c:\python27\scripts\mbed-script.py
+  c:\python27\scripts\mbed.exe
+  c:\python27\scripts\mbed.exe.manifest
+Proceed (y/n)? Y
+  Successfully uninstalled mbed-testsuite
+```
+
 ## Test suite configuration
 Again, please make sure the [mbed SDK is built with yotta](https://github.com/armmbed/mbed-sdk).
 
