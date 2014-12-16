@@ -1,82 +1,107 @@
-## Descripton
-* mbed SDK test framework preview
-* This preview is used to show how mbed SDK test suite automates work with mbed enabled board. Test suite consis of few modules used to automate testing:
-  * lmtools - module used to detect and list mbed devices connected to your host computer for Widnows and Linux (Ubuntu) platforms.
-  * host_tests - module used to supervise automated mbed tests. This module is divided into core host test functionality and plugins scheme in which users can add new plugins whenever they want to exterd functionalities like:
-    * mbed platform copy / flash method,
-    * mbed platform reset method.
-  * meta - temporary module used to store information about host_tests and target platform ids.
+# Introduction
+Hello and welcome to the mbed SDK test suite, codename 'greentea'. 
+The mbed test suite is a collection of tools that enable automated testing on mbed platforms.
+The mbed test suite consists of the following modules:
 
-### Prerequisites
-In order to use test suite with FRDM-K64F board you have to first build FRDM-K64F's mbed SDK and corresponding tests. Tests covering functionality of mbed SDK are located in mbed SDK package and yotta will automatically build tests included in mbed SDK package.
-Next step would be to locate on your disk build directory with mbed SDK and configure test suite so it can fetch built tests from build directory. 
-Step how to achieve that are described in below 'Usage' chapter of this README file.
+- **[/lmtools](./lmtools)** : module to detect and list connected mbed devices. (Windows/Linux)
+- **[/host_tests](./host_tests)** : module with supervised automated tests. There is a *host_tests/plugin* section where users can add plugins to extend the functionality of tests.
+- **[/meta](./meta)** : a temporary module used to store information about tests and target platform IDs.
 
-### Installation
-Note: test suite is Python 2.7.x applciation so you need to install [Python 2.7](https://www.python.org/download/releases/2.7/) to use it in your system.
+### Supported Platforms
+* [FRDM-K64F](http://developer.mbed.org/platforms/FRDM-K64F/) - only platform supported for alpha relese
 
-### Manual installation
-You can install this application from sources. Just:
-* Clone this repository on your machine:
-```
-git clone <link_to_this_repository>
-```
-* Go to directory with repo sources:
-```
-cd mbed-greentea
-```
-* Execute pip install command to install package:
-```
-python setup.py install
+# Getting Started
+To use the mbed test suite you must 
+* [install the dependencies](#dependencies)
+* [download and install the mbed test suite](#installation)
+* [configure the test suite](#test-suite-configuration)
+
+## Dependencies
+* [Python2.7](https://www.python.org/download/releases/2.7/) - all host side scripts are written in python
+* [yotta](https://github.com/ARMmbed/yotta) - used to build tests from the mbed SDK
+* Test binaries built by yotta.
+
+The mbed test suite depends on tests built by **yotta**. Specifically the test suite depends on the tests built as part of the [yotta mbed-sdk repo](https://github.com/armmbed/mbed-sdk).
+Instructions on building the yotta mbed-sdk repo can be found in the README.md file for the repo.  
+For example, to use the test suite on the FRDM-K64F platform we would first build the [mbed SDK using yotta](https://github.com/ARMmbed/mbed-sdk) with the target set as the FRDM-K64F. 
+See the [Yotta Documentation on Building Existing Modules](http://docs.yottabuild.org/tutorial/building.html) for more details. 
+
+## Installation
+To install the mbed test suite download the repo and run the setup.py script with the install option.
+
+```Shell
+$ git clone https://github.com/ARMmbed/mbed-greentea.git
+$ cd mbed-greentea
+$ python setup.py install
 ```
 
-You should be now able to use mbed.exe command from your command line. 
-You can verify if mbed binary (e.g. mbed.exe) is no your system PATH for example by using where command:
+To check that the installer was successful try running the 'mbed --help' command. You should get feedback like below. You may need to restart your terminal first.
 ```
-where mbed.exe
+$ mbed --help
+Usage: mbed [options]
+
+This script allows you to run mbed defined test cases for particular MCU(s)
+and corresponding toolchain(s).
+.
+.
+.
 ```
+
+## Test suite configuration
+Again, please make sure the [mbed SDK is built with yotta](https://github.com/armmbed/mbed-sdk).
+
+### Find the test build files
+Yotta will place the target specific test files in the *yotta_project/build/target_name/test* folder.
+For example, if you've built mbed SDK inside *c:/yotta_mbed-sdk/* then the directory should look like this:
 ```
-C:\Python27\Scripts\mbed.exe
-```
-### Test suite configuration with current yotta K64F build
-Please make sure mbed SDK is built with yotta. In build directory you should have target specific subdirectory containing build and tests. For example you've built mbed SDK inside c:\Work directory. Your directory structure should contain:
-```
-C:\Work\build
-└───frdm-k64f-gcc
+C:\yotta_mbed-sdk\
+└─build
+  └─frdm-k64f-gcc
     ├───CMakeFiles
     ├───source
-    ├───test
+    ├───test          <- This is the folder we want to link to
     ├───ym
     ...
 ```
 where:
-* **Work** is directory in which yotta built FRDM-K64F mbed SDK with tests, 
+* **/build** is directory in which yotta built FRDM-K64F mbed SDK with tests, 
 * **frdm-k64f-gcc** contains sources, tests and other build related files.
-  * **test** contains binary files with test.
+  * **test** contains binary files with tests.
 
-To point test suite to directory containing tests please execute below command. Switch **-l** or **--link-build** is used to point test suite to yotta target's build directory:
+### Link test files to test suite
+Link to platform build directory so test suite can find the tests.
 ```
-mbed -l c:\Work\build\frdm-k64f-gcc
+$ mbed -l C:\path_to_yotta_mbed-sdk\build\frdm-k64f-gcc
 ```
-This will point test suite to location with build's test directory. Test suite will use this location to fetch tests and execute them on target platform.
+To check the link use the '--config' option. The currently linked directory path will be printed out below.
 ```
-mbed --config
+$ mbed --config
+C:\path_to_yotta_mbed-sdk\build\frdm-k64f-gcc
 ```
-above command will prompt:
+Also, to check that you have tests in the yotta compiled directory try running:
 ```
-c:\Work\build\frdm-k64f-gcc
+$ mbed --tests
 ```
-### List connected mbed enabled devices
-Test suite uses lmtools module to detect mbed enabled devices, print current mbeds' configuration.
-To list all devices connected to host computer please first connect mbed enabled board using USB cable to your computer and call from command line below test suite command:
-```
-mbed --list
-```
-Above command will display currently connected devices. Detection information should contain platform's name (not available for all platforms yet), mbed disk mount point, mbed serial port name and target id. Target id is unique hexadecimal value.
-You will later use target id to bind test suite's testing session with particular device.
+This should print information about the tests provided by the built directory. If it prints nothing you have no tests.
 
-Example detection listing for Windows 7 OS with three mbed enabled boards connected to host computer:
+
+# Usage
+  * [list connected devices](#list-connected-mbed-devices)
+  * [run automated tests](#run-automated-tests)
+
+## List connected mbed devices
+List connected mbed devices and configuration information: <br>
+**Note:** On Windows you must have the [mbed driver](http://developer.mbed.org/handbook/Windows-serial-configuration) installed for this to work. Linux / OSX work just fine natively. 
 ```
+$ mbed --list
+```
+This command will print out the platform's name (not available for all platforms yet), mount point, serial port name and target ID. The Target ID is unique hexadecimal value.
+The Target ID is used for running automated tests on a board, more on this in the [testing section](#running-automated-tests).
+
+#### Examples
+**Example 1:** Windows 7 OS with three mbed boards connected to host computer:
+```
+$ mbed --list
 +---------------+-------------+-------------+--------------------------+
 | platform_name | mount_point | serial_port | target_id                |
 +---------------+-------------+-------------+--------------------------+
@@ -85,10 +110,11 @@ Example detection listing for Windows 7 OS with three mbed enabled boards connec
 | KL22Z         | G:          | COM93       | 0231020337317E7FCACD83B6 |
 +---------------+-------------+-------------+--------------------------+
 ```
-Note: FRDM-K64F device is mounted at disk E: and console is available on COM61 serial port. Two other connected to host PC mbed enabled devices boards were detected.
+**Note:** FRDM-K64F device is mounted at disk E: and console is available on COM61 serial port. Two other connected to host PC mbed enabled devices boards were detected.
 
-Example detection listing for Ubuntu OS with three mbed enabled boards connected to host computer::
+**Example 2:** Ubuntu OS with three mbed boards connected to host computer::
 ```
+$ mbed --list
 +---------------+-------------+--------------+--------------------------+
 | platform_name | mount_point | serial_port  | target_id                |
 +---------------+-------------+--------------+--------------------------+
@@ -97,21 +123,34 @@ Example detection listing for Ubuntu OS with three mbed enabled boards connected
 | unknown       | /media/usb1 | /dev/ttyACM1 | 0670FF494956805087154420 |
 +---------------+-------------+--------------+--------------------------+
 ```
-Note: FRDM-K64F device is mounted at /media/usb2: and console is available on /dev/ttyACM9 serial port. Two other connected to host PC mbed enabled devices boards were detected (platform name is unknown, reason: current lmtools module limitation).
-### Testing session
-In order to run test suite and automatically execute available tests we need to specify using commad line switch **-r** which device we want to test (target id is being used bind test suite to device under test). In order to run tests for detected FRDM-K64F platform we need to pass K64F's target id: "02400203D94B0E7724B7F3CF".
-```
-mbed -r 02400203D94B0E7724B7F3CF
-```
-or
-```
-mbed -r 0240
-```
-to test for each target id starting with '0240' (all FRDM-K64F devices).
-Note: You can add switch **--verbose** to see communication between test suite's instrumentation and mbed platform.
+**Note:** FRDM-K64F device is mounted at /media/usb2: and console is available on /dev/ttyACM9 serial port. Two other connected to host PC mbed enabled devices boards were detected (platform name is unknown, reason: current lmtools module limitation).
 
-Above command will run test suite and execute available tests in build's test directory:
+## Running Automated Tests
+Use the **'-r'** switch to run automated tests. Select which device to run tests on by specifying the Target ID of the device. 
 ```
+$ mbed -r target_id
+```
+#### Examples
+The tests will flash (copy) each test to mbed's disk, reset device, run test instrumentation and gather test results.<br>
+**Note:** not all tests can be automated at this stage. Those tests will be skipped at this time.
+
+**Example 1:** Run test suite on the K64F<br>
+The target ID is taken from the 'mbed --list' output from previous section
+```
+$ mbed -r 02400203D94B0E7724B7F3CF
+```
+
+**Example 2:** multiple boards at once<br>
+The Target ID can be shortened to the minimum unique string length. This command will test every device with a target ID that starts with '0240' (all FRDM-K64F devices).
+```
+$ mbed -r 0240
+```
+
+**Example 3:** Verbose mode for more details.<br>
+You can add switch **--verbose** or **-v** switch to see communication between test suite's instrumentation and mbed platform.
+This command will run test suite and execute available tests in build's test directory:
+```
+$ mbed -r 0240 -v
 testing K64F...
 mbed disk: E:
 mbed serial: COM61
@@ -133,13 +172,10 @@ target test 'mbed-test-ticker_3' executed in 17.09 of 20 sec                    
 target test 'mbed-test-time_us' executed in 16.96 of 20 sec                     [OK]
 target test 'mbed-test-timeout' executed in 17.12 of 20 sec                     [OK]
 ```
-Above procedure will flash (copy) each test to mbed's disk, reset device, run test instrumentation and gather test results.
 
-Note: not all tests can be automated at this stage. Those tests will be skipped at this time.
-
-### Command line cheatsheet 
+## Command line cheatsheet 
+This is the output of 'mbed --help' and is provided for reference
 ```
-mbed --help
 Usage: mbed.py [options]
 
 This script allows you to run mbed defined test cases for particular MCU(s)
@@ -164,6 +200,10 @@ Options:
                         default, eACommander, eACommander-usb, xcopy
   -v, --verbose         Verbose mode (prints some extra information)
 ```
-## Known issues
-In this release there are known issues related to Linux serial port handling during test.
-Our army of cybernetic organisms is working on fix for this problem as we speak in your mind ;)
+## Common Issues
+* Issue: In this release there are known issues related to Linux serial port handling during test.
+  * Solution: Our army of cybernetic organisms is working on fix for this problem as we speak in your mind ;)
+* Issue: Some boards show up as 'unknown'
+  * Solution: we will add them in coming releases
+* Issue: 'mbed --tests' doesn't print anything
+  * Solution: You either are not linking to the correct directory, or yotta didnt build any tests. 
