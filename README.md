@@ -100,7 +100,30 @@ To verify if your link is set correctly you can point test suite to yotta build 
 ```
 $ mbed --tests --link-build C:\path_to_yotta_mbed-sdk\build\frdm-k64f-gcc
 ```
-This should print information about the tests provided by the built directory. If it prints nothing you have no tests.
+This should print information about the tests provided by the built directory. If it prints nothing you have no tests:
+```
+mbed-test-blinky.bin
+mbed-test-ticker_3.bin
+mbed-test-detect.bin
+mbed-test-rtc.bin
+mbed-test-time_us.bin
+mbed-test-stl.bin
+mbed-test-ticker_2.bin
+mbed-test-stdio.bin
+mbed-test-cstring.bin
+mbed-test-call_before_main.bin
+mbed-test-dev_null.bin
+mbed-test-sleep_timeout.bin
+mbed-test-serial_interrupt.bin
+mbed-test-timeout.bin
+mbed-test-basic.bin
+mbed-test-cpp.bin
+mbed-test-div.bin
+mbed-test-echo.bin
+mbed-test-ticker.bin
+mbed-test-hello.bin
+mbed-test-heap_and_stack.bin
+```
 
 
 # Usage
