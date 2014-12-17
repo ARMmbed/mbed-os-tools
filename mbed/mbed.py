@@ -116,13 +116,13 @@ class MbedTestFramework_GreenTea(MbedTestFramework):
         """ Loads CMake.CTest formatted data about tests from test directory
         """
         result = []
-        add_test_pattern = 'add_test\([\w\d_-]+ \"([\w\d_-]+)\"'
+        add_test_pattern = '[adtesADTES_]{8}\([\w\d_-]+ \"([\w\d_-]+)\"'
         re_ptrn = re.compile(add_test_pattern)
         if link_target is not None:
             ctest_path = os.path.join(link_target, 'test', 'CTestTestfile.cmake')
             with open(ctest_path) as ctest_file:
                 for line in ctest_file:
-                    if line.startswith('add_test'):
+                    if line.lower().startswith('add_test'):
                         m = re_ptrn.search(line)
                         if m and len(m.groups()) > 0:
                             if verbose:
