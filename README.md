@@ -7,6 +7,8 @@ The mbed test suite consists of the following modules:
 - **[/host_tests](./host_tests)** : module with supervised automated tests. There is a *host_tests/plugin* section where users can add plugins to extend the functionality of tests.
 - **[/meta](./meta)** : a temporary module used to store information about tests and target platform IDs.
 
+Note: **At this current time, the test framework is targeted to run on Windows.**
+
 ### Supported Platforms
 * [FRDM-K64F](http://developer.mbed.org/platforms/FRDM-K64F/) - only platform supported for alpha relese
 
