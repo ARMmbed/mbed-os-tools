@@ -192,26 +192,28 @@ You can add switch **--verbose** or **-v** switch to see communication between t
 This command will run test suite and execute available tests in build's test directory:
 ```
 $ mbed -r 0240 --link-build C:\path_to_yotta_mbed-sdk\build\frdm-k64f-gcc
-testing K64F...
-mbed disk: E:
-mbed serial: COM61
-target test 'mbed-test-basic' executed in 5.99 of 20 sec                        [OK]
-target test 'mbed-test-call_before_main' executed in 6.03 of 20 sec             [OK]
-target test 'mbed-test-cpp' executed in 6.19 of 20 sec                          [OK]
+testing K64F...[E:, COM61]
+target test 'mbed-test-basic' executed in 7.80 of 20 sec                        [OK]
+target test 'mbed-test-blinky' skipped, no automation support yet               [SKIPPED]
+target test 'mbed-test-call_before_main' executed in 7.82 of 20 sec             [OK]
+target test 'mbed-test-cpp' executed in 8.79 of 20 sec                          [OK]
 target test 'mbed-test-cstring' skipped, no automation support yet              [SKIPPED]
-target test 'mbed-test-detect' executed in 6.10 of 20 sec                       [OK]
-target test 'mbed-test-dev_null' executed in 9.64 of 20 sec                     [OK]
-target test 'mbed-test-div' executed in 6.13 of 20 sec                          [OK]
-target test 'mbed-test-echo' executed in 12.12 of 20 sec                        [OK]
-target test 'mbed-test-hello' executed in 6.00 of 20 sec                        [OK]
-target test 'mbed-test-rtc' executed in 10.71 of 20 sec                         [OK]
-target test 'mbed-test-stdio' executed in 6.68 of 20 sec                        [OK]
+target test 'mbed-test-detect' executed in 7.83 of 20 sec                       [FAIL]
+target test 'mbed-test-dev_null' executed in 13.76 of 20 sec                    [OK]
+target test 'mbed-test-div' executed in 7.92 of 20 sec                          [OK]
+target test 'mbed-test-echo' executed in 16.08 of 20 sec                        [OK]
+target test 'mbed-test-heap_and_stack' skipped, no automation support yet       [SKIPPED]
+target test 'mbed-test-hello' executed in 7.75 of 20 sec                        [OK]
+target test 'mbed-test-rtc' executed in 12.79 of 20 sec                         [OK]
+target test 'mbed-test-serial_interrupt' skipped, no automation support yet     [SKIPPED]
+target test 'mbed-test-sleep_timeout' skipped, no automation support yet        [SKIPPED]
+target test 'mbed-test-stdio' executed in 9.75 of 20 sec                        [OK]
 target test 'mbed-test-stl' skipped, no automation support yet                  [SKIPPED]
-target test 'mbed-test-ticker' executed in 18.05 of 20 sec                      [OK]
-target test 'mbed-test-ticker_2' executed in 17.01 of 20 sec                    [OK]
-target test 'mbed-test-ticker_3' executed in 17.09 of 20 sec                    [OK]
-target test 'mbed-test-time_us' executed in 16.96 of 20 sec                     [OK]
-target test 'mbed-test-timeout' executed in 17.12 of 20 sec                     [OK]
+target test 'mbed-test-ticker' executed in 20.61 of 20 sec                      [OK]
+target test 'mbed-test-ticker_2' executed in 19.59 of 20 sec                    [OK]
+target test 'mbed-test-ticker_3' executed in 19.61 of 20 sec                    [OK]
+target test 'mbed-test-time_us' executed in 18.68 of 20 sec                     [OK]
+target test 'mbed-test-timeout' executed in 19.64 of 20 sec                     [OK]
 ```
 
 ## Command line cheatsheet 
