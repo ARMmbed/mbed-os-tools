@@ -188,7 +188,6 @@ class MbedTestFramework_GreenTea(MbedTestFramework):
 
             # Run automated tests for selected link-target
             verbose = opts.verbose
-            copy_method = opts.copy_method if opts.copy_method is not None else None
             loops = opts.loops if opts.loops is not None else 1
             start = time()
 
@@ -227,7 +226,6 @@ class MbedTestFramework_GreenTea(MbedTestFramework):
                                 start_host_exec_time = time()
                                 single_test_result, single_test_output = self.run_host_test(name, image_path, disk, port, duration,
                                                                                             program_cycle_s=4,
-                                                                                            copy_method=copy_method,
                                                                                             micro='K64F',
                                                                                             verbose=verbose)
                                 elapsed_time = time() - start_host_exec_time
@@ -380,9 +378,6 @@ def main():
                       type="int",
                       dest='loops',
                       help='Set no. of loops per test')
-
-    copy_methods = host_tests_plugins.get_plugin_caps('CopyMethod')
-    copy_methods_str = "Plugin support: " + ', '.join(copy_methods)
 
     parser.add_option('-v', '--verbose',
                       dest='verbose',
