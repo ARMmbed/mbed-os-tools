@@ -112,13 +112,12 @@ class MbedTestFramework_GreenTea(MbedTestFramework):
         """ Returns name of host test for particular test
         """
 
-    def load_ctest_testsuite(self, verbose=False):
+    def load_ctest_testsuite(self, link_target, verbose=False):
         """ Loads CMake.CTest formatted data about tests from test directory
         """
         result = []
         add_test_pattern = 'add_test\([\w\d_-]+ \"([\w\d_-]+)\"'
         re_ptrn = re.compile(add_test_pattern)
-        link_target = self.configuration.get('link-target', None)
         if link_target is not None:
             ctest_path = os.path.join(link_target, 'test', 'CTestTestfile.cmake')
             with open(ctest_path) as ctest_file:
@@ -168,6 +167,7 @@ class MbedTestFramework_GreenTea(MbedTestFramework):
     def cli(self, opts):
         """ Executes Command Line Interface calls
         """
+
         if opts.list:
             path = pkg_resources.resource_filename('mbed_testsuite_meta', 'targets.json')
             lmtools = lmtools_factory()
@@ -175,27 +175,24 @@ class MbedTestFramework_GreenTea(MbedTestFramework):
             print lmtools
 
         if opts.tests:
+            if not opts.link_build:
+                print "Error: please use switch --link-build together with --tests to point to specific yotta target build"
+                return
             # List tests available for link-target place
-            self.load_ctest_testsuite(verbose=True)
-
-        if opts.link_build:
-            if 'link-target' not in self.configuration:
-                self.configuration['link-target'] = ''
-            self.configuration['link-target'] = opts.link_build
-            self.set_configuration()
-
-        if opts.config:
-            # Print target bind to current configuration
-            print self.configuration['link-target'] if 'link-target' in self.configuration else 'none'
+            self.load_ctest_testsuite(opts.link_build, verbose=True)
 
         if opts.target_id:
+            if not opts.link_build:
+                print "Error: please use switch --link-build together with --run to point to specific yotta target build"
+                return
+
             # Run automated tests for selected link-target
             verbose = opts.verbose
             copy_method = opts.copy_method if opts.copy_method is not None else None
             loops = opts.loops if opts.loops is not None else 1
             start = time()
 
-            tests = self.load_ctest_testsuite()
+            tests = self.load_ctest_testsuite(opts.link_build)
             path = pkg_resources.resource_filename('mbed_testsuite_meta', 'host_tests.json')
             host_tests = self.get_json_data_from_file(path)
 
@@ -206,9 +203,17 @@ class MbedTestFramework_GreenTea(MbedTestFramework):
             mbeds = lmtools.list_mbeds()
             for mbed in mbeds:
                 if mbed['target_id'].startswith(target_id):
-                    print "testing %s... "% (mbed['platform_name'] if mbed['platform_name'] is not None else 'mbed_platform')
-                    print "mbed disk: %s"% (mbed['mount_point'])
-                    print "mbed serial: %s"% (mbed['serial_port'])
+
+                    if mbed['mount_point'] is None:
+                        print "Warning: Mount point for target %s is not detected. Skipping target testing"% (mbed['target_id'])
+                        continue
+
+                    if mbed['serial_port'] is None:
+                        print "Warning: Serial port for target %s is not detected. Skipping target testing"% (mbed['target_id'])
+                        continue
+
+                    platform_name = mbed['platform_name'] if mbed['platform_name'] is not None else 'mbed_platform'
+                    print "testing %s...[%s, %s] "% (platform_name, mbed['mount_point'], mbed['serial_port'])
                     for test in sorted(tests):
                         for loop in range(loops):
                             test_file_name = os.path.splitext(os.path.basename(test))[0]
@@ -363,12 +368,6 @@ def main():
     parser.add_option('-r', '--run',
                       dest='target_id',
                       help='Executes test suite automation on given mbed platfrom (by target id)')
-
-    parser.add_option('', '--config',
-                      dest='config',
-                      default=False,
-                      action="store_true",
-                      help='Prompts configuration and exits')
 
     parser.add_option('', '--tests',
                       dest='tests',
