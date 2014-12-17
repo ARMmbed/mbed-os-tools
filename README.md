@@ -90,18 +90,15 @@ where:
   * **test** contains binary files with tests.
 
 ### Link test files to test suite
-Link to platform build directory so test suite can find the tests.
+
+You will use **--link-build** or **-l** command line switch to link to platform build directory so test suite can find the tests:
 ```
-$ mbed -l C:\path_to_yotta_mbed-sdk\build\frdm-k64f-gcc
+--link-build C:\path_to_yotta_mbed-sdk\build\frdm-k64f-gcc
 ```
-To check the link use the '--config' option. The currently linked directory path will be printed out below.
+
+To verify if your link is set correctly you can point test suite to yotta build with SDK and 
 ```
-$ mbed --config
-C:\path_to_yotta_mbed-sdk\build\frdm-k64f-gcc
-```
-Also, to check that you have tests in the yotta compiled directory try running:
-```
-$ mbed --tests
+$ mbed --tests --link-build C:\path_to_yotta_mbed-sdk\build\frdm-k64f-gcc
 ```
 This should print information about the tests provided by the built directory. If it prints nothing you have no tests.
 
@@ -147,9 +144,9 @@ $ mbed --list
 **Note:** FRDM-K64F device is mounted at /media/usb2: and console is available on /dev/ttyACM9 serial port. Two other connected to host PC mbed enabled devices boards were detected (platform name is unknown, reason: current lmtools module limitation).
 
 ## Running Automated Tests
-Use the **'-r'** switch to run automated tests. Select which device to run tests on by specifying the Target ID of the device. 
+Use the **--run** or **'-r'** switch to run automated tests. Select which device to run tests on by specifying the Target ID of the device. 
 ```
-$ mbed -r target_id
+$ mbed -r target_id --link-build C:\path_to_yotta_mbed-sdk\build\frdm-k64f-gcc
 ```
 #### Examples
 The tests will flash (copy) each test to mbed's disk, reset device, run test instrumentation and gather test results.<br>
@@ -158,20 +155,20 @@ The tests will flash (copy) each test to mbed's disk, reset device, run test ins
 **Example 1:** Run test suite on the K64F<br>
 The target ID is taken from the 'mbed --list' output from previous section
 ```
-$ mbed -r 02400203D94B0E7724B7F3CF
+$ mbed -r 02400203D94B0E7724B7F3CF --link-build C:\path_to_yotta_mbed-sdk\build\frdm-k64f-gcc
 ```
 
 **Example 2:** multiple boards at once<br>
 The Target ID can be shortened to the minimum unique string length. This command will test every device with a target ID that starts with '0240' (all FRDM-K64F devices).
 ```
-$ mbed -r 0240
+$ mbed -r 0240 --link-build C:\path_to_yotta_mbed-sdk\build\frdm-k64f-gcc
 ```
 
 **Example 3:** Verbose mode for more details.<br>
 You can add switch **--verbose** or **-v** switch to see communication between test suite's instrumentation and mbed platform.
 This command will run test suite and execute available tests in build's test directory:
 ```
-$ mbed -r 0240 -v
+$ mbed -r 0240 --link-build C:\path_to_yotta_mbed-sdk\build\frdm-k64f-gcc
 testing K64F...
 mbed disk: E:
 mbed serial: COM61
@@ -197,7 +194,7 @@ target test 'mbed-test-timeout' executed in 17.12 of 20 sec                     
 ## Command line cheatsheet 
 This is the output of 'mbed --help' and is provided for reference
 ```
-Usage: mbed.py [options]
+Usage: mbed-script.py [options]
 
 This script allows you to run mbed defined test cases for particular MCU(s)
 and corresponding toolchain(s).
@@ -212,13 +209,8 @@ Options:
   -r TARGET_ID, --run=TARGET_ID
                         Executes test suite automation on given mbed platfrom
                         (by target id)
-  --config              Prompts configuration and exits
   --tests               Prints information about found tests
   --loops=NUMBER        Set no. of loops per test
-  -c COPY_METHOD, --copy-method=COPY_METHOD
-                        Select binary copy (flash) method. Default is Python's
-                        shutil.copy() method. Plugin support: copy, cp,
-                        default, eACommander, eACommander-usb, xcopy
   -v, --verbose         Verbose mode (prints some extra information)
 ```
 ## Common Issues
