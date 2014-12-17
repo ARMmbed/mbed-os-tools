@@ -384,15 +384,11 @@ def main():
     copy_methods = host_tests_plugins.get_plugin_caps('CopyMethod')
     copy_methods_str = "Plugin support: " + ', '.join(copy_methods)
 
-    parser.add_option('-c', '--copy-method',
-                      dest='copy_method',
-                      help="Select binary copy (flash) method. Default is Python's shutil.copy() method. %s"% copy_methods_str)
-
     parser.add_option('-v', '--verbose',
                       dest='verbose',
                       default=False,
                       action="store_true",
-                      help='Verbose mode (prints some extra information)')
+                      help='Verbose mode prints test case output received from target under test')
 
     parser.description = """This script allows you to run mbed defined test cases for particular MCU(s) and corresponding toolchain(s)."""
     parser.epilog = """"""
