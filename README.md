@@ -1,9 +1,13 @@
-# mbed-ls
-**mbed-ls** is set of tools inherited from mbed-lmtools experimental package used to:
-* detect mbed enabled devices on hosts:
- * Windows, 
- * Linux (Ubuntu) and 
- * MacOS (Future development).
-* pair for all mbed enabled devices connected to host computer:
- * virtual serial port (mbed console),
- * virtual disk (mbed MSD - flashing facilities).
+## Description
+mbed-lstools is module used to detect and list mbed-enabled devices connected to host computer.
+Currently lmtools support listed below OSs:
+* Windows 7.
+* Ubuntu.
+
+### Rationale
+When connecting more than one mbed-enabled device to host computer it takes time to check platform's binds:
+* Mounted disk.
+* Virtual serial port.
+* Mbed's TargetId and generic platform name.
+
+# Installation
