@@ -3,6 +3,7 @@
 
 import os
 import sys
+import json
 import optparse
 import platform
 
@@ -59,18 +60,6 @@ def cmd_parser_setup():
                       action="store_true",
                       help='JSON formated output')
 
-    parser.add_option('-v', '--verbose',
-                      dest='verbose',
-                      default=False,
-                      action="store_true",
-                      help='Verbose mode (prints some extra information)')
-
-    parser.add_option('', '--version',
-                      dest='version',
-                      default=False,
-                      action="store_true",
-                      help='Prints version and exits')
-
     (opts, args) = parser.parse_args()
     return (opts, args)
 
@@ -82,4 +71,8 @@ def mbedls_main():
     (opts, args) = cmd_parser_setup()
     mbeds = create()
     mbeds.load_mbed_description('meta/targets.json')
-    print mbeds.get_string(border=not opts.simple, header=not opts.simple)
+    if opts.json:
+        mbeds_data = mbeds.list_mbeds()
+        print json.dumps(mbeds_data, indent=4, sort_keys=True)
+    else:
+        print mbeds.get_string(border=not opts.simple, header=not opts.simple)

@@ -134,3 +134,22 @@ class MbedLsToolsBase:
             if verbose:
                 print "Warning: %s" % (fileopen_error_msg)
         return result
+
+    def get_mbed_htm_target_id(mount_point):
+        """ Function scans mbed.htm to get information about TargetID.
+            Function returns targetID, in case of failure returns None.
+
+            Note: This function should be improved to scan variety of boards' mbed.htm files
+        """
+        result = None
+        MBED_HTM_LIST = ['mbed.htm', 'MBED.HTM', 'MBED.htm']
+        for mbed_htm in MBED_HTM_LIST:
+            mbed_htm_path = os.path.join(mount_point, mbed_htm)
+            with open(mbed_htm_path, 'r') as f:
+                fline = f.readlines()
+                for line in fline:
+                    m = re.search('\?code=([a-fA-F0-9]+)', line)
+                    if m is not None:
+                        result = m.groups()[0]
+                        break
+        return result
