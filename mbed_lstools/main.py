@@ -70,7 +70,7 @@ def mbedls_main():
     """
     (opts, args) = cmd_parser_setup()
     mbeds = create()
-    mbeds.load_mbed_description('meta/targets.json')
+
     if opts.json:
         mbeds_data = mbeds.list_mbeds()
         print json.dumps(mbeds_data, indent=4, sort_keys=True)
