@@ -27,6 +27,7 @@ setup(name='mbed-ls',
       maintainer_email=OWNER_EMAILS,
       url='https://github.com/mbedmicro/mbed',
       packages=find_packages(),
+      package_data={'mbed_lstools_meta': ['*.json']},
       license="Apache-2.0",
       entry_points={
         "console_scripts": [
