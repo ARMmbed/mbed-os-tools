@@ -65,7 +65,7 @@ class MbedLsToolsWin7(MbedLsToolsBase):
             board = defs[mbed_id_prefix] if mbed_id_prefix in defs else None
             mbeds[i] = (mnt, mbed_id, mbeds[i][2], board)
 
-            port = self.get_mbed_com_port(mbed_id)
+            port = self.get_mbed_com_port(mbed[1])
             if port:
                 mbeds[i] = (mnt, mbed_id, port, mbeds[i][3])
         return mbeds

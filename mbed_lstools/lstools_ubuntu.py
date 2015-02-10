@@ -177,7 +177,7 @@ class MbedLsToolsUbuntu(MbedLsToolsBase):
         return result
 
     def get_not_detected(self, tids, disk_list, serial_list, mount_list):
-        """ Find all unknown mbed enabled devices
+        """ Find all unknown mbed-enabled devices
         """
         map_tid_to_mbed = self.get_tid_mbed_name_remap(tids)
         orphan_mbeds = []
