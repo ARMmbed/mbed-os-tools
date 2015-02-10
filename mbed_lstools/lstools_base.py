@@ -15,8 +15,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import re
+import os
 import json
-
 
 class MbedLsToolsBase:
     """ Base class for mbed-lstools used by test suite
@@ -135,7 +136,7 @@ class MbedLsToolsBase:
                 print "Warning: %s" % (fileopen_error_msg)
         return result
 
-    def get_mbed_htm_target_id(mount_point):
+    def get_mbed_htm_target_id(self, mount_point):
         """ Function scans mbed.htm to get information about TargetID.
             Function returns targetID, in case of failure returns None.
 
