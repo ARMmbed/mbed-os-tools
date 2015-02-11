@@ -74,5 +74,4 @@ $ sudo python setup.py install
 # Installation from PyPI (Python Package Index)
 In the near furure mbed-ls module can be redistributed via PyPI. We recommend you use ```pip``` application. It is available here: https://pip.pypa.io/en/latest/installing.html#install-pip
 
-Note: Python 2.7.9 and later (on the python2 series), and Python 3.4 and later include pip by default [1], so you may have pip already.
-
+Note: Python 2.7.9 and later (on the python2 series), and Python 3.4 and later include pip by default, so you may have pip already.
