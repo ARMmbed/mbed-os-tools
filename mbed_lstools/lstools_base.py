@@ -42,6 +42,9 @@ class MbedLsToolsBase:
         "0730": "NUCLEO_F072RB",
         "0735": "NUCLEO_F334R8",
         "0740": "NUCLEO_F411RE",
+        "0745": "NUCLEO_F303RE",
+
+        "1095": "RBLAB_BLENANO",
 
         "1010": "LPC1768",
         "1040": "LPC11U24",
