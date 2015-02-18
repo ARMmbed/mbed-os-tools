@@ -71,6 +71,10 @@ def mbedls_main():
     (opts, args) = cmd_parser_setup()
     mbeds = create()
 
+    if mbeds is None:
+        sys.stderr.write('This platform is not supported! Pull requests welcome at github.com/ARMmbed/mbed-ls\n')
+        sys.exit(-1)
+
     if opts.json:
         mbeds_data = mbeds.list_mbeds()
         print json.dumps(mbeds_data, indent=4, sort_keys=True)
