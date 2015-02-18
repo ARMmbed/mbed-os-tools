@@ -44,6 +44,60 @@ In other cases host tests can for example judge by test runner console output if
 +------------------+                               +-------------------------+
 ```
 
+## Host test class structure
+```
++-------------------------+
+|   DefaultTestSelector   |
++-------------------------+
+| run()                   |
++-------------------------+
+           _|_
+           \_/
++-------------------------+
+| DefaultTestSelectorBase |
++-------------------------+
+|                         |
++-------------------------+
+           _|_
+           \_/
++-------------------------+
+|          Test           |
++-------------------------+
+| Mbed                    |
+| host_tests_plugins      |
++-------------------------+
+| detect_test_config()    |
+| setup()                 |
+| run()                   |
++-------------------------+
+           _|_
+           \_/
++-------------------------+
+|     HostTestResults     |
++-------------------------+
+| RESULT_SUCCESS          |
+| RESULT_FAILURE          |
+| RESULT_ERROR            |
+| RESULT_IO_SERIAL        |
+| RESULT_NO_IMAGE         |
+| RESULT_IOERR_COPY       |
+| RESULT_PASSIVE          |
+| RESULT_NOT_DETECTED     |
++-------------------------+
+```
+* ```HostTestResults``` - defines generic test result enum.
+* ```Test``` - Class encapsulated ``Mbed class``` and implements functionalities like: host test detection, host test setup and default run() function.
+* ```Mbed``` - Implements ways of communicating with mbed device. Uses serial port as standard console communication channel and calls flash and reset plugins to copy test runner binary and reset mbed device respectively.
+* ``` DefaultTestSelectorBase``` - base class for ```DefaultTestSelector``` functionality. Available explicitly in mbed-host-tests module so users can derive from this base class their own ``` DefaultTestSelector```s.
+* ``` DefaultTestSelectorBase``` - Class configured with external options (e.g. input from command line parameters) responsible for test execution flow:
+** Copy given test runner binary to target MCU (proper plugin is selected based on input options).
+** Reset target MCU (proper plugin is selected based on input options).
+** Execute test runner’s test case parameters auto-detection process (host test, timeout, test name, test description etc. are detected).
+** Execute requested by test runner host test ```test()``` procedure.
+** Supervise test runner execution (test case flow) with timeout watchdog.
+** Conclude test case result. Result can be grabbed from test runner console output or determined by host test independently.
+** Send to test suite environment information about test execution finish.
+
 # Installation from Python sources 
 Prerequisites: you need to have Python 2.7.x installed on your system.
 
