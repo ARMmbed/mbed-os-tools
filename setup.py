@@ -28,4 +28,4 @@ setup(name='mbed-host-tests',
       url='https://github.com/mbedmicro/mbed',
       packages=find_packages(),
       license="Apache-2.0",
-      install_requires=[])
+      install_requires=["PySerial>=2.7"])
