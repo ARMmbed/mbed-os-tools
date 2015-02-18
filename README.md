@@ -2,6 +2,12 @@
 
 mbed-host-tests package is decoupled functionality originally implemented for mbedmicro/mbed workspace_tools (See: https://github.com/mbedmicro/mbed). 
 Original host tests implementation can be found here: https://github.com/mbedmicro/mbed/tree/master/workspace_tools/host_tests. 
+Prerequisites
+=====
+
+* Installed Python 2.7.x programming language: https://www.python.org/download/releases/2.7
+* Installed pyserial module for Python 2.7: https://pypi.python.org/pypi/pyserial
+
 Rationale
 ====
 With announcement of mbed OS existing mbed SDK and existing test framework will no longer be supported in current state. Monolithic model will be replaced with set of tools and supporting ecosystem which will provide generic and comprehensive services to mbed users, both individual and commercial (partners).
