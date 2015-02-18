@@ -153,6 +153,33 @@ Note:
 * Default test case timeout is set to ```-t 15``` seconds.
 * Test result: SUCCESS - ```{{success}}}```.
 * Test ended after success code was received: ```{{end}}}```.
+* Default command line parameters deployed with ```mbed_host_tests``` module:
+```
+c:\temp\mbed_host_test_example>hte.py --help
+Usage: hte.py [options]
+
+Options:
+  -h, --help            show this help message and exit
+  -m MICRO, --micro=MICRO
+                        The target microcontroller
+  -p PORT, --port=PORT  The serial port of the target mbed
+  -d DISK_PATH, --disk=DISK_PATH
+                        The target disk path
+  -f IMAGE_PATH, --image-path=IMAGE_PATH
+                        Path with target's image
+  -c COPY_METHOD, --copy=COPY_METHOD
+                        Copy method selector
+  -C COPY_METHOD, --program_cycle_s=COPY_METHOD
+                        Program cycle sleep. Define how many seconds you want
+                        wait after copying bianry onto target
+  -t TIMEOUT, --timeout=TIMEOUT
+                        Timeout
+  -r FORCED_RESET_TYPE, --reset=FORCED_RESET_TYPE
+                        Forces different type of reset
+  -R NUMBER, --reset-timeout=NUMBER
+                        When forcing a reset using option -r you can set up
+                        after reset timeout in seconds
+```
 
 # Installation from Python sources 
 Prerequisites: you need to have Python 2.7.x installed on your system.
