@@ -89,7 +89,7 @@ In other cases host tests can for example judge by test runner console output if
 * ```Test``` - Class encapsulated ``Mbed class``` and implements functionalities like: host test detection, host test setup and default run() function.
 * ```Mbed``` - Implements ways of communicating with mbed device. Uses serial port as standard console communication channel and calls flash and reset plugins to copy test runner binary and reset mbed device respectively.
 * ``` DefaultTestSelectorBase``` - base class for ```DefaultTestSelector``` functionality. Available explicitly in mbed-host-tests module so users can derive from this base class their own ``` DefaultTestSelector```s.
-* ``` DefaultTestSelectorBase``` - Class configured with external options (e.g. input from command line parameters) responsible for test execution flow:
+* ``` DefaultTestSelector``` - Class configured with external options (e.g. input from command line parameters) responsible for test execution flow:
 ** Copy given test runner binary to target MCU (proper plugin is selected based on input options).
 ** Reset target MCU (proper plugin is selected based on input options).
 ** Execute test runner’s test case parameters auto-detection process (host test, timeout, test name, test description etc. are detected).
@@ -97,6 +97,61 @@ In other cases host tests can for example judge by test runner console output if
 ** Supervise test runner execution (test case flow) with timeout watchdog.
 ** Conclude test case result. Result can be grabbed from test runner console output or determined by host test independently.
 ** Send to test suite environment information about test execution finish.
+
+## Example of CLI version of host test DefaultTestSelector supervisor:
+
+Example of host test script (```hte.py```) used to supervise test runner execution from command line:
+```python
+#!/usr/bin/env python
+
+from mbed_host_tests import DefaultTestSelector         # Default adapter for DefaultTestSelectorBase
+from mbed_host_tests import init_host_test_cli_params   # Provided command line options
+
+if __name__ == '__main__':
+    # 1. Create DefaultTestSelector object and pass command line parameters
+    # 2. Call default test execution function run() to start test instrumentation
+    DefaultTestSelector(init_host_test_cli_params()).run()
+```
+
+Example of console call for above example script (```hte.py```):
+```
+$ hte.py -d E: -f "C:\Work\mbed\build\test\K64F\ARM\RTOS_7\timer.bin" -p COM61 -t 15 -C 4 -m K64F
+```
+Output (real-time console output from test runner captured by host test supervisor over serial port):
+```
+MBED: Instrumentation: "COM61" and disk: "E:"
+HOST: Copy image onto target...
+HOST: Initialize serial port...
+HOST: Reset target...
+HOST: Property 'timeout' = '15'
+HOST: Property 'host_test_name' = 'wait_us_auto'
+HOST: Property 'description' = 'Timer'
+HOST: Property 'test_id' = 'RTOS_7'
+HOST: Start test...
+* in 1.00 sec (0.00) [OK]
+* in 1.00 sec (0.00) [OK]
+* in 1.00 sec (0.00) [OK]
+* in 1.00 sec (0.00) [OK]
+* in 1.00 sec (0.00) [OK]
+* in 1.00 sec (0.00) [OK]
+* in 1.00 sec (0.00) [OK]
+* in 1.00 sec (0.00) [OK]
+* in 1.00 sec (0.00) [OK]
+* in 1.00 sec (0.00) [OK]
+Consecutive OK timer reads: 10
+Completed in 10.00 sec
+
+{{success}}
+{{end}}
+```
+Note: 
+* MUT (mbed under test) is K64F: ```-m K64F```.
+* Test runner binary is located at: ```C:\Work\mbed\build\test\K64F\ARM\RTOS_7\timer.bin```. 
+* K64F virtual serial port (USB CDC) is mounted at: ```-p COM61```.
+* K64F virtual serial port (USB MSC) is mounted at: ```-d E:```.
+* Default test case timeout is set to ```-t 15``` seconds.
+* Test result: SUCCESS - ```{{success}}}```.
+* Test ended after success code was received: ```{{end}}}```.
 
 # Installation from Python sources 
 Prerequisites: you need to have Python 2.7.x installed on your system.
