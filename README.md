@@ -4,13 +4,27 @@ mbed-host-tests package is decoupled functionality originally implemented for mb
 Original host tests implementation can be found here: https://github.com/mbedmicro/mbed/tree/master/workspace_tools/host_tests. 
 Prerequisites
 =====
-
 * Installed Python 2.7.x programming language: https://www.python.org/download/releases/2.7
-* Installed pyserial module for Python 2.7: https://pypi.python.org/pypi/pyserial
+* Installed pySerial module for Python 2.7: https://pypi.python.org/pypi/pyserial
 
 Rationale
 ====
 With announcement of mbed OS existing mbed SDK and existing test framework will no longer be supported in current state. Monolithic model will be replaced with set of tools and supporting ecosystem which will provide generic and comprehensive services to mbed users, both individual and commercial (partners).
+
+Module responsibilities
+====
+Mbed ecosystem tools, implemented by mbed users or third party companies can take advantage of existing supplementary module called mbed-host-tests. This module defines classes of host tests that can be reused with new or user defined tests. Host tests also should be shared between mbed classic and mbed OS ecosystems equally.
+
+Module structure
+====
+```
+mbed_host_tests/
+    host_tests/             - Supervising host test scripts used for instrumentation. 
+    host_tests_plugins/     - Plugins used by host test to flash test runner binary and reset device.
+    host_tests_registry/    - Registry, used to store 'host test name' to 'host test class' mapping.
+    host_tests_runner/      - Classes implementing basic host test functionality (like test flow control).
+```
+
 What is host test?
 ====
 Test suite support test supervisor concept. This concept is realized by separate Python script called "host test" originally stored in mbedmicro/mbed repository under ```mbedmicro/mbed/workspace_tools/host_tests/``` directory. 
