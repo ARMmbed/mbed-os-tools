@@ -180,7 +180,11 @@ Python 2.7.8 (default, Jun 30 2014, 16:03:49) [MSC v.1500 32 bit (Intel)] on win
 Type "help", "copyright", "credits" or "license" for more information.
 >>> import mbed_host_tests
 >>> dir(mbed_host_tests)
-['DefaultAuto', 'DefaultTestSelector', 'DefaultTestSelectorBase', 'DetectPlatformTest', 'DevNullTest', 'EchoTest', 'HOSTREGISTRY', 'HelloTest', 'HostRegistry', 'OptionParser', 'RTCTest', 'StdioTest', 'TCPEchoClientTest', 'TCPEchoServerTest', 'UDPEchoClientTest', 'UDPEchoServerTest', 'WaitusTest', '__builtins__', '__doc__', '__file__', '__name__', '__package__', '__path__', 'get_host_test', 'host_tests', 'host_tests_plugins', 'host_tests_registry', 'host_tests_runner', 'init_host_test_cli_params', 'is_host_test']
+['DefaultAuto', 'DefaultTestSelector', 'DefaultTestSelectorBase', 'DetectPlatformTest', 'DevNullTest', 'EchoTest',
+'HOSTREGISTRY', 'HelloTest', 'HostRegistry', 'OptionParser', 'RTCTest', 'StdioTest', 'TCPEchoClientTest', 
+'TCPEchoServerTest', 'UDPEchoClientTest', 'UDPEchoServerTest', 'WaitusTest', '__builtins__', '__doc__', '__file__',
+'__name__', '__package__', '__path__', 'get_host_test', 'host_tests', 'host_tests_plugins', 'host_tests_registry',
+'host_tests_runner', 'init_host_test_cli_params', 'is_host_test']
 ```
 
 # Installation from PyPI (Python Package Index)
