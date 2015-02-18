@@ -36,7 +36,7 @@ To install mbed-ls module clone mbed-ls repository:
 ```
 $ git clone <link-to-mbed-ls-repo>
 ```
-and move to mbed-ls repository directory:
+and change directory to mbed-ls repository directory:
 ```
 $ cd mbed-ls
 ```
