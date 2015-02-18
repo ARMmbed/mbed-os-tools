@@ -35,6 +35,7 @@ Basic host test only monitors device's default serial port (serial console or in
 
 In other cases host tests can for example judge by test runner console output if test passed or failed. It all depends on test itself. In some cases host test can be TCP server echoing packets from test runner and judging packet loss. In other cases it can just check if values returned from accelerometer are actually valid (sane).
 
+## Interaction between test runner and host test
 ```
    <<Target MCU>>                                       <<Host computer>>
 +------------------+                               +-------------------------+
