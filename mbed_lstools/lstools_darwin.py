@@ -124,7 +124,7 @@ class MbedLsToolsDarwin(MbedLsToolsBase):
         # to find the serial ports associated with a USB device we need to use
         # the wonderful ioreg command. We enumerate the usb bus (list the IO
         # Registry Object Tree rooted at AppleUSBXHCI). Then we can search for
-        # anything with a serial number that we know, and search all its child
+        # anything with a pid/vid pair that we know, and search all its child
         # devices for a tty
         # ioreg -a -r -n "AppleUSBXHCI" -l
         ioreg_usb = subprocess.Popen(['ioreg', '-a', '-r', '-n', 'AppleUSBXHCI', '-l'], stdout=subprocess.PIPE)

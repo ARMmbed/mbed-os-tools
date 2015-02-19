@@ -57,13 +57,13 @@ def cmd_parser_setup():
                       dest='simple',
                       default=False,
                       action="store_true",
-                      help='Pareser friendly verbose mode')
+                      help='Parser friendly verbose mode')
 
     parser.add_option('', '--json',
                       dest='json',
                       default=False,
                       action="store_true",
-                      help='JSON formated output')
+                      help='JSON formatted output')
 
     (opts, args) = parser.parse_args()
     return (opts, args)
