@@ -172,7 +172,7 @@ class MbedLsToolsDarwin(MbedLsToolsBase):
 
     def target_id(self, usb_info):
         if usb_info['serial'] is not None:
-            return usb_info['serial'][:4]
+            return usb_info['serial']
         else:
             return None
 
