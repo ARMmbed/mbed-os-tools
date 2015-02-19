@@ -33,25 +33,21 @@ class MbedLsToolsDarwin(MbedLsToolsBase):
         
         result = []
         
-        # {volume_id: mount_point}
+        # {volume_id: {serial:, vendor_id:, product_id:, tty:}}
         volumes = self.get_mbed_volumes()
-        #print "volumes:", volumes
+        #print 'volumes:', volumes
         
-        # {volume_id: {serial:, vendor_id:, product_id:}}
-        usb_info = self.get_volume_usb_info(volumes.keys())
-        #print "usb info:", usb_info
-
-        # {volume_id: tty_path}
-        ttys = self.get_serial_ports(usb_info)
-        #print "ttys:", ttys
+        # {volume_id: mount_point}
+        mounts = self.get_mount_points()
+        #print "mounts:", mounts
 
         # put together all of that info into the expected format:
         result =  [
             {
-                'mount_point': volumes[v],
-                'serial_port': ttys[v],
-                  'target_id': self.target_id(usb_info[v]),
-              'platform_name': self.platform_name(self.target_id(usb_info[v]))
+                'mount_point': mounts[v],
+                'serial_port': volumes[v]['tty'],
+                  'target_id': self.target_id(volumes[v]),
+              'platform_name': self.platform_name(self.target_id(volumes[v]))
             } for v in volumes
         ]
 
@@ -70,7 +66,7 @@ class MbedLsToolsDarwin(MbedLsToolsBase):
         return result
 
     
-    def get_mbed_volumes(self):
+    def get_mount_points(self):
         ''' Returns map {volume_id: mount_point} '''
 
         # list disks, this gives us disk name, and volume name + mount point:
@@ -81,58 +77,27 @@ class MbedLsToolsDarwin(MbedLsToolsBase):
         r = {}
 
         for disk in disks['AllDisksAndPartitions']:
-            if 'VolumeName' in disk and self.mbed_volume_name_match.search(disk['VolumeName']):
-                mount_point = None
-                if 'MountPoint' in disk:
-                    mount_point = disk['MountPoint']
-                r[disk['DeviceIdentifier']] = mount_point
+            mount_point = None
+            if 'MountPoint' in disk:
+                mount_point = disk['MountPoint']
+            r[disk['DeviceIdentifier']] = mount_point
         
         return r
 
-    def get_volume_usb_info(self, volumes):
-        ''' Returns map {volume_id: {serial:, vendor_id:, product_id:}} '''
-        
-        # list USB devices, this includes the volume:serial number mapping
-        sysprof_usb = subprocess.Popen(['system_profiler', 'SPUSBDataType', '', '-xml'], stdout=subprocess.PIPE)
-        usb_devices = plistlib.readPlist(sysprof_usb.stdout)
-        sysprof_usb.wait()
+    def get_mbed_volumes(self):
+        ''' returns a map {volume_id: {serial:, vendor_id:, product_id:}''' 
 
-        r = {}
-            
-        # loop over the information, finding any object with
-        # {'bsd_name': <volume_id>}, and fetching it's serial_num, product_id
-        # and vendor_id fields
-        def findVolumesRecursive(obj):
-            if 'bsd_name' in obj and obj['bsd_name'] in volumes:
-                r[obj['bsd_name']] = {
-                        'serial': obj['serial_num'] if 'serial_num' in obj else None,
-                     'vendor_id': int(obj['vendor_id'], 16)  if 'vendor_id'  in obj else None,
-                    'product_id': int(obj['product_id'], 16) if 'product_id' in obj else None
-                }
-            if '_items' in obj:
-                for child in obj['_items']:
-                    findVolumesRecursive(child)
-
-        for obj in usb_devices:
-            findVolumesRecursive(obj)
-
-        return r
-
-    def get_serial_ports(self, usb_info):
-        ''' Returns map {volume_id: tty_device_file_path} '''
-        
-        # to find the serial ports associated with a USB device we need to use
-        # the wonderful ioreg command. We enumerate the usb bus (list the IO
-        # Registry Object Tree rooted at AppleUSBXHCI). Then we can search for
-        # anything with a pid/vid pair that we know, and search all its child
-        # devices for a tty
+        # to find all the possible mbed volumes, we look for registry entries
+        # under the USB bus which have a "BSD Name" that starts with "disk"
+        # (i.e. this is a USB disk), and have a IORegistryEntryName that
+        # matches /\cmbed/
         # ioreg -a -r -n "AppleUSBXHCI" -l
         ioreg_usb = subprocess.Popen(['ioreg', '-a', '-r', '-n', 'AppleUSBXHCI', '-l'], stdout=subprocess.PIPE)
         usb_bus = plistlib.readPlist(ioreg_usb.stdout)
         ioreg_usb.wait()
 
         r = {}
-
+        
         def findTTYRecursive(obj):
             ''' return the first tty (AKA IODialinDevice) that we can find in the
                 children of the specified object, or None if no tty is present.
@@ -146,26 +111,36 @@ class MbedLsToolsDarwin(MbedLsToolsBase):
                         return found
             return None
 
-
-            
-        def findDeviceRecursive(obj):
-            if 'idProduct' in obj and 'idVendor' in obj:
-                pid = obj['idProduct']
-                vid = obj['idVendor']
-                for volume, info in usb_info.items():
-                    if info['product_id'] is not None and info['vendor_id'] is not None and \
-                       info['product_id'] == pid      and info['vendor_id'] == vid:
-                        tty = findTTYRecursive(obj)
-                        # break as soon as we've got something valid
-                        if tty:
-                            r[volume] = tty
-                            return
+        def findVolumesRecursive(obj, parents):
+            if 'BSD Name' in obj and obj['BSD Name'].startswith('disk') and \
+                    self.mbed_volume_name_match.search(obj['IORegistryEntryName']):
+                disk_id = obj['BSD Name']
+                # now search up through our parents until we find a serial number:
+                usb_info = {
+                        'serial':None,
+                     'vendor_id':None,
+                    'product_id':None,
+                           'tty':None,
+                }
+                for parent in [obj] + parents:
+                    if 'USB Serial Number' in parent:
+                        usb_info['serial'] = parent['USB Serial Number']
+                    if 'idVendor' in parent and 'idProduct' in parent:
+                        usb_info['vendor_id'] = parent['idVendor']
+                        usb_info['product_id'] = parent['idProduct']
+                    if usb_info['serial']:
+                        # stop at the first one we find (or we'll pick up hubs,
+                        # etc.), but first check for a tty that's also a child of
+                        # this device:
+                        usb_info['tty'] = findTTYRecursive(parent)
+                        break
+                r[disk_id] = usb_info
             if 'IORegistryEntryChildren' in obj:
                 for child in obj['IORegistryEntryChildren']:
-                    findDeviceRecursive(child)
+                    findVolumesRecursive(child, [obj] + parents)
 
         for obj in usb_bus:
-            findDeviceRecursive(obj)
+            findVolumesRecursive(obj, [])
 
         return r
 
