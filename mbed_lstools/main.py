@@ -9,6 +9,7 @@ import platform
 
 from lstools_win7 import MbedLsToolsWin7
 from lstools_ubuntu import MbedLsToolsUbuntu
+from lstools_darwin import MbedLsToolsDarwin
 
 
 def create():
@@ -19,6 +20,8 @@ def create():
     if mbed_os is not None:
         if mbed_os == 'Windows7': result = MbedLsToolsWin7()
         elif mbed_os == 'Ubuntu': result = MbedLsToolsUbuntu()
+        elif mbed_os == 'Ubuntu': result = MbedLsToolsUbuntu()
+        elif mbed_os == 'Darwin': result = MbedLsToolsDarwin()
     return result
 
 def mbed_os_support():
@@ -31,6 +34,8 @@ def mbed_os_support():
         result = 'Windows7'
     elif (os_info[0] == 'posix' and os_info[1] == 'Linux' and ('Ubuntu' in os_info[3])):
         result = 'Ubuntu'
+    elif (os_info[0] == 'posix' and os_info[1] == 'Darwin'):
+        result = 'Darwin'
     return result
 
 def mbed_lstools_os_info():
