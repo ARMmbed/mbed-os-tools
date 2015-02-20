@@ -118,7 +118,7 @@ Note: Python 2.7.9 and later (on the python2 series), and Python 3.4 and later i
 # Porting instructions
 You can help us improve mbed-ls tools by for example committing new OS port. Currently in 'Description' section of this readme we are presenting you with list of supported OSs. If your OS is not on the list you can always port it!
 
-For further study please check how Mac OS X (Darwin) was ported in this pull request: https://github.com/ARMmbed/mbed-ls/pull/1.
+For further study please check how Mac OS X (Darwin) was ported in [this pull request](https://github.com/ARMmbed/mbed-ls/pull/1).
 
 ## mbed-ls auto-detection approach for Ubuntu
 Let's connect few mbed boards to our Ubuntu host. Devices should mount MSC and CDC (virtual disk and serial port).
