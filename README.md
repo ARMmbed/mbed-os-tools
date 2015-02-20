@@ -111,12 +111,12 @@ $ sudo python setup.py install
 
 
 # Installation from PyPI (Python Package Index)
-In the near furure mbed-ls module can be redistributed via PyPI. We recommend you use ```pip``` application. It is available here: https://pip.pypa.io/en/latest/installing.html#install-pip
+In the near future mbed-ls module can be redistributed via PyPI. We recommend you use ```pip``` application. It is available here: https://pip.pypa.io/en/latest/installing.html#install-pip
 
 Note: Python 2.7.9 and later (on the python2 series), and Python 3.4 and later include pip by default, so you may have pip already.
 
 # Porting instructions
-YOu can help us improve mbned-ls tools by for example commiting new OS port. Currently in 'Description' section of this readme we are presenting you with list of supported OSs. If your OS is not on the list you can always port it!
+You can help us improve mbed-ls tools by for example committing new OS port. Currently in 'Description' section of this readme we are presenting you with list of supported OSs. If your OS is not on the list you can always port it!
 
 For further study please check how Mac OS X (Darwin) was ported in this pull request: https://github.com/ARMmbed/mbed-ls/pull/1.
 
@@ -127,7 +127,7 @@ We can see mounting result for example in usb-id directories in Ubuntu file syst
 We've connected in this example to USB ports of our Ubuntu machine:
 * 2 x STMicro's Nucleo mbed boards.
 * 2 x NXP mbed boards.
-* 1 x Feescale Freedom board.
+* 1 x Freescale Freedom board.
 
 Serial ports (CDC) mounted via USB interface mbed boards provide:
 ```
@@ -165,7 +165,7 @@ lrwxrwxrwx root  10 Dec  3 09:10 wwn-0x5000cca30ccffb77-part2 -> ../../sda2
 lrwxrwxrwx root  10 Dec  3 09:10 wwn-0x5000cca30ccffb77-part5 -> ../../sda5
 ```
 Note: We can see that on our host machine with Ubuntu system we have many 'disk type' devices visible under ```/dev/disk```.
-Note some of them are mbed boards and can be distingushed by unique ```USB-ID```.
+Note some of them are mbed boards and can be distinguished by unique ```USB-ID```.
 
 ```mbed-ls``` tools are pairing only serial ports and mount points (not CMSIS-DAP yet) together.
 On Ubuntu Linux we are checking usb-ids of all devices which may be mbed boards. We know mbed boards follow few ```usb-id``` conventions which can be used filter out mbed devices' ```usb-ids```.
@@ -185,10 +185,10 @@ Your ```mbed-ls``` implementation must resolve those three and create â€œtupleâ€
 If you have this tuple(s) other mbed-ls will carry on with platform number to human readable name conversion etc.
 
 Note that for some boards ```TargetID``` format is proprietary (See STMicro boards) and ```usb-id``` does not have valid TargetID where four first letters are target platform unique ID.
-In that case ```mbed-ls``` tools should inspect ```mbed.htm``` file on mbed mounted disk. ```mbed-ls``` tools will disect ```mbed.htm``` get proper TagretID from URL in ```meta``` part of the HTML header.
+In that case ```mbed-ls``` tools should inspect ```mbed.htm``` file on mbed mounted disk. ```mbed-ls``` tools will dissect  ```mbed.htm``` get proper TargetID from URL in ```meta``` part of the HTML header.
 
-In below example URL ```http://mbed.org/device/?code=07050200623B61125D5EF72A``` for STMicto Nucleo F302R8 board contains valid TargetID ```07050200623B61125D5EF72A``` which can be used to detect ```platform_name``` by ```mbed-ls``` tools.
-Note: ```mbed-ls``` tools will replace ```usb-id``` invalid TargetID with targetID from ```mbed.htm```.
+In below example URL ```http://mbed.org/device/?code=07050200623B61125D5EF72A``` for STMicro Nucleo F302R8 board contains valid TargetID ```07050200623B61125D5EF72A``` which can be used to detect ```platform_name``` by ```mbed-ls``` tools.
+Note: ```mbed-ls``` tools will replace ```usb-id``` invalid TargetID with TargetID from ```mbed.htm```.
 
 ```html
 <!-- mbed Microcontroller Website and Authentication Shortcut -->
