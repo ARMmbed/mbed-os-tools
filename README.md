@@ -24,6 +24,44 @@ $ mbedls
 ```mbedls``` command will allow you to list all connected mbed-enabled devices and correctly associate mbed-enabled board mount point (disk) and serial port. Additionally TargetID information will be provided for your reference. Because we are all automation fanatics ```mbedls``` command will also output mbed-enabled auto-detection data in JSON format.
 If you want to use ```mbedls``` in your toolchain, continuous integration or automation script and do not necessarily want to use Python module ```mbed_lstools``` this solution is for you.
 
+### Exporting mbedls output to JSON
+You can export mbedls output to JSON format, just use ```---json``` switch and dump your file on screen or redirect to file. It should help you further automate your processes! 
+```json
+ mbedls --json
+[
+    {
+        "mount_point": "E:",
+        "platform_name": "NUCLEO_L152RE",
+        "serial_port": "COM9",
+        "target_id": "07100200860579FAB960EFD7"
+    },
+    {
+        "mount_point": "F:",
+        "platform_name": null,
+        "serial_port": "COM5",
+        "target_id": "A000000001"
+    },
+    {
+        "mount_point": "G:",
+        "platform_name": "NUCLEO_F302R8",
+        "serial_port": "COM34",
+        "target_id": "07050200623B61125D5EF72A"
+    },
+    {
+        "mount_point": "H:",
+        "platform_name": "LPC1768",
+        "serial_port": "COM77",
+        "target_id": "101000000000000000000002F7F18695"
+    },
+    {
+        "mount_point": "I:",
+        "platform_name": "KL25Z",
+        "serial_port": "COM89",
+        "target_id": "02000203240881BBD9F47C43"
+    }
+]
+```
+
 ### Rationale
 When connecting more than one mbed-enabled device to host computer it takes time to check platform's binds:
 * Mounted disk.
@@ -143,9 +181,28 @@ From there we know that target platform has these properties:
 * Designation number is 066E.
 * Serial: ttyACM2.
 * Mount point: sdd.
-Your mbed-ls implementation must resolve those three and create “tuple” with those values (for each connected device).
+Your ```mbed-ls``` implementation must resolve those three and create “tuple” with those values (for each connected device).
 If you have this tuple(s) other mbed-ls will carry on with platform number to human readable name conversion etc.
 
+Note that for some boards ```TargetID``` format is proprietary (See STMicro boards) and ```usb-id``` does not have valid TargetID where four first letters are target platform unique ID.
+In that case ```mbed-ls``` tools should inspect ```mbed.htm``` file on mbed mounted disk. ```mbed-ls``` tools will disect ```mbed.htm``` get proper TagretID from URL in ```meta``` part of the HTML header.
+
+In below example URL ```http://mbed.org/device/?code=07050200623B61125D5EF72A``` for STMicto Nucleo F302R8 board contains valid TargetID ```07050200623B61125D5EF72A``` which can be used to detect ```platform_name``` by ```mbed-ls``` tools.
+Note: ```mbed-ls``` tools will replace ```usb-id``` invalid TargetID with targetID from ```mbed.htm```.
+
+```html
+<!-- mbed Microcontroller Website and Authentication Shortcut -->
+<!-- Version: 0200 Build: Aug 27 2014 13:29:28 -->
+<html>
+<head>
+<meta http-equiv="refresh" content="0; url=http://mbed.org/device/?code=07050200623B61125D5EF72A"/>
+<title>mbed Website Shortcut</title>
+</head>
+<body></body>
+</html>
+```
+
+Example of ```mbedls``` listing for connected devices.
 ```
 $ mbedls
 +---------------------+-------------------+-------------------+----------------------------------------+
