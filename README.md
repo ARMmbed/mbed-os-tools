@@ -3,6 +3,7 @@ mbed-lstools is module used to detect and list mbed-enabled devices connected to
 Currently lmtools support listed below OSs:
 * Windows 7.
 * Ubuntu.
+* Mac OS X (Darwin)
 
 mbed-ls is Python module used to detect and list mbed-enabled devices connected to host computer. package will support Windows 7, Ubuntu and MacOS. It will be delivered as redistributable Python module (package) and command line tool.
 Currently mbed-ls module is under development but already decoupled mbed-ls functionality is delivered to mbed SDK's test suite.
@@ -75,3 +76,60 @@ $ sudo python setup.py install
 In the near furure mbed-ls module can be redistributed via PyPI. We recommend you use ```pip``` application. It is available here: https://pip.pypa.io/en/latest/installing.html#install-pip
 
 Note: Python 2.7.9 and later (on the python2 series), and Python 3.4 and later include pip by default, so you may have pip already.
+
+# Porting instructions
+YOu can help us improve mbned-ls tools by for example commiting new OS port. Currently in 'Description' section of this readme we are presenting you with list of supported OSs. If your OS is not on the list you can always port it!
+
+For further study please check how Mac OS X (Darwin) was ported in this pull request: https://github.com/ARMmbed/mbed-ls/pull/1.
+
+## mbed-ls auto-detection approach for Ubuntu
+Let's connect few mbed boards to our Ubuntu host. Devices should mount MSC and CDC (virtual disk and serial port).
+We can see mounting result for example in usb-id directories in Ubuntu file system under ```/dev/```.
+
+We've connected in this example to USB ports of our Ubuntu machine:
+* 2 x STMicro's Nucleo mbed boards.
+* 2 x NXP mbed boards.
+* 1 x Feescale Freedom board.
+
+Serial ports (CDC) mounted via USB interface mbed boards provide:
+```
+$ ll /dev/serial/by-id
+total 0
+drwxr-xr-x root 140 Feb 19 12:38 ./
+drwxr-xr-x root  80 Feb 19 12:35 ../
+lrwxrwxrwx root  13 Feb 19 12:38 usb-MBED_MBED_CMSIS-DAP_02000203240881BBD9F47C43-if01 -> ../../ttyACM0
+lrwxrwxrwx root  13 Feb 19 12:35 usb-MBED_MBED_CMSIS-DAP_A000000001-if01 -> ../../ttyACM4
+lrwxrwxrwx root  13 Feb 19 12:35 usb-mbed_Microcontroller_101000000000000000000002F7F18695-if01 -> ../../ttyACM3
+lrwxrwxrwx root  13 Feb 19 12:35 usb-STMicroelectronics_STM32_STLink_066EFF525257775087141721-if02 -> ../../ttyACM2
+lrwxrwxrwx root  13 Feb 19 12:35 usb-STMicroelectronics_STM32_STLink_066EFF534951775087215736-if02 -> ../../ttyACM1
+```
+
+Disks (MSC) mounted via USB interface mbed boards provide:
+```
+$ ll /dev/disk/by-id
+total 0
+drwxr-xr-x root 340 Feb 19 12:38 ./
+drwxr-xr-x root 120 Feb 19 12:35 ../
+lrwxrwxrwx root   9 Dec  3 09:10 ata-HDS728080PLA380_40Y9028LEN_PFDB32S7S44XLM -> ../../sda
+lrwxrwxrwx root  10 Dec  3 09:10 ata-HDS728080PLA380_40Y9028LEN_PFDB32S7S44XLM-part1 -> ../../sda1
+lrwxrwxrwx root  10 Dec  3 09:10 ata-HDS728080PLA380_40Y9028LEN_PFDB32S7S44XLM-part2 -> ../../sda2
+lrwxrwxrwx root  10 Dec  3 09:10 ata-HDS728080PLA380_40Y9028LEN_PFDB32S7S44XLM-part5 -> ../../sda5
+lrwxrwxrwx root   9 Dec  3 09:10 ata-TSSTcorpDVD-ROM_TS-H352C -> ../../sr0
+lrwxrwxrwx root   9 Feb 19 12:35 usb-MBED_MBED_CMSIS-DAP_A000000001-0:0 -> ../../sdf
+lrwxrwxrwx root   9 Feb 19 12:38 usb-MBED_microcontroller_02000203240881BBD9F47C43-0:0 -> ../../sdb
+lrwxrwxrwx root   9 Feb 19 12:35 usb-MBED_microcontroller_066EFF525257775087141721-0:0 -> ../../sdd
+lrwxrwxrwx root   9 Feb 19 12:35 usb-MBED_microcontroller_066EFF534951775087215736-0:0 -> ../../sdc
+lrwxrwxrwx root   9 Dec  3 16:10 usb-MBED_microcontroller_0670FF494956805087154420-0:0 -> ../../sdc
+lrwxrwxrwx root   9 Feb 19 12:35 usb-mbed_Microcontroller_101000000000000000000002F7F18695-0:0 -> ../../sde
+lrwxrwxrwx root   9 Dec  3 09:10 wwn-0x5000cca30ccffb77 -> ../../sda
+lrwxrwxrwx root  10 Dec  3 09:10 wwn-0x5000cca30ccffb77-part1 -> ../../sda1
+lrwxrwxrwx root  10 Dec  3 09:10 wwn-0x5000cca30ccffb77-part2 -> ../../sda2
+lrwxrwxrwx root  10 Dec  3 09:10 wwn-0x5000cca30ccffb77-part5 -> ../../sda5
+```
+Note: We can see that on our host machine with Ubuntu system we have many 'disk type' devices visible under ```/dev/disk```.
+Note some of them are mbed boards and can be distingushed by unique ```USB-ID```.
+
+```mbed-ls``` tools are pairing only serial ports and mount points (not CMSIS-DAP yet) together.
+On Ubuntu Linux we are checking usb-ids of all devices which may be mbed boards. We know mbed boards follow few ```usb-id``` conventions which can be used filter out mbed devices' ```usb-ids```.
+
+In our case we can see pairs of ```usb-ids``` in both ```/dev/serial/usb-id``` and ```/dev/disk/usb-id``` with embedded ``` TargetID```.  ``TargetID``` can be filtered out for example using this sudo-regexpr: ```(“MBED”|”mbed”|”STMicro”)_([a-zA-z_-]+)_([a-fA_F0-0]){4,}```
