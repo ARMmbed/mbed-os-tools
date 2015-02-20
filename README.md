@@ -132,4 +132,29 @@ Note some of them are mbed boards and can be distingushed by unique ```USB-ID```
 ```mbed-ls``` tools are pairing only serial ports and mount points (not CMSIS-DAP yet) together.
 On Ubuntu Linux we are checking usb-ids of all devices which may be mbed boards. We know mbed boards follow few ```usb-id``` conventions which can be used filter out mbed devices' ```usb-ids```.
 
-In our case we can see pairs of ```usb-ids``` in both ```/dev/serial/usb-id``` and ```/dev/disk/usb-id``` with embedded ``` TargetID```.  ``TargetID``` can be filtered out for example using this sudo-regexpr: ```(“MBED”|”mbed”|”STMicro”)_([a-zA-z_-]+)_([a-fA_F0-0]){4,}```
+In our case we can see pairs of ```usb-ids``` in both ```/dev/serial/usb-id``` and ```/dev/disk/usb-id``` with embedded ``` TargetID```.  ```TargetID``` can be filtered out for example using this sudo-regexpr: ```(“MBED”|”mbed”|”STMicro”)_([a-zA-z_-]+)_([a-fA_F0-0]){4,}```
+
+For example we can match board 066EFF525257775087141721 by connecting few dots:
+* ```usb-MBED_microcontroller_066EFF525257775087141721-0:0 -> ../../sdd``` and
+* ```usb-STMicroelectronics_STM32_STLink_066EFF525257775087141721-if02 -> ../../ttyACM2```
+Based on marked with red color TargetID hash.
+
+From there we know that target platform has these properties:
+* Designation number is 066E.
+* Serial: ttyACM2.
+* Mount point: sdd.
+Your mbed-ls implementation must resolve those three and create “tuple” with those values (for each connected device).
+If you have this tuple(s) other mbed-ls will carry on with platform number to human readable name conversion etc.
+
+```
+$ mbedls
++---------------------+-------------------+-------------------+----------------------------------------+
+|platform_name        |mount_point        |serial_port        |target_id                               |
++---------------------+-------------------+-------------------+----------------------------------------+
+|KL25Z                |I:                 |COM89              |02000203240881BBD9F47C43                |
+|LPC1768              |H:                 |COM77              |101000000000000000000002F7F18695        |
+|NUCLEO_F302R8        |G:                 |COM34              |07050200623B61125D5EF72A                |
+|NUCLEO_L152RE        |E:                 |COM9               |07100200860579FAB960EFD7                |
+|unknown              |F:                 |COM5               |A000000001                              |
++---------------------+-------------------+-------------------+----------------------------------------+
+```
