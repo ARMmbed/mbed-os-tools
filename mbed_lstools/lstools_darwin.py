@@ -81,13 +81,17 @@ class MbedLsToolsDarwin(MbedLsToolsBase):
         
         return r
 
+
     def get_mbed_volumes(self):
-        ''' returns a map {volume_id: {serial:, vendor_id:, product_id:}''' 
+        ''' returns a map {volume_id: {serial:, vendor_id:, product_id:, tty:}''' 
 
         # to find all the possible mbed volumes, we look for registry entries
         # under the USB bus which have a "BSD Name" that starts with "disk"
         # (i.e. this is a USB disk), and have a IORegistryEntryName that
         # matches /\cmbed/
+        # Once we've found a disk, we can search up for a parent with a valid
+        # serial number, and then search down again to find a tty that's part
+        # of the same composite device
         # ioreg -a -r -n "AppleUSBXHCI" -l
         ioreg_usb = subprocess.Popen(['ioreg', '-a', '-r', '-n', 'AppleUSBXHCI', '-l'], stdout=subprocess.PIPE)
         usb_bus = plistlib.readPlist(ioreg_usb.stdout)
