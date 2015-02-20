@@ -178,9 +178,9 @@ For example we can match board 066EFF525257775087141721 by connecting few dots:
 Based on marked with red color TargetID hash.
 
 From there we know that target platform has these properties:
-* Designation number is 066E.
-* Serial: ttyACM2.
-* Mount point: sdd.
+* Unique target platform identifier is ```066E```.
+* Serial port is ```ttyACM2```.
+* Mount point is ```sdd```.
 Your ```mbed-ls``` implementation must resolve those three and create “tuple” with those values (for each connected device).
 If you have this tuple(s) other mbed-ls will carry on with platform number to human readable name conversion etc.
 
