@@ -20,7 +20,6 @@ def create():
     if mbed_os is not None:
         if mbed_os == 'Windows7': result = MbedLsToolsWin7()
         elif mbed_os == 'Ubuntu': result = MbedLsToolsUbuntu()
-        elif mbed_os == 'Ubuntu': result = MbedLsToolsUbuntu()
         elif mbed_os == 'Darwin': result = MbedLsToolsDarwin()
     return result
 

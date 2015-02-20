@@ -51,17 +51,14 @@ class MbedLsToolsDarwin(MbedLsToolsBase):
             } for v in volumes
         ]
 
-        # if we're missing any target ids, try to fill those in by reading
+        # if we're missing any platform names, try to fill those in by reading
         # mbed.htm:
         for m in result:
-            if m['mount_point'] and  not m['target_id']:
-                m['target_id'] = self.get_mbed_htm_target_id(m['mount_point'])
-        
-        # finally fill in any missing platform names:
-        for m in result:
-            if m['target_id'] and not m['platform_name']:
-                tid = m['target_id'][:4]
-                m['platform_name'] = self.platform_name(tid)
+            if m['mount_point'] and  not m['platform_name']:
+                htm_target_id = self.get_mbed_htm_target_id(m['mount_point'])
+                if htm_target_id:
+                    m['target_id'] = htm_target_id
+                    m['platform_name'] = self.platform_name(htm_target_id[:4])
 
         return result
 
@@ -152,7 +149,7 @@ class MbedLsToolsDarwin(MbedLsToolsBase):
             return None
 
     def platform_name(self, target_id):
-        if target_id in self.manufacture_ids:
+        if target_id[:4] in self.manufacture_ids:
             return self.manufacture_ids[target_id[:4]]
 
 
