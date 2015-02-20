@@ -27,7 +27,7 @@ If you want to use ```mbedls``` in your toolchain, continuous integration or aut
 ### Exporting mbedls output to JSON
 You can export mbedls output to JSON format, just use ```---json``` switch and dump your file on screen or redirect to file. It should help you further automate your processes! 
 ```json
- mbedls --json
+$ mbedls --json
 [
     {
         "mount_point": "E:",
