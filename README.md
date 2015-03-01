@@ -101,14 +101,13 @@ Type "help", "copyright", "credits" or "license" for more information.
 >>> mbeds
 <mbed_lstools.lstools_win7.MbedLsToolsWin7 instance at 0x02F542B0>
 >>> mbeds.list_mbeds()
-[]
+[{'platform_name': 'K64F', 'mount_point': 'E:', 'target_id': '02400203D94B0E7724B7F3CF', 'serial_port': u'COM61'}]
 >>> print mbeds
 ```
 Note: On Linux if you have problem with permissions please try to use ```sudo```:
 ```
 $ sudo python setup.py install
 ```
-
 
 # Installation from PyPI (Python Package Index)
 In the near future mbed-ls module can be redistributed via PyPI. We recommend you use ```pip``` application. It is available here: https://pip.pypa.io/en/latest/installing.html#install-pip
