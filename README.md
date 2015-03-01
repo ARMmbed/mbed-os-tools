@@ -101,6 +101,41 @@ In other cases host tests can for example judge by test runner console output if
 
 ## Example of CLI version of host test DefaultTestSelector supervisor:
 
+## Default command line tool
+After installing mbed-host-tests module you will have access to ```mbehtrun``` (mbed host test runner) CLI application. In is implementing below example of user host test runner. This default implementation gives us flexibility. We can now use external tools and call ```mbehtrun``` application without providing our own. 
+This CLI application will do heavy lifting for modules like ```mbed-greentea``` which will use ```mbehtrun``` to drive each host test session with given platform.
+
+Example:
+```
+$ mbedhtrun -d F: -f ".\build\st-nucleo-f401re-gcc\test\mbed-test-cpp.bin" -p COM52 -t 10 -C 4 -m NUCLEO_F401RE -c copy
+MBED: Instrumentation: "COM52" and disk: "F:"
+HOST: Copy image onto target...
+        1 file(s) copied.
+HOST: Initialize serial port...
+HOST: Reset target...
+HOST: Unknown property:  Static::init
+HOST: Property 'timeout' = '10'
+HOST: Property 'host_test_name' = 'default_auto'
+HOST: Property 'description' = 'C++'
+HOST: Property 'test_id' = 'MBED_12'
+HOST: Start test...
+Static::stack_test
+Stack::init
+Stack::hello
+Stack::destroy
+Static::check_init: OK
+Heap::init
+Heap::hello
+Heap::check_init: OK
+Heap::destroy
+{{success}}
+{{end}}
+
+{{ioerr_serial}}
+{{end}}
+```
+
+## User implementaion
 Example of host test script (```mbedhtrun.py```) used to supervise test runner execution from command line:
 ```python
 #!/usr/bin/env python
