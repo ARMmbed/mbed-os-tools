@@ -101,7 +101,7 @@ In other cases host tests can for example judge by test runner console output if
 
 ## Example of CLI version of host test DefaultTestSelector supervisor:
 
-Example of host test script (```hte.py```) used to supervise test runner execution from command line:
+Example of host test script (```mbedhtrun.py```) used to supervise test runner execution from command line:
 ```python
 #!/usr/bin/env python
 
@@ -114,9 +114,9 @@ if __name__ == '__main__':
     DefaultTestSelector(init_host_test_cli_params()).run()
 ```
 
-Example of console call for above example script (```hte.py```):
+Example of console call for above example script (```mbedhtrun.py```):
 ```
-$ hte.py -d E: -f "C:\Work\mbed\build\test\K64F\ARM\RTOS_7\timer.bin" -p COM61 -t 15 -C 4 -m K64F
+$ mbedhtrun.py -d E: -f "C:\Work\mbed\build\test\K64F\ARM\RTOS_7\timer.bin" -p COM61 -t 15 -C 4 -m K64F
 ```
 Output (real-time console output from test runner captured by host test supervisor over serial port):
 ```
@@ -155,8 +155,8 @@ Note:
 * Test ended after success code was received: ```{{end}}}```.
 * Default command line parameters deployed with ```mbed_host_tests``` module:
 ```
-c:\temp\mbed_host_test_example>hte.py --help
-Usage: hte.py [options]
+c:\temp\mbed_host_test_example>mbedhtrun.py --help
+Usage: mbedhtrun.py [options]
 
 Options:
   -h, --help            show this help message and exit
