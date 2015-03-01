@@ -248,5 +248,5 @@ mbedgt: running tests...
   * Solution: Our army of cybernetic organisms is working on fix for this problem as we speak in your mind ;)
 * Issue: Some boards show up as 'unknown'
   * Solution: we will add them in coming releases
-* Issue: 'mbed --tests' doesn't print anything
-  * Solution: You either are not linking to the correct directory, or yotta didnt build any tests. 
+* Issue: Not all mbed platforms have targets mapped to them.
+  * Solution: Be patient, more target descriptions are comming.
