@@ -38,6 +38,7 @@ To use the mbed test suite you must:
 * [yotta](https://github.com/ARMmbed/yotta) - used to build tests from the mbed SDK
 * [mbed-ls](https://github.com/ARMmbed/mbed-ls)
 * [mbed-host-tests](https://github.com/ARMmbed/mbed-host-tests)
+* Some Nucleo boards like F401RE can be correctly flashed only with ```cp``` or ```copy``` command line command. make sure in your system there is a ```cp``` shell command installed. It can be available by default (LInux OS) or provided by environments such as ```git```. We will assume you've installed ```git``` command line tools for Windows and ```cp``` command is available.
 
 ## Installation
 To install the mbed test suite download the repo and run the setup.py script with the install option.
