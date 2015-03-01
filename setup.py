@@ -18,7 +18,7 @@ def read(fname):
 
 
 setup(name='mbed-host-tests',
-      version='0.1.3',
+      version='0.1.4',
       description=DESCRIPTION,
       long_description=read('README.md'),
       author=OWNER_NAMES,
@@ -28,4 +28,7 @@ setup(name='mbed-host-tests',
       url='https://github.com/mbedmicro/mbed',
       packages=find_packages(),
       license="Apache-2.0",
+      entry_points={
+        "console_scripts": ["mbedhtrun=mbed_host_tests.mbedhtrun:main",],
+      },
       install_requires=["PySerial>=2.7"])
