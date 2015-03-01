@@ -120,12 +120,15 @@ mbed-ls: detected NUCLEO_F401RE, console at: COM52, mounted at: F:
         got yotta target 'st-nucleo-f401re-gcc'
 ```
 We can see ```mbedgt``` detected (using ```mbed-ls``` module) two boards connected to host system: ``` K64F```, ```NUCLEO_F401RE ```.
+
 For each ```mbedgt``` proposed few supported yotta targets:
-•	```frdm-k64f-gcc``` - Freescale K64F platform compiled with GCC cross-compiler.
-•	```frdm-k64f-armcc``` - Freescale K64F platform compiled with Keil armcc cross-compiler.
-•	```st-nucleo-f401re-gcc```- STMicro Nucleo F401RE platform compiled with GCC cross-compiler.
+* ```frdm-k64f-gcc``` - Freescale K64F platform compiled with GCC cross-compiler.
+* ```frdm-k64f-armcc``` - Freescale K64F platform compiled with Keil armcc cross-compiler.
+* ```st-nucleo-f401re-gcc```- STMicro Nucleo F401RE platform compiled with GCC cross-compiler.
+
 Because our test system doesn’t have Keil armcc compiler installed I will use only targets describing how to build mbed SDK using GCC cross-compiler. I want to build mbed SDK first to see if there are no issues. Let’s use test suite and invoke indirectly yotta to build only for two supported at this time targets.
-I will use option ````--target``` to specify targets I want to interact with. Option ```-O``` will be used to tell test suite to only build sources and tests without test procedure.
+
+In this example we will use option ````--target``` to specify targets I want to interact with. Option ```-O``` will be used to tell test suite to only build sources and tests without test procedure.
 
 ```Shell
 $ mbedgt --target=frdm-k64f-gcc,st-nucleo-f401re-gcc -O
@@ -166,6 +169,79 @@ GNU-ASM.cmake included
 ninja: no work to do.
 ```
 
+Now we know our sources and tests are built correctly. We can now call test suite again and ask for target test.
+
+Please stay in the same directory (with mbed SDK) and execute below command:
+```Shell
+mbedgt --target=frdm-k64f-gcc,st-nucleo-f401re-gcc
+mbed-ls: detecting connected mbed-enabled devices...
+mbed-ls: detected K64F, console at: COM61, mounted at: E:
+        got yotta target 'frdm-k64f-gcc'
+mbed-ls: calling yotta to build your sources and tests
+warning: uvisor-lib has invalid module.json:
+warning:   author value [u'Milosch Meriac <milosch.meriac@arm.com>', u'Alessandro Angelino <alessandro.angelino@arm.com>'] is not valid under any of the given schemas
+info: generate for target: frdm-k64f-gcc 0.0.10 at c:\temp\xxx\mbed-sdk-private\yotta_targets\frdm-k64f-gcc
+mbedOS.cmake included
+GCC-C.cmake included
+mbedOS-GNU-C.cmake included
+GCC-GXX.cmake included
+mbedOS-GNU-CXX.cmake included
+GCC version is: 4.8.4
+GNU-ASM.cmake included
+GNU-ASM.cmake included
+-- Configuring done
+-- Generating done
+-- Build files have been written to: C:/temp/xxx/mbed-sdk-private/build/frdm-k64f-gcc
+ninja: no work to do.
+mbedgt: running tests...
+        test 'mbed-test-dev_null' .................................................... OK
+        test 'mbed-test-cpp' ......................................................... OK
+        test 'mbed-test-time_us' ..................................................... OK
+        test 'mbed-test-ticker' ...................................................... OK
+        test 'mbed-test-div' ......................................................... OK
+        test 'mbed-test-detect' ...................................................... SKIPPED
+        test 'mbed-test-call_before_main' ............................................ OK
+        test 'mbed-test-basic' ....................................................... OK
+        test 'mbed-test-stdio' ....................................................... OK
+        test 'mbed-test-ticker_3' .................................................... OK
+        test 'mbed-test-ticker_2' .................................................... OK
+        test 'mbed-test-timeout' ..................................................... OK
+        test 'mbed-test-rtc' ......................................................... OK
+        test 'mbed-test-echo' ........................................................ OK
+        test 'mbed-test-hello' ....................................................... OK
+        got yotta target 'frdm-k64f-armcc'
+mbed-ls: detected NUCLEO_F401RE, console at: COM52, mounted at: F:
+        got yotta target 'st-nucleo-f401re-gcc'
+mbed-ls: calling yotta to build your sources and tests
+info: generate for target: st-nucleo-f401re-gcc 0.0.5 at c:\temp\xxx\mbed-sdk-private\yotta_targets\st-nucleo-f401re-gcc
+mbedOS.cmake included
+GCC-C.cmake included
+mbedOS-GNU-C.cmake included
+GCC-GXX.cmake included
+mbedOS-GNU-CXX.cmake included
+GCC version is: 4.8.4
+GNU-ASM.cmake included
+-- Configuring done
+-- Generating done
+-- Build files have been written to: C:/temp/xxx/mbed-sdk-private/build/st-nucleo-f401re-gcc
+ninja: no work to do.
+mbedgt: running tests...
+        test 'mbed-test-dev_null' .................................................... OK
+        test 'mbed-test-cpp' ......................................................... OK
+        test 'mbed-test-time_us' ..................................................... OK
+        test 'mbed-test-ticker' ...................................................... OK
+        test 'mbed-test-div' ......................................................... OK
+        test 'mbed-test-detect' ...................................................... SKIPPED
+        test 'mbed-test-call_before_main' ............................................ OK
+        test 'mbed-test-basic' ....................................................... OK
+        test 'mbed-test-stdio' ....................................................... OK
+        test 'mbed-test-ticker_3' .................................................... OK
+        test 'mbed-test-ticker_2' .................................................... OK
+        test 'mbed-test-timeout' ..................................................... OK
+        test 'mbed-test-rtc' ......................................................... FAIL
+        test 'mbed-test-echo' ........................................................ OK
+        test 'mbed-test-hello' ....................................................... OK
+```
 
 # Common Issues
 * Issue: In this release there are known issues related to Linux serial port handling during test.
