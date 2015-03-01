@@ -250,6 +250,34 @@ Type "help", "copyright", "credits" or "license" for more information.
 'is_host_test']
 ```
 
+You can also check if ```mbedhtrun``` is correctly installed in your system:
+```
+mbedhtrun --help
+Usage: mbedhtrun-script.py [options]
+
+Options:
+  -h, --help            show this help message and exit
+  -m MICRO, --micro=MICRO
+                        The target microcontroller
+  -p PORT, --port=PORT  The serial port of the target mbed
+  -d DISK_PATH, --disk=DISK_PATH
+                        The target disk path
+  -f IMAGE_PATH, --image-path=IMAGE_PATH
+                        Path with target's image
+  -c COPY_METHOD, --copy=COPY_METHOD
+                        Copy method selector
+  -C COPY_METHOD, --program_cycle_s=COPY_METHOD
+                        Program cycle sleep. Define how many seconds you want
+                        wait after copying bianry onto target
+  -t TIMEOUT, --timeout=TIMEOUT
+                        Timeout
+  -r FORCED_RESET_TYPE, --reset=FORCED_RESET_TYPE
+                        Forces different type of reset
+  -R NUMBER, --reset-timeout=NUMBER
+                        When forcing a reset using option -r you can set up
+                        after reset timeout in seconds
+```
+
 # Installation from PyPI (Python Package Index)
 In the near furure mbed-ls module can be redistributed via PyPI. We recommend you use ```pip``` application. It is available here: https://pip.pypa.io/en/latest/installing.html#install-pip
 
