@@ -99,7 +99,8 @@ In other cases host tests can for example judge by test runner console output if
 ** Conclude test case result. Result can be grabbed from test runner console output or determined by host test independently.
 ** Send to test suite environment information about test execution finish.
 
-## Example of CLI version of host test DefaultTestSelector supervisor:
+## Example of CLI version of host test DefaultTestSelector supervisor
+We can use mbed-host-tests in two ways. We can use it in our own Python implementation and create lots of host test variations) or we can use predefined and built for us command line tool called ```mbedhtrun``` (**mbed** **h**ost **t**est **run**ner).
 
 ## Default command line tool
 After installing mbed-host-tests module you will have access to ```mbehtrun``` (mbed host test runner) CLI application. In is implementing below example of user host test runner. This default implementation gives us flexibility. We can now use external tools and call ```mbehtrun``` application without providing our own. 
