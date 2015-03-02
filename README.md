@@ -42,7 +42,7 @@ To use the mbed test suite you must:
 
 ## Installation
 To install the mbed test suite download the repo and run the setup.py script with the install option.
-```Shell
+```
 $ git clone https://github.com/ARMmbed/mbed-greentea.git
 $ cd mbed-greentea
 $ python setup.py install
@@ -90,7 +90,7 @@ In current configuration mbed test suite can automatically detect most of popula
 Test suite is using ```mbed-ls``` module to check connected devices and. Separate module called ```mbed-host –tests``` is used to flash and supervise each platforms test. This decoupling allows us to make better software and maintain each or the functionalities as separate domain. Previously mbed SDK test suite consisted of mentioned modules which is not good for maintainability and stopped us from building more efficient tools.
 
 Make sure you have all tools installed. For example you can list all mbed devices connected to your host computer:
-```Shell
+```
 $ mbedls
 +---------------------+-------------------+-------------------+--------------------------------+
 |platform_name        |mount_point        |serial_port        |target_id                       |
@@ -104,14 +104,14 @@ $ mbedls
 To test your platform you need to download mbed SDK sources and make sure you have mbed board (hardware) which is described and supported by any of available yotta modules.
 
 First you can clone mbed SDK sources and move inside mbed SDK sources directory:
-```Shell
+```
 $ git clone https://github.com/ARMmbed/mbed-sdk.git
 cd mbed-sdk
 ```
 You are in mbed SDK directory and now you can execute test suite which will call yotta to build your sources first.
 
 Let’s take one step back and see our current configuration:
-```Shell
+```
 $ mbedgt –config
 mbed-ls: detecting connected mbed-enabled devices...
 mbed-ls: detected K64F, console at: COM61, mounted at: E:
@@ -131,7 +131,7 @@ Because our test system doesn’t have Keil armcc compiler installed I will use 
 
 In this example we will use option ````--target``` to specify targets I want to interact with. Option ```-O``` will be used to tell test suite to only build sources and tests without test procedure.
 
-```Shell
+```
 $ mbedgt --target=frdm-k64f-gcc,st-nucleo-f401re-gcc -O
 mbed-ls: detecting connected mbed-enabled devices...
 mbed-ls: detected K64F, console at: COM61, mounted at: E:
@@ -173,7 +173,7 @@ ninja: no work to do.
 Now we know our sources and tests are built correctly. We can now call test suite again and ask for target test.
 
 Please stay in the same directory (with mbed SDK) and execute below command:
-```Shell
+```
 mbedgt --target=frdm-k64f-gcc,st-nucleo-f401re-gcc
 mbed-ls: detecting connected mbed-enabled devices...
 mbed-ls: detected K64F, console at: COM61, mounted at: E:
