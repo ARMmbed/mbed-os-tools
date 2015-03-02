@@ -115,7 +115,7 @@ In the near future mbed-ls module can be redistributed via PyPI. We recommend yo
 Note: Python 2.7.9 and later (on the python2 series), and Python 3.4 and later include pip by default, so you may have pip already.
 
 # Porting instructions
-You can help us improve mbed-ls tools by for example committing new OS port. Currently in '[Description](#Description)' section of this readme we are presenting you with list of supported OSs. If your OS is not on the list you can always port it!
+You can help us improve mbed-ls tools by for example committing new OS port. Currently in '[Description](#description)' section of this readme we are presenting you with list of supported OSs. If your OS is not on the list you can always port it!
 
 For further study please check how Mac OS X (Darwin) was ported in [this pull request](https://github.com/ARMmbed/mbed-ls/pull/1).
 
