@@ -186,7 +186,6 @@ Note:
 * Test runner binary is located at: ```C:\Work\mbed\build\test\K64F\ARM\RTOS_7\timer.bin```. 
 * K64F virtual serial port (USB CDC) is mounted at: ```-p COM61```.
 * K64F virtual serial port (USB MSC) is mounted at: ```-d E:```.
-* Default test case timeout is set to ```-t 15``` seconds.
 * Test result: SUCCESS - ```{{success}}}```.
 * Test ended after success code was received: ```{{end}}}```.
 * Default command line parameters deployed with ```mbed_host_tests``` module:
@@ -258,24 +257,23 @@ Usage: mbedhtrun-script.py [options]
 Options:
   -h, --help            show this help message and exit
   -m MICRO, --micro=MICRO
-                        The target microcontroller
-  -p PORT, --port=PORT  The serial port of the target mbed
+                        Target microcontroller name
+  -p PORT, --port=PORT  Serial port of the target
   -d DISK_PATH, --disk=DISK_PATH
-                        The target disk path
+                        Target disk (mount point) path
   -f IMAGE_PATH, --image-path=IMAGE_PATH
-                        Path with target's image
+                        Path with target's binary image
   -c COPY_METHOD, --copy=COPY_METHOD
-                        Copy method selector
+                        Copy method selector. Define which copy method (from
+                        plugins) should be used
   -C COPY_METHOD, --program_cycle_s=COPY_METHOD
                         Program cycle sleep. Define how many seconds you want
-                        wait after copying bianry onto target
-  -t TIMEOUT, --timeout=TIMEOUT
-                        Timeout
+                        wait after copying binary onto target
   -r FORCED_RESET_TYPE, --reset=FORCED_RESET_TYPE
                         Forces different type of reset
   -R NUMBER, --reset-timeout=NUMBER
                         When forcing a reset using option -r you can set up
-                        after reset timeout in seconds
+                        after reset idle delay in seconds
 ```
 
 # Installation from PyPI (Python Package Index)
