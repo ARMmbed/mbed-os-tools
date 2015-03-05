@@ -123,39 +123,34 @@ def init_host_test_cli_params():
 
     parser.add_option("-m", "--micro",
                       dest="micro",
-                      help="The target microcontroller",
+                      help="Target microcontroller name",
                       metavar="MICRO")
 
     parser.add_option("-p", "--port",
                       dest="port",
-                      help="The serial port of the target mbed",
+                      help="Serial port of the target",
                       metavar="PORT")
 
     parser.add_option("-d", "--disk",
                       dest="disk",
-                      help="The target disk path",
+                      help="Target disk (mount point) path",
                       metavar="DISK_PATH")
 
     parser.add_option("-f", "--image-path",
                       dest="image_path",
-                      help="Path with target's image",
+                      help="Path with target's binary image",
                       metavar="IMAGE_PATH")
 
     parser.add_option("-c", "--copy",
                       dest="copy_method",
-                      help="Copy method selector",
+                      help="Copy method selector. Define which copy method (from plugins) should be used",
                       metavar="COPY_METHOD")
 
     parser.add_option("-C", "--program_cycle_s",
                       dest="program_cycle_s",
-                      help="Program cycle sleep. Define how many seconds you want wait after copying bianry onto target",
+                      help="Program cycle sleep. Define how many seconds you want wait after copying binary onto target",
                       type="float",
                       metavar="COPY_METHOD")
-
-    parser.add_option("-t", "--timeout",
-                      dest="timeout",
-                      help="Timeout",
-                      metavar="TIMEOUT")
 
     parser.add_option("-r", "--reset",
                       dest="forced_reset_type",
@@ -165,7 +160,7 @@ def init_host_test_cli_params():
                       dest="forced_reset_timeout",
                       metavar="NUMBER",
                       type="int",
-                      help="When forcing a reset using option -r you can set up after reset timeout in seconds")
+                      help="When forcing a reset using option -r you can set up after reset idle delay in seconds")
 
     (options, _) = parser.parse_args()
     return options

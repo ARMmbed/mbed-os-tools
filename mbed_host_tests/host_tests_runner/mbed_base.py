@@ -25,12 +25,11 @@ class Mbed:
     """ Base class for a host driven test
     """
     def __init__(self, options=None):
-        # For compatibility with old mbed. We can use command line options for Mbed object 
+        # For compatibility with old mbed. We can use command line options for Mbed object
         # or we can pass options directly from .
         self.options = options
 
         self.DEFAULT_RESET_TOUT = 0
-        self.DEFAULT_TOUT = 10
 
         if self.options.port is None:
             raise Exception("The serial port of the target mbed have to be provided as command line arguments")
@@ -46,7 +45,6 @@ class Mbed:
         self.serial_baud = 9600
         self.serial_timeout = 1
 
-        self.timeout = self.DEFAULT_TOUT if self.options.timeout is None else self.options.timeout
         print 'MBED: Instrumentation: "%s" and disk: "%s"' % (self.port, self.disk)
 
     def init_serial_params(self, serial_baud=9600, serial_timeout=1):
