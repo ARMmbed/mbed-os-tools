@@ -52,6 +52,9 @@ RE_DETECT_TESTCASE_RESULT = re.compile("\\{(" + "|".join(TEST_RESULT_MAPPING.key
 def run_host_test(image_path, disk, port, duration,
                   micro=None, reset=None, reset_tout=None,
                   verbose=False, copy_method=None, program_cycle_s=None):
+    """ This function runs host test supervisor (executes mbedhtrun) and checks
+        output from host test process.
+    """
 
     class ProcessObserver(Thread):
         def __init__(self, proc):
@@ -103,7 +106,7 @@ def run_host_test(image_path, disk, port, duration,
 
     def get_auto_property_value(property_name, line):
         """ Scans auto detection line from MUT and returns scanned parameter 'property_name'
-            Returns string
+            Returns string or None if property search failed
         """
         result = None
         if re.search("HOST: Property '%s'"% property_name, line) is not None:
@@ -117,7 +120,7 @@ def run_host_test(image_path, disk, port, duration,
             '-d', disk,
             '-f', '"%s"'% image_path,
             '-p', port,
-            '-t', str(duration),
+            #'-t', str(duration), # This is not used here because timeout is controlled in test suite executing mbedhtrun
             '-C', str(program_cycle_s)]
 
     # Add extra parameters to host_test
