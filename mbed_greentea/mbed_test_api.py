@@ -35,6 +35,7 @@ TEST_RESULT_IOERR_DISK = "IOERR_DISK"
 TEST_RESULT_IOERR_SERIAL = "IOERR_SERIAL"
 TEST_RESULT_TIMEOUT = "TIMEOUT"
 TEST_RESULT_NO_IMAGE = "NO_IMAGE"
+TEST_RESULT_MBED_ASSERT = "MBED_ASSERT"
 
 TEST_RESULT_MAPPING = {"success" : TEST_RESULT_OK,
                        "failure" : TEST_RESULT_FAIL,
@@ -44,7 +45,8 @@ TEST_RESULT_MAPPING = {"success" : TEST_RESULT_OK,
                        "ioerr_serial" : TEST_RESULT_IOERR_SERIAL,
                        "timeout" : TEST_RESULT_TIMEOUT,
                        "no_image" : TEST_RESULT_NO_IMAGE,
-                       "end" : TEST_RESULT_UNDEF
+                       "end" : TEST_RESULT_UNDEF,
+                       "mbed_assert" : TEST_RESULT_MBED_ASSERT
                        }
 
 RE_DETECT_TESTCASE_RESULT = re.compile("\\{(" + "|".join(TEST_RESULT_MAPPING.keys()) + ")\\}")
@@ -164,6 +166,11 @@ def run_host_test(image_path, disk, port, duration,
                     # We will update this marker only once to prevent multiple time resets
                     update_once_flag['timeout'] = True
                     duration = int(auto_timeout_val)
+
+                # Detect mbed assert:
+                if 'mbed assertation failed: ' in line:
+                    output.append('{{mbed_assert}}')
+                    break
 
                 # Check for test end
                 if '{end}' in line:
