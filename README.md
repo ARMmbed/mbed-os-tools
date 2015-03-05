@@ -108,7 +108,7 @@ This CLI application will do heavy lifting for modules like ```mbed-greentea``` 
 
 Example:
 ```
-$ mbedhtrun -d F: -f ".\build\st-nucleo-f401re-gcc\test\mbed-test-cpp.bin" -p COM52 -t 10 -C 4 -m NUCLEO_F401RE -c copy
+$ mbedhtrun -d F: -f ".\build\st-nucleo-f401re-gcc\test\mbed-test-cpp.bin" -p COM52 -C 4 -m NUCLEO_F401RE -c copy
 MBED: Instrumentation: "COM52" and disk: "F:"
 HOST: Copy image onto target...
         1 file(s) copied.
@@ -152,7 +152,7 @@ if __name__ == '__main__':
 
 Example of console call for above example script (```mbedhtrun.py```):
 ```
-$ mbedhtrun.py -d E: -f "C:\Work\mbed\build\test\K64F\ARM\RTOS_7\timer.bin" -p COM61 -t 15 -C 4 -m K64F
+$ mbedhtrun.py -d E: -f "C:\Work\mbed\build\test\K64F\ARM\RTOS_7\timer.bin" -p COM61 -C 4 -m K64F
 ```
 Output (real-time console output from test runner captured by host test supervisor over serial port):
 ```
@@ -197,24 +197,23 @@ Usage: mbedhtrun.py [options]
 Options:
   -h, --help            show this help message and exit
   -m MICRO, --micro=MICRO
-                        The target microcontroller
-  -p PORT, --port=PORT  The serial port of the target mbed
+                        Target microcontroller name
+  -p PORT, --port=PORT  Serial port of the target
   -d DISK_PATH, --disk=DISK_PATH
-                        The target disk path
+                        Target disk (mount point) path
   -f IMAGE_PATH, --image-path=IMAGE_PATH
-                        Path with target's image
+                        Path with target's binary image
   -c COPY_METHOD, --copy=COPY_METHOD
-                        Copy method selector
+                        Copy method selector. Define which copy method (from
+                        plugins) should be used
   -C COPY_METHOD, --program_cycle_s=COPY_METHOD
                         Program cycle sleep. Define how many seconds you want
-                        wait after copying bianry onto target
-  -t TIMEOUT, --timeout=TIMEOUT
-                        Timeout
+                        wait after copying binary onto target
   -r FORCED_RESET_TYPE, --reset=FORCED_RESET_TYPE
                         Forces different type of reset
   -R NUMBER, --reset-timeout=NUMBER
                         When forcing a reset using option -r you can set up
-                        after reset timeout in seconds
+                        after reset idle delay in seconds
 ```
 
 # Installation from Python sources 
