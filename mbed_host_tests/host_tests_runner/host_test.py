@@ -89,8 +89,11 @@ class Test(HostTestResults):
     def notify(self, message):
         """ On screen notification function
         """
-        print message
-        stdout.flush()
+        try:
+            print message
+            stdout.flush()
+        except:
+            pass
 
     def print_result(self, result):
         """ Test result unified printing function
