@@ -100,6 +100,81 @@ $ mbedls
 +---------------------+-------------------+-------------------+--------------------------------+
 ```
 
+# Digesting alien goo
+Test suite has now new feature of input digesting activated with ```--digest``` command line switch. Now you can pipe your proprietary test runner’s console output to test suite or just ```cat``` file with test runner’s console output. You can also just specify file name which will be digested as test runner console input.
+
+This option allows you to write your own automation where you execute test runner or just feed test suite with test runner’s console output and test suite returns to environment if this console output indicated success or test failure.
+
+Below examples will explain better ```--digest``` option existence. Let’s for example assume you are having your own written in ```bash``` test runner or just collected bunch of test results in database and test console output is in your disposal.
+You would like to scan console output from tests to get mbed test suite predefined test result. Note: test suit results and tags are encoded between double curly braces.
+For example typical success code looks like this: ```{{success}}{{end}}```.
+
+## Example 1 - Digest mbed default host test runner
+You can just run installed with ```mbed-host-tests``` ```mbedhtrun``` to evaluate test case test result (Test result is returned to environment as ```mbedgt``` return code, success code is ```0```).
+
+```
+$ mbedhtrun -d E: -f ".\build\frdm-k64f-gcc\test\mbed-test-hello.bin" -p COM61 -C 4 -c default -m K64F | mbedgt --digest=stdin -V
+
+MBED: Instrumentation: "COM61" and disk: "E:"
+HOST: Copy image onto target...
+HOST: Initialize serial port...
+HOST: Reset target...
+HOST: Property 'timeout' = '5'
+HOST: Property 'host_test_name' = 'hello_auto'
+HOST: Property 'description' = 'Hello World'
+HOST: Property 'test_id' = 'MBED_10'
+HOST: Start test...
+Read 13 bytes:
+Hello World
+
+{{success}}
+{{end}}
+```
+```
+$ echo error level is %ERRORLEVEL%
+error level is 0
+```
+Note; test suite detected strings ```{{success}}``` and ```{{end}}``` and concluded test result was a success.
+
+## Example 2 - digest directly from file
+File ```test.txt``` content:
+```
+$ cat test.txt
+MBED: Instrumentation: "COM61" and disk: "E:"
+HOST: Copy image onto target...
+HOST: Initialize serial port...
+HOST: Reset target...
+HOST: Property 'timeout' = '5'
+HOST: Property 'host_test_name' = 'hello_auto'
+HOST: Property 'description' = 'Hello World'
+HOST: Property 'test_id' = 'MBED_10'
+HOST: Start test...
+Read 13 bytes:
+Hello World
+
+{{ioerr_disk}}
+{{end}}
+```
+
+And scan for error code inside file:
+```
+$ mbedgt --digest=./test.txt
+```
+```
+$ echo error level is %ERRORLEVEL%
+error level is 5
+```
+Note: error level ```5``` stands for ```TEST_RESULT_IOERR_DISK```.
+
+## Example 3 - pipe test.txt file content (as in example 2)
+```
+$ cat test.txt | mbedgt --digest=stdin
+```
+```
+$ echo error level is %ERRORLEVEL%
+error level is 5
+```
+
 # Testing
 To test your platform you need to download mbed SDK sources and make sure you have mbed board (hardware) which is described and supported by any of available yotta modules.
 
