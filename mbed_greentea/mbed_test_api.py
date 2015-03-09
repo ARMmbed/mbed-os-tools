@@ -37,28 +37,96 @@ TEST_RESULT_TIMEOUT = "TIMEOUT"
 TEST_RESULT_NO_IMAGE = "NO_IMAGE"
 TEST_RESULT_MBED_ASSERT = "MBED_ASSERT"
 
+TEST_RESULTS = [TEST_RESULT_OK,
+                TEST_RESULT_FAIL,
+                TEST_RESULT_ERROR,
+                TEST_RESULT_UNDEF,
+                TEST_RESULT_IOERR_COPY,
+                TEST_RESULT_IOERR_DISK,
+                TEST_RESULT_IOERR_SERIAL,
+                TEST_RESULT_TIMEOUT,
+                TEST_RESULT_NO_IMAGE,
+                TEST_RESULT_MBED_ASSERT
+                ]
+
 TEST_RESULT_MAPPING = {"success" : TEST_RESULT_OK,
                        "failure" : TEST_RESULT_FAIL,
                        "error" : TEST_RESULT_ERROR,
+                       "end" : TEST_RESULT_UNDEF,
                        "ioerr_copy" : TEST_RESULT_IOERR_COPY,
                        "ioerr_disk" : TEST_RESULT_IOERR_DISK,
                        "ioerr_serial" : TEST_RESULT_IOERR_SERIAL,
                        "timeout" : TEST_RESULT_TIMEOUT,
                        "no_image" : TEST_RESULT_NO_IMAGE,
-                       "end" : TEST_RESULT_UNDEF,
                        "mbed_assert" : TEST_RESULT_MBED_ASSERT
                        }
 
 RE_DETECT_TESTCASE_RESULT = re.compile("\\{(" + "|".join(TEST_RESULT_MAPPING.keys()) + ")\\}")
 
-def run_host_test(image_path, disk, port, duration,
+def run_host_test(image_path, disk, port, duration=10,
                   micro=None, reset=None, reset_tout=None,
-                  verbose=False, copy_method=None, program_cycle_s=None):
+                  verbose=False, copy_method=None, program_cycle_s=None,
+                  digest_source=None):
     """ This function runs host test supervisor (executes mbedhtrun) and checks
         output from host test process.
+
+        @param digest_source - if None mbedhtrun will be executed. If 'stdin',
+                               stdin will be used via StdInObserver or file (if
+                               file name was given as switch option)
     """
 
+    class StdInObserver(Thread):
+        """ process used to read stdin only as console
+            input from MUT
+        """
+        def __init__(self):
+            Thread.__init__(self)
+            self.queue = Queue()
+            self.daemon = True
+            self.active = True
+            self.start()
+
+        def run(self):
+            while self.active:
+                c = sys.stdin.read(1)
+                self.queue.put(c)
+
+        def stop(self):
+            self.active = False
+            try:
+                self.proc.terminate()
+            except Exception, _:
+                pass
+
+    class FileObserver(Thread):
+        """ process used to read file content as console
+            input from MUT
+        """
+        def __init__(self, filename):
+            Thread.__init__(self)
+            self.filename = filename
+            self.queue = Queue()
+            self.daemon = True
+            self.active = True
+            self.start()
+
+        def run(self):
+            with open(self.filename) as f:
+                while self.active:
+                    c = f.read(1)
+                    self.queue.put(c)
+
+        def stop(self):
+            self.active = False
+            try:
+                self.proc.terminate()
+            except Exception, _:
+                pass
+
     class ProcessObserver(Thread):
+        """ Default process used to observe stdout of
+            another process as console input from MUT
+        """
         def __init__(self, proc):
             Thread.__init__(self)
             self.proc = proc
@@ -117,29 +185,38 @@ def run_host_test(image_path, disk, port, duration,
                 result = property.groups()[0]
         return result
 
-    # Command executing CLI for host test supervisor (in detect-mode)
-    cmd = ["mbedhtrun",
-            '-d', disk,
-            '-f', '"%s"'% image_path,
-            '-p', port,
-            #'-t', str(duration), # This is not used here because timeout is controlled in test suite executing mbedhtrun
-            '-C', str(program_cycle_s)]
+    # Detect from where input should be taken, if no --digest switch is specified
+    # normal test execution can be performed
+    if digest_source == 'stdin':
+        # When we want to scan stdin for test results
+        obs = StdInObserver()
+    elif digest_source is not None:
+        # When we want to open file to scan for test results
+        obs = FileObserver(digest_source)
+    else:
+        # Command executing CLI for host test supervisor (in detect-mode)
+        cmd = ["mbedhtrun",
+                '-d', disk,
+                '-f', '"%s"'% image_path,
+                '-p', port,
+                '-C', str(program_cycle_s)]
 
-    # Add extra parameters to host_test
-    if copy_method is not None:
-        cmd += ["-c", copy_method]
-    if micro is not None:
-        cmd += ["-m", micro]
-    if reset is not None:
-        cmd += ["-r", reset]
-    if reset_tout is not None:
-        cmd += ["-R", str(reset_tout)]
+        # Add extra parameters to host_test
+        if copy_method is not None:
+            cmd += ["-c", copy_method]
+        if micro is not None:
+            cmd += ["-m", micro]
+        if reset is not None:
+            cmd += ["-r", reset]
+        if reset_tout is not None:
+            cmd += ["-R", str(reset_tout)]
 
-    if verbose:
-        print "mbed-host-test-runner: %s"% (" ".join(cmd))
+        if verbose:
+            print "mbed-host-test-runner: %s"% (" ".join(cmd))
 
-    proc = Popen(cmd, stdout=PIPE)
-    obs = ProcessObserver(proc)
+        proc = Popen(cmd, stdout=PIPE)
+        obs = ProcessObserver(proc)
+
     update_once_flag = {}   # Stores flags checking if some auto-parameter was already set
     line = ''
     output = []

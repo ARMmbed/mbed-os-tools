@@ -27,6 +27,7 @@ import optparse
 
 from mbed_test_api import run_host_test
 from mbed_test_api import run_cli_command
+from mbed_test_api import TEST_RESULTS
 from cmake_handlers import load_ctest_testsuite
 from mbed_target_info import get_mbed_clasic_target_info
 from mbed_target_info import get_mbed_supported_test
@@ -95,11 +96,15 @@ def main():
                     action="store_true",
                     help='Used with --loops or --global-loops options. Tests until OK result occurs and assumes test passed.')
 
+    parser.add_option('', '--digest',
+                    dest='digest_source',
+                    help='Redirect input from where test suite should take console input. You can use stdin or file name to get test case console output')
+
     parser.add_option('-V', '--verbose-test-result',
-                      dest='verbose_test_result_only',
-                      default=False,
-                      action="store_true",
-                      help='Prints test serial output')
+                    dest='verbose_test_result_only',
+                    default=False,
+                    action="store_true",
+                    help='Prints test serial output')
 
     parser.add_option('-v', '--verbose',
                     dest='verbose',
@@ -111,6 +116,15 @@ def main():
     parser.epilog = """Example: mbedgt --auto --target frdm-k64f-gcc"""
 
     (opts, args) = parser.parse_args()
+
+    # Capture alternative test console inputs
+    if opts.digest_source:
+        host_test_result = run_host_test(image_path=None, disk=None, port=None,
+                                    digest_source=opts.digest_source,
+                                    verbose=opts.verbose_test_result_only)
+        single_test_result, single_test_output, single_testduration, single_timeout = host_test_result
+        status = TEST_RESULTS.index(single_test_result) if single_test_result in TEST_RESULTS else -1
+        sys.exit(status)
 
     # mbed-enabled devices auto-detection procedures
     mbeds = mbed_lstools.create()
@@ -155,16 +169,16 @@ def main():
                             if get_mbed_supported_test(test_bin):
                                 disk =  mut['mount_point']
                                 port =  mut['serial_port']
-                                duration = 10
                                 micro = mut['platform_name']
                                 program_cycle_s = mut_info['properties']['program_cycle_s']
                                 copy_method = mut_info['properties']['copy_method']
                                 verbose = opts.verbose_test_result_only
 
-                                host_test_result = run_host_test(image_path, disk, port, duration,
+                                host_test_result = run_host_test(image_path, disk, port,
                                     micro=micro,
                                     copy_method=copy_method,
                                     program_cycle_s=program_cycle_s,
+                                    digest_source=opts.digest_source,
                                     verbose=verbose)
                                 single_test_result, single_test_output, single_testduration, single_timeout = host_test_result
                                 test_result = single_test_result
