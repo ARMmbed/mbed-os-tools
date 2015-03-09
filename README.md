@@ -104,6 +104,9 @@ $ mbedls
 Test suite has now new feature of input digesting activated with ```--digest``` command line switch. Now you can pipe your proprietary test runner’s console output to test suite or just ```cat``` file with test runner’s console output. You can also just specify file name which will be digested as test runner console input.
 
 This option allows you to write your own automation where you execute test runner or just feed test suite with test runner’s console output and test suite returns to environment if this console output indicated success or test failure.
+Note:
+* ```--digest=stdin``` will force ```stdin``` to be default test suite input.
+* ```--digest=filename.txt``` will force ```filename.txt``` file content to be default test suite input.
 
 Below examples will explain better ```--digest``` option existence. Let’s for example assume you are having your own written in ```bash``` test runner or just collected bunch of test results in database and test console output is in your disposal.
 You would like to scan console output from tests to get mbed test suite predefined test result. Note: test suit results and tags are encoded between double curly braces.
