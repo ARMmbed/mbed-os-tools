@@ -34,10 +34,11 @@ To use the mbed test suite you must:
 * Download mbed SDk sources.
 
 ## Dependencies
-* [Python2.7](https://www.python.org/download/releases/2.7/) - all host side scripts are written in python
-* [yotta](https://github.com/ARMmbed/yotta) - used to build tests from the mbed SDK
-* [mbed-ls](https://github.com/ARMmbed/mbed-ls)
-* [mbed-host-tests](https://github.com/ARMmbed/mbed-host-tests)
+* [Python2.7](https://www.python.org/download/releases/2.7/) - all host side scripts are written in python.
+* Python [setuptools](https://pythonhosted.org/an_example_pypi_project/setuptools.html) to install dependencies.
+* [yotta](https://github.com/ARMmbed/yotta) - used to build tests from the mbed SDK.
+* [mbed-ls](https://github.com/ARMmbed/mbed-ls).
+* [mbed-host-tests](https://github.com/ARMmbed/mbed-host-tests).
 * Some Nucleo boards like F401RE can be correctly flashed only with ```cp``` or ```copy``` command line command. make sure in your system there is a ```cp``` shell command installed. It can be available by default (LInux OS) or provided by environments such as ```git```. We will assume you've installed ```git``` command line tools for Windows and ```cp``` command is available.
 
 ## Installation
