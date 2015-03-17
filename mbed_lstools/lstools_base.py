@@ -153,8 +153,15 @@ class MbedLsToolsBase:
             with open(mbed_htm_path, 'r') as f:
                 fline = f.readlines()
                 for line in fline:
+                    # Detecting modern mbed.htm file format
                     m = re.search('\?code=([a-fA-F0-9]+)', line)
                     if m is not None:
                         result = m.groups()[0]
                         break
+                    # Last resort, we can try to see if old mbed.htm format is there
+                    else:
+                        m = re.search('\?auth=([a-fA-F0-9]+)', line)
+                        if m is not None:
+                            result = m.groups()[0]
+                            break
         return result
