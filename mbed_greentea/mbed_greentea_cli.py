@@ -82,20 +82,6 @@ def main():
                     action="store_true",
                     help='Displays full test specification and MUTs configration and exits')
 
-    parser.add_option('', '--loops',
-                    dest='test_loops_list',
-                    help='Set no. of loops per test. Format: TEST_1=1,TEST_2=2,TEST_3=3')
-
-    parser.add_option('', '--global-loops',
-                    dest='test_global_loops_value',
-                    help='Set global number of test loops per test. Default value is set 1')
-
-    parser.add_option('-W', '--waterfall',
-                    dest='waterfall_test',
-                    default=False,
-                    action="store_true",
-                    help='Used with --loops or --global-loops options. Tests until OK result occurs and assumes test passed.')
-
     parser.add_option('', '--digest',
                     dest='digest_source',
                     help='Redirect input from where test suite should take console input. You can use stdin or file name to get test case console output')
