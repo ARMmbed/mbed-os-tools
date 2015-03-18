@@ -1,3 +1,8 @@
+# Copyright 2014-2015 ARM Limited
+#
+# Licensed under the Apache License, Version 2.0
+# See LICENSE file for details.
+
 """
 This module defines the attributes of the
 PyPI package for the mbed SDK test suite ecosystem tools
