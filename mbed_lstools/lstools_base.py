@@ -57,6 +57,8 @@ class MbedLsToolsBase:
 
         "1070": "NRF51822",
 
+        "1234": "UBLOX_C027",
+
         "0231": "K22F",
         "0200": "KL25Z",
         "0220": "KL46Z",
