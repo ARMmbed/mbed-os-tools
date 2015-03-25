@@ -63,7 +63,10 @@ class MbedLsToolsBase:
         "0200": "KL25Z",
         "0220": "KL46Z",
         "0230": "K20D50M",
-        "0240": "K64F"
+        "0240": "K64F",
+
+        #Other boards, not officialy supported yet
+        "5020": "HOME_GATEWAY_6LOWPAN"
     }
 
     # Interface
