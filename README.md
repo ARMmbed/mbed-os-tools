@@ -1,41 +1,45 @@
 # mbed-host-tests
 
-mbed-host-tests package is decoupled functionality originally implemented for mbedmicro/mbed workspace_tools (See: https://github.com/mbedmicro/mbed). 
-Original host tests implementation can be found here: https://github.com/mbedmicro/mbed/tree/master/workspace_tools/host_tests. 
+The mbed-host-tests package is a decoupled functionality originally implemented for the mbedmicro/mbed workspace_tools (See: https://github.com/mbedmicro/mbed). 
+
+The original host tests implementation can be found here: https://github.com/mbedmicro/mbed/tree/master/workspace_tools/host_tests. 
+
 Prerequisites
 =====
-* Installed Python 2.7.x programming language: https://www.python.org/download/releases/2.7
-* Installed pySerial module for Python 2.7: https://pypi.python.org/pypi/pyserial
+* Install the Python 2.7.x programming language: https://www.python.org/download/releases/2.7
+* Install the pySerial module for Python 2.7: https://pypi.python.org/pypi/pyserial
 
 Rationale
 ====
-With announcement of mbed OS existing mbed SDK and existing test framework will no longer be supported in current state. Monolithic model will be replaced with set of tools and supporting ecosystem which will provide generic and comprehensive services to mbed users, both individual and commercial (partners).
+With the announcement of mbed OS, the existing mbed SDK and test framework will no longer be supported in their current state. The monolithic model will be replaced with a set of tools and supporting ecosystem which will provide generic and comprehensive services to mbed users, both individual and commercial (partners).
 
 Module responsibilities
 ====
-Mbed ecosystem tools, implemented by mbed users or third party companies can take advantage of existing supplementary module called mbed-host-tests. This module defines classes of host tests that can be reused with new or user defined tests. Host tests also should be shared between mbed classic and mbed OS ecosystems equally.
+The mbed ecosystem tools, implemented by mbed users or third party companies, can take advantage of an existing supplementary module called mbed-host-tests. This module defines classes of host tests that can be reused with new or user defined tests. The host tests also should be shared between mbed classic and mbed OS ecosystems equally.
 
 Module structure
 ====
 ```
+
 mbed_host_tests/
     host_tests/             - Supervising host test scripts used for instrumentation. 
-    host_tests_plugins/     - Plugins used by host test to flash test runner binary and reset device.
-    host_tests_registry/    - Registry, used to store 'host test name' to 'host test class' mapping.
-    host_tests_runner/      - Classes implementing basic host test functionality (like test flow control).
+    host_tests_plugins/     - Plugins used by the host test to flash the test runner binary and reset the device.
+    host_tests_registry/    - Registry, used to store the 'host test name' to 'host test class' mapping.
+    host_tests_runner/      - Classes implementing the basic host test functionality (like test flow control).
+
 ```
 
 What is host test?
 ====
-Test suite support test supervisor concept. This concept is realized by separate Python script called "host test" originally stored in mbedmicro/mbed repository under ```mbedmicro/mbed/workspace_tools/host_tests/``` directory. 
+Test suite supports the test supervisor concept. This concept is realized by a separate Python script called "host test", originally stored in the mbedmicro/mbed repository under the ```mbedmicro/mbed/workspace_tools/host_tests/``` directory. 
 
-Host test script is executed in parallel with test runner (binary running on target hardware) to monitor test execution progress or to control test flow (interact with MUT: mbed device under test). Host test responsibility is also to grab test result or deduce test result depending on test runner behaviour. In many cases  
+The host test script is executed in parallel with the test runner (a binary running on the target hardware) to monitor test execution progress or to control test flow (interacts with the MUT: the mbed device under test). The host test's responsibility is also to grab the test result or deduce the test result depending on the test runner's behaviour. In many cases  
 
-Basic host test only monitors device's default serial port (serial console or in future console communication channel) for test result prints returned by test runner. Basic test runners supervised by basic host test will print test result in a specific unique format on serial port.
+The basic host test only monitors the device's default serial port (the serial console or, in the future, a console communication channel) for test result prints returned by the test runner. Basic test runners supervised by a basic host test will print the test result in a specific unique format on the serial port.
 
-In other cases host tests can for example judge by test runner console output if test passed or failed. It all depends on test itself. In some cases host test can be TCP server echoing packets from test runner and judging packet loss. In other cases it can just check if values returned from accelerometer are actually valid (sane).
+In other cases host tests can for example judge by the test runner's console output whether the test passed or failed. It all depends on the test itself. In some cases the host test can be a TCP server echoing packets from the test runner and judging packet loss. In other cases it can just check if values returned from an accelerometer are actually valid (sane).
 
-## Interaction between test runner and host test
+## Interaction between the test runner and host test
 ```
    <<Target MCU>>                                       <<Host computer>>
 +------------------+                               +-------------------------+
@@ -86,28 +90,31 @@ In other cases host tests can for example judge by test runner console output if
 | RESULT_NOT_DETECTED     |
 +-------------------------+
 ```
-* ```HostTestResults``` - defines generic test result enum.
-* ```Test``` - Class encapsulated ``Mbed class``` and implements functionalities like: host test detection, host test setup and default run() function.
-* ```Mbed``` - Implements ways of communicating with mbed device. Uses serial port as standard console communication channel and calls flash and reset plugins to copy test runner binary and reset mbed device respectively.
-* ``` DefaultTestSelectorBase``` - base class for ```DefaultTestSelector``` functionality. Available explicitly in mbed-host-tests module so users can derive from this base class their own ``` DefaultTestSelector```s.
-* ``` DefaultTestSelector``` - Class configured with external options (e.g. input from command line parameters) responsible for test execution flow:
-** Copy given test runner binary to target MCU (proper plugin is selected based on input options).
-** Reset target MCU (proper plugin is selected based on input options).
-** Execute test runner’s test case parameters auto-detection process (host test, timeout, test name, test description etc. are detected).
-** Execute requested by test runner host test ```test()``` procedure.
-** Supervise test runner execution (test case flow) with timeout watchdog.
-** Conclude test case result. Result can be grabbed from test runner console output or determined by host test independently.
-** Send to test suite environment information about test execution finish.
 
-## Example of CLI version of host test DefaultTestSelector supervisor
-We can use mbed-host-tests in two ways. We can use it in our own Python implementation and create lots of host test variations) or we can use predefined and built for us command line tool called ```mbedhtrun``` (**mbed** **h**ost **t**est **run**ner).
+* ```HostTestResults``` - Defines the generic test result enum.
+* ```Test``` - Class encapsulated ``Mbed class``` and implements functionalities like: host test detection, host test setup and default run() function.
+* ```Mbed``` - Implements ways of communicating with an mbed device. Uses serial port as the standard console communication channel and calls the flash and reset plugins to copy the test runner binary and reset the mbed device respectively.
+* ``` DefaultTestSelectorBase``` - Base class for the ```DefaultTestSelector``` functionality. Available explicitly in the mbed-host-tests module so users can derive from this base class their own ``` DefaultTestSelector```s.
+* ``` DefaultTestSelector``` - Class configured with external options (e.g. input from command line parameters) responsible for test execution flow:
+	* Copy a given test runner binary to a target MCU (the proper plugin is selected based on the input options).
+	* Reset the target MCU (the proper plugin is selected based on the input options).
+	* Execute the test runner’s test case parameters auto-detection process (host test, timeout, test name, test description etc. are detected).
+	* Execute requested by the test runner's host test ```test()``` procedure.
+	* Supervise the test runner execution (test case flow) with a timeout watchdog.
+	* Conclude the test case's result. The result can be grabbed from the test runner console output or determined by the host test independently.
+	* Send information about the test execution's end to the test suite environment.
+
+## Example of the CLI version of the host test DefaultTestSelector supervisor
+We can use mbed-host-tests in two ways. We can use it in our own Python implementation and create lots of host test variations, or we can use a predefined and built for us command line tool called ```mbedhtrun``` (**mbed** **h**ost **t**est **run**ner).
 
 ## Default command line tool
-After installing mbed-host-tests module you will have access to ```mbehtrun``` (mbed host test runner) CLI application. In is implementing below example of user host test runner. This default implementation gives us flexibility. We can now use external tools and call ```mbehtrun``` application without providing our own. 
+After installing the mbed-host-tests module you will have access to the ```mbehtrun``` (mbed host test runner) CLI application. Below is an example implementation of a user host test runner. This default implementation gives us flexibility. We can now use external tools and call the ```mbehtrun``` application without providing our own. 
 This CLI application will do heavy lifting for modules like ```mbed-greentea``` which will use ```mbehtrun``` to drive each host test session with given platform.
 
 Example:
+
 ```
+
 $ mbedhtrun -d F: -f ".\build\st-nucleo-f401re-gcc\test\mbed-test-cpp.bin" -p COM52 -C 4 -m NUCLEO_F401RE -c copy
 MBED: Instrumentation: "COM52" and disk: "F:"
 HOST: Copy image onto target...
@@ -136,8 +143,8 @@ Heap::destroy
 {{end}}
 ```
 
-## User implementaion
-Example of host test script (```mbedhtrun.py```) used to supervise test runner execution from command line:
+## User implementation
+An example of a host test script (```mbedhtrun.py```) used to supervise test runner execution from the command line:
 ```python
 #!/usr/bin/env python
 
@@ -150,11 +157,11 @@ if __name__ == '__main__':
     DefaultTestSelector(init_host_test_cli_params()).run()
 ```
 
-Example of console call for above example script (```mbedhtrun.py```):
+Example of a console call for the above example script (```mbedhtrun.py```):
 ```
 $ mbedhtrun.py -d E: -f "C:\Work\mbed\build\test\K64F\ARM\RTOS_7\timer.bin" -p COM61 -C 4 -m K64F
 ```
-Output (real-time console output from test runner captured by host test supervisor over serial port):
+Output (real-time console output from a test runner captured by the host test supervisor over serial port):
 ```
 MBED: Instrumentation: "COM61" and disk: "E:"
 HOST: Copy image onto target...
@@ -182,13 +189,14 @@ Completed in 10.00 sec
 {{end}}
 ```
 Note: 
-* MUT (mbed under test) is K64F: ```-m K64F```.
-* Test runner binary is located at: ```C:\Work\mbed\build\test\K64F\ARM\RTOS_7\timer.bin```. 
-* K64F virtual serial port (USB CDC) is mounted at: ```-p COM61```.
-* K64F virtual serial port (USB MSC) is mounted at: ```-d E:```.
+
+* The MUT (mbed under test) is K64F: ```-m K64F```.
+* The test runner binary is located at: ```C:\Work\mbed\build\test\K64F\ARM\RTOS_7\timer.bin```. 
+* The K64F virtual serial port (USB CDC) is mounted at: ```-p COM61```.
+* The K64F virtual serial port (USB MSC) is mounted at: ```-d E:```.
 * Test result: SUCCESS - ```{{success}}}```.
-* Test ended after success code was received: ```{{end}}}```.
-* Default command line parameters deployed with ```mbed_host_tests``` module:
+* The test ended after the success code was received: ```{{end}}}```.
+* The Default command line parameters deployed with ```mbed_host_tests``` module:
 ```
 c:\temp\mbed_host_test_example>mbedhtrun.py --help
 Usage: mbedhtrun.py [options]
@@ -218,23 +226,23 @@ Options:
 # Installation from Python sources 
 Prerequisites: you need to have Python 2.7.x installed on your system.
 
-To install mbed-host-tests module clone mbed-host-tests repository:
+To install the mbed-host-tests module clone the mbed-host-tests repository:
 ```
 $ git clone <link-to-mbed-ls-repo>
 ```
-and change directory to mbed-host-tests repository directory:
+and change the directory to the mbed-host-tests repository directory:
 ```
 $ cd mbed-host-tests
 ```
-Now you are ready to install mbed-host-tests module. 
+Now you are ready to install the mbed-host-tests module. 
 ```
 $ python setup.py install
 ```
-Note: On Linux if you have problem with permissions please try to use ```sudo```:
+Note: On Linux if you have a problem with permissions please try to use ```sudo```:
 ```
 $ sudo python setup.py install
 ```
-To test if your installation succeeded you can use Python interpreter and import ```mbed_host_tests``` to check if module is correctly installed:
+To test if your installation succeeded you can use the Python interpreter and import ```mbed_host_tests``` to check if the module is correctly installed:
 ```
 $ python
 Python 2.7.8 (default, Jun 30 2014, 16:03:49) [MSC v.1500 32 bit (Intel)] on win32
@@ -249,7 +257,7 @@ Type "help", "copyright", "credits" or "license" for more information.
 'is_host_test']
 ```
 
-You can also check if ```mbedhtrun``` is correctly installed in your system:
+You can also check if ```mbedhtrun``` is correctly installed on your system:
 ```
 mbedhtrun --help
 Usage: mbedhtrun-script.py [options]
@@ -277,6 +285,6 @@ Options:
 ```
 
 # Installation from PyPI (Python Package Index)
-In the near furure mbed-ls module can be redistributed via PyPI. We recommend you use ```pip``` application. It is available here: https://pip.pypa.io/en/latest/installing.html#install-pip
+In the near future the mbed-ls module can be redistributed via PyPI. We recommend you use the ```pip``` application. It is available here: https://pip.pypa.io/en/latest/installing.html#install-pip
 
 Note: Python 2.7.9 and later (on the python2 series), and Python 3.4 and later include pip by default, so you may have pip already.
