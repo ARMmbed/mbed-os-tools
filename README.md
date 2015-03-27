@@ -1,16 +1,22 @@
 ## Description
-mbed-lstools is module used to detect and list mbed-enabled devices connected to host computer.
-Currently lmtools support listed below OSs:
+
+mbed-lstools is a module used to detect and list mbed-enabled devices connected to the host computer.
+
+Currently lmtools support the following OSs:
 * Windows 7.
 * Ubuntu.
-* Mac OS X (Darwin)
+* Mac OS X (Darwin).
 
-mbed-ls is Python module used to detect and list mbed-enabled devices connected to host computer. package will support Windows 7, Ubuntu and MacOS. It will be delivered as redistributable Python module (package) and command line tool.
-Currently mbed-ls module is under development but already decoupled mbed-ls functionality is delivered to mbed SDK's test suite.
+mbed-ls is a Python module used to detect and list mbed-enabled devices connected to the host computer. The package will support Windows 7, Ubuntu and MacOS. It will be delivered as a redistributable Python module (package) and command line tool.
 
-You will be able for example to use this tool from command line! (See below)
+Currently the mbed-ls module is under development but its already decoupled mbed-ls functionality is delivered to mbed SDK's test suite.
+
+You will be able, for example, to use this tool from the command line! (See below)
+
 ### mbedls command line tool
-After installing mbed-ls package on your system will be deployed importable ```mbed_lstools``` Python package and ```mbedls``` command line tool:
+
+After installing the mbed-ls package on your system, the importable ```mbed_lstools``` Python package and ```mbedls``` command line tool will be deployed:
+
 ```
 $ mbedls
 +---------------------+-------------------+-------------------+--------------------------------+
@@ -21,11 +27,14 @@ $ mbedls
 +---------------------+-------------------+-------------------+--------------------------------+
 ```
 
-```mbedls``` command will allow you to list all connected mbed-enabled devices and correctly associate mbed-enabled board mount point (disk) and serial port. Additionally TargetID information will be provided for your reference. Because we are all automation fanatics ```mbedls``` command will also output mbed-enabled auto-detection data in JSON format.
-If you want to use ```mbedls``` in your toolchain, continuous integration or automation script and do not necessarily want to use Python module ```mbed_lstools``` this solution is for you.
+The command```mbedls``` will allow you to list all connected mbed-enabled devices and correctly associate the mbed-enabled board mount point (disk) and serial port. Additionally, TargetID information will be provided for your reference. Because we are all automation fanatics the ```mbedls``` command will also output the mbed-enabled auto-detection data in JSON format.
+
+If you want to use ```mbedls``` in your toolchain, continuous integration or automation script and do not necessarily want to use Python module ```mbed_lstools``` - this solution is for you.
 
 ### Exporting mbedls output to JSON
-You can export mbedls output to JSON format, just use ```---json``` switch and dump your file on screen or redirect to file. It should help you further automate your processes! 
+
+You can export the mbedls output to JSON format: just use the ```---json``` switch and dump your file on the screen or redirect to the file. It should help you further automate your processes! 
+
 ```json
 $ mbedls --json
 [
@@ -63,19 +72,21 @@ $ mbedls --json
 ```
 
 ### Rationale
-When connecting more than one mbed-enabled device to host computer it takes time to check platform's binds:
+
+When connecting more than one mbed-enabled device to the host computer it takes time to check the platform's binds:
 * Mounted disk.
 * Virtual serial port.
 * Mbed's TargetID and generic platform name.
 
-# Installation from Python sources 
+#Installation from Python sources 
+
 Prerequisites: you need to have Python 2.7.x installed on your system.
 
-To install mbed-ls module clone mbed-ls repository:
+To install the mbed-ls module, clone the mbed-ls repository:
 ```
 $ git clone <link-to-mbed-ls-repo>
 ```
-and change directory to mbed-ls repository directory:
+and change the directory to the mbed-ls repository directory:
 ```
 $ cd mbed-ls
 ```
@@ -83,13 +94,13 @@ Now you are ready to install mbed-ls.
 ```
 $ python setup.py install
 ```
-Above command should install ```mbed-ls``` Python package (import ```mbed_lstools```) and mbedls command:
+The above command should install the ```mbed-ls``` Python package (import ```mbed_lstools```) and mbedls command:
 
-To test if your installation succeeded try ```mbedls``` command:
+To test if your installation succeeded try the ```mbedls``` command:
 ```
 $ mbedls
 ```
-Or use Python interpreter and import ```mbed_lstools```  to check if module is correctly installed:
+Or use the Python interpreter and import ```mbed_lstools```  to check if the module is correctly installed:
 ```
 $ python
 Python 2.7.8 (default, Jun 30 2014, 16:03:49) [MSC v.1500 32 bit (Intel)] on win32
@@ -104,31 +115,31 @@ Type "help", "copyright", "credits" or "license" for more information.
 [{'platform_name': 'K64F', 'mount_point': 'E:', 'target_id': '02400203D94B0E7724B7F3CF', 'serial_port': u'COM61'}]
 >>> print mbeds
 ```
-Note: On Linux if you have problem with permissions please try to use ```sudo```:
+Note: On Linux if you have a problem with permissions please try to use ```sudo```:
 ```
 $ sudo python setup.py install
 ```
 
-# Installation from PyPI (Python Package Index)
-In the near future mbed-ls module can be redistributed via PyPI. We recommend you use ```pip``` application. It is available here: https://pip.pypa.io/en/latest/installing.html#install-pip
+# nstallation from PyPI (Python Package Index)
+In the near future the mbed-ls module can be redistributed via PyPI. We recommend you use the ```pip``` application. It is available here: https://pip.pypa.io/en/latest/installing.html#install-pip
 
 Note: Python 2.7.9 and later (on the python2 series), and Python 3.4 and later include pip by default, so you may have pip already.
 
 # Porting instructions
-You can help us improve mbed-ls tools by for example committing new OS port. Currently in '[Description](#description)' section of this readme we are presenting you with list of supported OSs. If your OS is not on the list you can always port it!
+You can help us improve the mbed-ls tools by, for example, committing a new OS port. The '[Description](#description)' section of this readme presents a list of supported OSs. If your OS is not on the list you can always port it!
 
 For further study please check how Mac OS X (Darwin) was ported in [this pull request](https://github.com/ARMmbed/mbed-ls/pull/1).
 
 ## mbed-ls auto-detection approach for Ubuntu
-Let's connect few mbed boards to our Ubuntu host. Devices should mount MSC and CDC (virtual disk and serial port).
-We can see mounting result for example in usb-id directories in Ubuntu file system under ```/dev/```.
+Let's connect a few mbed boards to our Ubuntu host. The devices should mount MSC and CDC (virtual disk and serial port).
+We can see the mounting result, for example, in the usb-id directories in the Ubuntu file system under ```/dev/```.
 
-We've connected in this example to USB ports of our Ubuntu machine:
+We've connected in this example to the USB ports of our Ubuntu machine:
 * 2 x STMicro's Nucleo mbed boards.
 * 2 x NXP mbed boards.
 * 1 x Freescale Freedom board.
 
-Serial ports (CDC) mounted via USB interface mbed boards provide:
+Serial ports (CDC) mounted via the USB interface mbed boards provide:
 ```
 $ ll /dev/serial/by-id
 total 0
@@ -141,7 +152,7 @@ lrwxrwxrwx root  13 Feb 19 12:35 usb-STMicroelectronics_STM32_STLink_066EFF52525
 lrwxrwxrwx root  13 Feb 19 12:35 usb-STMicroelectronics_STM32_STLink_066EFF534951775087215736-if02 -> ../../ttyACM1
 ```
 
-Disks (MSC) mounted via USB interface mbed boards provide:
+Disks (MSC) mounted via the USB interface mbed boards provide:
 ```
 $ ll /dev/disk/by-id
 total 0
@@ -163,31 +174,31 @@ lrwxrwxrwx root  10 Dec  3 09:10 wwn-0x5000cca30ccffb77-part1 -> ../../sda1
 lrwxrwxrwx root  10 Dec  3 09:10 wwn-0x5000cca30ccffb77-part2 -> ../../sda2
 lrwxrwxrwx root  10 Dec  3 09:10 wwn-0x5000cca30ccffb77-part5 -> ../../sda5
 ```
-Note: We can see that on our host machine with Ubuntu system we have many 'disk type' devices visible under ```/dev/disk```.
-Note some of them are mbed boards and can be distinguished by unique ```USB-ID```.
+Note: We can see that on our host machine with the Ubuntu system we have many 'disk type' devices visible under ```/dev/disk```.
+Note that some of them are mbed boards and can be distinguished by a unique ```USB-ID```.
 
-```mbed-ls``` tools are pairing only serial ports and mount points (not CMSIS-DAP yet) together.
-On Ubuntu Linux we are checking usb-ids of all devices which may be mbed boards. We know mbed boards follow few ```usb-id``` conventions which can be used filter out mbed devices' ```usb-ids```.
+The```mbed-ls``` tools are pairing only the serial ports and mount points (not CMSIS-DAP yet) together.
+On Ubuntu Linux we are checking the usb-ids of all the devices which may be mbed boards. We know that mbed boards follow a few ```usb-id``` conventions which can be used to filter out the mbed devices' ```usb-ids```.
 
 In our case we can see pairs of ```usb-ids``` in both ```/dev/serial/usb-id``` and ```/dev/disk/usb-id``` with embedded ``` TargetID```.  ```TargetID``` can be filtered out for example using this sudo-regexpr: ```(“MBED”|”mbed”|”STMicro”)_([a-zA-z_-]+)_([a-fA_F0-0]){4,}```
 
-For example we can match board 066EFF525257775087141721 by connecting few dots:
+For example we can match the board 066EFF525257775087141721 by connecting a few dots:
 * ```usb-MBED_microcontroller_066EFF525257775087141721-0:0 -> ../../sdd``` and
 * ```usb-STMicroelectronics_STM32_STLink_066EFF525257775087141721-if02 -> ../../ttyACM2```
-Based on marked with red color TargetID hash.
+Based on the TargetID hash marked in red.
 
-From there we know that target platform has these properties:
-* Unique target platform identifier is ```066E```.
-* Serial port is ```ttyACM2```.
-* Mount point is ```sdd```.
-Your ```mbed-ls``` implementation must resolve those three and create “tuple” with those values (for each connected device).
-If you have this tuple(s) other mbed-ls will carry on with platform number to human readable name conversion etc.
+From there we know that the target platform has these properties:
+* The unique target platform identifier is ```066E```.
+* The serial port is ```ttyACM2```.
+* The mount point is ```sdd```.
+Your ```mbed-ls``` implementation must resolve those three and create a “tuple” with those values (for each connected device).
+If you have this tuple(s) other mbed-ls will carry on with the platform number to a human readable name conversion etc.
 
-Note that for some boards ```TargetID``` format is proprietary (See STMicro boards) and ```usb-id``` does not have valid TargetID where four first letters are target platform unique ID.
-In that case ```mbed-ls``` tools should inspect ```mbed.htm``` file on mbed mounted disk. ```mbed-ls``` tools will dissect  ```mbed.htm``` get proper TargetID from URL in ```meta``` part of the HTML header.
+Note that for some boards the ```TargetID``` format is proprietary (See STMicro boards) and ```usb-id``` does not have a valid TargetID where the four first letters are the target platform unique ID.
+In that case the ```mbed-ls``` tools should inspect the ```mbed.htm``` file on the mbed mounted disk. ```mbed-ls``` tools will dissect  ```mbed.htm``` to get the proper TargetID from the URL in the ```meta``` part of the HTML header.
 
-In below example URL ```http://mbed.org/device/?code=07050200623B61125D5EF72A``` for STMicro Nucleo F302R8 board contains valid TargetID ```07050200623B61125D5EF72A``` which can be used to detect ```platform_name``` by ```mbed-ls``` tools.
-Note: ```mbed-ls``` tools will replace ```usb-id``` invalid TargetID with TargetID from ```mbed.htm```.
+In the example below the URL ```http://mbed.org/device/?code=07050200623B61125D5EF72A``` for the STMicro Nucleo F302R8 board contains the valid TargetID ```07050200623B61125D5EF72A``` which can be used to detect the ```platform_name``` with the ```mbed-ls``` tools.
+Note: ```mbed-ls``` tools will replace the ```usb-id``` invalid TargetID with a TargetID from ```mbed.htm```.
 
 ```html
 <!-- mbed Microcontroller Website and Authentication Shortcut -->
