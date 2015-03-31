@@ -33,7 +33,7 @@ What is host test?
 ====
 Test suite supports the test supervisor concept. This concept is realized by a separate Python script called "host test", originally stored in the mbedmicro/mbed repository under the ```mbedmicro/mbed/workspace_tools/host_tests/``` directory. 
 
-The host test script is executed in parallel with the test runner (a binary running on the target hardware) to monitor test execution progress or to control test flow (interacts with the MUT: the mbed device under test). The host test's responsibility is also to grab the test result or deduce the test result depending on the test runner's behaviour. In many cases  
+The host test script is executed in parallel with the test runner (a binary running on the target hardware) to monitor test execution progress or to control test flow (interacts with the MUT: the mbed device under test). The host test's responsibility is also to grab the test result or deduce the test result depending on the test runner's behaviour.
 
 The basic host test only monitors the device's default serial port (the serial console or, in the future, a console communication channel) for test result prints returned by the test runner. Basic test runners supervised by a basic host test will print the test result in a specific unique format on the serial port.
 
