@@ -65,6 +65,8 @@ class MbedLsToolsBase:
         "0230": "K20D50M",
         "0240": "K64F",
 
+        "9009": "ARCH_BLE",
+
         #Other boards, not officialy supported yet
         "5020": "HOME_GATEWAY_6LOWPAN"
     }
