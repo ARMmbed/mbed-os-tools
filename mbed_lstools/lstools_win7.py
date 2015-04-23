@@ -147,8 +147,13 @@ class MbedLsToolsWin7(MbedLsToolsBase):
 
     def get_mbed_devices(self):
         """ Get MBED devices (connected or not)
+            Note: We will detect also non-standard MBED devices mentioned on 'usb_vendor_list' list.
+                  This will help to detect boards like EFM boards.
         """
-        return [d for d in self.get_dos_devices() if 'VEN_MBED' in d[1].upper()]
+        result = []
+        for ven in self.usb_vendor_list:
+            result += [d for d in self.get_dos_devices() if ven.upper() in d[1].upper()]
+        return result
 
     def get_dos_devices(self):
         """ Get DOS devices (connected or not)
