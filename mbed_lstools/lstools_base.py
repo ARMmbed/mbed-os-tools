@@ -56,6 +56,7 @@ class MbedLsToolsBase:
         "1549": "LPC1549",
 
         "1070": "NRF51822",
+        "1100": "NRF51_DK",
 
         "1234": "UBLOX_C027",
 
