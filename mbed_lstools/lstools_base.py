@@ -57,6 +57,7 @@ class MbedLsToolsBase:
 
         "1070": "NRF51822",
         "1100": "NRF51_DK",
+        "1120": "NRF51_DONGLE",
 
         "1234": "UBLOX_C027",
 
