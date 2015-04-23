@@ -67,9 +67,22 @@ class MbedLsToolsBase:
 
         "9009": "ARCH_BLE",
 
+        # EFMs
+        "20__": "EFM32_G8XX_STK",   # Not supported detection
+        "2030": "EFM32ZG_STK3200",
+        "20__": "EFM32TG_STK3300",  # Not supported detection
+        "20__": "EFM32HG_STK3400",  # Not supported detection
+        "2020": "EFM32LG_STK3600",
+        "2015": "EFM32GG_STK3700",
+        "2010": "EFM32WG_STK3800",
+
         #Other boards, not officialy supported yet
         "5020": "HOME_GATEWAY_6LOWPAN"
     }
+
+    #
+    # Note: 'Ven_SEGGER' - This is used to detect devices from EFM family, they use Segger J-LInk to wrap MSD and CDC
+    usb_vendor_list = ['Ven_MBED', 'Ven_SEGGER']
 
     # Interface
     def list_mbeds(self):
