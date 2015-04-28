@@ -33,7 +33,6 @@ class MbedLsToolsBase:
 
     # Dictionary describing mapping between manufacturers' ids and platform name.
     manufacture_ids = {
-        "0700": "NUCLEO_F103RB",
         "0183": "ARM-MBED-BASED-STARTER-KIT-FOR-IBM-IOT-CLOUD",
         "0200": "KL25Z",
         "0210": "FRDM-KL05Z",
