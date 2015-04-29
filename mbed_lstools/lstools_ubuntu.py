@@ -116,10 +116,14 @@ class MbedLsToolsUbuntu(MbedLsToolsBase):
         """
         result = []
         cmd = 'ls -oA /dev/' + subdir + '/by-id/'
+        if self.DEGUB_FLAG:
+            self.debug(self.get_dev_by_id.__name__, cmd)
+
         p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         for line in p.stdout.readlines():
-            # print line,
             result.append(line)
+            if self.DEGUB_FLAG:
+                self.debug(self.get_dev_by_id.__name__, line)
         retval = p.wait()
         return result
 
@@ -128,10 +132,14 @@ class MbedLsToolsUbuntu(MbedLsToolsBase):
         """
         result = []
         cmd = 'mount | grep vfat'
+        if self.DEGUB_FLAG:
+            self.debug(self.get_mounts.__name__, cmd)
+
         p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         for line in p.stdout.readlines():
-            # print line,
             result.append(line)
+            if self.DEGUB_FLAG:
+                self.debug(self.get_mounts.__name__, line)
         retval = p.wait()
         return result
 

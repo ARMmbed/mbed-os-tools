@@ -84,6 +84,9 @@ class MbedLsToolsWin7(MbedLsToolsBase):
         dev_keys = []
         for vid in self.iter_keys(usb_devs):
 
+            if self.DEGUB_FLAG:
+                self.debug(self.get_mbed_com_port.__name__, (vid, id))
+
             try:
                 dev_keys += [self.winreg.OpenKey(vid, id)]
             except:
@@ -129,7 +132,7 @@ class MbedLsToolsWin7(MbedLsToolsBase):
         for mbed in self.get_mbed_devices():
             mountpoint = re.match('.*\\\\(.:)$', mbed[0]).group(1)
             # id is a hex string with 10-36 chars
-            id = re.search('[0-9A-Fa-f]{10,36}', mbed[1]).group(0)
+            id = re.search('[0-9A-Fa-f]{10,48}', mbed[1]).group(0)
             mbeds += [(mountpoint, id)]
             if self.DEGUB_FLAG:
                 self.debug(self.get_mbeds.__name__, (mountpoint, id))
