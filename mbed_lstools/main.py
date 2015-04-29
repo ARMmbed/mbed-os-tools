@@ -68,6 +68,12 @@ def cmd_parser_setup():
                       action="store_true",
                       help='JSON formatted output')
 
+    parser.add_option('-d', '--debug',
+                      dest='debug',
+                      default=False,
+                      action="store_true",
+                      help='Outputs extra debug information')
+
     (opts, args) = parser.parse_args()
     return (opts, args)
 
@@ -82,6 +88,8 @@ def mbedls_main():
     if mbeds is None:
         sys.stderr.write('This platform is not supported! Pull requests welcome at github.com/ARMmbed/mbed-ls\n')
         sys.exit(-1)
+
+    mbeds.DEGUB_FLAG = opts.debug
 
     if opts.json:
         mbeds_data = mbeds.list_mbeds()

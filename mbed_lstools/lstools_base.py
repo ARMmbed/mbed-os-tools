@@ -25,7 +25,8 @@ class MbedLsToolsBase:
     def __init__(self):
         """ ctor
         """
-        pass
+        #extra flags
+        self.DEGUB_FLAG = False
 
     # Which OSs are supported by this module
     # Note: more than one OS can be supported by mbed-lstools_* module
@@ -115,7 +116,13 @@ class MbedLsToolsBase:
     def err(self, text):
         """ Prints error messages
         """
-        print text
+        print 'error: %s'% text
+
+    def debug(self, name, text):
+        """ Prints error messages
+            @param name - called function name
+        """
+        print 'debug @%s.%s: %s'% (self.__class__.__name__, name, text)
 
     def __str__(self):
         """ Object to string casting
@@ -188,4 +195,6 @@ class MbedLsToolsBase:
                         if m is not None:
                             result = m.groups()[0]
                             break
+        if self.DEGUB_FLAG:
+            self.debug(self.get_mbed_htm_target_id.__name__, (mount_point, result))
         return result

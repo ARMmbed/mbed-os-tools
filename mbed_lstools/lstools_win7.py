@@ -77,9 +77,13 @@ class MbedLsToolsWin7(MbedLsToolsBase):
         self.winreg.Enum = self.winreg.OpenKey(self.winreg.HKEY_LOCAL_MACHINE, r'SYSTEM\CurrentControlSet\Enum')
         usb_devs = self.winreg.OpenKey(self.winreg.Enum, 'USB')
 
+        if self.DEGUB_FLAG:
+            self.debug(self.get_mbed_com_port.__name__, 'ID: ' + id)
+
         # first try to find all devs keys (by id)
         dev_keys = []
         for vid in self.iter_keys(usb_devs):
+
             try:
                 dev_keys += [self.winreg.OpenKey(vid, id)]
             except:
@@ -90,6 +94,8 @@ class MbedLsToolsWin7(MbedLsToolsBase):
             try:
                 param = self.winreg.OpenKey(key, "Device Parameters")
                 port = self.winreg.QueryValueEx(param, 'PortName')[0]
+                if self.DEGUB_FLAG:
+                    self.debug(self.get_mbed_com_port.__name__, port)
                 return port
             except:
                 pass
@@ -105,6 +111,8 @@ class MbedLsToolsWin7(MbedLsToolsBase):
                             ports += [self.get_mbed_com_port(dev)]
                 for port in ports:
                     if port:
+                        if self.DEGUB_FLAG:
+                            self.debug(self.get_mbed_com_port.__name__, port)
                         return port
             except:
                 pass
@@ -123,6 +131,8 @@ class MbedLsToolsWin7(MbedLsToolsBase):
             # id is a hex string with 10-36 chars
             id = re.search('[0-9A-Fa-f]{10,36}', mbed[1]).group(0)
             mbeds += [(mountpoint, id)]
+            if self.DEGUB_FLAG:
+                self.debug(self.get_mbeds.__name__, (mountpoint, id))
         return mbeds
 
     # =============================== Registry ====================================
@@ -153,6 +163,8 @@ class MbedLsToolsWin7(MbedLsToolsBase):
         result = []
         for ven in self.usb_vendor_list:
             result += [d for d in self.get_dos_devices() if ven.upper() in d[1].upper()]
+        if self.DEGUB_FLAG:
+            self.debug(self.get_mbed_devices.__name__, result)
         return result
 
     def get_dos_devices(self):
@@ -184,4 +196,6 @@ class MbedLsToolsWin7(MbedLsToolsBase):
             else:
                 string = None
                 break
+        if self.DEGUB_FLAG:
+            self.debug(self.regbin2str.__name__, string)
         return string
