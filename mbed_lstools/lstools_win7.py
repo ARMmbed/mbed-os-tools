@@ -18,6 +18,7 @@ limitations under the License.
 import re
 import os
 import sys
+import string
 
 from lstools_base import MbedLsToolsBase
 
@@ -179,26 +180,10 @@ class MbedLsToolsWin7(MbedLsToolsBase):
     def get_mounted_devices(self):
         """ Get all mounted devices (connected or not)
         """
-        devs = []
-        mounts = self.winreg.OpenKey(self.winreg.HKEY_LOCAL_MACHINE, r'SYSTEM\MountedDevices')
-        for i in range(self.winreg.QueryInfoKey(mounts)[1]):
-            devs += [self.winreg.EnumValue(mounts, i)]
-        return devs
+        mounts = self.winreg.OpenKey(self.winreg.HKEY_LOCAL_MACHINE, 'SYSTEM\MountedDevices')
+        return [val for val in self.iter_vals(mounts)]
 
-    def regbin2str(self, binary):
+    def regbin2str(self, regbin):
         """ Decode registry binary to readable string
         """
-        string = ''
-        for i in range(0, len(binary), 2):
-            # binary[i] is str in Python2 and int in Python3
-            if isinstance(binary[i], int):
-                if binary[i] < 128:
-                    string += chr(binary[i])
-            elif isinstance(binary[i], str):
-                string += binary[i]
-            else:
-                string = None
-                break
-        if self.DEGUB_FLAG:
-            self.debug(self.regbin2str.__name__, string)
-        return string
+        return filter(lambda ch: ch in string.printable, regbin)
