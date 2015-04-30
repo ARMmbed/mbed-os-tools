@@ -38,6 +38,8 @@ class MbedLsToolsWin7(MbedLsToolsBase):
     def list_mbeds(self):
         """Returns connected mbeds as an mbeds dictionary
         """
+        self.ERRORLEVEL_FLAG = 0
+
         mbeds = []
         for mbed in self.discover_connected_mbeds(self.manufacture_ids):
             d = {}
@@ -46,6 +48,10 @@ class MbedLsToolsWin7(MbedLsToolsBase):
             d['serial_port']   = mbed[2] if mbed[2] else None
             d['platform_name'] = mbed[3] if mbed[3] else None
             mbeds += [d]
+
+            if None in mbed:
+                self.ERRORLEVEL_FLAG = -1
+
         return mbeds
 
     def discover_connected_mbeds(self, defs={}):
@@ -78,16 +84,12 @@ class MbedLsToolsWin7(MbedLsToolsBase):
         self.winreg.Enum = self.winreg.OpenKey(self.winreg.HKEY_LOCAL_MACHINE, r'SYSTEM\CurrentControlSet\Enum')
         usb_devs = self.winreg.OpenKey(self.winreg.Enum, 'USB')
 
-        if self.DEGUB_FLAG:
+        if self.DEBUG_FLAG:
             self.debug(self.get_mbed_com_port.__name__, 'ID: ' + id)
 
         # first try to find all devs keys (by id)
         dev_keys = []
         for vid in self.iter_keys(usb_devs):
-
-            if self.DEGUB_FLAG:
-                self.debug(self.get_mbed_com_port.__name__, (vid, id))
-
             try:
                 dev_keys += [self.winreg.OpenKey(vid, id)]
             except:
@@ -98,7 +100,7 @@ class MbedLsToolsWin7(MbedLsToolsBase):
             try:
                 param = self.winreg.OpenKey(key, "Device Parameters")
                 port = self.winreg.QueryValueEx(param, 'PortName')[0]
-                if self.DEGUB_FLAG:
+                if self.DEBUG_FLAG:
                     self.debug(self.get_mbed_com_port.__name__, port)
                 return port
             except:
@@ -115,7 +117,7 @@ class MbedLsToolsWin7(MbedLsToolsBase):
                             ports += [self.get_mbed_com_port(dev)]
                 for port in ports:
                     if port:
-                        if self.DEGUB_FLAG:
+                        if self.DEBUG_FLAG:
                             self.debug(self.get_mbed_com_port.__name__, port)
                         return port
             except:
@@ -135,7 +137,7 @@ class MbedLsToolsWin7(MbedLsToolsBase):
             # id is a hex string with 10-36 chars
             id = re.search('[0-9A-Fa-f]{10,48}', mbed[1]).group(0)
             mbeds += [(mountpoint, id)]
-            if self.DEGUB_FLAG:
+            if self.DEBUG_FLAG:
                 self.debug(self.get_mbeds.__name__, (mountpoint, id))
         return mbeds
 
@@ -167,7 +169,7 @@ class MbedLsToolsWin7(MbedLsToolsBase):
         result = []
         for ven in self.usb_vendor_list:
             result += [d for d in self.get_dos_devices() if ven.upper() in d[1].upper()]
-        if self.DEGUB_FLAG:
+        if self.DEBUG_FLAG:
             self.debug(self.get_mbed_devices.__name__, result)
         return result
 

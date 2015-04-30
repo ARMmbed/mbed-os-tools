@@ -80,6 +80,8 @@ class MbedLsToolsUbuntu(MbedLsToolsBase):
         orphans = self.get_not_detected(tids, disk_ids, serial_ids, mount_ids)
         all_devices = mbeds + orphans
 
+        self.ERRORLEVEL_FLAG = 0
+
         result = []
         tidhex = re.compile(r'_([0-9a-fA-F]+)')
         for device in all_devices:
@@ -106,6 +108,10 @@ class MbedLsToolsUbuntu(MbedLsToolsBase):
                         mbed['target_id'] = mbed_htm_target_id
 
             result.append(mbed)
+
+            if None in mbed:
+                self.ERRORLEVEL_FLAG = -1
+
         return result
 
     # Private methods
@@ -116,13 +122,13 @@ class MbedLsToolsUbuntu(MbedLsToolsBase):
         """
         result = []
         cmd = 'ls -oA /dev/' + subdir + '/by-id/'
-        if self.DEGUB_FLAG:
+        if self.DEBUG_FLAG:
             self.debug(self.get_dev_by_id.__name__, cmd)
 
         p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         for line in p.stdout.readlines():
             result.append(line)
-            if self.DEGUB_FLAG:
+            if self.DEBUG_FLAG:
                 self.debug(self.get_dev_by_id.__name__, line)
         retval = p.wait()
         return result
@@ -132,13 +138,13 @@ class MbedLsToolsUbuntu(MbedLsToolsBase):
         """
         result = []
         cmd = 'mount | grep vfat'
-        if self.DEGUB_FLAG:
+        if self.DEBUG_FLAG:
             self.debug(self.get_mounts.__name__, cmd)
 
         p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         for line in p.stdout.readlines():
             result.append(line)
-            if self.DEGUB_FLAG:
+            if self.DEBUG_FLAG:
                 self.debug(self.get_mounts.__name__, line)
         retval = p.wait()
         return result

@@ -30,13 +30,13 @@ class MbedLsToolsDarwin(MbedLsToolsBase):
     def list_mbeds(self):
         """ returns mbed list with platform names if possible
         """
-        
+
         result = []
-        
+
         # {volume_id: {serial:, vendor_id:, product_id:, tty:}}
         volumes = self.get_mbed_volumes()
         #print 'volumes:', volumes
-        
+
         # {volume_id: mount_point}
         mounts = self.get_mount_points()
         #print "mounts:", mounts
@@ -51,18 +51,23 @@ class MbedLsToolsDarwin(MbedLsToolsBase):
             } for v in volumes
         ]
 
+        self.ERRORLEVEL_FLAG = 0
+
         # if we're missing any platform names, try to fill those in by reading
         # mbed.htm:
         for m in result:
-            if m['mount_point'] and  not m['platform_name']:
+            if m['mount_point'] and not m['platform_name']:
                 htm_target_id = self.get_mbed_htm_target_id(m['mount_point'])
                 if htm_target_id:
                     m['target_id'] = htm_target_id
                     m['platform_name'] = self.platform_name(htm_target_id[:4])
 
+            if None in m:
+                self.ERRORLEVEL_FLAG = -1
+
         return result
 
-    
+
     def get_mount_points(self):
         ''' Returns map {volume_id: mount_point} '''
 
@@ -70,7 +75,7 @@ class MbedLsToolsDarwin(MbedLsToolsBase):
         diskutil_ls = subprocess.Popen(['diskutil', 'list', '-plist'], stdout=subprocess.PIPE)
         disks = plistlib.readPlist(diskutil_ls.stdout)
         diskutil_ls.wait()
-        
+
         r = {}
 
         for disk in disks['AllDisksAndPartitions']:
@@ -78,12 +83,12 @@ class MbedLsToolsDarwin(MbedLsToolsBase):
             if 'MountPoint' in disk:
                 mount_point = disk['MountPoint']
             r[disk['DeviceIdentifier']] = mount_point
-        
+
         return r
 
 
     def get_mbed_volumes(self):
-        ''' returns a map {volume_id: {serial:, vendor_id:, product_id:, tty:}''' 
+        ''' returns a map {volume_id: {serial:, vendor_id:, product_id:, tty:}'''
 
         # to find all the possible mbed volumes, we look for registry entries
         # under the USB bus which have a "BSD Name" that starts with "disk"
@@ -98,7 +103,7 @@ class MbedLsToolsDarwin(MbedLsToolsBase):
         ioreg_usb.wait()
 
         r = {}
-        
+
         def findTTYRecursive(obj):
             ''' return the first tty (AKA IODialinDevice) that we can find in the
                 children of the specified object, or None if no tty is present.

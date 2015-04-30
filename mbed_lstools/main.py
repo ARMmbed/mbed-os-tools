@@ -89,10 +89,15 @@ def mbedls_main():
         sys.stderr.write('This platform is not supported! Pull requests welcome at github.com/ARMmbed/mbed-ls\n')
         sys.exit(-1)
 
-    mbeds.DEGUB_FLAG = opts.debug
+    mbeds.DEBUG_FLAG = opts.debug
 
     if opts.json:
         mbeds_data = mbeds.list_mbeds()
         print json.dumps(mbeds_data, indent=4, sort_keys=True)
     else:
         print mbeds.get_string(border=not opts.simple, header=not opts.simple)
+
+    if mbeds.DEBUG_FLAG:
+        mbeds.debug(__name__, "Return code: %d" % mbeds.ERRORLEVEL_FLAG)
+
+    sys.exit(mbeds.ERRORLEVEL_FLAG)

@@ -26,7 +26,8 @@ class MbedLsToolsBase:
         """ ctor
         """
         #extra flags
-        self.DEGUB_FLAG = False
+        self.DEBUG_FLAG = False     # Used to enable debug code / prints
+        self.ERRORLEVEL_FLAG = 0    # Used to return success code to environment
 
     # Which OSs are supported by this module
     # Note: more than one OS can be supported by mbed-lstools_* module
@@ -195,6 +196,6 @@ class MbedLsToolsBase:
                         if m is not None:
                             result = m.groups()[0]
                             break
-        if self.DEGUB_FLAG:
+        if self.DEBUG_FLAG:
             self.debug(self.get_mbed_htm_target_id.__name__, (mount_point, result))
         return result
