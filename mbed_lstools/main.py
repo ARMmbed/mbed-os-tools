@@ -92,8 +92,7 @@ def mbedls_main():
     mbeds.DEBUG_FLAG = opts.debug
 
     if opts.json:
-        mbeds_data = mbeds.list_mbeds()
-        print json.dumps(mbeds_data, indent=4, sort_keys=True)
+        print json.dumps(mbeds.list_mbeds_ext(), indent=4, sort_keys=True)
     else:
         print mbeds.get_string(border=not opts.simple, header=not opts.simple)
 

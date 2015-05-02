@@ -23,7 +23,7 @@ def read(fname):
 
 
 setup(name='mbed-ls',
-      version='0.1.7',
+      version='0.1.8',
       description=DESCRIPTION,
       long_description=read('README.md'),
       author=OWNER_NAMES,
@@ -32,7 +32,6 @@ setup(name='mbed-ls',
       maintainer_email=OWNER_EMAILS,
       url='https://github.com/mbedmicro/mbed',
       packages=find_packages(),
-      package_data={'mbed_lstools_meta': ['*.json']},
       license="Apache-2.0",
       entry_points={
         "console_scripts": [

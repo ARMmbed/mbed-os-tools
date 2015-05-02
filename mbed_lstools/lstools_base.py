@@ -161,7 +161,7 @@ class MbedLsToolsBase:
 
     # Interface
     def list_mbeds(self):
-        """ Gets information about mbeds connected to device
+        """ Get information about mbeds connected to device
 
         MBED_BOARD
         {
@@ -176,6 +176,24 @@ class MbedLsToolsBase:
 
         """
         return None
+
+    def list_mbeds_ext(self):
+        """ Get information about mbeds with extended parameters/info uncluded
+        """
+        platform_names = {} # Count existing platforms and assign unique number
+
+        mbeds = self.list_mbeds()
+        for i, val in enumerate(mbeds):
+            platform_name = val['platform_name']
+            if platform_name not in platform_names:
+                platform_names[platform_name] = 0
+            else:
+                platform_names[platform_name] += 1
+            # Assign normalized, unique string at the end of target name: TARGET_NAME[x] where x is an ordinal integer
+            mbeds[i]['platform_name_unique'] = "%s[%d]" % (platform_name, platform_names[platform_name])
+            if self.DEBUG_FLAG:
+                self.debug(self.list_mbeds_ext.__name__, (mbeds[i]['platform_name_unique'], val['target_id']))
+        return mbeds
 
     # Private part, methods used to drive interface functions
     def load_mbed_description(self, file_name):
@@ -207,9 +225,12 @@ class MbedLsToolsBase:
         from prettytable import PrettyTable
         from prettytable import PLAIN_COLUMNS
         result = ''
-        mbeds = self.list_mbeds()
+        mbeds = self.list_mbeds_ext()
         if mbeds is not None:
-            columns = ['platform_name', 'mount_point', 'serial_port', 'target_id']
+            """ ['platform_name', 'mount_point', 'serial_port', 'target_id'] - columns generated from USB auto-detection
+                ['platform_name_unique', ...] - columns generated outside detection subsystem (OS dependent detection)
+            """
+            columns = ['platform_name', 'platform_name_unique', 'mount_point', 'serial_port', 'target_id']
             pt = PrettyTable(columns)
             for col in columns:
                 pt.align[col] = 'l'
