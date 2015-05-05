@@ -281,13 +281,19 @@ class MbedLsToolsBase:
                     m = re.search('\?code=([a-fA-F0-9]+)', line)
                     if m is not None:
                         result = m.groups()[0]
-                        break
+                        if self.DEBUG_FLAG:
+                            self.debug(self.get_mbed_htm_target_id.__name__, line.strip())
+                        if self.DEBUG_FLAG:
+                            self.debug(self.get_mbed_htm_target_id.__name__, (mount_point, mbed_htm, m.groups(), result))
+                        return result
                     # Last resort, we can try to see if old mbed.htm format is there
                     else:
                         m = re.search('\?auth=([a-fA-F0-9]+)', line)
                         if m is not None:
                             result = m.groups()[0]
-                            break
-        if self.DEBUG_FLAG:
-            self.debug(self.get_mbed_htm_target_id.__name__, (mount_point, result))
+                            if self.DEBUG_FLAG:
+                                self.debug(self.get_mbed_htm_target_id.__name__, line.strip())
+                            if self.DEBUG_FLAG:
+                                self.debug(self.get_mbed_htm_target_id.__name__, (mount_point, mbed_htm, m.groups(), result))
+                            return result
         return result
