@@ -52,21 +52,14 @@ TARGET_INFO_MAPPING = {
         }
 }
 
-SUPPORTED_TESTS = [
-    "mbed-test-time_us",
-    "mbed-test-rtc",
-    "mbed-test-ticker_3",
-    "mbed-test-ticker_2",
-    "mbed-test-stdio",
-    "mbed-test-call_before_main",
-    "mbed-test-dev_null",
-    "mbed-test-timeout",
-    "mbed-test-basic",
-    "mbed-test-cpp",
-    "mbed-test-div",
-    "mbed-test-echo",
-    "mbed-test-ticker",
-    "mbed-test-hello",
+NOT_SUPPORTED_TESTS = [
+    "mbed-test-detect",
+    "mbed-test-serial_interrupt",
+    "mbed-test-stl",
+    "mbed-test-sleep_timeout",
+    "mbed-test-blinky",
+    "mbed-test-heap_and_stack",
+    "mbed-test-cstring",
 ]
 
 def get_mbed_clasic_target_info(mbed_classic_name):
@@ -78,4 +71,4 @@ def get_mbed_clasic_target_info(mbed_classic_name):
 def get_mbed_supported_test(mbed_test_case_name):
     """ returns true if test case name from mbed SDK can be automated with mbed-greentea
     """
-    return mbed_test_case_name in SUPPORTED_TESTS
+    return mbed_test_case_name not in NOT_SUPPORTED_TESTS
