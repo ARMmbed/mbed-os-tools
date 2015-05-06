@@ -82,6 +82,18 @@ def main():
                     action="store_true",
                     help='Displays full test specification and MUTs configration and exits')
 
+    parser.add_option('', '--release',
+                    dest='build_to_release',
+                    default=False,
+                    action="store_true",
+                    help='If possible force build in release mode.')
+
+    parser.add_option('', '--debug',
+                    dest='build_to_debug',
+                    default=False,
+                    action="store_true",
+                    help='If possible force build in debug mode.')
+
     parser.add_option('', '--digest',
                     dest='digest_source',
                     help='Redirect input from where test suite should take console input. You can use stdin or file name to get test case console output')
@@ -139,9 +151,16 @@ def main():
 
                 # Building sources for given target
                 if list_of_targets is None or yotta_target_name in list_of_targets:
-                    print "mbed-ls: calling yotta to build your sources and tests"
-                    yotta_verbose = '-v' if opts.verbose is not None else ''
-                    yotta_result = run_cli_command("yotta %s --target=%s,* build"% (yotta_verbose, yotta_target_name))
+                    # "yotta %s --target=%s,* build"% (yotta_verbose, yotta_target_name)
+                    cmd = ['yotta']
+                    if opts.verbose is not None: cmd.append('-v')
+                    cmd.append('--target=%s,*' % yotta_target_name)
+                    cmd.append('build')
+                    if opts.build_to_release: cmd.append('-r')
+                    elif opts.build_to_debug: cmd.append('-d')
+
+                    print "mbed-ls: calling yotta to build your sources and tests: %s" % (' '.join(cmd))
+                    yotta_result = run_cli_command(cmd)
 
                     # Build phase will be followed by test execution for each target
                     if yotta_result and not opts.only_build_tests:
