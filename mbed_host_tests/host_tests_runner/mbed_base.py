@@ -19,6 +19,7 @@ Author: Przemyslaw Wirkus <Przemyslaw.Wirkus@arm.com>
 
 # Check if 'serial' module is installed
 # TODO: check in sys.modules if pySerial is installed
+from sys import stdout
 from serial import Serial
 from time import sleep, time
 import mbed_host_tests.host_tests_plugins as ht_plugins
@@ -64,19 +65,41 @@ class Mbed:
         serial_baud = serial_baud if serial_baud is not None else self.serial_baud
         serial_timeout = serial_timeout if serial_timeout is not None else self.serial_timeout
 
+        # Clear serial port
         if self.serial:
             self.serial.close()
             self.serial = None
 
-        result = True
-        try:
-            self.serial = Serial(self.port, baudrate=serial_baud, timeout=serial_timeout)
-        except Exception as e:
-            print "MBED: %s"% str(e)
-            result = False
+        # We will pool for serial to be re-mounted if it was unmounted after device reset
+        result = self.pool_for_serial_init(serial_baud, serial_timeout) # Blocking
+
         # Port can be opened
         if result:
             self.flush()
+        return result
+
+    def pool_for_serial_init(self, serial_baud, serial_timeout, pooling_loops=40, init_delay=0.5, loop_delay=0.25):
+        """ Functions pools for serial port readiness
+        """
+        result = True
+        last_error = None
+        # This loop is used to check for serial port availability due to
+        # some delays and remounting when devices are being flashed with new software.
+        for i in range(pooling_loops):
+            sleep(loop_delay if i else init_delay)
+            try:
+                self.serial = Serial(self.port, baudrate=serial_baud, timeout=serial_timeout)
+            except Exception as e:
+                result = False
+                last_error = "MBED: %s"% str(e)
+                stdout.write('.')
+                stdout.flush()
+            else:
+                print "...port ready!"
+                result = True
+                break
+        if not result and last_error:
+            print last_error
         return result
 
     def set_serial_timeout(self, timeout):
