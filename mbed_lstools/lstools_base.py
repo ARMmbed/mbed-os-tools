@@ -274,21 +274,12 @@ class MbedLsToolsBase:
         MBED_HTM_LIST = ['mbed.htm', 'MBED.HTM', 'MBED.htm']
         for mbed_htm in MBED_HTM_LIST:
             mbed_htm_path = os.path.join(mount_point, mbed_htm)
-            with open(mbed_htm_path, 'r') as f:
-                fline = f.readlines()
-                for line in fline:
-                    # Detecting modern mbed.htm file format
-                    m = re.search('\?code=([a-fA-F0-9]+)', line)
-                    if m is not None:
-                        result = m.groups()[0]
-                        if self.DEBUG_FLAG:
-                            self.debug(self.get_mbed_htm_target_id.__name__, line.strip())
-                        if self.DEBUG_FLAG:
-                            self.debug(self.get_mbed_htm_target_id.__name__, (mount_point, mbed_htm, m.groups(), result))
-                        return result
-                    # Last resort, we can try to see if old mbed.htm format is there
-                    else:
-                        m = re.search('\?auth=([a-fA-F0-9]+)', line)
+            try:
+                with open(mbed_htm_path, 'r') as f:
+                    fline = f.readlines()
+                    for line in fline:
+                        # Detecting modern mbed.htm file format
+                        m = re.search('\?code=([a-fA-F0-9]+)', line)
                         if m is not None:
                             result = m.groups()[0]
                             if self.DEBUG_FLAG:
@@ -296,4 +287,17 @@ class MbedLsToolsBase:
                             if self.DEBUG_FLAG:
                                 self.debug(self.get_mbed_htm_target_id.__name__, (mount_point, mbed_htm, m.groups(), result))
                             return result
+                        # Last resort, we can try to see if old mbed.htm format is there
+                        else:
+                            m = re.search('\?auth=([a-fA-F0-9]+)', line)
+                            if m is not None:
+                                result = m.groups()[0]
+                                if self.DEBUG_FLAG:
+                                    self.debug(self.get_mbed_htm_target_id.__name__, line.strip())
+                                if self.DEBUG_FLAG:
+                                    self.debug(self.get_mbed_htm_target_id.__name__, (mount_point, mbed_htm, m.groups(), result))
+                                return result
+            except IOError:
+                if self.DEBUG_FLAG:
+                    self.debug(self.get_mbed_htm_target_id.__name__, ('Failed to open file', mbed_htm_path))
         return result
