@@ -76,23 +76,29 @@ def main():
                     default=False,
                     help="Only build repository and tests, skips actual test procedures (flashing etc.)")
 
+    copy_methods_str = "Plugin support: " + ', '.join(mbed_host_tests.host_tests_plugins.get_plugin_caps('CopyMethod'))
+    parser.add_option("-c", "--copy",
+                    dest="copy_method",
+                    help="Copy (flash the target) method selector. " + copy_methods_str,
+                    metavar="COPY_METHOD")
+
     parser.add_option('', '--config',
                     dest='verbose_test_configuration_only',
                     default=False,
                     action="store_true",
-                    help='Displays full test specification and MUTs configration and exits')
+                    help='Displays connected boards and detected targets and exits.')
 
     parser.add_option('', '--release',
                     dest='build_to_release',
                     default=False,
                     action="store_true",
-                    help='If possible force build in release mode.')
+                    help='If possible force build in release mode (yotta -r).')
 
     parser.add_option('', '--debug',
                     dest='build_to_debug',
                     default=False,
                     action="store_true",
-                    help='If possible force build in debug mode.')
+                    help='If possible force build in debug mode (yotta -d).')
 
     parser.add_option('', '--digest',
                     dest='digest_source',
@@ -176,7 +182,7 @@ def main():
                                 port =  mut['serial_port']
                                 micro = mut['platform_name']
                                 program_cycle_s = mut_info['properties']['program_cycle_s']
-                                copy_method = mut_info['properties']['copy_method']
+                                copy_method = opts.copy_method if opts.copy_method else mut_info['properties']['copy_method']
                                 verbose = opts.verbose_test_result_only
 
                                 host_test_result = run_host_test(image_path, disk, port,
