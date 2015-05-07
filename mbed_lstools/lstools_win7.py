@@ -65,8 +65,8 @@ class MbedLsToolsWin7(MbedLsToolsBase):
             mbed_id_prefix = mbed_id[0:4]
             # Deducing mbed-enabled TargetID based on available targetID definition DB.
             # If TargetID from USBID is not recognized we will try to check URL in mbed.htm
-            if mbed_id_prefix not in defs:
-                mbed_htm_target_id = self.get_mbed_htm_target_id(mnt)
+            mbed_htm_target_id = self.get_mbed_htm_target_id(mnt)
+            if mbed_htm_target_id:
                 mbed_id = mbed_htm_target_id if mbed_htm_target_id is not None else mbed_id
             mbed_id_prefix = mbed_id[0:4]
             board = defs[mbed_id_prefix] if mbed_id_prefix in defs else None
@@ -169,8 +169,10 @@ class MbedLsToolsWin7(MbedLsToolsBase):
         result = []
         for ven in self.usb_vendor_list:
             result += [d for d in self.get_dos_devices() if ven.upper() in d[1].upper()]
-        if self.DEBUG_FLAG:
-            self.debug(self.get_mbed_devices.__name__, result)
+
+        for r in result:
+            if self.DEBUG_FLAG:
+                self.debug(self.get_mbed_devices.__name__, r)
         return result
 
     def get_dos_devices(self):

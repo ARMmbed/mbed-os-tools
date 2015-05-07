@@ -97,15 +97,13 @@ class MbedLsToolsUbuntu(MbedLsToolsBase):
 
             # Deducing mbed-enabled TargetID based on available targetID definition DB.
             # If TargetID from USBID is not recognized we will try to check URL in mbed.htm
-            if device[0] is None:
-                mnt = device[2]
-                mbed_htm_target_id = self.get_mbed_htm_target_id(mnt)
-                if mbed_htm_target_id is not None:
-                    mbed_htm_target_id_prefix = mbed_htm_target_id[0:4]
-                    if mbed_htm_target_id_prefix in tids:
-                        # We need to update platform_name and corresponding TargetID (not USBID, but from mbed.htm)
-                        mbed['platform_name'] = tids[mbed_htm_target_id_prefix]
-                        mbed['target_id'] = mbed_htm_target_id
+            mbed_htm_target_id = self.get_mbed_htm_target_id(device[2]) # device[2] is a 'mount_point'
+            if mbed_htm_target_id is not None:
+                mbed_htm_target_id_prefix = mbed_htm_target_id[0:4]
+                if mbed_htm_target_id_prefix in tids:
+                    # We need to update platform_name and corresponding TargetID (not USBID, but from mbed.htm)
+                    mbed['platform_name'] = tids[mbed_htm_target_id_prefix]
+                    mbed['target_id'] = mbed_htm_target_id
 
             result.append(mbed)
 
