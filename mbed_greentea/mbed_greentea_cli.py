@@ -147,6 +147,7 @@ def main():
         if mut_info is None:
             print "mbed-ls: mbed classic target name %s is not in target database"% (mut['platform_name'])
         else:
+            print "mbedgt: available targets:"
             for yotta_target in mut_info['yotta_targets']:
                 yotta_target_name = yotta_target['yotta_target']
                 yotta_target_toolchain = yotta_target['mbed_toolchain']
@@ -195,3 +196,7 @@ def main():
                                 test_result = single_test_result
                             print "\ttest '%s' %s"% (test_bin, '.' * (70 - len(test_bin))),
                             print "%s"% (test_result)
+
+    if opts.verbose_test_configuration_only:
+        print
+        print "Example: execute 'mbedgt --target=TARGET_NAME' to start testing for TARGET_NAME target"

@@ -291,3 +291,10 @@ def run_cli_command(cmd, shell=True, verbose=False):
             print "mbed-ls: [ret=%d] Command: %s"% (int(ret), cmd)
             print str(e)
     return result
+
+def run_cli_process(cmd):
+    """ Runs command as a process and return stdout, stderr and ret code
+    """
+    p = Popen(cmd, stdout=PIPE, stderr=PIPE)
+    _stdout, _stderr = p.communicate()
+    return _stdout, _stderr, p.returncode
