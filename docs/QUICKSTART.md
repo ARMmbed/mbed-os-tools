@@ -284,6 +284,16 @@ Changes in mbed-host-tests module:
     
     Note: ```rtc_auto``` is the same name which we are using in test case C/C++ source code via macro: ```MBED_HOSTTEST_SELECT(rtc_auto);```.
 
+4. Use mbed-greenta to determine your platform's yotta target name (e.g. ```frdm-k64f-gcc```) using:
+ ```
+ $ mbedgt --config
+ ```
+
+5. Use mbed-greenta to build test cases and execute them on target:
+  ```
+  $ mbedgt --target=frdm-k64f-gcc
+  ```
+
 ## More examples:
 * You can refer to existing examples for tests in [mbed-sdk-private](https://github.com/ARMmbed/mbed-sdk-private/tree/master/test) repository.
 * All host tests with source code are [here](https://github.com/ARMmbed/mbed-host-tests/tree/master/mbed_host_tests/host_tests).
