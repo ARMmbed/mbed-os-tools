@@ -187,43 +187,43 @@ Changes in mbed-host-tests module:
   
             return selftest.RESULT_SUCCESS if test_result else selftest.RESULT_FAILURE
   ```
-  
-Note:
-* Each and every host test must be a class with defined ```test(self, selftest)``` method.
-  * ```self``` is a standard construct for class methods in Python.
-  * ```selftest``` is a ```self``` reference to generic host test class which defines API and enums used for tests.
-    * enum ```selftest.RESULT_SUCCESS``` is used to return test case success via host test to test suite.
-    * enum ```selftest.RESULT_FAILURE``` is used to return test case success via host test to test suite.
-    * enum ```selftest.RESULT_IO_SERIAL``` is used to return serial port error(s) via host test to test suite.
-    * ```test(self, selftest)``` method should return at least ```selftest.RESULT_SUCCESS``` on success or ```selftest.RESULT_FAILURE``` for failure.
-    * Examples of host test API related to mbed ,-> host test serial port connection communication:
-    ```python
-    c = selftest.mbed.serial_read(512)
-    if c is None:
-        return selftest.RESULT_IO_SERIAL
-    ```
-    
-    ```python
-    c = selftest.mbed.serial_readline() # {{start}} preamble
-    if c is None:
-       return selftest.RESULT_IO_SERIAL
-    ```
-    
-    ```python
-    # Write bytes to serial port
-    selftest.mbed.serial_write(str(random_integer) + "\n")
-    ```
-    
-    ```python
-    # Custom initialization for echo test
-    selftest.mbed.init_serial_params(serial_baud=self.TEST_SERIAL_BAUDRATE)
-    selftest.mbed.init_serial()
-    ```
-    
-    ```python
-    # Flush serial port queues (in/out)
-    selftest.mbed.flush()
-    ```    
+
+  Note:
+  * Each and every host test must be a class with defined ```test(self, selftest)``` method.
+    * ```self``` is a standard construct for class methods in Python.
+    * ```selftest``` is a ```self``` reference to generic host test class which defines API and enums used for tests.
+      * enum ```selftest.RESULT_SUCCESS``` is used to return test case success via host test to test suite.
+      * enum ```selftest.RESULT_FAILURE``` is used to return test case success via host test to test suite.
+      * enum ```selftest.RESULT_IO_SERIAL``` is used to return serial port error(s) via host test to test suite.
+      * ```test(self, selftest)``` method should return at least ```selftest.RESULT_SUCCESS``` on success or ```selftest.RESULT_FAILURE``` for failure.
+      * Examples of host test API related to mbed ,-> host test serial port connection communication:
+      ```python
+      c = selftest.mbed.serial_read(512)
+      if c is None:
+          return selftest.RESULT_IO_SERIAL
+      ```
+      
+      ```python
+      c = selftest.mbed.serial_readline() # {{start}} preamble
+      if c is None:
+         return selftest.RESULT_IO_SERIAL
+      ```
+      
+      ```python
+      # Write bytes to serial port
+      selftest.mbed.serial_write(str(random_integer) + "\n")
+      ```
+      
+      ```python
+      # Custom initialization for echo test
+      selftest.mbed.init_serial_params(serial_baud=self.TEST_SERIAL_BAUDRATE)
+      selftest.mbed.init_serial()
+      ```
+      
+      ```python
+      # Flush serial port queues (in/out)
+      selftest.mbed.flush()
+      ```    
 
 3. Implement ```rtc_auto.py``` host test script body:
   ```python
@@ -265,28 +265,21 @@ Note:
 3. Add ```rtc_auto.py``` to mbed-host-tests registry under ```mbed-host-tests/mbed_host_tests/__init__.py```:
   ```python
   .
-  .
   .  
   # Host test supervisors
-  .
   .
   .
   from host_tests.rtc_auto import RTCTest
   .
   .
-  .
-  
   # Populate registry with supervising objects
-  .
   .
   .
   HOSTREGISTRY.register_host_test("rtc_auto", RTCTest())
   .
   .
-  .
-  
-  
   ```
   * ```from host_tests.rtc_auto import RTCTest``` is used to import ```rtc_auto.py``` script to this module.
   * ```HOSTREGISTRY.register_host_test("rtc_auto", RTCTest())``` is used to register RTCTest() class implemented in ```rtc_auto.py``` under name ```rtc_auto```.
-    Note: ```rtc_auto``` is the same which we are using in test case C/C++ source code via macro: ```MBED_HOSTTEST_SELECT(rtc_auto);```.
+    
+    Note: ```rtc_auto``` is the same name which we are using in test case C/C++ source code via macro: ```MBED_HOSTTEST_SELECT(rtc_auto);```.
