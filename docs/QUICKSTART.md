@@ -60,7 +60,7 @@ In our case we need to add testDependencies to ```mbed-sdk-private``` so we can 
 # Examples
 In this section we will show how to create few flavours of test cases for your yotta package with mbed-greentea and mbed-host-tests.
 
-## Create simple test
+## Create simple test case (no mocking)
 Often your test case will be a ```main()``` function with collection of API function calls. No special mocking is required and you can determine test case result in runtime. In that case you can use build-in host test and just implement your test case's main() function.
 
 To do so just:
@@ -117,7 +117,176 @@ Note:
   * ```MBED_HOSTTEST_RESULT``` macro is used to pass to test suite test case result: true (pass) / false (failed).
 
 Above model have few advantages:
+* You've modified only your yotta package.
 * You need to only include one header file and specify four macros to complete test case auto- detection by test suite.
   * Test case auto-detection process is a set of prints send by bed device via serial port and read by mbed-host-tests package.
 * You specify things like test case timeout, host test, test name etc. in your test case source file.
 * In this simple example you do not have to write any Python code to start testing.
+
+## Create test case with simple mocking
+In this example we will create more sophisticated test case. In this example we will decide if test passed of failed not in test case during runtime but in host test (mock). We will create host test (a Python script) which will interact with test case running on hardware using serial port connection.
+
+
+Changes in your yotta module:
+
+1. Create new test case sub-directory and test source code under ```\test``` directory:
+2. Populate test case source code with below code:
+  ```c++
+  #include "mbed/test_env.h"
+
+  #define CUSTOM_TIME  1256729737
+
+  int main() {
+      MBED_HOSTTEST_TIMEOUT(20);
+      MBED_HOSTTEST_SELECT(rtc_auto);
+      MBED_HOSTTEST_DESCRIPTION(RTC);
+      MBED_HOSTTEST_START("MBED_16");
+
+      /*
+       *
+       * This test case is a simple infinite loop printing every 1 second
+       * time read from RTC.
+       *
+       * Note: this test never ends. After flashing and target reset this
+       *       test case will print RTC time forever starting from CUSTOM_TIME
+       *       timestamp.
+       *
+       */
+
+      char buffer[32] = {0};
+      set_time(CUSTOM_TIME);  // Set RTC time to Wed, 28 Oct 2009 11:35:37
+      while(1) {
+          time_t seconds = time(NULL);
+          strftime(buffer, 32, "%Y-%m-%d %H:%M:%S %p", localtime(&seconds));
+          printf("MBED: [%ld] [%s]\r\n", seconds, buffer);
+          wait(1);
+      }
+  }
+  ```
+
+Above RTC test case can't be validated during runtime within hardware module.
+But we can use our host computer to analyse RTC prints and measure time between  each print (note each RTC status print is every one second).
+We need to create new host test script (let's call it ```rtc_auto```; a Python script which can read serial port prints from target:
+```
+printf("MBED: [%ld] [%s]\r\n", seconds, buffer);
+```
+and verify if time flows correctly for target's internal RTC.
+
+Changes in mbed-host-tests module:
+1. Fork mbed-host-tests module and create new branch which will contain new host test for your RTC test case above.
+2. Create new ```rtc_auto.py``` host test script under ```mbed-host-tests/mbed_host_tests/host_tests/``` and populate it with below template:
+  ```python
+    class TestCaseName_Test():
+    
+        def test(self, selftest):
+            test_result = True
+  
+            #
+            # Here we will implement our host test
+            #
+  
+            return selftest.RESULT_SUCCESS if test_result else selftest.RESULT_FAILURE
+  ```
+  
+Note:
+* Each and every host test must be a class with defined ```test(self, selftest)``` method.
+  * ```self``` is a standard construct for class methods in Python.
+  * ```selftest``` is a ```self``` reference to generic host test class which defines API and enums used for tests.
+    * enum ```selftest.RESULT_SUCCESS``` is used to return test case success via host test to test suite.
+    * enum ```selftest.RESULT_FAILURE``` is used to return test case success via host test to test suite.
+    * enum ```selftest.RESULT_IO_SERIAL``` is used to return serial port error(s) via host test to test suite.
+    * ```test(self, selftest)``` method should return at least ```selftest.RESULT_SUCCESS``` on success or ```selftest.RESULT_FAILURE``` for failure.
+    * Examples of host test API related to mbed ,-> host test serial port connection communication:
+    ```python
+    c = selftest.mbed.serial_read(512)
+    if c is None:
+        return selftest.RESULT_IO_SERIAL
+    ```
+    
+    ```python
+    c = selftest.mbed.serial_readline() # {{start}} preamble
+    if c is None:
+       return selftest.RESULT_IO_SERIAL
+    ```
+    
+    ```python
+    # Write bytes to serial port
+    selftest.mbed.serial_write(str(random_integer) + "\n")
+    ```
+    
+    ```python
+    # Custom initialization for echo test
+    selftest.mbed.init_serial_params(serial_baud=self.TEST_SERIAL_BAUDRATE)
+    selftest.mbed.init_serial()
+    ```
+    
+    ```python
+    # Flush serial port queues (in/out)
+    selftest.mbed.flush()
+    ```    
+
+3. Implement ```rtc_auto.py``` host test script body:
+  ```python
+  import re
+  from time import time, strftime, gmtime
+  
+  class RTCTest():
+      PATTERN_RTC_VALUE = "\[(\d+)\] \[(\d+-\d+-\d+ \d+:\d+:\d+ [AaPpMm]{2})\]"
+      re_detect_rtc_value = re.compile(PATTERN_RTC_VALUE)
+  
+      def test(self, selftest):
+          test_result = True
+          start = time()
+          sec_prev = 0
+          for i in range(0, 5):
+              # Timeout changed from default: we need to wait longer for some boards to start-up
+              c = selftest.mbed.serial_readline(timeout=10)
+              if c is None:
+                  return selftest.RESULT_IO_SERIAL
+              selftest.notify(c.strip())
+              delta = time() - start
+              m = self.re_detect_rtc_value.search(c)
+              if m and len(m.groups()):
+                  sec = int(m.groups()[0])
+                  time_str = m.groups()[1]
+                  correct_time_str = strftime("%Y-%m-%d %H:%M:%S %p", gmtime(float(sec)))
+                  single_result = time_str == correct_time_str and sec > 0 and sec > sec_prev
+                  test_result = test_result and single_result
+                  result_msg = "OK" if single_result else "FAIL"
+                  selftest.notify("HOST: [%s] [%s] received time %+d sec after %.2f sec... %s"% (sec, time_str, sec - sec_prev, delta, result_msg))
+                  sec_prev = sec
+              else:
+                  test_result = False
+                  break
+              start = time()
+          return selftest.RESULT_SUCCESS if test_result else selftest.RESULT_FAILURE
+  ```
+
+3. Add ```rtc_auto.py``` to mbed-host-tests registry under ```mbed-host-tests/mbed_host_tests/__init__.py```:
+  ```python
+  .
+  .
+  .  
+  # Host test supervisors
+  .
+  .
+  .
+  from host_tests.rtc_auto import RTCTest
+  .
+  .
+  .
+  
+  # Populate registry with supervising objects
+  .
+  .
+  .
+  HOSTREGISTRY.register_host_test("rtc_auto", RTCTest())
+  .
+  .
+  .
+  
+  
+  ```
+  * ```from host_tests.rtc_auto import RTCTest``` is used to import ```rtc_auto.py``` script to this module.
+  * ```HOSTREGISTRY.register_host_test("rtc_auto", RTCTest())``` is used to register RTCTest() class implemented in ```rtc_auto.py``` under name ```rtc_auto```.
+    Note: ```rtc_auto``` is the same which we are using in test case C/C++ source code via macro: ```MBED_HOSTTEST_SELECT(rtc_auto);```.
