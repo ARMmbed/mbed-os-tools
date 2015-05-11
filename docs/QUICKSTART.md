@@ -283,3 +283,8 @@ Changes in mbed-host-tests module:
   * ```HOSTREGISTRY.register_host_test("rtc_auto", RTCTest())``` is used to register RTCTest() class implemented in ```rtc_auto.py``` under name ```rtc_auto```.
     
     Note: ```rtc_auto``` is the same name which we are using in test case C/C++ source code via macro: ```MBED_HOSTTEST_SELECT(rtc_auto);```.
+
+## More examples:
+* You can refer to existing examples for tests in [mbed-sdk-private](https://github.com/ARMmbed/mbed-sdk-private/tree/master/test) repository.
+* All host tests with source code are [here](https://github.com/ARMmbed/mbed-host-tests/tree/master/mbed_host_tests/host_tests).
+
