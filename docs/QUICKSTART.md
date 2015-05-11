@@ -44,11 +44,6 @@ It is test suite's (mbed-greentea) responsibility to flash all test binaries and
 
 # Dependencies
 * [yotta](https://github.com/ARMmbed/yotta) - yotta is a tool that we're building at mbed.
-•	[mbed-greentea](https://github.com/ARMmbed/mbed-greentea-private) - test suite for mbed 3.0, codename 'greentea'. The mbed test suite is a collection of tools that enable automated testing on mbed platforms.
-•	[mbed-ls](https://github.com/ARMmbed/mbed-ls) - mbed-lstools is a module used to detect and list mbed-enabled devices connected via USB port to the host computer.
-•	[mbed-host-tests](https://github.com/ARMmbed/mbed-host-tests) - Application responsible for target flashing, reset and specific for each test case host test execution.
-
-# Terms
-* Test runner: 
-* Host test (mbed specific name): 
-*  Supervised test case: 
+* [mbed-greentea](https://github.com/ARMmbed/mbed-greentea-private) - test suite for mbed 3.0, codename 'greentea'. The mbed test suite is a collection of tools that enable automated testing on mbed platforms.
+* [mbed-ls](https://github.com/ARMmbed/mbed-ls) - mbed-lstools is a module used to detect and list mbed-enabled devices connected via USB port to the host computer.
+* [mbed-host-tests](https://github.com/ARMmbed/mbed-host-tests) - Application responsible for target flashing, reset and specific for each test case host test execution.
