@@ -284,11 +284,11 @@ def run_cli_command(cmd, shell=True, verbose=False):
         if ret:
             result = False
             if verbose:
-                print "mbed-ls: [ret=%d] Command: %s"% (int(ret), cmd)
+                print "mbedgt: [ret=%d] Command: %s"% (int(ret), cmd)
     except Exception as e:
         result = False
         if verbose:
-            print "mbed-ls: [ret=%d] Command: %s"% (int(ret), cmd)
+            print "mbedgt: [ret=%d] Command: %s"% (int(ret), cmd)
             print str(e)
     return result
 

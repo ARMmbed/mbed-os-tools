@@ -166,8 +166,8 @@ def main():
                     if opts.build_to_release: cmd.append('-r')
                     elif opts.build_to_debug: cmd.append('-d')
 
-                    print "mbed-ls: calling yotta to build your sources and tests: %s" % (' '.join(cmd))
-                    yotta_result = run_cli_command(cmd)
+                    print "mbedgt: calling yotta to build your sources and tests: %s" % (' '.join(cmd))
+                    yotta_result = run_cli_command(cmd, shell=False, verbose=opts.verbose)
 
                     # Build phase will be followed by test execution for each target
                     if yotta_result and not opts.only_build_tests:
