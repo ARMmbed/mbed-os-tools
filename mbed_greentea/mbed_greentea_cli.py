@@ -66,9 +66,9 @@ def main():
                     dest='list_of_targets',
                     help='You can specify list of targets you want to build. Use comma to sepatate them')
 
-    #parser.add_option('-n', '--test-by-names',
-    #                dest='test_by_names',
-    #                help='Runs only test enumerated it this switch')
+    parser.add_option('-n', '--test-by-names',
+                      dest='test_by_names',
+                      help='Runs only test enumerated it this switch. Use comma to separate test case names.')
 
     parser.add_option("-O", "--only-build",
                     action="store_true",
@@ -178,6 +178,12 @@ def main():
                         print "mbedgt: running tests..."
                         for test_bin, image_path in ctest_test_list.iteritems():
                             test_result = 'SKIPPED'
+                            # Skip test not mentionned in -n option
+                            if opts.test_by_names:
+                                test_list = opts.test_by_names.lower().split(' ')
+                                if test_bin.lower() not in test_list:
+                                    continue
+
                             if get_mbed_supported_test(test_bin):
                                 disk =  mut['mount_point']
                                 port =  mut['serial_port']
