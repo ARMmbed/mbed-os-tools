@@ -61,7 +61,9 @@ In our case we need to add testDependencies to ```mbed-sdk-private``` so we can 
 In this section we will show how to create few flavours of test cases for your yotta package with mbed-greentea and mbed-host-tests.
 
 ## Create simple test
-Often your test case will be a ```main()``` function with collection of API function calls. No special mocking is required and you can determine test case result in runtime. In that case you can use build-in host test and just implement your test case main() function.
+Often your test case will be a ```main()``` function with collection of API function calls. No special mocking is required and you can determine test case result in runtime. In that case you can use build-in host test and just implement your test case's main() function.
+
+To do so just:
 
 1. Create new test case sub-directory and test source code under ```\test``` directory:
 2. Populate test case source code with below template:
@@ -86,6 +88,24 @@ Often your test case will be a ```main()``` function with collection of API func
   }
   ```
 3. Use ```yotta build``` command to check if your test case compiles and builds before adding it to yotta module.
+4. Connect mbed device to your computer (host) using USB.
+5. Use mbed-greenta to determine your platform's yotta target name (e.g. ```frdm-k64f-gcc```) using:
+ ```
+ $ mbedgt --config
+ ```
+
+6. Use mbed-greenta to build test cases and execute them on target:
+  ```
+  $ mbedgt --target=frdm-k64f-gcc
+  ```
+
+Note:
+* Use below command to only build your package from soruces with tests:
+  ```
+  $ mbedgt --target=frdm-k64f-gcc -O
+  ```
+* Use option ```-V``` to display serial port communication between host computer and mbed device on your console.
+* Use option ```-n <test-name>``` to execute only test case by given name. You can use comma to execute more than one test case. ```<test-name>``` is test case binary name without extension.
 
 ### Notes:
 * We've included ```mbed/test_env.h``` to get access to generic mbed test ```MBED_HOSTTEST_*``` macros. These macros are used to pass to test suite information about above test case properties like: 
