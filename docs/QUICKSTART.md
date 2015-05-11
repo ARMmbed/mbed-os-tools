@@ -225,7 +225,7 @@ Changes in mbed-host-tests module:
       selftest.mbed.flush()
       ```    
 
-3. Implement ```rtc_auto.py``` host test script body:
+3. Implement ```rtc_auto.py``` host test script body according to your test flow (below is an existing example fro RTC test):
   ```python
   import re
   from time import time, strftime, gmtime
