@@ -104,6 +104,7 @@ Note:
   ```
   $ mbedgt --target=frdm-k64f-gcc -O
   ```
+
 * Use option ```-V``` to display serial port communication between host computer and mbed device on your console.
 * Use option ```-n <test-name>``` to execute only test case by given name. You can use comma to execute more than one test case. ```<test-name>``` is test case binary name without extension.
 
@@ -111,6 +112,12 @@ Note:
 * We've included ```mbed/test_env.h``` to get access to generic mbed test ```MBED_HOSTTEST_*``` macros. These macros are used to pass to test suite information about above test case properties like: 
   * ```MBED_HOSTTEST_TIMEOUT```: Test case timeout, in this case 20 sec.
   * ```MBED_HOSTTEST_SELECT```: Host test name (which host test should be used to supervise this test), in this case 'default' host test available in standard mbed-host-tests package distribution.
-  * ```MBED_HOSTTEST_DESCRIPTION```: Simple test case description , currently ignored by test suite.
-  * ```MBED_HOSTTEST_START```: Marks test case execution start. Additionally carries simple test case name, currently ignored by test suite.
-  
+  * ```MBED_HOSTTEST_DESCRIPTION```: Simple test case description; currently ignored by test suite.
+  * ```MBED_HOSTTEST_START```: Marks test case execution start. Additionally carries simple test case name; currently ignored by test suite. After this macro is executed host test specified in ```MBED_HOSTTEST_SELECT``` will be executed.
+  * ```MBED_HOSTTEST_RESULT``` macro is used to pass to test suite test case result: true (pass) / false (failed).
+
+Above model have few advantages:
+* You need to only include one header file and specify four macros to complete test case auto- detection by test suite.
+  * Test case auto-detection process is a set of prints send by bed device via serial port and read by mbed-host-tests package.
+* You specify things like test case timeout, host test, test name etc. in your test case source file.
+* In this simple example you do not have to write any Python code to start testing.
