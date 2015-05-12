@@ -27,7 +27,11 @@ class TCPEchoClient_Handler(BaseRequestHandler):
         print "HOST: Connection received...",
         count = 1;
         while True:
-            data = self.request.recv(1024)
+            try:
+                data = self.request.recv(1024)
+            except Exception as e:
+                print str(e)
+                break
             if not data: break
             self.request.sendall(data)
             if '{{end}}' in str(data):
