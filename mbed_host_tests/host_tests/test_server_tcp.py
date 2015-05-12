@@ -17,7 +17,10 @@ limitations under the License.
 
 import socket
 
-class TCPServerEchoCloseTest:
+class TCPServerEchoExtTest:
+    """ This echo server opens and closes connections.
+    """
+
     def send_server_ip_port(self, selftest, ip_address, port_no):
         """ Set up network host. Reset target and and send server IP via serial to Mbed
         """
@@ -45,27 +48,33 @@ class TCPServerEchoCloseTest:
         SERVER_IP = str(socket.gethostbyname(socket.getfqdn()))
         SERVER_PORT = 32767
 
-        print "HOST: Listening for TCP connections: " + SERVER_IP + ":" + str(SERVER_PORT)
-        self.send_server_ip_port(selftest, SERVER_IP, SERVER_PORT)        
+        selftest.notify("HOST: Listening for TCP connections: " + SERVER_IP + ":" + str(SERVER_PORT))
+        self.send_server_ip_port(selftest, SERVER_IP, SERVER_PORT)
 
+        selftest.notify("HOST: Init sockets...")
         Sv4 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         Sv4.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         Sv4.bind((SERVER_IP, SERVER_PORT))
         Sv4.listen(1)
-        print "HOST: Listening for TCP connections: " + SERVER_IP + ":" + str(SERVER_PORT)
+        selftest.notify("HOST: Listening for TCP connections: " + SERVER_IP + ":" + str(SERVER_PORT))
         try:
-            while True:
+            for i in range(0, 2):
                 (clientsocket, address) = Sv4.accept()
-                print 'HOST: Connection received from', address
+                selftest.notify('HOST: Connection received from ' + str(address))
                 while True:
                     try:
                         data = clientsocket.recv(4096)
                     except:
                         data = None
-                    if not data:
+                    if data:
+                        selftest.notify('HOST: Received %d bytes of data', len(data))
+                    else:
                         break
                     clientsocket.sendall(data)
-                print 'HOST: connection closed'
+                selftest.notify('HOST: connection closed')
                 clientsocket.close()
         finally:
             Sv4.close()
+        while True:
+            c = selftest.mbed.serial_readline()
+            selftest.notify(c.strip())
