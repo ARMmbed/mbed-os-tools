@@ -362,7 +362,7 @@ Changes in mbed-host-tests module:
                        | Store test result        | Test end detected: "{{end}}"
                        |<-------------------------|<----------
                        |
-                       |                                                              host OS             mbed device
+                       |                                      host OS             mbed device
                                                            =============          ===========
                                                                  | USB connection       |
                                                                  |<---------------------|
