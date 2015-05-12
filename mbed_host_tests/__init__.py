@@ -17,6 +17,7 @@ limitations under the License.
 Author: Przemyslaw Wirkus <Przemyslaw.Wirkus@arm.com>
 """
 
+import sys
 from optparse import OptionParser
 
 from host_tests_registry import HostRegistry
@@ -76,9 +77,37 @@ class DefaultTestSelector(DefaultTestSelectorBase):
     test_supervisor = get_host_test("default")
 
     def __init__(self, options=None):
+
+        # Handle extra command from
+        if options:
+            if options.list_reg_hts:    # --list option
+                self.print_ht_list()
+                sys.exit(0)
+
         DefaultTestSelectorBase.__init__(self, options)
 
+    def print_ht_list(self):
+        """ Prints list of registered host test classes (by name)
+        """
+        str_len = 0
+        for ht in HOSTREGISTRY.HOST_TESTS:
+            if len(ht) > str_len: str_len = len(ht)
+        for ht in sorted(HOSTREGISTRY.HOST_TESTS.keys()):
+            print "'%s'%s : %s()" % (ht, ' '*(str_len - len(ht)), HOSTREGISTRY.HOST_TESTS[ht].__class__)
+
+    def setup(self):
+        """ Additional setup before workflow execution
+        """
+        pass
+
     def run(self):
+        """ This function will perform extra setup and proceed
+            with test selector's work flow
+        """
+        self.setup()
+        self.execute()
+
+    def execute(self):
         """ Test runner for host test. This function will start executing
             test and forward test result via serial port to test suite
         """
@@ -163,6 +192,12 @@ def init_host_test_cli_params():
                       metavar="NUMBER",
                       type="int",
                       help="When forcing a reset using option -r you can set up after reset idle delay in seconds")
+
+    parser.add_option('', '--list',
+                      dest='list_reg_hts',
+                      default=False,
+                      action="store_true",
+                      help='Prints registered host test and exits')
 
     (options, _) = parser.parse_args()
     return options
