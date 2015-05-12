@@ -362,67 +362,6 @@ Changes in mbed-host-tests module:
                        | Store test result        | Test end detected: "{{end}}"
                        |<-------------------------|<----------
                        |
-                       |                                      host OS             mbed device
-                                                           =============          ===========
-                                                                 | USB connection       |
-                                                                 |<---------------------|
-                                                                 |                      |
-                                                                 | Mount serial         |
-                                                                 |<---------------------|
-                                                                 | Mount disk           |
-                                                                 |<---------------------|
-                 mbed-greentea                mbed-ls            |                      |
-                 =============                =======            |                      |
-                       | Detect connected mbeds  |               |                      |
-                       |------------------------>| Detect dev.   |                      |
-                       |                         |<------------->|                      |
-                       | List of connected mbeds |               x                      |
-                       | List of avail. targets  |                                      |
-                       |<------------------------|                                      |
-                       |                         x                                      |
-                       |                                                                |
-                       |                                                                |
- yotta                 |                                                                |
- =====                 |                                                                |
-   | Build target(s)   |                                                                |
-   |<------------------|                                                                |
-   |                   |                                                                |
-   | Target(s) built   |                                                                |
-   | Tests built       |                                                                |
-   |------------------>|                                                                |
-   x                   |                                                                |
-                       |                                                                |
-                       |                                                                |
-            [For each test for mbed]                                                    |
-                       |                                                                |
-                       |                   mbed-host-tests                              |
-                       |                   ===============                              |
-                       | Test binary location     |                                     |
-                       |------------------------->|                                     |
-                       |                          | Flash test binary                   |
-                       |                          |------------------------------------>|
-                       |                          | Reset device                        |
-                       |                          |------------------------------------>|
-                       |                          |                                     |
-                       |                          |                                     |
-                       |                          | Serial port data connection         |
-                       |                          | MBED_HOSTTEST_* macros handshake    |
-                       |                          |<----------------------------------->|
-                       |                          |                                     |
-                       |                          | Host test HT_NAME is executed:      |
-                       |                          | MBED_HOSTTEST_SELECT(HT_NAME)       |
-                       |                          | and serial port handle belongs to   |
-                       |                          | HT_NAME script.                     |
-                       |                          |------------------------------------>|
-                       |                          |                                     |
-                       |                          | mbed dev. and HT_NAME script        |
-                       |                          | interact and procude test result    |
-                       |                          |<----------------------------------->|
-                       |                          |                                     x
-                       |                          |
-                       |                          | Test result on serial, e.g. "{{success}}"
-                       | Store test result        | Test end detected: "{{end}}"
-                       |<-------------------------|<----------
                        |
                        | Print results
                        |<-------------
