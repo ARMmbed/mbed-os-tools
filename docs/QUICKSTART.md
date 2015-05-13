@@ -5,6 +5,7 @@ This document is a simple cookbook introducing testing facilities available for 
 * write mocks (we call them **host tests** in mbed) running on test host (your PC / Mac).
 This document provides examples for all three methods of testing.
 * Create [unit tests](http://en.wikipedia.org/wiki/Unit_testing) with [mbed compatible CppUTest library](https://github.com/ARMmbed/mbed-cpputest-private).
+  * Information about CppUTest library can be found [here](https://cpputest.github.io/manual.html).
 
 Both test tools and host test scripts are written in Python 2.7. This means minimum knowledge about Python development is required.
 
@@ -297,6 +298,47 @@ Changes in mbed-host-tests module:
  ```
 
 5. Use mbed-greenta to build test cases and execute them on target:
+  ```
+  $ mbedgt --target=frdm-k64f-gcc
+  ```
+
+## Create simple UT with CppUTest
+In order to use CppUTest library with your yotta package and test tools you need to include dependency to mbed port of [mbed-cpputest-private](https://github.com/ARMmbed/mbed-cpputest-private).
+* This package contains CppUTest library code (with useful UT macros).
+* Additional source file [testrunner.cpp](https://github.com/ARMmbed/mbed-cpputest-private/blob/master/source/testrunner.cpp) is provided to guarantee correct implementation of main() function.
+
+  Note: in your unit test source code **please do not implement ```main()``` function**. ```main()``` function is already provided and is compatible with existing tools.
+
+  For example ```testrunner```'s ```main()``` function calls proper macros used to handshake with host test module.
+
+To create first:
+
+1. Create new test case sub-directory and test source code under ```\test``` directory:
+2. Populate test case source code with below template:
+```c++
+#include <TestHarness.h>    // CppUTest stuff
+#include <mbed.h>
+
+TEST_GROUP(FirstTestGroup)
+{
+};
+
+TEST(FirstTestGroup, FirstTest)
+{
+    /* These checks are here to make sure assertions outside test runs don't crash */
+    CHECK(true);
+    LONGS_EQUAL(1, 1);
+    STRCMP_EQUAL("mbed SDK!", "mbed SDK!");
+}
+```
+3. Use ```yotta build``` command to check if your test case compiles and builds before adding it to yotta module.
+4. Connect mbed device to your computer (host) using USB.
+5. Use mbed-greenta to determine your platform's yotta target name (e.g. ```frdm-k64f-gcc```) using:
+ ```
+ $ mbedgt --config
+ ```
+
+6. Use mbed-greenta to build test cases and execute them on target:
   ```
   $ mbedgt --target=frdm-k64f-gcc
   ```
