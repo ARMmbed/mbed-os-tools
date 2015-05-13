@@ -305,6 +305,33 @@ Changes in mbed-host-tests module:
 4. (Re)install mbed-host-tests module using ```python setup.py install``` command in cloned mbed-host-tests directory.
   * Note: mbed-host-tests package should be installed on your system and any change will take place only if you reinstall package with your changes.
 
+You can verify if your new host test is added to mbed-host-test registry using command:
+```
+$ mbedhtrun --list
+```
+```
+'default'                 : mbed_host_tests.host_tests.default_auto.DefaultAuto()
+'default_auto'            : mbed_host_tests.host_tests.default_auto.DefaultAuto()
+'detect_auto'             : mbed_host_tests.host_tests.detect_auto.DetectPlatformTest()
+'dev_null_auto'           : mbed_host_tests.host_tests.dev_null_auto.DevNullTest()
+'echo'                    : mbed_host_tests.host_tests.echo.EchoTest()
+'hello_auto'              : mbed_host_tests.host_tests.hello_auto.HelloTest()
+'rtc_auto'                : mbed_host_tests.host_tests.rtc_auto.RTCTest()
+'stdio_auto'              : mbed_host_tests.host_tests.stdio_auto.StdioTest()
+'tcpecho_client_auto'     : mbed_host_tests.host_tests.tcpecho_client_auto.TCPEchoClientTest()
+'tcpecho_client_ext_auto' : mbed_host_tests.host_tests.tcpecho_client_ext_auto.TCPServerEchoExtTest()
+'tcpecho_server_auto'     : mbed_host_tests.host_tests.tcpecho_server_auto.TCPEchoServerTest()
+'udpecho_client_auto'     : mbed_host_tests.host_tests.udpecho_client_auto.UDPEchoClientTest()
+'udpecho_server_auto'     : mbed_host_tests.host_tests.udpecho_server_auto.UDPEchoServerTest()
+'wait_us_auto'            : mbed_host_tests.host_tests.wait_us_auto.WaitusTest()
+```
+Here it is! :)
+```
+.
+'rtc_auto'                : mbed_host_tests.host_tests.rtc_auto.RTCTest()
+.
+```
+
 5. Use mbed-greenta to determine your platform's yotta target name (e.g. ```frdm-k64f-gcc```) using:
  ```
  $ mbedgt --config
