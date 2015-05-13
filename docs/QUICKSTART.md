@@ -71,6 +71,12 @@ In this section we will show how to create few flavours of test cases for your y
 ## Create simple test case (no mocking)
 Often your test case will be a ```main()``` function with collection of API function calls. No special mocking is required and you can determine test case result in runtime. In that case you can use build-in host test and just implement your test case's main() function.
 
+Use:
+```
+#include "mbed/test_env.h"
+```
+in your code to include mandatory macrose required to drive test case on hardware.
+
 To do so just:
 
 1. Create new test case sub-directory and test source code under ```\test``` directory:
