@@ -322,22 +322,22 @@ To create first:
 
 1. Create new test case sub-directory and test source code under ```\test``` directory:
 2. Populate test case source code with below template:
-```c++
-#include <TestHarness.h>    // CppUTest stuff
-#include <mbed.h>
-
-TEST_GROUP(FirstTestGroup)
-{
-};
-
-TEST(FirstTestGroup, FirstTest)
-{
-    /* These checks are here to make sure assertions outside test runs don't crash */
-    CHECK(true);
-    LONGS_EQUAL(1, 1);
-    STRCMP_EQUAL("mbed SDK!", "mbed SDK!");
-}
-```
+  ```c++
+  #include <TestHarness.h>    // CppUTest stuff
+  #include <mbed.h>
+  
+  TEST_GROUP(FirstTestGroup)
+  {
+  };
+  
+  TEST(FirstTestGroup, FirstTest)
+  {
+      /* These checks are here to make sure assertions outside test runs don't crash */
+      CHECK(true);
+      LONGS_EQUAL(1, 1);
+      STRCMP_EQUAL("mbed SDK!", "mbed SDK!");
+  }
+  ```
 3. Use ```yotta build``` command to check if your test case compiles and builds before adding it to yotta module.
 4. Connect mbed device to your computer (host) using USB.
 5. Use mbed-greenta to determine your platform's yotta target name (e.g. ```frdm-k64f-gcc```) using:
