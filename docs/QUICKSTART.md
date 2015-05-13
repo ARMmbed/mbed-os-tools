@@ -174,11 +174,15 @@ Changes in your yotta module:
 
 Above RTC test case can't be validated during runtime within hardware module.
 But we can use our host computer to analyse RTC prints and measure time between  each print (note each RTC status print is every one second).
-We need to create new host test script (let's call it ```rtc_auto```; a Python script which can read serial port prints from target:
+We need to create new host test script (let's call it ```rtc_auto``` for now). We will use macro:
+```
+MBED_HOSTTEST_SELECT(rtc_auto);
+```
+to tell test suite which host test is used to instrument above code. Our ```rtc_auto``` script is a Python script which will read and parse serial port prints from target: 
 ```
 printf("MBED: [%ld] [%s]\r\n", seconds, buffer);
 ```
-and verify if time flows correctly for target's internal RTC.
+and verify if time flows correctly for target's internal RTC based on time intervals between those prints.
 
 Changes in mbed-host-tests module:
 1. Fork mbed-host-tests module and create new branch which will contain new host test for your RTC test case above.
@@ -233,7 +237,7 @@ Changes in mbed-host-tests module:
       selftest.mbed.flush()
       ```    
 
-3. Implement ```rtc_auto.py``` host test script body according to your test flow (below is an existing example fro RTC test):
+3. Implement ```rtc_auto.py``` host test script body according to your test flow (below is an existing example for RTC test):
   ```python
   import re
   from time import time, strftime, gmtime
@@ -270,7 +274,7 @@ Changes in mbed-host-tests module:
           return selftest.RESULT_SUCCESS if test_result else selftest.RESULT_FAILURE
   ```
 
-3. Add ```rtc_auto.py``` to mbed-host-tests registry under ```mbed-host-tests/mbed_host_tests/__init__.py```:
+3. Add ```rtc_auto.py``` to mbed-host-tests module's registry under ```mbed-host-tests/mbed_host_tests/__init__.py```:
   ```python
   .
   .  
@@ -292,12 +296,15 @@ Changes in mbed-host-tests module:
     
     Note: ```rtc_auto``` is the same name which we are using in test case C/C++ source code via macro: ```MBED_HOSTTEST_SELECT(rtc_auto);```.
 
-4. Use mbed-greenta to determine your platform's yotta target name (e.g. ```frdm-k64f-gcc```) using:
+4. (Re)install mbed-host-tests module using ```python setup.py install``` command in cloned mbed-host-tests directory.
+  * Note: mbed-host-tests package should be installed on your system and any change will take place only if you reinstall package with your changes.
+
+5. Use mbed-greenta to determine your platform's yotta target name (e.g. ```frdm-k64f-gcc```) using:
  ```
  $ mbedgt --config
  ```
 
-5. Use mbed-greenta to build test cases and execute them on target:
+6. Use mbed-greenta to build test cases and execute them on target:
   ```
   $ mbedgt --target=frdm-k64f-gcc
   ```
