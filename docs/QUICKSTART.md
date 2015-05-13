@@ -1,9 +1,10 @@
 # Description
 This document is a simple cookbook introducing testing facilities available for mbed 3.0. From this document you will learn how to:
-* Create simple test(s) for your software encapsulated in yotta package.
+* Create simple test(s) for your software encapsulated in yotta package. To read full yotta documentation go [here](http://docs.yottabuild.org/reference/commands.html).
 * Create more complicated test cases where additional mocking / test case supervision is required
 * write mocks (we call them **host tests** in mbed) running on test host (your PC / Mac).
 This document provides examples for all three methods of testing.
+* Create [unit tests](http://en.wikipedia.org/wiki/Unit_testing) with [mbed compatible CppUTest library](https://github.com/ARMmbed/mbed-cpputest-private).
 
 Both test tools and host test scripts are written in Python 2.7. This means minimum knowledge about Python development is required.
 
@@ -298,7 +299,50 @@ Changes in mbed-host-tests module:
 * You can refer to existing examples for tests in [mbed-sdk-private](https://github.com/ARMmbed/mbed-sdk-private/tree/master/test) repository.
 * All host tests with source code are [here](https://github.com/ARMmbed/mbed-host-tests/tree/master/mbed_host_tests/host_tests).
 
-# Workflow
+# Greentea Workflows
+## Current configuration check
+Below workflow shows interaction between test tools's components after user calls mbed-greentea command:
+```
+$ mbedgt --config
+```
+```
+                                                              host OS             mbed device
+                                                           =============          ===========
+                                                                 | USB connection       |
+                                                                 |<---------------------|
+                                                                 |                      |
+                                                                 | Mount serial         |
+                                                                 |<---------------------|
+                                                                 | Mount disk           |
+                                                                 |<---------------------|
+                 mbed-greentea                mbed-ls            |                      x
+                 =============                =======            |
+                       | Detect connected mbeds  |               |
+                       |------------------------>| Detect dev.   |
+                       |                         |<------------->|
+                       | List of connected mbeds |               x
+                       | List of avail. targets  |
+                       |<------------------------|
+                       |                         x
+                       |
+                       |
+ yotta                 |
+ =====                 |
+   | yotta search      |
+   |<------------------|
+   |                   |
+   | List of available |
+   | targets for mbeds |
+   |------------------>|
+   x                   | Print configuration
+                       |<-------------------
+                       x
+```
+## Test build and execution workflow
+Below workflow shows interaction between test tools's components after user calls mbed-greentea command:
+```
+$ mbedgt --target=<target_name>
+```
 ```
                                                               host OS             mbed device
                                                            =============          ===========
