@@ -15,8 +15,8 @@ Currently using test tools you can develop test cases which run on a single hard
 Test tools offer [host test](https://github.com/ARMmbed/mbed-host-tests) functionality. A host test is a supervising Python script executed on host computer (your Mac or PC) and used to mock certain functionality or feature like TCP servers required to test your code. Host tests are part of separate Python module (mbed-host-tests).
 Each host test should be as generic as possible so many test cases running on mbed platforms can reuse it. For example simple TCP or UDP echo server can be used to test different network APIs also for mbed 2.0.
 
-Test tools are designed in such a way s0:
-* you can concentrate on test development and
+Test tools are designed to:
+* Let you can concentrate on test development not test framework building and
 * (re)use existing host tests or 
 * create new host test to cover new functional / interoperability domain of your tests.
 
