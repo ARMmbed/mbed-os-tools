@@ -9,27 +9,33 @@ This document provides examples for all three methods of testing.
 Both test tools and host test scripts are written in Python 2.7. This means minimum knowledge about Python development is required.
 
 ## Test process
-Currently using test tools you can develop test cases which run on a single hardware platform and can interact with host computer via serial port (series of prints sscanf).
+Currently using test tools you can develop test cases which run on a single hardware platform and can interact with host computer via serial port (series of ```print```s and ```sscanf``` calls). Host computer communicates with mbed device using serial port connection (duplex) to drive test scenarions.
 
-Test tools offer host test functionality. A host test is a supervising Python script executed on host computer (your Mac or PC) and used to mock certain functionality or features like TCP servers required to test your code. Host tests are part of separate Python module (mbed-host-tests).
+Test tools offer [host test](https://github.com/ARMmbed/mbed-host-tests) functionality. A host test is a supervising Python script executed on host computer (your Mac or PC) and used to mock certain functionality or feature like TCP servers required to test your code. Host tests are part of separate Python module (mbed-host-tests).
+Each host test should be as generic as possible so many test cases running on mbed platforms can reuse it. For example simple TCP or UDP echo server can be used to test different network APIs also for mbed 2.0.
 
-Test tools are designed in such a way that you can concentrate on test development and (re)use existing host tests.
+Test tools are designed in such a way s0:
+* you can concentrate on test development and
+* (re)use existing host tests or 
+* create new host test to cover new functional / interoperability domain of your tests.
 
 ### Test suite (mbed-greentea)
 Mbed 3.0 test suite called mbed-greentea is a Python 2.7 application which:
-* Builds your tests inside your yotta package using ```yotta build``` command.
-* For each built test case in your yotta module executes as follows:
-  * Flashes hardware (target) with test binary.
-  * Resets hardware (target) via serial port (send break command).
-  * Listens on target's serial port and scans for prints from target.
-  * Executes proper host test which will supervise your test case and
-  * extracts test result back to test suite (for reporting).
+* Build your tests inside your yotta package using ```yotta build``` command.
+  * List all tests in \build\<target_name>\test.
+* For each built's test case in your yotta module, mbed-greentea executes in order below actions:
+  * Flash hardware (target) with test binary.
+  * Reset hardware (target) via serial port (send break command).
+  * Listen on target's serial port and scans for prints from target.
+  * Execute proper host test which will supervise your test case and
+  * pass test result back to test suite (for reporting).
 
 ### Limitations
-It is impossible to develop with presented in this documents tools test cases or test scenarios where few mbed devices cooperate with each other. For example it is impossible to write test cases for mesh networks or tests where two mbed devices communicate with each other via sockets / Bluetooth etc.
+It is impossible to develop (with current test tools) test cases or test scenarios where few mbed devices cooperate with each other. For example it is impossible to write test cases for mesh networks or tests where two mbed devices communicate with each other via sockets / Bluetooth etc.
 
 ## yotta package
 Place your test case under a sub-directory of ```\test``` directory located in your yotta package:
+Note: For details please check ['The test Directory' section of yotta documentation](http://docs.yottabuild.org/tutorial/testing.html).
 ```
 \your-yotta-pacjage-dir
   \source
