@@ -31,6 +31,7 @@ from host_tests.detect_auto import DetectPlatformTest
 from host_tests.wait_us_auto import WaitusTest
 from host_tests.default_auto import DefaultAuto
 from host_tests.dev_null_auto import DevNullTest
+from host_tests.run_only_auto import RunBinaryOnlyAuto
 from host_tests.tcpecho_server_auto import TCPEchoServerTest
 from host_tests.udpecho_server_auto import UDPEchoServerTest
 from host_tests.tcpecho_client_auto import TCPEchoClientTest
@@ -50,6 +51,7 @@ HOSTREGISTRY.register_host_test("detect_auto", DetectPlatformTest())
 HOSTREGISTRY.register_host_test("default_auto", DefaultAuto())
 HOSTREGISTRY.register_host_test("wait_us_auto", WaitusTest())
 HOSTREGISTRY.register_host_test("dev_null_auto", DevNullTest())
+HOSTREGISTRY.register_host_test("run_binary_auto", RunBinaryOnlyAuto())
 HOSTREGISTRY.register_host_test("tcpecho_server_auto", TCPEchoServerTest())
 HOSTREGISTRY.register_host_test("udpecho_server_auto", UDPEchoServerTest())
 HOSTREGISTRY.register_host_test("tcpecho_client_auto", TCPEchoClientTest())
@@ -77,6 +79,7 @@ class DefaultTestSelector(DefaultTestSelectorBase):
     test_supervisor = get_host_test("default")
 
     def __init__(self, options=None):
+        self.options = options
 
         # Handle extra command from
         if options:
@@ -105,7 +108,51 @@ class DefaultTestSelector(DefaultTestSelectorBase):
             with test selector's work flow
         """
         self.setup()
+
+        if self.mbed.options:
+            # We would like to run some binaries, not as tests but as examples, demos etc.
+            # In this case we will use host-tests to just print console output
+            if self.mbed.options.run_binary:
+                self.execute_run()
+                return
+        # Normal host test path: flash, reset, host test execution, grab test results, end
         self.execute()
+
+    def execute_run(self):
+        """ Feature allows users to simplu flash, reset and run binary without host test
+            direct involvement
+        """
+        # Copy image to device
+        self.notify("HOST: Copy image onto target...")
+        result = self.mbed.copy_image()
+        if not result:
+            self.print_result(self.RESULT_IOERR_COPY)
+
+        # Initialize and open target's serial port (console)
+        self.notify("HOST: Initialize serial port...")
+        result = self.mbed.init_serial()
+        if not result:
+            self.print_result(self.RESULT_IO_SERIAL)
+
+        # Reset device
+        self.notify("HOST: Reset target...")
+        result = self.mbed.reset()
+        if not result:
+            self.print_result(self.RESULT_IO_SERIAL)
+
+        # Run binary and grab and print console output
+        # Read serial and wait for binary execution end
+        try:
+            self.test_supervisor = get_host_test("run_binary_auto")
+            result = self.test_supervisor.test(self)
+
+            if result is not None:
+                self.print_result(result)
+            else:
+                self.notify("HOST: Passive mode...")
+        except Exception, e:
+            print str(e)
+            self.print_result(self.RESULT_ERROR)
 
     def execute(self):
         """ Test runner for host test. This function will start executing
@@ -198,6 +245,12 @@ def init_host_test_cli_params():
                       default=False,
                       action="store_true",
                       help='Prints registered host test and exits')
+
+    parser.add_option('', '--run',
+                      dest='run_binary',
+                      default=False,
+                      action="store_true",
+                      help='Runs binary image on target (workflow: flash, reset, print console')
 
     (options, _) = parser.parse_args()
     return options
