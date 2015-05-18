@@ -144,12 +144,7 @@ class DefaultTestSelector(DefaultTestSelectorBase):
         # Read serial and wait for binary execution end
         try:
             self.test_supervisor = get_host_test("run_binary_auto")
-            result = self.test_supervisor.test(self)
-
-            if result is not None:
-                self.print_result(result)
-            else:
-                self.notify("HOST: Passive mode...")
+            result = self.test_supervisor.test(self)    # This is blocking, waits for {end}
         except Exception, e:
             print str(e)
             self.print_result(self.RESULT_ERROR)

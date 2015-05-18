@@ -31,7 +31,7 @@ class RunBinaryOnlyAuto():
                 stdout.write(c)
                 stdout.flush()
                 if '{end}' in c:
-                    return selftest.RESULT_SUCCESS
+                    return None
         except KeyboardInterrupt, _:
             selftest.notify("\r\n[CTRL+C] exit")
             result = selftest.RESULT_ERROR
