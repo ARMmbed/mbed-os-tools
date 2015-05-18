@@ -86,6 +86,7 @@ class TCPEchoClientTest():
 
         # Returning none will suppress host test from printing success code
         server = TCPServer((SERVER_IP, SERVER_PORT), TCPEchoClient_Handler)
+        server.allow_reuse_address = True
         print "HOST: Listening for TCP connections: " + SERVER_IP + ":" + str(SERVER_PORT)
         self.send_server_ip_port(selftest, SERVER_IP, SERVER_PORT)
         server.serve_forever()
