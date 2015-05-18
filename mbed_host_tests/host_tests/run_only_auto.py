@@ -24,14 +24,21 @@ class RunBinaryOnlyAuto():
     def test(self, selftest):
         result = selftest.RESULT_SUCCESS
         try:
+            line = ''
             while True:
                 c = selftest.mbed.serial_read(512)
                 if c is None:
                     return selftest.RESULT_IO_SERIAL
                 stdout.write(c)
                 stdout.flush()
-                if '{end}' in c:
-                    return None
+
+                line += c
+                if '\n' in line:
+                    if '{end}' in line:
+                        return None # Run executable end
+                    i = line.index('\n')
+                    line = line[i:]
+
         except KeyboardInterrupt, _:
             selftest.notify("\r\n[CTRL+C] exit")
             result = selftest.RESULT_ERROR
