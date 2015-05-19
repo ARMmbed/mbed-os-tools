@@ -24,18 +24,9 @@ import logging
 from mbed_lstools.main import create
 
 
-test_mbed_htm_k64f = '''<!-- mbed Microcontroller Website and Authentication Shortcut -->
-<!-- Version: 0203 Build: May 30 2014 19:00:51 Git Commit SHA: ebe7dab202606d9dd80804b70ce95580d3077e23 Git local mods:Yes-->
-<html>
-<head>
-<meta http-equiv="refresh" content="0; url=http://mbed.org/device/?code=02400203D94B0E7724B7F3CF"/>
-<title>mbed Website Shortcut</title>
-</head>
-<body></body>
-</html>
-
-                                                                                                                                
-'''
+test_mbed_htm_k64f_url = '<meta http-equiv="refresh" content="0; url=http://mbed.org/device/?code=02400203D94B0E7724B7F3CF"/>'
+test_mbed_htm_l152re_url = '<meta http-equiv="refresh" content="0; url=http://mbed.org/device/?code=07100200656A9A955A0F0CB8"/>'
+test_mbed_htm_lpc1768_url = '<meta http-equiv="refresh" content="0; url=http://mbed.org/start?auth=101000000000000000000002F7F1869557200730298d254d3ff3509e3fe4722d&loader=11972&firmware=16457&configuration=4" />'
 
 
 class ParseMbedHTMTestCase(unittest.TestCase):
@@ -46,8 +37,17 @@ class ParseMbedHTMTestCase(unittest.TestCase):
     def tearDown(self):
         pass
 
-    def test_(self):
-        pass
+    def test_mbed_htm_k64f_url(self):
+        target_id = self.mbeds.scan_html_line_for_target_id(test_mbed_htm_k64f_url)
+        self.assertEqual('02400203D94B0E7724B7F3CF', target_id)
+
+    def test_mbed_htm_l152re_url(self):
+        target_id = self.mbeds.scan_html_line_for_target_id(test_mbed_htm_l152re_url)
+        self.assertEqual('07100200656A9A955A0F0CB8', target_id)
+
+    def test_mbed_htm_lpc1768_url(self):
+        target_id = self.mbeds.scan_html_line_for_target_id(test_mbed_htm_lpc1768_url)
+        self.assertEqual('101000000000000000000002F7F1869557200730298d254d3ff3509e3fe4722d', target_id)
 
     def test_(self):
         pass
