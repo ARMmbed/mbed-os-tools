@@ -80,6 +80,8 @@ class MbedLsToolsUbuntu(MbedLsToolsBase):
         orphans = self.get_not_detected(tids, disk_ids, serial_ids, mount_ids)
         all_devices = mbeds + orphans
 
+        self.ERRORLEVEL_FLAG = 0
+
         result = []
         tidhex = re.compile(r'_([0-9a-fA-F]+)')
         for device in all_devices:
@@ -95,17 +97,19 @@ class MbedLsToolsUbuntu(MbedLsToolsBase):
 
             # Deducing mbed-enabled TargetID based on available targetID definition DB.
             # If TargetID from USBID is not recognized we will try to check URL in mbed.htm
-            if device[0] is None:
-                mnt = device[2]
-                mbed_htm_target_id = self.get_mbed_htm_target_id(mnt)
-                if mbed_htm_target_id is not None:
-                    mbed_htm_target_id_prefix = mbed_htm_target_id[0:4]
-                    if mbed_htm_target_id_prefix in tids:
-                        # We need to update platform_name and corresponding TargetID (not USBID, but from mbed.htm)
-                        mbed['platform_name'] = tids[mbed_htm_target_id_prefix]
-                        mbed['target_id'] = mbed_htm_target_id
+            mbed_htm_target_id = self.get_mbed_htm_target_id(device[2]) # device[2] is a 'mount_point'
+            if mbed_htm_target_id is not None:
+                mbed_htm_target_id_prefix = mbed_htm_target_id[0:4]
+                if mbed_htm_target_id_prefix in tids:
+                    # We need to update platform_name and corresponding TargetID (not USBID, but from mbed.htm)
+                    mbed['platform_name'] = tids[mbed_htm_target_id_prefix]
+                    mbed['target_id'] = mbed_htm_target_id
 
             result.append(mbed)
+
+            if None in mbed:
+                self.ERRORLEVEL_FLAG = -1
+
         return result
 
     # Private methods
@@ -116,10 +120,14 @@ class MbedLsToolsUbuntu(MbedLsToolsBase):
         """
         result = []
         cmd = 'ls -oA /dev/' + subdir + '/by-id/'
+        if self.DEBUG_FLAG:
+            self.debug(self.get_dev_by_id.__name__, cmd)
+
         p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         for line in p.stdout.readlines():
-            # print line,
             result.append(line)
+            if self.DEBUG_FLAG:
+                self.debug(self.get_dev_by_id.__name__, line)
         retval = p.wait()
         return result
 
@@ -128,10 +136,14 @@ class MbedLsToolsUbuntu(MbedLsToolsBase):
         """
         result = []
         cmd = 'mount | grep vfat'
+        if self.DEBUG_FLAG:
+            self.debug(self.get_mounts.__name__, cmd)
+
         p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         for line in p.stdout.readlines():
-            # print line,
             result.append(line)
+            if self.DEBUG_FLAG:
+                self.debug(self.get_mounts.__name__, line)
         retval = p.wait()
         return result
 

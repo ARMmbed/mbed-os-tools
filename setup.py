@@ -1,3 +1,8 @@
+# Copyright 2014-2015 ARM Limited
+#
+# Licensed under the Apache License, Version 2.0
+# See LICENSE file for details.
+
 """
 This module defines the attributes of the
 PyPI package for the mbed SDK test suite ecosystem tools
@@ -18,7 +23,7 @@ def read(fname):
 
 
 setup(name='mbed-ls',
-      version='0.1.6',
+      version='0.1.9',
       description=DESCRIPTION,
       long_description=read('README.md'),
       author=OWNER_NAMES,
@@ -27,8 +32,8 @@ setup(name='mbed-ls',
       maintainer_email=OWNER_EMAILS,
       url='https://github.com/mbedmicro/mbed',
       packages=find_packages(),
-      package_data={'mbed_lstools_meta': ['*.json']},
       license="Apache-2.0",
+      test_suite = 'test',
       entry_points={
         "console_scripts": [
             "mbedls=mbed_lstools:mbedls_main",

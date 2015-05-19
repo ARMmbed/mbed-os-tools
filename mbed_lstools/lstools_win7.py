@@ -18,6 +18,7 @@ limitations under the License.
 import re
 import os
 import sys
+import string
 
 from lstools_base import MbedLsToolsBase
 
@@ -37,6 +38,8 @@ class MbedLsToolsWin7(MbedLsToolsBase):
     def list_mbeds(self):
         """Returns connected mbeds as an mbeds dictionary
         """
+        self.ERRORLEVEL_FLAG = 0
+
         mbeds = []
         for mbed in self.discover_connected_mbeds(self.manufacture_ids):
             d = {}
@@ -45,6 +48,10 @@ class MbedLsToolsWin7(MbedLsToolsBase):
             d['serial_port']   = mbed[2] if mbed[2] else None
             d['platform_name'] = mbed[3] if mbed[3] else None
             mbeds += [d]
+
+            if None in mbed:
+                self.ERRORLEVEL_FLAG = -1
+
         return mbeds
 
     def discover_connected_mbeds(self, defs={}):
@@ -58,8 +65,8 @@ class MbedLsToolsWin7(MbedLsToolsBase):
             mbed_id_prefix = mbed_id[0:4]
             # Deducing mbed-enabled TargetID based on available targetID definition DB.
             # If TargetID from USBID is not recognized we will try to check URL in mbed.htm
-            if mbed_id_prefix not in defs:
-                mbed_htm_target_id = self.get_mbed_htm_target_id(mnt)
+            mbed_htm_target_id = self.get_mbed_htm_target_id(mnt)
+            if mbed_htm_target_id:
                 mbed_id = mbed_htm_target_id if mbed_htm_target_id is not None else mbed_id
             mbed_id_prefix = mbed_id[0:4]
             board = defs[mbed_id_prefix] if mbed_id_prefix in defs else None
@@ -77,6 +84,9 @@ class MbedLsToolsWin7(MbedLsToolsBase):
         self.winreg.Enum = self.winreg.OpenKey(self.winreg.HKEY_LOCAL_MACHINE, r'SYSTEM\CurrentControlSet\Enum')
         usb_devs = self.winreg.OpenKey(self.winreg.Enum, 'USB')
 
+        if self.DEBUG_FLAG:
+            self.debug(self.get_mbed_com_port.__name__, 'ID: ' + id)
+
         # first try to find all devs keys (by id)
         dev_keys = []
         for vid in self.iter_keys(usb_devs):
@@ -90,6 +100,8 @@ class MbedLsToolsWin7(MbedLsToolsBase):
             try:
                 param = self.winreg.OpenKey(key, "Device Parameters")
                 port = self.winreg.QueryValueEx(param, 'PortName')[0]
+                if self.DEBUG_FLAG:
+                    self.debug(self.get_mbed_com_port.__name__, port)
                 return port
             except:
                 pass
@@ -105,6 +117,8 @@ class MbedLsToolsWin7(MbedLsToolsBase):
                             ports += [self.get_mbed_com_port(dev)]
                 for port in ports:
                     if port:
+                        if self.DEBUG_FLAG:
+                            self.debug(self.get_mbed_com_port.__name__, port)
                         return port
             except:
                 pass
@@ -121,8 +135,10 @@ class MbedLsToolsWin7(MbedLsToolsBase):
         for mbed in self.get_mbed_devices():
             mountpoint = re.match('.*\\\\(.:)$', mbed[0]).group(1)
             # id is a hex string with 10-36 chars
-            id = re.search('[0-9A-Fa-f]{10,36}', mbed[1]).group(0)
+            id = re.search('[0-9A-Fa-f]{10,48}', mbed[1]).group(0)
             mbeds += [(mountpoint, id)]
+            if self.DEBUG_FLAG:
+                self.debug(self.get_mbeds.__name__, (mountpoint, id))
         return mbeds
 
     # =============================== Registry ====================================
@@ -147,8 +163,17 @@ class MbedLsToolsWin7(MbedLsToolsBase):
 
     def get_mbed_devices(self):
         """ Get MBED devices (connected or not)
+            Note: We will detect also non-standard MBED devices mentioned on 'usb_vendor_list' list.
+                  This will help to detect boards like EFM boards.
         """
-        return [d for d in self.get_dos_devices() if 'VEN_MBED' in d[1].upper()]
+        result = []
+        for ven in self.usb_vendor_list:
+            result += [d for d in self.get_dos_devices() if ven.upper() in d[1].upper()]
+
+        for r in result:
+            if self.DEBUG_FLAG:
+                self.debug(self.get_mbed_devices.__name__, r)
+        return result
 
     def get_dos_devices(self):
         """ Get DOS devices (connected or not)
@@ -159,24 +184,10 @@ class MbedLsToolsWin7(MbedLsToolsBase):
     def get_mounted_devices(self):
         """ Get all mounted devices (connected or not)
         """
-        devs = []
-        mounts = self.winreg.OpenKey(self.winreg.HKEY_LOCAL_MACHINE, r'SYSTEM\MountedDevices')
-        for i in range(self.winreg.QueryInfoKey(mounts)[1]):
-            devs += [self.winreg.EnumValue(mounts, i)]
-        return devs
+        mounts = self.winreg.OpenKey(self.winreg.HKEY_LOCAL_MACHINE, 'SYSTEM\MountedDevices')
+        return [val for val in self.iter_vals(mounts)]
 
-    def regbin2str(self, binary):
+    def regbin2str(self, regbin):
         """ Decode registry binary to readable string
         """
-        string = ''
-        for i in range(0, len(binary), 2):
-            # binary[i] is str in Python2 and int in Python3
-            if isinstance(binary[i], int):
-                if binary[i] < 128:
-                    string += chr(binary[i])
-            elif isinstance(binary[i], str):
-                string += binary[i]
-            else:
-                string = None
-                break
-        return string
+        return filter(lambda ch: ch in string.printable, regbin)
