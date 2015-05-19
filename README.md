@@ -78,7 +78,7 @@ When connecting more than one mbed-enabled device to the host computer it takes 
 * Virtual serial port.
 * Mbed's TargetID and generic platform name.
 
-#Installation from Python sources 
+# Installation from Python sources 
 
 Prerequisites: you need to have Python 2.7.x installed on your system.
 
@@ -120,7 +120,7 @@ Note: On Linux if you have a problem with permissions please try to use ```sudo`
 $ sudo python setup.py install
 ```
 
-# nstallation from PyPI (Python Package Index)
+# Installation from PyPI (Python Package Index)
 In the near future the mbed-ls module can be redistributed via PyPI. We recommend you use the ```pip``` application. It is available here: https://pip.pypa.io/en/latest/installing.html#install-pip
 
 Note: Python 2.7.9 and later (on the python2 series), and Python 3.4 and later include pip by default, so you may have pip already.
