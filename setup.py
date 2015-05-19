@@ -33,6 +33,7 @@ setup(name='mbed-ls',
       url='https://github.com/mbedmicro/mbed',
       packages=find_packages(),
       license="Apache-2.0",
+      test_suite = 'test',
       entry_points={
         "console_scripts": [
             "mbedls=mbed_lstools:mbedls_main",
