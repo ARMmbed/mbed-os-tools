@@ -43,10 +43,12 @@ class MbedLsToolsWin7(MbedLsToolsBase):
         mbeds = []
         for mbed in self.discover_connected_mbeds(self.manufacture_ids):
             d = {}
-            d['mount_point']   = mbed[0] if mbed[0] else None
-            d['target_id']     = mbed[1] if mbed[1] else None
-            d['serial_port']   = mbed[2] if mbed[2] else None
+            d['mount_point'] = mbed[0] if mbed[0] else None
+            d['target_id'] = mbed[1] if mbed[1] else None
+            d['serial_port'] = mbed[2] if mbed[2] else None
             d['platform_name'] = mbed[3] if mbed[3] else None
+            d['target_id_usb_id'] = mbed[4] if mbed[4] else None
+            d['target_id_mbed_htm'] = mbed[5] if mbed[5] else None
             mbeds += [d]
 
             if None in mbed:
@@ -74,7 +76,7 @@ class MbedLsToolsWin7(MbedLsToolsBase):
 
             port = self.get_mbed_com_port(mbed[1])
             if port:
-                mbeds[i] = (mnt, mbed_id, port, mbeds[i][3])
+                mbeds[i] = (mnt, mbed_id, port, mbeds[i][3], mbed[1], mbed_htm_target_id)
         return mbeds
 
     def get_mbed_com_port(self, id):
