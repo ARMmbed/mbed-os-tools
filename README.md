@@ -250,3 +250,38 @@ $ mbedls
 You can help us improve the mbed-ls tools by - for example - committing a new OS port. You can see the list of currently supported OSs in the [Description](#description) section; if your OS isn't there, you can port it.
 
 For further study please check how Mac OS X (Darwin) was ported in [this pull request](https://github.com/ARMmbed/mbed-ls/pull/1).
+
+# mbed-ls unit testing
+* ```mbed-ls``` package contains basic unit tests.
+* Tests are stored under ```\mbed-ls\test ``` directory.
+* Tests cover basic function calls, object construction and check if minimal requirements for OS porting are fulfilled.
+* Standard Python’s ```unittest``` library was used so it is easy to contribute to test effort.
+To invoke test procedure from command line please change directory to current mbed-ls repo directory and call setup.py with 'test' option.
+```
+$ cd mbed-ls
+$ python setup.py test
+```
+```
+running test
+running egg_info
+writing requirements to mbed_ls.egg-info\requires.txt
+writing mbed_ls.egg-info\PKG-INFO
+writing top-level names to mbed_ls.egg-info\top_level.txt
+writing dependency_links to mbed_ls.egg-info\dependency_links.txt
+writing entry points to mbed_ls.egg-info\entry_points.txt
+reading manifest file 'mbed_ls.egg-info\SOURCES.txt'
+writing manifest file 'mbed_ls.egg-info\SOURCES.txt'
+running build_ext
+test_example (test.basic.BasicTestCase) ... ok
+test_detect_os_support_ext (test.detect_os.DetectOSTestCase) ... ok
+test_porting_create (test.detect_os.DetectOSTestCase) ... ok
+test_porting_mbed_lstools_os_info (test.detect_os.DetectOSTestCase) ... ok
+test_porting_mbed_os_support (test.detect_os.DetectOSTestCase) ... ok
+.
+.
+.
+----------------------------------------------------------------------
+Ran 18 tests in 0.302s
+
+OK
+```
