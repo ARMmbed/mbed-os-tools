@@ -26,13 +26,13 @@ class HostRegistry:
         if ht_name not in self.HOST_TESTS:
             self.HOST_TESTS[ht_name] = ht_object
     
-    def unregister_host_test(self):
-        if ht_name in HOST_TESTS:
+    def unregister_host_test(self, ht_name):
+        if ht_name in self.HOST_TESTS:
             self.HOST_TESTS[ht_name] = None
 
     def get_host_test(self, ht_name):
         return self.HOST_TESTS[ht_name] if ht_name in self.HOST_TESTS else None
 
     def is_host_test(self, ht_name):
-        return ht_name in self.HOST_TESTS
+        return ht_name in self.HOST_TESTS and self.HOST_TESTS[ht_name] is not None
         
