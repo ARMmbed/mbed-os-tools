@@ -180,7 +180,7 @@ def main():
                             test_result = 'SKIPPED'
                             # Skip test not mentionned in -n option
                             if opts.test_by_names:
-                                test_list = opts.test_by_names.lower().split(' ')
+                                test_list = opts.test_by_names.lower().split(',')
                                 if test_bin.lower() not in test_list:
                                     continue
 
