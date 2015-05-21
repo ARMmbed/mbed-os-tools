@@ -29,6 +29,7 @@ from mbed_test_api import run_host_test
 from mbed_test_api import run_cli_command
 from mbed_test_api import TEST_RESULTS
 from cmake_handlers import load_ctest_testsuite
+from cmake_handlers import list_binaries_for_targets
 from mbed_target_info import get_mbed_clasic_target_info
 from mbed_target_info import get_mbed_supported_test
 
@@ -41,14 +42,6 @@ except:
 MBED_LMTOOLS = 'mbed_lstools' in sys.modules
 MBED_HOST_TESTS = 'mbed_host_tests' in sys.modules
 
-
-# git clone repository
-# cd repo
-# yotta target frdm-....
-# yt build
-#
-# yt --target=frdm-XXXX,* build
-#
 
 def main():
 
@@ -100,6 +93,12 @@ def main():
                     action="store_true",
                     help='If possible force build in debug mode (yotta -d).')
 
+    parser.add_option('', '--list',
+                    dest='list_binaries',
+                    default=False,
+                    action="store_true",
+                    help='List available binaries')
+
     parser.add_option('', '--digest',
                     dest='digest_source',
                     help='Redirect input from where test suite should take console input. You can use stdin or file name to get test case console output')
@@ -120,6 +119,11 @@ def main():
     parser.epilog = """Example: mbedgt --auto --target frdm-k64f-gcc"""
 
     (opts, args) = parser.parse_args()
+
+    # List available test binaries (names, no extension)
+    if opts.list_binaries:
+        list_binaries_for_targets()
+        exit(0)
 
     # Capture alternative test console inputs
     if opts.digest_source:
