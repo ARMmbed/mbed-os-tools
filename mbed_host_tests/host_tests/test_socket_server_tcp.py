@@ -49,7 +49,7 @@ class TCPSocketServerEchoExtTest:
         selftest.notify("HOST: Init sockets...")
         Sv4 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         Sv4.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        Sv4.bind((SERVER_IP, SERVER_PORT))
+        Sv4.bind(('', SERVER_PORT))
 
         Sv4.listen(1)
         selftest.notify("HOST: Listening for TCP connections: " + SERVER_IP + ":" + str(SERVER_PORT))

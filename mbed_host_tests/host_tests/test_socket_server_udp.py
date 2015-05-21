@@ -44,7 +44,7 @@ class UDPSocketServerEchoExtTest:
 
         Sv4 = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         Sv4.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        Sv4.bind((self.SERVER_IP, self.SERVER_PORT))
+        Sv4.bind(('', self.SERVER_PORT))
         while True:
             (data, address) = Sv4.recvfrom(4096)
             if data and address:
