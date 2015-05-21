@@ -82,7 +82,7 @@ class TCPEchoClientTest():
         # (UDP) on the well-known port number 7. The server sends back an
         # identical copy of the data it received.
         SERVER_IP = str(socket.gethostbyname(socket.getfqdn()))
-        SERVER_PORT = 7
+        SERVER_PORT = 32765
 
         # Returning none will suppress host test from printing success code
         server = TCPServer((SERVER_IP, SERVER_PORT), TCPEchoClient_Handler)
