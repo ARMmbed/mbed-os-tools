@@ -30,8 +30,10 @@ from mbed_test_api import run_cli_command
 from mbed_test_api import TEST_RESULTS
 from cmake_handlers import load_ctest_testsuite
 from cmake_handlers import list_binaries_for_targets
+from mbed_report_api import exporter_junit
 from mbed_target_info import get_mbed_clasic_target_info
 from mbed_target_info import get_mbed_supported_test
+
 
 try:
     import mbed_lstools
@@ -103,6 +105,10 @@ def main():
                     dest='digest_source',
                     help='Redirect input from where test suite should take console input. You can use stdin or file name to get test case console output')
 
+    parser.add_option('', '--report-junit',
+                      dest='report_junit_file_name',
+                      help='You can log test suite results in form of JUnit compliant XML report')
+
     parser.add_option('-V', '--verbose-test-result',
                     dest='verbose_test_result_only',
                     default=False,
@@ -141,6 +147,8 @@ def main():
     print "mbed-ls: detecting connected mbed-enabled devices... %s"% ("no devices detected" if not len(mbeds_list) else "")
     list_of_targets = opts.list_of_targets.split(',') if opts.list_of_targets is not None else None
 
+    test_report = {}    # Test report used to export to Junit, HTML etc...
+
     for mut in mbeds_list:
         print "mbed-ls: detected %s, console at: %s, mounted at: %s"% (mut['platform_name'],
             mut['serial_port'],
@@ -155,7 +163,6 @@ def main():
             for yotta_target in mut_info['yotta_targets']:
                 yotta_target_name = yotta_target['yotta_target']
                 yotta_target_toolchain = yotta_target['mbed_toolchain']
-                print "\tgot yotta target '%s'"% (yotta_target_name)
 
                 if opts.verbose_test_configuration_only:
                     continue
@@ -179,7 +186,7 @@ def main():
                         ctest_test_list = load_ctest_testsuite(os.path.join('.', 'build', yotta_target_name),
                             binary_type=binary_type)
 
-                        print "mbedgt: running tests..."
+                        print "mbedgt: running tests for '%s' target" % yotta_target_name
                         for test_bin, image_path in ctest_test_list.iteritems():
                             test_result = 'SKIPPED'
                             # Skip test not mentionned in -n option
@@ -204,8 +211,25 @@ def main():
                                     verbose=verbose)
                                 single_test_result, single_test_output, single_testduration, single_timeout = host_test_result
                                 test_result = single_test_result
-                            print "\ttest '%s' %s"% (test_bin, '.' * (70 - len(test_bin))),
-                            print "%s"% (test_result)
+
+                                # Update report for optional reporting feature
+                                test_name = test_bin.lower()
+                                if yotta_target_name not in test_report:
+                                    test_report[yotta_target_name] = {}
+                                if test_name not in test_report[yotta_target_name]:
+                                    test_report[yotta_target_name][test_name] = {}
+
+                                test_report[yotta_target_name][test_name]['single_test_result'] = single_test_result
+                                test_report[yotta_target_name][test_name]['single_test_output'] = single_test_output
+                                test_report[yotta_target_name][test_name]['elapsed_time'] = single_testduration
+
+                                print "\ttest '%s' %s"% (test_bin, '.' * (70 - len(test_bin))),
+                                print " %s in %.2f sec"% (test_result, single_testduration)
+
+    if opts.report_junit_file_name:
+        junit_report = exporter_junit(test_report)
+        with open(opts.report_junit_file_name, 'w') as f:
+            f.write(junit_report)
 
     if opts.verbose_test_configuration_only:
         print
