@@ -17,9 +17,6 @@ limitations under the License.
 """
 
 import unittest
-import os
-import errno
-import logging
 
 from mbed_host_tests import is_host_test
 from mbed_host_tests import get_host_test
