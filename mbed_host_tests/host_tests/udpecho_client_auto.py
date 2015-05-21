@@ -72,6 +72,7 @@ class UDPEchoClientTest():
 
         # Returning none will suppress host test from printing success code
         server = UDPServer((SERVER_IP, SERVER_PORT), UDPEchoClient_Handler)
+        server.allow_reuse_address = True
         print "HOST: Listening for UDP connections..."
         self.send_server_ip_port(selftest, SERVER_IP, SERVER_PORT)
         server.serve_forever()

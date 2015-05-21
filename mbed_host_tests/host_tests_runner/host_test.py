@@ -22,7 +22,10 @@ Author: Przemyslaw Wirkus <Przemyslaw.Wirkus@arm.com>
 import re
 from sys import stdout
 
+from threading import Lock
+from threading import Thread
 from mbed_host_tests.host_tests_runner.mbed_base import Mbed
+
 
 class HostTestResults:
     """ Test results set by host tests
@@ -38,11 +41,15 @@ class HostTestResults:
         self.RESULT_NOT_DETECTED = "not_detected"
         self.RESULT_MBED_ASSERT = "mbed_assert"
 
+
 class Test(HostTestResults):
     """ Base class for host test's test runner
     """
     def __init__(self, options=None):
         self.mbed = Mbed(options)
+        self.mutex = Lock() # Used to sync console output prints
+        self.print_thread = None
+        self.print_thread_stop_flag = False
 
     def detect_test_config(self, verbose=False):
         """ Detects test case configuration
@@ -89,19 +96,50 @@ class Test(HostTestResults):
             self.print_result(self.RESULT_IO_SERIAL)
         return result
 
-    def notify(self, message):
+    def notify(self, message, newline=True):
         """ On screen notification function
         """
-        try:
-            print message
-            stdout.flush()
-        except:
-            pass
+        if message is not None:
+            self.mutex.acquire(1)
+            try:
+                if newline:
+                    print message
+                else:
+                    stdout.write(message)
+                stdout.flush()
+            except:
+                pass
+            self.mutex.release()
+
+    def dump_serial(self):
+        """ Function is used to print serial port data in background
+            To stop dumping serial call dump_serial_end() method
+        """
+        if not self.print_thread_stop_flag:
+            if self.print_thread is None:
+                self.print_thread_stop_flag = True
+                self.print_thread = Thread(target=self.dump_serial_thread_func)
+                self.print_thread.start()
+                return True
+        return False
+
+    def dump_serial_thread_func(self):
+        self.notify('HOST: Serial port dump started...')
+        while self.print_thread_stop_flag:
+            c = self.mbed.serial_read(512)
+            if c is not None:
+                self.notify(c, newline=False)
+
+    def dump_serial_end(self):
+        """ Stop dumping serial port in background
+        """
+        if not self.print_thread_stop_flag:
+            self.print_thread_stop_flag = True
 
     def print_result(self, result):
         """ Test result unified printing function
         """
-        self.notify("\r\n{{%s}}\r\n{{end}}"% result)
+        self.notify("\r\n{{%s}}\r\n{{end}}" % result)
 
 
 class DefaultTestSelectorBase(Test):

@@ -36,6 +36,9 @@ from host_tests.tcpecho_server_auto import TCPEchoServerTest
 from host_tests.udpecho_server_auto import UDPEchoServerTest
 from host_tests.tcpecho_client_auto import TCPEchoClientTest
 from host_tests.udpecho_client_auto import UDPEchoClientTest
+from host_tests.tcpecho_client_ext_auto import TCPServerEchoExtTest
+from host_tests.test_socket_server_udp import UDPSocketServerEchoExtTest
+from host_tests.test_socket_server_tcp import TCPSocketServerEchoExtTest
 
 # Basic host test functionality
 from host_tests_runner.host_test import DefaultTestSelectorBase
@@ -56,6 +59,9 @@ HOSTREGISTRY.register_host_test("tcpecho_server_auto", TCPEchoServerTest())
 HOSTREGISTRY.register_host_test("udpecho_server_auto", UDPEchoServerTest())
 HOSTREGISTRY.register_host_test("tcpecho_client_auto", TCPEchoClientTest())
 HOSTREGISTRY.register_host_test("udpecho_client_auto", UDPEchoClientTest())
+HOSTREGISTRY.register_host_test("tcpecho_client_ext_auto", TCPServerEchoExtTest())
+HOSTREGISTRY.register_host_test("test_socket_server_udp", UDPSocketServerEchoExtTest())
+HOSTREGISTRY.register_host_test("test_socket_server_tcp", TCPSocketServerEchoExtTest())
 
 ###############################################################################
 # Functional interface for test supervisor registry
@@ -177,6 +183,7 @@ class DefaultTestSelector(DefaultTestSelectorBase):
 
             if "host_test_name" in CONFIG:
                 if is_host_test(CONFIG["host_test_name"]):
+                    #self.notify("HOST: CONFIG['host_test_name'] is '%s'" % CONFIG["host_test_name"])
                     self.test_supervisor = get_host_test(CONFIG["host_test_name"])
             result = self.test_supervisor.test(self)    #result = self.test()
 

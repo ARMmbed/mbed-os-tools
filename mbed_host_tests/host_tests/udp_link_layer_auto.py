@@ -15,12 +15,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-"""
-How to use:
-make.py -m LPC1768 -t ARM -d E:\ -n NET_14
-udp_link_layer_auto.py -p COM20 -d E:\ -t 10
-"""
-
 import re
 import uuid
 import socket
