@@ -17,7 +17,7 @@ limitations under the License.
 
 import socket
 
-class TCPServerEchoExtTest:
+class TCPSocketServerEchoExtTest:
     """ This echo server opens and closes connections.
     """
 
@@ -36,13 +36,8 @@ class TCPServerEchoExtTest:
         selftest.mbed.serial_write(connection_str)
         selftest.notify(connection_str)
 
-        # Two more strings about connection should be sent by MBED
-        for i in range(0, 2):
-            c = selftest.mbed.serial_readline()
-            if c is None:
-                selftest.print_result(self.RESULT_IO_SERIAL)
-                return
-            selftest.notify(c.strip())
+        # Serial port handshake is finished
+        selftest.dump_serial()  # We want to dump serial port while test is ongoing
 
     def test(self, selftest):
         SERVER_IP = str(socket.gethostbyname(socket.getfqdn()))
@@ -55,6 +50,7 @@ class TCPServerEchoExtTest:
         Sv4 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         Sv4.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         Sv4.bind((SERVER_IP, SERVER_PORT))
+
         Sv4.listen(1)
         selftest.notify("HOST: Listening for TCP connections: " + SERVER_IP + ":" + str(SERVER_PORT))
         try:
@@ -66,15 +62,9 @@ class TCPServerEchoExtTest:
                         data = clientsocket.recv(4096)
                     except:
                         data = None
-                    if data:
-                        selftest.notify('HOST: Received %d bytes of data', len(data))
-                    else:
                         break
                     clientsocket.sendall(data)
                 selftest.notify('HOST: connection closed')
                 clientsocket.close()
         finally:
             Sv4.close()
-        while True:
-            c = selftest.mbed.serial_readline()
-            selftest.notify(c.strip())

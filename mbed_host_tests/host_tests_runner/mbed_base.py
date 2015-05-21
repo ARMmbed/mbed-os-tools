@@ -24,6 +24,9 @@ from serial import Serial
 from time import sleep, time
 import mbed_host_tests.host_tests_plugins as ht_plugins
 
+from threading import Lock
+
+
 class Mbed:
     """ Base class for a host driven test
     """
@@ -31,6 +34,8 @@ class Mbed:
         # For compatibility with old mbed. We can use command line options for Mbed object
         # or we can pass options directly from .
         self.options = options
+
+        self.mutex = Lock() # Used to sync access to serial port
 
         self.DEFAULT_RESET_TOUT = 0
 
@@ -115,17 +120,20 @@ class Mbed:
         """ Wraps self.mbed.serial object read method
         """
         result = None
+        self.mutex.acquire(1)
         if self.serial:
             try:
                 result = self.serial.read(count)
             except:
                 result = None
+        self.mutex.release()
         return result
 
     def serial_readline(self, timeout=5):
         """ Wraps self.mbed.serial object read method to read one line from serial port
         """
         result = ''
+        self.mutex.acquire(1)
         start = time()
         while (time() - start) < timeout:
             if self.serial:
@@ -133,29 +141,34 @@ class Mbed:
                     c = self.serial.read(1)
                     result += c
                 except Exception as e:
-                    print "MBED: %s"% str(e)
+                    print "MBED: %s" % str(e)
                     result = None
                     break
                 if c == '\n':
                     break
+        self.mutex.release()
         return result
 
     def serial_write(self, write_buffer):
         """ Wraps self.mbed.serial object write method
         """
         result = None
+        self.mutex.acquire(1)
         if self.serial:
             try:
                 result = self.serial.write(write_buffer)
             except:
                result = None
+        self.mutex.release()
         return result
 
     def reset_timeout(self, timeout):
         """ Timeout executed just after reset command is issued
         """
+        self.mutex.acquire(1)
         for n in range(0, timeout):
             sleep(1)
+        self.mutex.release()
 
     def reset(self):
         """ Calls proper reset plugin to do the job.
@@ -201,8 +214,10 @@ class Mbed:
         """ Flush serial ports
         """
         result = False
+        self.mutex.acquire(1)
         if self.serial:
             self.serial.flushInput()
             self.serial.flushOutput()
             result = True
+        self.mutex.release()
         return result
