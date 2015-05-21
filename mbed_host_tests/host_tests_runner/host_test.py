@@ -139,9 +139,7 @@ class Test(HostTestResults):
     def print_result(self, result):
         """ Test result unified printing function
         """
-        self.mutex.acquire(1)
         self.notify("\r\n{{%s}}\r\n{{end}}" % result)
-        self.mutex.release()
 
 
 class DefaultTestSelectorBase(Test):
