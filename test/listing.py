@@ -59,6 +59,8 @@ class MbedListingestCase(unittest.TestCase):
             self.assertIn('target_id', mbed)
             self.assertIn('mount_point', mbed)
             self.assertIn('serial_port', mbed)
+            self.assertIn('target_id_mbed_htm', mbed)
+            self.assertIn('target_id_usb_id', mbed)
 
     def test_list_mbeds_ext_mandatory_fields_exist(self):
         mbeds = self.mbeds.list_mbeds_ext()
