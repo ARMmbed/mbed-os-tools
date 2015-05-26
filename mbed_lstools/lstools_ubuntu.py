@@ -104,7 +104,8 @@ class MbedLsToolsUbuntu(MbedLsToolsBase):
                     # We need to update platform_name and corresponding TargetID (not USBID, but from mbed.htm)
                     mbed['platform_name'] = tids[mbed_htm_target_id_prefix]
                     mbed['target_id'] = mbed_htm_target_id
-
+            mbed['target_id_usb_id'] = tid
+            mbed['target_id_mbed_htm'] = mbed_htm_target_id
             result.append(mbed)
 
             if None in mbed:

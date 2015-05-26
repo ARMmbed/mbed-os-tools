@@ -55,17 +55,20 @@ class MbedLsToolsDarwin(MbedLsToolsBase):
 
         # if we're missing any platform names, try to fill those in by reading
         # mbed.htm:
-        for m in result:
-            if m['mount_point']:
+        for i, _ in enumerate(result):
+            if None in result[i]:
+                self.ERRORLEVEL_FLAG = -1
+                continue
+
+            if result[i]['mount_point']:
                 # Deducing mbed-enabled TargetID based on available targetID definition DB.
                 # If TargetID from USBID is not recognized we will try to check URL in mbed.htm
                 htm_target_id = self.get_mbed_htm_target_id(m['mount_point'])
                 if htm_target_id:
-                    m['target_id'] = htm_target_id
-                    m['platform_name'] = self.platform_name(htm_target_id[:4])
-
-            if None in m:
-                self.ERRORLEVEL_FLAG = -1
+                    result[i]['target_id_usb_id'] = m['target_id']
+                    result[i]['target_id'] = htm_target_id
+                    result[i]['platform_name'] = self.platform_name(htm_target_id[:4])
+                result[i]['target_id_mbed_htm'] = htm_target_id
 
         return result
 
