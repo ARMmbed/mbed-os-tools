@@ -1,4 +1,5 @@
 [![Build Status](https://circleci.com/gh/ARMmbed/mbed-host-tests/tree/master.svg?style=svg)](https://circleci.com/gh/ARMmbed/mbed-host-tests/tree/master)
+[![Build Status](https://circleci.com/gh/ARMmbed/mbed-host-tests/tree/devel_m2mclient.svg?style=svg)](https://circleci.com/gh/ARMmbed/mbed-host-tests/tree/devel_m2mclient)
 
 # mbed-host-tests
 
