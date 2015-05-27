@@ -1,4 +1,4 @@
-[![Circle CI](https://circleci.com/gh/ARMmbed/mbed-host-tests.svg?style=svg)](https://circleci.com/gh/ARMmbed/mbed-host-tests)
+[![Circle CI](https://circleci.com/gh/ARMmbed/mbed-host-tests/tree/master.svg?style=svg)](https://circleci.com/gh/ARMmbed/mbed-host-tests/tree/master)
 
 # mbed-host-tests
 
