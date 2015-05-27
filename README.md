@@ -1,6 +1,5 @@
-[![Build status](https://circleci.com/gh/ARMmbed/mbed-ls/tree/master.svg?style=svg)](https://circleci.com/gh/ARMmbed/mbed-ls/tree/master)
-
 ## Description
+[![Build status](https://circleci.com/gh/ARMmbed/mbed-ls/tree/master.svg?style=svg)](https://circleci.com/gh/ARMmbed/mbed-ls/tree/master)
 
 mbed-lstools is a Python module that detects and lists mbed-enabled devices connected to the host computer. It will be delivered as a redistributable Python module (package) and command line tool.
 
