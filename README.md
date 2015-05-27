@@ -1,6 +1,6 @@
 # mbed-host-tests
-[![Build Status](https://circleci.com/gh/ARMmbed/mbed-host-tests/tree/master.svg?style=svg)](https://circleci.com/gh/ARMmbed/mbed-host-tests/tree/master)
-[![Build Status](https://circleci.com/gh/ARMmbed/mbed-host-tests/tree/devel_m2mclient.svg?style=svg)](https://circleci.com/gh/ARMmbed/mbed-host-tests/tree/devel_m2mclient)
+[![Build Status - master](https://circleci.com/gh/ARMmbed/mbed-host-tests/tree/master.svg?style=svg)](https://circleci.com/gh/ARMmbed/mbed-host-tests/tree/master)
+[![Build Status - devel_m2mclient](https://circleci.com/gh/ARMmbed/mbed-host-tests/tree/devel_m2mclient.svg?style=svg)](https://circleci.com/gh/ARMmbed/mbed-host-tests/tree/devel_m2mclient)
 
 mbed's test suite (codenamed Greentea) supports the *test supervisor* concept. This concept is realised by a separate Python script called "host test", which is executed in parallel with the test runner (a binary running on the target hardware) to monitor the test execution's progress or to control the test flow (interaction with the mbed device under test - MUT). The host test is also responsible for grabbing the test result, or deducing it from the test runner's behaviour. 
 
