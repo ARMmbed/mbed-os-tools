@@ -296,9 +296,9 @@ class MbedLsToolsBase:
         if m is not None:
             result = m.groups()[0]
             if self.DEBUG_FLAG:
-                self.debug(self.get_mbed_htm_target_id.__name__, line.strip())
+                self.debug(self.scan_html_line_for_target_id.__name__, line.strip())
             if self.DEBUG_FLAG:
-                self.debug(self.get_mbed_htm_target_id.__name__, (mount_point, mbed_htm, m.groups(), result))
+                self.debug(self.scan_html_line_for_target_id.__name__, (m.groups(), result))
             return result
         # Last resort, we can try to see if old mbed.htm format is there
         else:
@@ -306,8 +306,8 @@ class MbedLsToolsBase:
             if m is not None:
                 result = m.groups()[0]
                 if self.DEBUG_FLAG:
-                    self.debug(self.get_mbed_htm_target_id.__name__, line.strip())
+                    self.debug(self.scan_html_line_for_target_id.__name__, line.strip())
                 if self.DEBUG_FLAG:
-                    self.debug(self.get_mbed_htm_target_id.__name__, (mount_point, mbed_htm, m.groups(), result))
+                    self.debug(self.scan_html_line_for_target_id.__name__, (m.groups(), result))
                 return result
         return None
