@@ -62,12 +62,22 @@ class Test(HostTestResults):
                 break
             else:
                 # Detect if this is property from TEST_ENV print
-                m = re.search('{([\w_]+);([\w\d\+ ]+)}}', line[:-1])
+                m = re.search('{([\w_]+);(.+)}}', line, flags=re.DOTALL)
                 if m and len(m.groups()) == 2:
+                    key = m.group(1)
+
+                    # clean up quote characters and concatinate 
+                    # multiple quoted strings.
+                    g = re.findall('[\"\'](.*?)[\"\']',m.group(2))
+                    if len(g)>0:
+                        val = "".join(g)
+                    else:
+                        val = m.group(2)
+
                     # This is most likely auto-detection property
-                    result[m.group(1)] = m.group(2)
+                    result[key] = val
                     if verbose:
-                        self.notify("HOST: Property '%s' = '%s'"% (m.group(1), m.group(2)))
+                        self.notify("HOST: Property '%s' = '%s'"% (key, val))
                 else:
                     # We can check if this is TArget Id in mbed specific format
                     m2 = re.search('^([\$]+)([a-fA-F0-9]+)', line[:-1])
