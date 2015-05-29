@@ -58,6 +58,11 @@ class HostRegistryTestCase(unittest.TestCase):
         self.assertEqual(False, self.HOSTREGISTRY.is_host_test(None))
         self.assertEqual(False, self.HOSTREGISTRY.is_host_test('xyz'))
 
+    def test_host_test_str_not_empty(self):
+        for ht_name in self.HOSTREGISTRY.HOST_TESTS:
+            ht = self.HOSTREGISTRY.HOST_TESTS[ht_name]
+            self.assertNotEqual(None, ht)
+
 
 if __name__ == '__main__':
     unittest.main()

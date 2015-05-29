@@ -23,4 +23,13 @@ from mbed_host_tests import init_host_test_cli_params   # Provided command line 
 def main():
     # 1. Create DefaultTestSelector object and pass command line parameters
     # 2. Call default test execution function run() to start test instrumentation
-    DefaultTestSelector(init_host_test_cli_params()).run()
+    test_selector = DefaultTestSelector(init_host_test_cli_params())
+    try:
+        test_selector.run()
+    except (KeyboardInterrupt, SystemExit):
+        test_selector.finish()
+        raise
+    except:
+        pass
+    else:
+        test_selector.finish()
