@@ -216,7 +216,7 @@ Changes in mbed-host-tests module:
       * enum ```selftest.RESULT_FAILURE``` is used to return test case success via host test to test suite.
       * enum ```selftest.RESULT_IO_SERIAL``` is used to return serial port error(s) via host test to test suite.
       * ```test(self, selftest)``` method should return at least ```selftest.RESULT_SUCCESS``` on success or ```selftest.RESULT_FAILURE``` for failure.
-      * Examples of host test API related to mbed ,-> host test serial port connection communication:
+      * Examples of host test API related to mbed -> host test serial port connection communication:
       ```python
       c = selftest.mbed.serial_read(512)
       if c is None:
@@ -243,6 +243,11 @@ Changes in mbed-host-tests module:
       ```python
       # Flush serial port queues (in/out)
       selftest.mbed.flush()
+      ```    
+      
+      ```python
+      # We want to dump serial port while test is ongoing
+      selftest.dump_serial()
       ```    
 
 3. Implement ```rtc_auto.py``` host test script body according to your test flow (below is an existing example for RTC test):
