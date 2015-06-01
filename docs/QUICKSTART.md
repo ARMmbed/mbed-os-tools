@@ -2,8 +2,10 @@
 This document is a simple cookbook introducing testing facilities available for mbed 3.0. From this document you will learn how to:
 * Create simple test(s) for your software encapsulated in yotta package. To read full yotta documentation go [here](http://docs.yottabuild.org/reference/commands.html).
 * Create more complicated test cases where additional mocking / test case supervision is required
-* write mocks (we call them **host tests** in mbed) running on test host (your PC / Mac).
+* Write mocks (we call them **host tests** in mbed) running on test host (your PC / Mac).
+
 This document provides examples for all three methods of testing.
+
 * Create [unit tests](http://en.wikipedia.org/wiki/Unit_testing) with [mbed compatible CppUTest library](https://github.com/ARMmbed/mbed-cpputest-private).
   * Information about CppUTest library can be found [here](https://cpputest.github.io/manual.html).
 
