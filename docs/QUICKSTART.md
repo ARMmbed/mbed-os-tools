@@ -34,7 +34,9 @@ Mbed 3.0 test suite called mbed-greentea is a Python 2.7 application which:
   * pass test result back to test suite (for reporting).
 
 ### Limitations
-It is impossible to develop (with current test tools) test cases or test scenarios where few mbed devices cooperate with each other. For example it is impossible to write test cases for mesh networks or tests where two mbed devices communicate with each other via sockets / Bluetooth etc.
+1. It is impossible to develop (with current test tools) test cases or test scenarios where few mbed devices cooperate with each other. For example it is impossible to write test cases for mesh networks or tests where two mbed devices communicate with each other via sockets / Bluetooth etc.
+2. mbed-greentea doesn't support resource locking (mutually exclusive access to hardware platform) so running few instances of mbed-greentea for the same target may cause undefined behaviour. Please, in case of multiple test suite instances use control resource access manually. When using Continuous Integration system you can configure dependencies for CI jobs and by that control access to each device under test.
+3. You can't mix unit tests written using CppUTest library with 'hellow rold' tests. Reason is CppUTest library defines its own ```main()``` function which will be linked with every test. Currently yotta package can't be configured to link each test separately with different test library.
 
 ## yotta package
 Place your test case under a sub-directory of ```\test``` directory located in your yotta package:
