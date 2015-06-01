@@ -51,4 +51,4 @@ setup(name='mbed-greentea',
         "console_scripts": ["mbedgt=mbed_greentea.mbed_greentea_cli:main",],
       },
       install_requires=["PrettyTable>=0.7.2", "PySerial>=2.7",
-        "mbed-host-tests>=0.1.4", "mbed-ls>=0.1.5"])
+        "mbed-host-tests>=0.1.4", "mbed-ls>=0.1.5", "junit-xml>=1.4"])
