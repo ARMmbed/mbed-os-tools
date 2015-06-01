@@ -249,8 +249,21 @@ Changes in mbed-host-tests module:
       
       ```python
       # We want to dump serial port while test is ongoing
+      #
+      # This function is non-blocking so you can continue execute your test case
+      # but remember that serial port data is dumped in background (in separate thread)
+      # so you can't access serial port data using selftest.mbed.serial_* functions reliably.
+      #
+      # This function is useful when you only want to dump serial port data and test case
+      # flow is controled over different medium like sockets or for example Bluetooth/BLE
+      # communication.
       selftest.dump_serial()
       ```    
+      
+      ```python
+      # Stop serial port in background initiated with selftest.dump_serial() method
+      self.dump_serial_end()
+      ```
 
 3. Implement ```rtc_auto.py``` host test script body according to your test flow (below is an existing example for RTC test):
   ```python
