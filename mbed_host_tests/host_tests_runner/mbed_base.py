@@ -19,6 +19,7 @@ Author: Przemyslaw Wirkus <Przemyslaw.Wirkus@arm.com>
 
 # Check if 'serial' module is installed
 # TODO: check in sys.modules if pySerial is installed
+import json
 from sys import stdout
 from serial import Serial
 from time import sleep, time
@@ -52,6 +53,19 @@ class Mbed:
         self.serial = None
         self.serial_baud = 9600
         self.serial_timeout = 1
+
+        # Test configuration in JSON format
+        self.test_cfg = None
+        if self.options.json_test_configuration is not None:
+            try:
+                print "MBED: Loading test configuration from '%s'..." % self.options.json_test_configuration
+                with open(self.options.json_test_configuration) as data_file:
+                    self.test_cfg = json.load(data_file)
+            except IOError as e:
+                print "MBED: Test configuration JSON file '{0}' I/O error({1}): {2}".format(self.options.json_test_configuration, e.errno, e.strerror)
+            except:
+                print "MBED: Test configuration JSON Unexpected error:"
+                raise
 
         print 'MBED: Instrumentation: "%s" and disk: "%s"' % (self.port, self.disk)
 
