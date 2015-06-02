@@ -240,6 +240,10 @@ def init_host_test_cli_params():
                       type="int",
                       help="When forcing a reset using option -r you can set up after reset idle delay in seconds")
 
+    parser.add_option('', '--test-cfg',
+                      dest='json_test_configuration',
+                      help='Pass to host test class data about host test configuration')
+
     parser.add_option('', '--list',
                       dest='list_reg_hts',
                       default=False,
