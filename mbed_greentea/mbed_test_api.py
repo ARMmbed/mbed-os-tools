@@ -69,7 +69,7 @@ RE_DETECT_TESTCASE_RESULT = re.compile("\\{(" + "|".join(TEST_RESULT_MAPPING.key
 def run_host_test(image_path, disk, port, duration=10,
                   micro=None, reset=None, reset_tout=None,
                   verbose=False, copy_method=None, program_cycle_s=None,
-                  digest_source=None):
+                  digest_source=None, json_test_cfg=None, run_cmd=None):
     """ This function runs host test supervisor (executes mbedhtrun) and checks
         output from host test process.
 
@@ -200,7 +200,7 @@ def run_host_test(image_path, disk, port, duration=10,
         # Command executing CLI for host test supervisor (in detect-mode)
         cmd = ["mbedhtrun",
                 '-d', disk,
-                '-f', '"%s"'% image_path,
+                '-f', '"%s"' % image_path,
                 '-p', port,
                 '-C', str(program_cycle_s)]
 
@@ -213,9 +213,13 @@ def run_host_test(image_path, disk, port, duration=10,
             cmd += ["-r", reset]
         if reset_tout is not None:
             cmd += ["-R", str(reset_tout)]
+        if json_test_cfg is not None:
+            cmd += ["--test-cfg", '"%s"' % str(json_test_cfg)]
+        if run_cmd is not None:
+            cmd += ["--run", str(run_cmd)]
 
         if verbose:
-            print "mbed-host-test-runner: %s"% (" ".join(cmd))
+            print "mbed-host-test-runner: %s" % (" ".join(cmd))
 
         proc = Popen(cmd, stdout=PIPE)
         obs = ProcessObserver(proc)

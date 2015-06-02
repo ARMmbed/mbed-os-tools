@@ -109,6 +109,10 @@ def main():
                     dest='json_test_configuration',
                     help='Pass to host test data about host test configuration')
 
+    parser.add_option('', '--run',
+                    dest='run_app',
+                    help='Flash, reset and dump serial from selected binary application')
+
     parser.add_option('', '--report-junit',
                     dest='report_junit_file_name',
                     help='You can log test suite results in form of JUnit compliant XML report')
@@ -200,8 +204,8 @@ def main():
                                     continue
 
                             if get_mbed_supported_test(test_bin):
-                                disk =  mut['mount_point']
-                                port =  mut['serial_port']
+                                disk = mut['mount_point']
+                                port = mut['serial_port']
                                 micro = mut['platform_name']
                                 program_cycle_s = mut_info['properties']['program_cycle_s']
                                 copy_method = opts.copy_method if opts.copy_method else mut_info['properties']['copy_method']
@@ -212,6 +216,8 @@ def main():
                                     copy_method=copy_method,
                                     program_cycle_s=program_cycle_s,
                                     digest_source=opts.digest_source,
+                                    json_test_cfg=opts.json_test_configuration,
+                                    run_cmd=opts.run_app,
                                     verbose=verbose)
                                 single_test_result, single_test_output, single_testduration, single_timeout = host_test_result
                                 test_result = single_test_result
