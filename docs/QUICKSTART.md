@@ -278,8 +278,8 @@ Changes in the mbed-host-tests module:
       ```
       
       ```python
-      # Read test configuration data passed to host test from command line (option --test-cfg)
-      test_cfg = self.mbed.test_cfg 
+      # Read test configuration data passed to host test from command line, option --test-cfg=<JSON_FILE>
+      test_cfg = selftest.mbed.test_cfg 
       ```
       Note: You can pass extra test configuration data to host tests. Define JSON formated file and use command line option ```--test-cfg``` to define path for that file. JSON test configuration file will be loaded (if possible) from file and stored in above data structure. This is very flexible feature but limits users to define only one JSON configuration file.
 
