@@ -33,6 +33,7 @@ from cmake_handlers import list_binaries_for_targets
 from mbed_report_api import exporter_junit
 from mbed_target_info import get_mbed_clasic_target_info
 from mbed_target_info import get_mbed_supported_test
+from mbed_target_info import get_mbed_target_from_current_dir
 
 
 try:
@@ -152,13 +153,23 @@ def main():
     mbeds = mbed_lstools.create()
     mbeds_list = mbeds.list_mbeds()
 
+    current_target = get_mbed_target_from_current_dir()
+    print "mbedgt: current yotta target is: %s"% (current_target if current_target is not None else 'not set')
+
+    if opts.list_of_targets is None:
+        if current_target is not None:
+            opts.list_of_targets = current_target.split(',')[0]
+
     print "mbed-ls: detecting connected mbed-enabled devices... %s"% ("no devices detected" if not len(mbeds_list) else "")
     list_of_targets = opts.list_of_targets.split(',') if opts.list_of_targets is not None else None
 
     test_report = {}    # Test report used to export to Junit, HTML etc...
 
+    if opts.list_of_targets is None:
+        list_of_targets = [current_target]
+
     for mut in mbeds_list:
-        print "mbed-ls: detected %s, console at: %s, mounted at: %s"% (mut['platform_name'],
+        print "\tdetected %s, console at: %s, mounted at: %s"% (mut['platform_name'],
             mut['serial_port'],
             mut['mount_point'])
 
@@ -167,7 +178,7 @@ def main():
         if mut_info is None:
             print "mbed-ls: mbed classic target name %s is not in target database"% (mut['platform_name'])
         else:
-            print "mbedgt: available targets:"
+            print "mbedgt: scan available targets..."
             for yotta_target in mut_info['yotta_targets']:
                 yotta_target_name = yotta_target['yotta_target']
                 yotta_target_toolchain = yotta_target['mbed_toolchain']
@@ -177,8 +188,8 @@ def main():
 
                 # Building sources for given target
                 if list_of_targets is None or yotta_target_name in list_of_targets:
-                    # "yotta %s --target=%s,* build"% (yotta_verbose, yotta_target_name)
-                    cmd = ['yotta']
+                    print "\tusing '%s' target"% yotta_target_name
+                    cmd = ['yotta'] # "yotta %s --target=%s,* build"% (yotta_verbose, yotta_target_name)
                     if opts.verbose is not None: cmd.append('-v')
                     cmd.append('--target=%s,*' % yotta_target_name)
                     cmd.append('build')
@@ -211,6 +222,7 @@ def main():
                                 copy_method = opts.copy_method if opts.copy_method else mut_info['properties']['copy_method']
                                 verbose = opts.verbose_test_result_only
 
+                                print "\trunning host test...",
                                 host_test_result = run_host_test(image_path, disk, port,
                                     micro=micro,
                                     copy_method=copy_method,
@@ -221,6 +233,7 @@ def main():
                                     verbose=verbose)
                                 single_test_result, single_test_output, single_testduration, single_timeout = host_test_result
                                 test_result = single_test_result
+                                print
 
                                 # Update report for optional reporting feature
                                 test_name = test_bin.lower()

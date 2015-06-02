@@ -72,6 +72,20 @@ NOT_SUPPORTED_TESTS = [
     "mbed-test-cstring",
 ]
 
+def get_mbed_target_from_current_dir():
+    """ Function uses yotta target command to
+    """
+    result = None
+    cmd = ['yotta', 'target']
+    print "yotta: search for existing mbed-target"
+    _stdout, _stderr, _ret = run_cli_process(cmd)
+    if not _ret:
+        for line in _stdout.splitlines():
+            if ',' in line:
+                result = line
+                break
+    return result
+
 def get_mbed_targets_from_yotta(mbed_classic_name):
     """ Function is using 'yotta search' command to fetch matching mbed device target's name
 
