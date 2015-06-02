@@ -60,6 +60,9 @@ class Test(HostTestResults):
             if "{start}" in line:
                 self.notify("HOST: Start test...")
                 break
+            elif line.startswith('+'):
+                # This is probably preamble with test case warning
+                self.notify(line.strip())
             else:
                 # Detect if this is property from TEST_ENV print
                 m = re.search('{([\w_]+);(.+)}}', line, flags=re.DOTALL)
