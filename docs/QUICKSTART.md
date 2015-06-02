@@ -274,7 +274,7 @@ Changes in the mbed-host-tests module:
       
       ```python
       # Stop serial port in background initiated with selftest.dump_serial() method
-      self.dump_serial_end()
+      selftest.dump_serial_end()
       ```
 
 3. Implement the ```rtc_auto.py``` host test script body according to your test flow (below is an existing example for RTC test):
