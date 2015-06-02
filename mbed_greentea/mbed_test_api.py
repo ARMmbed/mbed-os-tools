@@ -155,8 +155,12 @@ def run_host_test(image_path, disk, port, duration=10,
         """
         try:
             c = obs.queue.get(block=True, timeout=0.5)
-        except Empty, _:
+            # signals to queue job is done
+            obs.queue.task_done()
+        except Empty:
             c = None
+        except:
+            raise
         return c
 
     def filter_queue_char(c):
@@ -229,7 +233,10 @@ def run_host_test(image_path, disk, port, duration=10,
     output = []
     start_time = time()
     while (time() - start_time) < (2 * duration):
-        c = get_char_from_queue(obs)
+        try:
+            c = get_char_from_queue(obs)
+        except:
+            break
         if c:
             if verbose:
                 sys.stdout.write(c)
@@ -275,6 +282,8 @@ def run_host_test(image_path, disk, port, duration=10,
 
     # Stop test process
     obs.stop()
+    if verbose:
+        print "mbed-host-test-runner: Stopped"
     result = get_test_result(output)
     return (result, "".join(output), testcase_duration, duration)
 
