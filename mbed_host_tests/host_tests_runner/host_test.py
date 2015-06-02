@@ -156,7 +156,7 @@ class Test(HostTestResults):
         """
         self.dump_serial_end()
         # We are waiting for serial port thread dump to end
-        while self.print_thread_flag is not None:
+        while self.print_thread_flag:
             pass
 
 class DefaultTestSelectorBase(Test):

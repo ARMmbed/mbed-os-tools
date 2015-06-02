@@ -84,10 +84,13 @@ class HostTestPluginBase:
             @init_delay - Initial delay time before first access check
             @loop_delay - pooling delay for access check
         """
+        # Let's wait for 30 * loop_delay + init_delay max
         if not access(destination_disk, F_OK):
             self.print_plugin_info("Waiting for mount point '%s' to be ready..."% destination_disk, NL=False)
             sleep(init_delay)
-            while not access(destination_disk, F_OK):
+            for i in range(30):
+                if access(destination_disk, F_OK):
+                    break
                 sleep(loop_delay)
                 self.print_plugin_char('.')
 
