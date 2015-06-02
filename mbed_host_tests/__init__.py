@@ -20,6 +20,7 @@ Author: Przemyslaw Wirkus <Przemyslaw.Wirkus@arm.com>
 import sys
 from optparse import OptionParser
 
+import host_tests_plugins
 from host_tests_registry import HostRegistry
 
 # Host test supervisors
@@ -219,9 +220,11 @@ def init_host_test_cli_params():
                       help="Path with target's binary image",
                       metavar="IMAGE_PATH")
 
+    copy_methods_str = "Plugin support: " + ', '.join(host_tests_plugins.get_plugin_caps('CopyMethod'))
+
     parser.add_option("-c", "--copy",
                       dest="copy_method",
-                      help="Copy method selector. Define which copy method (from plugins) should be used",
+                      help="Copy (flash the target) method selector. " + copy_methods_str,
                       metavar="COPY_METHOD")
 
     parser.add_option("-C", "--program_cycle_s",
