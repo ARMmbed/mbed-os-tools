@@ -276,6 +276,12 @@ Changes in the mbed-host-tests module:
       # Stop serial port in background initiated with selftest.dump_serial() method
       selftest.dump_serial_end()
       ```
+      
+      ```python
+      # Read test configuration data passed to host test from command line (option --test-cfg)
+      test_cfg = self.mbed.test_cfg 
+      ```
+      Note: You can pass extra test configuration data to host tests. Define JSON formated file and use command line option ```--test-cfg``` to define path for that file. JSON test configuration file will be loaded (if possible) from file and stored in above data structure. This is very flexible feature but limits users to define only one JSON configuration file.
 
 3. Implement the ```rtc_auto.py``` host test script body according to your test flow (below is an existing example for RTC test):
   ```python
