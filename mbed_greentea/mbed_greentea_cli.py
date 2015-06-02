@@ -219,7 +219,7 @@ def main():
                                 port = mut['serial_port']
                                 micro = mut['platform_name']
                                 program_cycle_s = mut_info['properties']['program_cycle_s']
-                                copy_method = opts.copy_method if opts.copy_method else mut_info['properties']['copy_method']
+                                copy_method = opts.copy_method if opts.copy_method else 'shell'
                                 verbose = opts.verbose_test_result_only
 
                                 print "\trunning host test...",
