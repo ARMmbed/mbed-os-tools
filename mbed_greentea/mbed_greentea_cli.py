@@ -105,9 +105,13 @@ def main():
                     dest='digest_source',
                     help='Redirect input from where test suite should take console input. You can use stdin or file name to get test case console output')
 
+    parser.add_option('', '--test-cfg',
+                    dest='json_test_configuration',
+                    help='Pass to host test data about host test configuration')
+
     parser.add_option('', '--report-junit',
-                      dest='report_junit_file_name',
-                      help='You can log test suite results in form of JUnit compliant XML report')
+                    dest='report_junit_file_name',
+                    help='You can log test suite results in form of JUnit compliant XML report')
 
     parser.add_option('-V', '--verbose-test-result',
                     dest='verbose_test_result_only',
@@ -189,7 +193,7 @@ def main():
                         print "mbedgt: running tests for '%s' target" % yotta_target_name
                         for test_bin, image_path in ctest_test_list.iteritems():
                             test_result = 'SKIPPED'
-                            # Skip test not mentionned in -n option
+                            # Skip test not mentioned in -n option
                             if opts.test_by_names:
                                 test_list = opts.test_by_names.lower().split(',')
                                 if test_bin.lower() not in test_list:
@@ -223,7 +227,7 @@ def main():
                                 test_report[yotta_target_name][test_name]['single_test_output'] = single_test_output
                                 test_report[yotta_target_name][test_name]['elapsed_time'] = single_testduration
 
-                                print "\ttest '%s' %s"% (test_bin, '.' * (70 - len(test_bin))),
+                                print "\ttest '%s' %s"% (test_bin, '.' * (80 - len(test_bin))),
                                 print " %s in %.2f sec"% (test_result, single_testduration)
 
     if opts.report_junit_file_name:
