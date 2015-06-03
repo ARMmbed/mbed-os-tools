@@ -124,14 +124,17 @@ class DefaultTestSelector(DefaultTestSelectorBase):
         self.execute()
 
     def execute_run(self):
-        """ Feature allows users to simplu flash, reset and run binary without host test
+        """ Feature allows users to simply flash, reset and run binary without host test
             direct involvement
         """
         # Copy image to device
-        self.notify("HOST: Copy image onto target...")
-        result = self.mbed.copy_image()
-        if not result:
-            self.print_result(self.RESULT_IOERR_COPY)
+        if self.options.skip_flashing is False:
+            self.notify("HOST: Copy image onto target...")
+            result = self.mbed.copy_image()
+            if not result:
+                self.print_result(self.RESULT_IOERR_COPY)
+        else:
+            self.notify("HOST: Image copy onto target SKIPPED!")
 
         # Initialize and open target's serial port (console)
         self.notify("HOST: Initialize serial port...")
@@ -140,10 +143,13 @@ class DefaultTestSelector(DefaultTestSelectorBase):
             self.print_result(self.RESULT_IO_SERIAL)
 
         # Reset device
-        self.notify("HOST: Reset target...")
-        result = self.mbed.reset()
-        if not result:
-            self.print_result(self.RESULT_IO_SERIAL)
+        if self.options.skip_reset is False:
+            self.notify("HOST: Reset target...")
+            result = self.mbed.reset()
+            if not result:
+                self.print_result(self.RESULT_IO_SERIAL)
+        else:
+            self.notify("HOST: Target reset SKIPPED!")
 
         # Run binary and grab and print console output
         # Read serial and wait for binary execution end
@@ -159,10 +165,13 @@ class DefaultTestSelector(DefaultTestSelectorBase):
             test and forward test result via serial port to test suite
         """
         # Copy image to device
-        self.notify("HOST: Copy image onto target...")
-        result = self.mbed.copy_image()
-        if not result:
-            self.print_result(self.RESULT_IOERR_COPY)
+        if self.options.skip_flashing is False:        
+            self.notify("HOST: Copy image onto target...")
+            result = self.mbed.copy_image()
+            if not result:
+                self.print_result(self.RESULT_IOERR_COPY)
+        else:
+            self.notify("HOST: Copy image onto target... SKIPPED!")
 
         # Initialize and open target's serial port (console)
         self.notify("HOST: Initialize serial port...")
@@ -171,10 +180,13 @@ class DefaultTestSelector(DefaultTestSelectorBase):
             self.print_result(self.RESULT_IO_SERIAL)
 
         # Reset device
-        self.notify("HOST: Reset target...")
-        result = self.mbed.reset()
-        if not result:
-            self.print_result(self.RESULT_IO_SERIAL)
+        if self.options.skip_reset is False:
+            self.notify("HOST: Reset target...")
+            result = self.mbed.reset()
+            if not result:
+                self.print_result(self.RESULT_IO_SERIAL)
+        else:
+            self.notify("HOST: Reset target... SKIPPED!")
 
         # Run test
         try:
@@ -258,6 +270,18 @@ def init_host_test_cli_params():
                       default=False,
                       action="store_true",
                       help='Runs binary image on target (workflow: flash, reset, print console')
+
+    parser.add_option('', '--skip-flashing',
+                      dest='skip_flashing',
+                      default=False,
+                      action="store_true",
+                      help='Skips use of copy/flash plugin. Note: target will not be reflashed')
+
+    parser.add_option('', '--skip-reset',
+                      dest='skip_reset',
+                      default=False,
+                      action="store_true",
+                      help='Skips use of reset plugin. Note: target will not be reset')
 
     (options, _) = parser.parse_args()
     return options
