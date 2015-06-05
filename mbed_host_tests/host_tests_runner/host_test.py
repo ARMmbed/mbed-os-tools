@@ -69,7 +69,7 @@ class Test(HostTestResults):
                 if m and len(m.groups()) == 2:
                     key = m.group(1)
 
-                    # clean up quote characters and concatinate 
+                    # clean up quote characters and concatinate
                     # multiple quoted strings.
                     g = re.findall('[\"\'](.*?)[\"\']',m.group(2))
                     if len(g)>0:
@@ -142,6 +142,8 @@ class Test(HostTestResults):
             c = self.mbed.serial_read(512)
             if c is not None:
                 self.notify(c, newline=False)
+            else:
+                self.print_result(selftest.RESULT_IO_SERIAL)
         self.print_thread = None
 
     def dump_serial_end(self):
