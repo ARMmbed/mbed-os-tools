@@ -46,9 +46,9 @@ class Mbed:
         # Options related to copy / reset mbed device
         self.port = self.options.port
         self.disk = self.options.disk
-        self.image_path = self.options.image_path.strip('"')
+        self.image_path = self.options.image_path.strip('"') if self.options.image_path is not None else ''
         self.copy_method = self.options.copy_method
-        self.program_cycle_s = float(self.options.program_cycle_s)
+        self.program_cycle_s = float(self.options.program_cycle_s if self.options.program_cycle_s is not None else 2.0)
 
         self.serial = None
         self.serial_baud = 9600
