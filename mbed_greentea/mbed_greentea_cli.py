@@ -222,7 +222,7 @@ def main():
                                 copy_method = opts.copy_method if opts.copy_method else 'shell'
                                 verbose = opts.verbose_test_result_only
 
-                                print "\trunning host test...",
+                                print "\trunning host test..."
                                 host_test_result = run_host_test(image_path, disk, port,
                                     micro=micro,
                                     copy_method=copy_method,
@@ -233,7 +233,6 @@ def main():
                                     verbose=verbose)
                                 single_test_result, single_test_output, single_testduration, single_timeout = host_test_result
                                 test_result = single_test_result
-                                print
 
                                 # Update report for optional reporting feature
                                 test_name = test_bin.lower()
