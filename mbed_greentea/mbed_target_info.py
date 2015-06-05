@@ -119,7 +119,7 @@ def add_target_info_mapping(mbed_classic_name):
         "yotta_targets": [],
         "properties" : {
                 "binary_type": ".bin",
-                "copy_method": "default",
+                "copy_method": "shell",
                 "reset_method": "default",
                 "program_cycle_s": 4
             }

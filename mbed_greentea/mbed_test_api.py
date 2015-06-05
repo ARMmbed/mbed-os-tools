@@ -69,7 +69,7 @@ RE_DETECT_TESTCASE_RESULT = re.compile("\\{(" + "|".join(TEST_RESULT_MAPPING.key
 def run_host_test(image_path, disk, port, duration=10,
                   micro=None, reset=None, reset_tout=None,
                   verbose=False, copy_method=None, program_cycle_s=None,
-                  digest_source=None, json_test_cfg=None, run_cmd=None):
+                  digest_source=None, json_test_cfg=None, run_app=None):
     """ This function runs host test supervisor (executes mbedhtrun) and checks
         output from host test process.
 
@@ -204,11 +204,13 @@ def run_host_test(image_path, disk, port, duration=10,
         # Command executing CLI for host test supervisor (in detect-mode)
         cmd = ["mbedhtrun",
                 '-d', disk,
-                '-f', '"%s"' % image_path,
                 '-p', port,
-                '-C', str(program_cycle_s)]
+                '-f', '"%s"' % image_path,
+                ]
 
         # Add extra parameters to host_test
+        if program_cycle_s is not None:
+            cmd += ["-C", str(program_cycle_s)]
         if copy_method is not None:
             cmd += ["-c", copy_method]
         if micro is not None:
@@ -219,8 +221,8 @@ def run_host_test(image_path, disk, port, duration=10,
             cmd += ["-R", str(reset_tout)]
         if json_test_cfg is not None:
             cmd += ["--test-cfg", '"%s"' % str(json_test_cfg)]
-        if run_cmd is not None:
-            cmd += ["--run", str(run_cmd)]
+        if run_app is not None:
+            cmd += ["--run"]    # -f stores binary name!
 
         if verbose:
             print "mbed-host-test-runner: %s" % (" ".join(cmd))

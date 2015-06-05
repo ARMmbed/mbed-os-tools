@@ -173,6 +173,30 @@ def main():
             mut['serial_port'],
             mut['mount_point'])
 
+        #TODO: add --run implementation (already added --run to mbedhtrun)
+        """
+        # We want to pass file name to mbedhtrun (--run NAME  =>  -f NAME_ and run only one binary
+        if opts.run_app:
+            disk = mut['mount_point']
+            port = mut['serial_port']
+            micro = mut['platform_name']
+            program_cycle_s = mut_info['properties']['program_cycle_s']
+            copy_method = opts.copy_method if opts.copy_method else 'shell'
+            verbose = opts.verbose_test_result_only
+
+            host_test_result = run_host_test(opts.run_app, disk, port,
+                                        micro=micro,
+                                        copy_method=copy_method,
+                                        program_cycle_s=program_cycle_s,
+                                        digest_source=opts.digest_source,
+                                        json_test_cfg=opts.json_test_configuration,
+                                        run_app=opts.run_app,
+                                        verbose=opts.verbose_test_result_only)
+            single_test_result, single_test_output, single_testduration, single_timeout = host_test_result
+            status = TEST_RESULTS.index(single_test_result) if single_test_result in TEST_RESULTS else -1
+            sys.exit(status)
+        """
+
         # Check if mbed classic target name can be translated to yotta target name
         mut_info = get_mbed_clasic_target_info(mut['platform_name'])
         if mut_info is None:
@@ -229,7 +253,6 @@ def main():
                                     program_cycle_s=program_cycle_s,
                                     digest_source=opts.digest_source,
                                     json_test_cfg=opts.json_test_configuration,
-                                    run_cmd=opts.run_app,
                                     verbose=verbose)
                                 single_test_result, single_test_output, single_testduration, single_timeout = host_test_result
                                 test_result = single_test_result
