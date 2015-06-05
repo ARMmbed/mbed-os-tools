@@ -56,7 +56,11 @@ class HostTestPluginCopyMethod_Shell(HostTestPluginBase):
             if capabilitity == 'cp' or capabilitity == 'copy' or capabilitity == 'copy':
                 copy_method = capabilitity
                 cmd = [copy_method, image_path, destination_path]
-                result = self.run_command(cmd)
+                if os.name == 'posix':
+                    result = self.run_command(cmd, shell=False)
+                    result = self.run_command(["sync"])
+                else:
+                    result = self.run_command(cmd)
         return result
 
 
