@@ -243,7 +243,7 @@ def init_host_test_cli_params():
                       dest="program_cycle_s",
                       help="Program cycle sleep. Define how many seconds you want wait after copying binary onto target",
                       type="float",
-                      metavar="COPY_METHOD")
+                      metavar="PROGRAM_CYCLE_S")
 
     parser.add_option("-r", "--reset",
                       dest="forced_reset_type",
