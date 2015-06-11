@@ -63,9 +63,9 @@ class MbedLsToolsDarwin(MbedLsToolsBase):
             if result[i]['mount_point']:
                 # Deducing mbed-enabled TargetID based on available targetID definition DB.
                 # If TargetID from USBID is not recognized we will try to check URL in mbed.htm
-                htm_target_id = self.get_mbed_htm_target_id(m['mount_point'])
+                htm_target_id = self.get_mbed_htm_target_id(result[i]['mount_point'])
                 if htm_target_id:
-                    result[i]['target_id_usb_id'] = m['target_id']
+                    result[i]['target_id_usb_id'] = result[i]['target_id']
                     result[i]['target_id'] = htm_target_id
                     result[i]['platform_name'] = self.platform_name(htm_target_id[:4])
                 result[i]['target_id_mbed_htm'] = htm_target_id
@@ -165,5 +165,3 @@ class MbedLsToolsDarwin(MbedLsToolsBase):
     def platform_name(self, target_id):
         if target_id[:4] in self.manufacture_ids:
             return self.manufacture_ids[target_id[:4]]
-
-
