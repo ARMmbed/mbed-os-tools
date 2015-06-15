@@ -140,7 +140,7 @@ def main():
         list_binaries_for_targets()
         exit(0)
 
-    # Capture alternative test console inputs
+    # Capture alternative test console inputs, used e.g. in 'yotta test command'
     if opts.digest_source:
         host_test_result = run_host_test(image_path=None, disk=None, port=None,
                                     digest_source=opts.digest_source,
@@ -166,6 +166,8 @@ def main():
     test_report = {}    # Test report used to export to Junit, HTML etc...
 
     if opts.list_of_targets is None:
+        print "mbedgt: assuming default target to be '%s'"% (current_target)
+        print "\treason: no --target switch set"
         list_of_targets = [current_target]
 
     for mut in mbeds_list:
@@ -198,11 +200,11 @@ def main():
         """
 
         # Check if mbed classic target name can be translated to yotta target name
+        print "mbedgt: scan available targets for '%s' platform..."% (mut['platform_name'])
         mut_info = get_mbed_clasic_target_info(mut['platform_name'])
         if mut_info is None:
             print "mbed-ls: mbed classic target name %s is not in target database"% (mut['platform_name'])
         else:
-            print "mbedgt: scan available targets..."
             for yotta_target in mut_info['yotta_targets']:
                 yotta_target_name = yotta_target['yotta_target']
                 yotta_target_toolchain = yotta_target['mbed_toolchain']
@@ -211,8 +213,8 @@ def main():
                     continue
 
                 # Building sources for given target
-                if list_of_targets is None or yotta_target_name in list_of_targets:
-                    print "\tusing '%s' target"% yotta_target_name
+                if yotta_target_name in list_of_targets:
+                    print "mbedgt: using '%s' target, prepare to build"% yotta_target_name
                     cmd = ['yotta'] # "yotta %s --target=%s,* build"% (yotta_verbose, yotta_target_name)
                     if opts.verbose is not None: cmd.append('-v')
                     cmd.append('--target=%s,*' % yotta_target_name)

@@ -69,6 +69,7 @@ def list_binaries_for_targets(build_dir='./build'):
     dir = build_dir
     sub_dirs = [os.path.join(dir, o) for o in os.listdir(dir) if os.path.isdir(os.path.join(dir, o))]
     print "mbedgt: available tests for built targets"
+    print "\tlocation: '%s'"% (os.path.abspath(build_dir))
     for sub_dir in sub_dirs:
         test_list = load_ctest_testsuite(sub_dir, binary_type='')
         if len(test_list):
