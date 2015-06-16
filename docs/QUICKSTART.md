@@ -85,7 +85,7 @@ Often your test case will be a ```main()``` function with a collection of API fu
 
 Use:
 
-```
+```c++
 #include "mbed/test_env.h"
 ```
 in your code to include the mandatory macros required to drive the test case on hardware.
@@ -196,11 +196,11 @@ Changes in your yotta module:
 The above RTC test case can't be validated during runtime within the hardware module. But we can use our host computer to analyse the RTC prints and measure the time between each print (note that RTC status prints are once every second).
 
 We need to create a new host test script (let's call it ```rtc_auto``` for now). We will use a macro:
-```
+```c++
 MBED_HOSTTEST_SELECT(rtc_auto);
 ```
 to tell the test suite which host test is used to instrument the above code. Our ```rtc_auto``` script is a Python script that will read and parse the serial port prints from the target: 
-```
+```c++
 printf("MBED: [%ld] [%s]\r\n", seconds, buffer);
 ```
 It will also verify that time flows correctly for the target's internal RTC, based on the time intervals between those prints.
@@ -426,6 +426,90 @@ To create this UT, first:
 ## More examples:
 * You can refer to existing examples of tests in the [mbed-sdk-private](https://github.com/ARMmbed/mbed-sdk-private/tree/master/test) repository.
 * All host tests with source code are [here](https://github.com/ARMmbed/mbed-host-tests/tree/master/mbed_host_tests/host_tests).
+
+# Run mode. Running existing binaries with mbed-greentea
+## Rationale
+In some cases users only want to run prepared earlier binaries on target platform. For example users want to run demo application on target to make sure it works correctly. Below command allow users to execute binary on target and grab serial port output on console.
+
+Command line option ```--run=<PATH_TO_FILE>``` allows users to specify path to existing binary which can be later on flashed and executed on target. Option ```-run``` should be combined with option ```--target``` so proper mbed platform type can be deduced.
+
+## Example
+Let's flash one of test binaries (remember you can flash any compatible with target binary) in run mode.
+For this example we've connected one FRDM-K64F board to our host computer and we will use ```mbed-sdk``` yotta package as a rich source of test binaries.
+
+* First we need to prepare binaries. We can use build ```mbed-sdk``` package effortlessly defining proper target for K64F platform and force ‘build only’ by specifying ```-O``` command line option
+```
+$ cd mbed-sdk
+$ mbedgt --target=frdm-k64f-gcc -O
+```
+
+* Test binary will be a good example to flash and grab serial port output. We can list all test binaries’ names using ```--list``` command.
+```
+$ mbedgt --list
+```
+We should see something like this:
+```
+mbedgt: available tests for built targets
+        location: 'c:\Work2\mbed-sdk-private\build'
+target 'frdm-k64f-gcc':
+        test 'mbed-test-eventhandler'
+        test 'mbed-test-detect'
+        test 'mbed-test-functionpointer'
+        test 'mbed-test-div'
+        test 'mbed-test-dev_null'
+        test 'mbed-test-stl'
+        test 'mbed-test-sleep_timeout'       
+        test 'mbed-test-rtc'
+        test 'mbed-test-hello'
+        test 'mbed-test-stdio'
+        test 'mbed-test-basic'
+
+Example: execute 'mbedgt --target=TARGET_NAME -n TEST_NAME' to run TEST_NAME test only
+```
+
+* We can pick for example last test ```mbed-test-basic``` and just flash it (no test automation) to our target compatible device(s) connected to our host computer.
+Binary should be located inside build directory. We can list it to make sure.
+Note: We can specify path ot any binary compatible with our target, e.g. we can build example applciations inside our package and run them from ```.\build\TARGET\source``` folder or from build server if we are using this functionality in Continuous Integration pipeline.
+```
+$ ls .\build\frdm-k64f-gcc\test\mbed-test-basic.bin
+.\build\frdm-k64f-gcc\test\mbed-test-basic.bin
+```
+
+* To run your binary and grab result please use following command:
+```
+$ mbedgt --target=frdm-k64f-gcc --run .\build\frdm-k64f-gcc\test\mbed-test-basic.bin
+```
+Where ```frdm-k64f-gcc``` is binary target and ```--run``` option specifies path to binary we want to execute.
+
+Expected output:
+```
+yotta: search for existing mbed-target
+mbedgt: current yotta target is: win,*
+mbed-ls: detecting connected mbed-enabled devices...
+        detected K64F, console at: COM61, mounted at: I:
+mbedgt: scan available targets for 'K64F' platform...
+yotta: search for mbed-target:k64f
+        found target 'frdm-k64f-gcc'
+        found target 'frdm-k64f-armcc'
+mbed-host-test-runner: mbedhtrun -d I: -p COM61 -f ".\build\frdm-k64f-gcc\test\mbed-test-basic.bin" -C 4 -c shell -m K64F --run
+MBED: Instrumentation: "COM61" and disk: "I:"
+HOST: Copy image onto target...
+        1 file(s) copied.
+HOST: Initialize serial port...
+...port ready!
+HOST: Reset target...
+{{timeout;20}}
+{{host_test_name;default_auto}}
+{{description;Basic}}
+{{test_id;MBED_A1}}
+{{start}}
+{{success}}
+{{end}}
+mbed-host-test-runner: Stopped
+```
+
+Note: There is no way to determine if application executed on target finished executing. To prevent timout ```mbed-greentea``` exit please add print ```{{end}}``` at the end of your application execution. All tests ported to support ```mbed-greentea``` already print ```{{{end}}}``` tag so mbed-greentea exits after print is parsed. 
+You can always stop mbed-greentea by pressing ```Ctrl+C```.
 
 # Greentea Workflows
 ## Current configuration check
