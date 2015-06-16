@@ -20,8 +20,9 @@ import sys
 import uuid
 import socket
 from sys import stdout
+from . import BaseHostTest
 
-class TCPEchoServerTest():
+class TCPEchoServerTest(BaseHostTest):
     ECHO_SERVER_ADDRESS = ""
     ECHO_PORT = 0
     ECHO_LOOPs = 100

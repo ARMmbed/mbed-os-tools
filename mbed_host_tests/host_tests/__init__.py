@@ -15,6 +15,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+# base host test class
+from base_host_test import BaseHostTest
+
+
 # Host test supervisors
 from echo import EchoTest
 from rtc_auto import RTCTest
@@ -28,3 +32,4 @@ from tcpecho_server_auto import TCPEchoServerTest
 from udpecho_server_auto import UDPEchoServerTest
 from tcpecho_client_auto import TCPEchoClientTest
 from udpecho_client_auto import UDPEchoClientTest
+

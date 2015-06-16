@@ -16,8 +16,9 @@ limitations under the License.
 """
 
 from sys import stdout
+from . import BaseHostTest
 
-class DefaultAuto():
+class DefaultAuto(BaseHostTest):
     """ Simple, basic host test's test runner waiting for serial port
         output from MUT, no supervision over test running in MUT is executed.
     """

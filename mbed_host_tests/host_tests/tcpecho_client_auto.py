@@ -19,6 +19,7 @@ import sys
 import socket
 from sys import stdout
 from SocketServer import BaseRequestHandler, TCPServer
+from . import BaseHostTest
 
 class TCPEchoClient_Handler(BaseRequestHandler):
     def handle(self):
@@ -43,7 +44,7 @@ class TCPEchoClient_Handler(BaseRequestHandler):
                 count += 1
             stdout.flush()
 
-class TCPEchoClientTest():
+class TCPEchoClientTest(BaseHostTest):
     def send_server_ip_port(self, selftest, ip_address, port_no):
         """ Set up network host. Reset target and and send server IP via serial to Mbed
         """

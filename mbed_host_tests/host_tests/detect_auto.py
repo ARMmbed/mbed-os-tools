@@ -16,8 +16,9 @@ limitations under the License.
 """
 
 import re
+from . import BaseHostTest
 
-class DetectPlatformTest():
+class DetectPlatformTest(BaseHostTest):
     PATTERN_MICRO_NAME = "Target '(\w+)'"
     re_detect_micro_name = re.compile(PATTERN_MICRO_NAME)
 

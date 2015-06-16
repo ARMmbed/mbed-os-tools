@@ -18,8 +18,9 @@ limitations under the License.
 import re
 import random
 from time import time
+from . import BaseHostTest
 
-class StdioTest():
+class StdioTest(BaseHostTest):
     PATTERN_INT_VALUE = "Your value was: (-?\d+)"
     re_detect_int_value = re.compile(PATTERN_INT_VALUE)
 

@@ -16,8 +16,9 @@ limitations under the License.
 """
 
 import socket
+from . import BaseHostTest
 
-class TCPSocketServerEchoExtTest:
+class TCPSocketServerEchoExtTest(BaseHostTest):
     """ This echo server opens and closes connections.
     """
 

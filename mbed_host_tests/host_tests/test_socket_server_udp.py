@@ -16,8 +16,9 @@ limitations under the License.
 """
 
 import socket
+from . import BaseHostTest
 
-class UDPSocketServerEchoExtTest:
+class UDPSocketServerEchoExtTest(BaseHostTest):
 
     def __init__(self):
         self.SERVER_IP = str(socket.gethostbyname(socket.getfqdn()))
