@@ -20,9 +20,7 @@ Author: Przemyslaw Wirkus <Przemyslaw.Wirkus@arm.com>
 """
 
 import os
-import re
 import sys
-import json
 import optparse
 
 from mbed_test_api import run_host_test
@@ -175,44 +173,43 @@ def main():
             mut['serial_port'],
             mut['mount_point'])
 
-        #TODO: add --run implementation (already added --run to mbedhtrun)
-        """
-        # We want to pass file name to mbedhtrun (--run NAME  =>  -f NAME_ and run only one binary
-        if opts.run_app:
-            disk = mut['mount_point']
-            port = mut['serial_port']
-            micro = mut['platform_name']
-            program_cycle_s = mut_info['properties']['program_cycle_s']
-            copy_method = opts.copy_method if opts.copy_method else 'shell'
-            verbose = opts.verbose_test_result_only
-
-            host_test_result = run_host_test(opts.run_app, disk, port,
-                                        micro=micro,
-                                        copy_method=copy_method,
-                                        program_cycle_s=program_cycle_s,
-                                        digest_source=opts.digest_source,
-                                        json_test_cfg=opts.json_test_configuration,
-                                        run_app=opts.run_app,
-                                        verbose=opts.verbose_test_result_only)
-            single_test_result, single_test_output, single_testduration, single_timeout = host_test_result
-            status = TEST_RESULTS.index(single_test_result) if single_test_result in TEST_RESULTS else -1
-            sys.exit(status)
-        """
-
         # Check if mbed classic target name can be translated to yotta target name
         print "mbedgt: scan available targets for '%s' platform..."% (mut['platform_name'])
         mut_info = get_mbed_clasic_target_info(mut['platform_name'])
-        if mut_info is None:
-            print "mbed-ls: mbed classic target name %s is not in target database"% (mut['platform_name'])
-        else:
+
+        if mut_info is not None:
             for yotta_target in mut_info['yotta_targets']:
                 yotta_target_name = yotta_target['yotta_target']
-                yotta_target_toolchain = yotta_target['mbed_toolchain']
 
+                # Configuration print mode:
                 if opts.verbose_test_configuration_only:
                     continue
 
-                # Building sources for given target
+                # Demo mode: --run implementation (already added --run to mbedhtrun)
+                # We want to pass file name to mbedhtrun (--run NAME  =>  -f NAME_ and run only one binary
+                if opts.run_app and yotta_target_name in list_of_targets:
+                    print "mbedgt: running '%s' for '%s'"% (opts.run_app, yotta_target_name)
+                    disk = mut['mount_point']
+                    port = mut['serial_port']
+                    micro = mut['platform_name']
+                    program_cycle_s = mut_info['properties']['program_cycle_s']
+                    copy_method = opts.copy_method if opts.copy_method else 'shell'
+                    verbose = opts.verbose_test_result_only
+
+                    host_test_result = run_host_test(opts.run_app, disk, port,
+                                                micro=micro,
+                                                copy_method=copy_method,
+                                                program_cycle_s=program_cycle_s,
+                                                digest_source=opts.digest_source,
+                                                json_test_cfg=opts.json_test_configuration,
+                                                run_app=opts.run_app,
+                                                verbose=True)
+                    single_test_result, single_test_output, single_testduration, single_timeout = host_test_result
+                    status = TEST_RESULTS.index(single_test_result) if single_test_result in TEST_RESULTS else -1
+                    continue
+
+                # Regression test mode:
+                # Building sources for given target and perform normal testing
                 if yotta_target_name in list_of_targets:
                     print "mbedgt: using '%s' target, prepare to build"% yotta_target_name
                     cmd = ['yotta'] # "yotta %s --target=%s,* build"% (yotta_verbose, yotta_target_name)
@@ -272,6 +269,8 @@ def main():
 
                                 print "\ttest '%s' %s"% (test_bin, '.' * (80 - len(test_bin))),
                                 print " %s in %.2f sec"% (test_result, single_testduration)
+        else:
+            print "mbed-ls: mbed classic target name %s is not in target database"% (mut['platform_name'])
 
     if opts.report_junit_file_name:
         junit_report = exporter_junit(test_report)
