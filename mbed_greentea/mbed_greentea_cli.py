@@ -269,6 +269,9 @@ def main():
 
                                 print "\ttest '%s' %s"% (test_bin, '.' * (80 - len(test_bin))),
                                 print " %s in %.2f sec"% (test_result, single_testduration)
+                    elif not yotta_result:
+                        print "mbedgt: yotta build failed!"
+                        exit(1)
         else:
             print "mbed-ls: mbed classic target name %s is not in target database"% (mut['platform_name'])
 
