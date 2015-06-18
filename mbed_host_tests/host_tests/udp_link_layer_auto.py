@@ -24,7 +24,6 @@ from time import time, sleep
 from host_test import DefaultTest
 from SocketServer import BaseRequestHandler, UDPServer
 
-
 # Received datagrams (with time)
 dict_udp_recv_datagrams = dict()
 

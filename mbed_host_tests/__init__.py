@@ -155,7 +155,16 @@ class DefaultTestSelector(DefaultTestSelectorBase):
         # Read serial and wait for binary execution end
         try:
             self.test_supervisor = get_host_test("run_binary_auto")
+            # Call to rampUp if function is implemented
+            if hasattr(self.test_supervisor, 'rampUp') and callable(getattr(self.test_supervisor, 'rampUp')):
+                self.test_supervisor.rampUp()
+
+            # Call to test function
             result = self.test_supervisor.test(self)    # This is blocking, waits for {end}
+
+            # Call to rampDown if function is implemented
+            if hasattr(self.test_supervisor, 'rampDown') and callable(getattr(self.test_supervisor, 'rampDown')):
+                self.test_supervisor.rampDown()
         except Exception, e:
             print str(e)
             self.print_result(self.RESULT_ERROR)

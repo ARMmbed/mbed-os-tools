@@ -18,8 +18,9 @@ limitations under the License.
 import sys
 import uuid
 from sys import stdout
+from . import BaseHostTest
 
-class EchoTest():
+class EchoTest(BaseHostTest):
 
     # Test parameters
     TEST_SERIAL_BAUDRATE = 115200

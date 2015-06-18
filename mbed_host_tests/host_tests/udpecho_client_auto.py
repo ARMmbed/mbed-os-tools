@@ -19,6 +19,7 @@ import sys
 import socket
 from sys import stdout
 from SocketServer import BaseRequestHandler, UDPServer
+from . import BaseHostTest
 
 class UDPEchoClient_Handler(BaseRequestHandler):
     def handle(self):
@@ -33,7 +34,7 @@ class UDPEchoClient_Handler(BaseRequestHandler):
             sys.stdout.write('.')
         stdout.flush()
 
-class UDPEchoClientTest():
+class UDPEchoClientTest(BaseHostTest):
 
     def send_server_ip_port(self, selftest, ip_address, port_no):
         c = selftest.mbed.serial_readline() # 'UDPCllient waiting for server IP and port...'

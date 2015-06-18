@@ -15,22 +15,26 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from . import BaseHostTest
+class BaseHostTest():
+    """ Base class for each host-test test cases with standard
+        rampUp, test and rampDown set of functions
+    """
 
-class HelloTest(BaseHostTest):
-    HELLO_WORLD = "Hello World"
+    def rumpUp(self):
+        """ Ramp up function, initialize your test case dynamic resources in this function
+        """
+        pass
 
     def test(self, selftest):
-        c = selftest.mbed.serial_readline()
-        if c is None:
-           return selftest.RESULT_IO_SERIAL
-        selftest.notify("Read %d bytes:"% len(c))
-        selftest.notify(c.strip())
+        """ Blocking test execution process:
 
-        result = True
-        # Because we can have targetID here let's try to decode
-        if len(c) < len(self.HELLO_WORLD):
-            result = False
-        else:
-            result = self.HELLO_WORLD in c
-        return selftest.RESULT_SUCCESS if result else selftest.RESULT_FAILURE
+            rampUp()
+            test()
+            rampDown()
+        """
+        pass
+
+    def rampDown(self):
+        """ Ramp up function, free your test case dynamic resources in this function
+        """
+        pass

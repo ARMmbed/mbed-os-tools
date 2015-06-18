@@ -40,7 +40,7 @@ class Mbed:
 
         self.DEFAULT_RESET_TOUT = 0
 
-        if self.options.port is None:
+        if self.options and self.options.port is None:
             raise Exception("The serial port of the target mbed have to be provided as command line arguments")
 
         # Options related to copy / reset mbed device
@@ -57,12 +57,14 @@ class Mbed:
         # Test configuration in JSON format
         self.test_cfg = None
         if self.options.json_test_configuration is not None:
+            # We need to normalize path before we open file
+            json_test_configuration_path = self.options.json_test_configuration.strip("\"'")
             try:
-                print "MBED: Loading test configuration from '%s'..." % self.options.json_test_configuration
-                with open(self.options.json_test_configuration) as data_file:
+                print "MBED: Loading test configuration from '%s'..." % json_test_configuration_path
+                with open(json_test_configuration_path) as data_file:
                     self.test_cfg = json.load(data_file)
             except IOError as e:
-                print "MBED: Test configuration JSON file '{0}' I/O error({1}): {2}".format(self.options.json_test_configuration, e.errno, e.strerror)
+                print "MBED: Test configuration JSON file '{0}' I/O error({1}): {2}".format(json_test_configuration_path, e.errno, e.strerror)
             except:
                 print "MBED: Test configuration JSON Unexpected error:"
                 raise
