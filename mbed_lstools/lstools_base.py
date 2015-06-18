@@ -178,7 +178,9 @@ class MbedLsToolsBase:
         return None
 
     def list_mbeds_ext(self):
-        """ Get information about mbeds with extended parameters/info uncluded
+        """ Get information about mbeds with extended parameters/info included
+
+            Returns list of dictionaries
         """
         platform_names = {} # Count existing platforms and assign unique number
 
@@ -194,6 +196,19 @@ class MbedLsToolsBase:
             if self.DEBUG_FLAG:
                 self.debug(self.list_mbeds_ext.__name__, (mbeds[i]['platform_name_unique'], val['target_id']))
         return mbeds
+
+    def list_mbeds_by_targetid(self):
+        """ Get information about mbeds with extended parameters/info included
+            Ordered by target id (key: target_id)
+
+            Returns dictionary
+        """
+        result = {}
+        mbed_list = self.list_mbeds_ext()
+        for mbed in mbed_list:
+            target_id = mbed['target_id']
+            result[target_id] = mbed
+        return result
 
     # Private part, methods used to drive interface functions
     def load_mbed_description(self, file_name):
@@ -288,7 +303,7 @@ class MbedLsToolsBase:
 
     def scan_html_line_for_target_id(self, line):
         """ Scan if given line contains target id encoded in URL.
-        
+
             @return Returns None when no target_id string in line
         """
         # Detecting modern mbed.htm file format

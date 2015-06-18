@@ -66,7 +66,13 @@ def cmd_parser_setup():
                       dest='json',
                       default=False,
                       action="store_true",
-                      help='JSON formatted output')
+                      help='JSON formatted output (list)')
+
+    parser.add_option('', '--json-by-target-id',
+                      dest='json_by_target_id',
+                      default=False,
+                      action="store_true",
+                      help='JSON formatted output where keys are TargetIDs (dict)')
 
     parser.add_option('-d', '--debug',
                       dest='debug',
@@ -93,6 +99,8 @@ def mbedls_main():
 
     if opts.json:
         print json.dumps(mbeds.list_mbeds_ext(), indent=4, sort_keys=True)
+    elif opts.json_by_target_id:
+        print json.dumps(mbeds.list_mbeds_by_targetid(), indent=4, sort_keys=True)
     else:
         print mbeds.get_string(border=not opts.simple, header=not opts.simple)
 
