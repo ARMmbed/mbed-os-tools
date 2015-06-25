@@ -77,7 +77,7 @@ def get_mbed_target_from_current_dir():
     """
     result = None
     cmd = ['yotta', 'target']
-    print "yotta: search for existing mbed-target"
+    print "mbedgt: yotta search for existing mbed-target"
     _stdout, _stderr, _ret = run_cli_process(cmd)
     if not _ret:
         for line in _stdout.splitlines():
@@ -96,7 +96,7 @@ def get_mbed_targets_from_yotta(mbed_classic_name):
     """
     result = []
     cmd = ['yotta', 'search', '-k', 'mbed-target:%s' % mbed_classic_name.lower().strip(), 'target']
-    print "yotta: search for mbed-target:%s" % mbed_classic_name.lower().strip()
+    print "mbedgt: yotta search for mbed-target:%s" % mbed_classic_name.lower().strip()
     _stdout, _stderr, _ret = run_cli_process(cmd)
     if not _ret:
         for line in _stdout.splitlines():

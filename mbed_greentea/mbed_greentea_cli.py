@@ -29,6 +29,7 @@ from mbed_test_api import TEST_RESULTS
 from cmake_handlers import load_ctest_testsuite
 from cmake_handlers import list_binaries_for_targets
 from mbed_report_api import exporter_junit
+from mbed_report_api import TEST_RESULT_OK
 from mbed_target_info import get_mbed_clasic_target_info
 from mbed_target_info import get_mbed_supported_test
 from mbed_target_info import get_mbed_target_from_current_dir
@@ -168,6 +169,8 @@ def main():
         print "\treason: no --target switch set"
         list_of_targets = [current_target]
 
+    test_exec_retcode = 0   # Decrement this value each time test case result is not 'OK'
+
     for mut in mbeds_list:
         print "\tdetected %s, console at: %s, mounted at: %s"% (mut['platform_name'],
             mut['serial_port'],
@@ -206,6 +209,8 @@ def main():
                                                 verbose=True)
                     single_test_result, single_test_output, single_testduration, single_timeout = host_test_result
                     status = TEST_RESULTS.index(single_test_result) if single_test_result in TEST_RESULTS else -1
+                    if single_test_result == TEST_RESULT_OK:
+                        test_exec_retcode -= 1
                     continue
 
                 # Regression test mode:
@@ -216,12 +221,15 @@ def main():
                     if opts.verbose is not None: cmd.append('-v')
                     cmd.append('--target=%s,*' % yotta_target_name)
                     cmd.append('build')
-                    if opts.build_to_release: cmd.append('-r')
-                    elif opts.build_to_debug: cmd.append('-d')
+                    if opts.build_to_release:
+                        cmd.append('-r')
+                    elif opts.build_to_debug:
+                        cmd.append('-d')
 
                     print "mbedgt: calling yotta to build your sources and tests: %s" % (' '.join(cmd))
                     yotta_result = run_cli_command(cmd, shell=False, verbose=opts.verbose)
 
+                    print "mbedgt: yotta build %s"% ('successful' if yotta_result else 'failed')
                     # Build phase will be followed by test execution for each target
                     if yotta_result and not opts.only_build_tests:
                         binary_type = mut_info['properties']['binary_type']
@@ -229,11 +237,19 @@ def main():
                             binary_type=binary_type)
 
                         print "mbedgt: running tests for '%s' target" % yotta_target_name
+                        test_list = None
+                        if opts.test_by_names:
+                            test_list = opts.test_by_names.lower().split(',')
+                            print "mbedgt: test case filter: %s (specified with -n option)" % ', '.join(["'%s'"% t for t in test_list])
+
+                            for test_n in test_list:
+                                if test_n not in ctest_test_list:
+                                    print "\ttest name '%s' not found (specified with -n option)"% test_n
+
                         for test_bin, image_path in ctest_test_list.iteritems():
                             test_result = 'SKIPPED'
                             # Skip test not mentioned in -n option
                             if opts.test_by_names:
-                                test_list = opts.test_by_names.lower().split(',')
                                 if test_bin.lower() not in test_list:
                                     continue
 
@@ -255,6 +271,8 @@ def main():
                                     verbose=verbose)
                                 single_test_result, single_test_output, single_testduration, single_timeout = host_test_result
                                 test_result = single_test_result
+                                if single_test_result == TEST_RESULT_OK:
+                                    test_exec_retcode -= 1
 
                                 # Update report for optional reporting feature
                                 test_name = test_bin.lower()
@@ -271,9 +289,9 @@ def main():
                                 print " %s in %.2f sec"% (test_result, single_testduration)
                     elif not yotta_result:
                         print "mbedgt: yotta build failed!"
-                        exit(1)
+                        exit(int(ord('y')))
         else:
-            print "mbed-ls: mbed classic target name %s is not in target database"% (mut['platform_name'])
+            print "mbed-ls: mbed classic target name '%s' is not in target database"% (mut['platform_name'])
 
     if opts.report_junit_file_name:
         junit_report = exporter_junit(test_report)
@@ -283,3 +301,5 @@ def main():
     if opts.verbose_test_configuration_only:
         print
         print "Example: execute 'mbedgt --target=TARGET_NAME' to start testing for TARGET_NAME target"
+
+    exit(test_exec_retcode)

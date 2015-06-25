@@ -17,12 +17,12 @@ limitations under the License.
 Author: Przemyslaw Wirkus <Przemyslaw.wirkus@arm.com>
 """
 
-from junit_xml import TestSuite, TestCase
-
 
 def exporter_junit(test_result_ext, test_suite_properties=None):
     """ Export test results in JUnit XML compliant format
     """
+    from junit_xml import TestSuite, TestCase
+
     test_suites = []
     test_cases = []
 
@@ -50,3 +50,8 @@ def exporter_junit(test_result_ext, test_suite_properties=None):
         ts = TestSuite("test.suite.%s" % target, test_cases)
         test_suites.append(ts)
     return TestSuite.to_xml_string(test_suites)
+
+
+def exporter_text(test_result_ext, test_suite_properties=None):
+    from prettytable import PrettyTable
+    pass
