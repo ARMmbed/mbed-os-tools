@@ -26,10 +26,10 @@ import optparse
 from mbed_test_api import run_host_test
 from mbed_test_api import run_cli_command
 from mbed_test_api import TEST_RESULTS
+from mbed_test_api import TEST_RESULT_OK
 from cmake_handlers import load_ctest_testsuite
 from cmake_handlers import list_binaries_for_targets
 from mbed_report_api import exporter_junit
-from mbed_report_api import TEST_RESULT_OK
 from mbed_target_info import get_mbed_clasic_target_info
 from mbed_target_info import get_mbed_supported_test
 from mbed_target_info import get_mbed_target_from_current_dir
@@ -209,7 +209,7 @@ def main():
                                                 verbose=True)
                     single_test_result, single_test_output, single_testduration, single_timeout = host_test_result
                     status = TEST_RESULTS.index(single_test_result) if single_test_result in TEST_RESULTS else -1
-                    if single_test_result == TEST_RESULT_OK:
+                    if single_test_result != TEST_RESULT_OK:
                         test_exec_retcode -= 1
                     continue
 
@@ -271,7 +271,7 @@ def main():
                                     verbose=verbose)
                                 single_test_result, single_test_output, single_testduration, single_timeout = host_test_result
                                 test_result = single_test_result
-                                if single_test_result == TEST_RESULT_OK:
+                                if single_test_result != TEST_RESULT_OK:
                                     test_exec_retcode -= 1
 
                                 # Update report for optional reporting feature
@@ -287,7 +287,8 @@ def main():
 
                                 print "\ttest '%s' %s"% (test_bin, '.' * (80 - len(test_bin))),
                                 print " %s in %.2f sec"% (test_result, single_testduration)
-                    elif not yotta_result:
+                    # We need to stop executing if yotta build fails
+                    if not yotta_result:
                         print "mbedgt: yotta build failed!"
                         exit(int(ord('y')))
         else:
