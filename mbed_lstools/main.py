@@ -1,9 +1,21 @@
 #!/usr/bin/env python
 
-# Copyright 2014-2015 ARM Limited
-#
-# Licensed under the Apache License, Version 2.0
-# See LICENSE file for details.
+"""
+mbed SDK
+Copyright (c) 2011-2015 ARM Limited
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+"""
 
 import os
 import sys
@@ -17,7 +29,11 @@ from lstools_darwin import MbedLsToolsDarwin
 
 
 def create():
-    """ Factory producing mbed-lstools depending on OS it is working on
+    """! Factory used to create host OS specific mbed-lstools object
+
+    @return Returns MbedLsTools object or None if host OS is not supported
+
+    @details Function detects host OS. Each host platform should be ported to support new host platform (OS)
     """
     result = None
     mbed_os = mbed_os_support()
@@ -28,8 +44,11 @@ def create():
     return result
 
 def mbed_os_support():
-    """ Function return True if host OS supports mbed-enabled devices detections procedures.
-        Returns False if this feature is not implemented.
+    """! Function used to determine if host OS is supported by mbed-lstools
+
+    @return Returns None if host OS is not supported else return OS short name
+
+    @details This function should be ported for new OS support
     """
     result = None
     os_info = mbed_lstools_os_info()
@@ -42,7 +61,9 @@ def mbed_os_support():
     return result
 
 def mbed_lstools_os_info():
-    """ Returns information about running OS
+    """! Returns information about host OS
+
+    @return Returns tuple with information about OS and host platform
     """
     result = (os.name,
               platform.system(),
@@ -52,7 +73,11 @@ def mbed_lstools_os_info():
     return result
 
 def cmd_parser_setup():
-    """ Configure command line options
+    """! Configure CLI (Command Line OPtions) options
+
+    @return Returns OptionParser's tuple of (options, arguments)
+
+    @details Add new command line options here to control 'mbedls' command line iterface
     """
     parser = optparse.OptionParser()
 
@@ -85,8 +110,11 @@ def cmd_parser_setup():
 
 
 def mbedls_main():
-    """ Function used to drive command line interface for this mbed-lstools library.
-        This function provides output for 'mbedls' command.
+    """! Function used to drive CLI (command line interface) application
+
+    @return Function exits with successcode
+
+    @details Function exits back to command line with ERRORLEVEL
     """
     (opts, args) = cmd_parser_setup()
     mbeds = create()
