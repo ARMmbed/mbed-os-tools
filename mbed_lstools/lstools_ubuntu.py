@@ -209,7 +209,7 @@ class MbedLsToolsUbuntu(MbedLsToolsBase):
         @param tids TargetID comprehensive list for detection (manufacturers_ids)
         @param disk_list List of disks (mount points in /dev/disk)
         @param serial_list List of serial devices (serial ports in /dev/serial)
-        @param mount_list
+        @param mount_list List of lines from 'mount' command
 
         @details Find for all disk connected all MBED ones we know about from TID list
         """
@@ -245,7 +245,7 @@ class MbedLsToolsUbuntu(MbedLsToolsBase):
         @param tids TargetID comprehensive list for detection (manufacturers_ids)
         @param disk_list List of disks (mount points in /dev/disk)
         @param serial_list List of serial devices (serial ports in /dev/serial)
-        @param mount_list
+        @param mount_list List of lines from 'mount' command
 
         @details Find for all disk connected all MBED ones we know about from TID list
         """
