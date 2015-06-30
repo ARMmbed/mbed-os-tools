@@ -26,6 +26,8 @@ from mbed_lstools.main import create
 
 
 class MbedListingestCase(unittest.TestCase):
+    """ UNit tests for mbed-ls ability to list connected devices
+    """
 
     def setUp(self):
         self.mbeds = create()

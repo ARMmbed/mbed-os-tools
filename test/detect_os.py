@@ -29,6 +29,8 @@ from mbed_lstools.main import mbed_lstools_os_info
 
 
 class DetectOSTestCase(unittest.TestCase):
+    """ Test cases for host OS related functionality. Helpful during porting
+    """
 
     def setUp(self):
         pass

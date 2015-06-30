@@ -23,6 +23,8 @@ import logging
 
 
 class BasicTestCase(unittest.TestCase):
+    """ Basic test cases checking trivial asserts
+    """
 
     def setUp(self):
         pass

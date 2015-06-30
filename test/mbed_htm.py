@@ -30,6 +30,8 @@ test_mbed_htm_lpc1768_url = '<meta http-equiv="refresh" content="0; url=http://m
 
 
 class ParseMbedHTMTestCase(unittest.TestCase):
+    """ Unit tests checking HTML parsing code for 'mbed.htm' files
+    """
 
     def setUp(self):
         self.mbeds = create()
