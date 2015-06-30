@@ -1,6 +1,6 @@
 """
 mbed SDK
-Copyright (c) 2011-2013 ARM Limited
+Copyright (c) 2011-2015 ARM Limited
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ from lstools_base import MbedLsToolsBase
 
 
 class MbedLsToolsUbuntu(MbedLsToolsBase):
-    """ MbedLsToolsUbuntu supports mbed-enabled platforms detection across Debian/Ubuntu OS family
+    """ MbedLsToolsUbuntu supports mbed-enabled platforms detection across Ubuntu OS family
     """
     def __init__(self):
         """ ctor
@@ -164,7 +164,8 @@ class MbedLsToolsUbuntu(MbedLsToolsBase):
         return disk_hex_ids
 
     def get_mbed_serial(self, serial_list, dhi):
-        """ Get mbed serial by unique hex id (dhi) in disk name  """
+        """ Get mbed serial by unique hex id (dhi) in disk name
+        """
         nlp = re.compile(self.name_link_pattern)
         for sl in serial_list:
             if dhi in sl:
@@ -247,7 +248,8 @@ class MbedLsToolsUbuntu(MbedLsToolsBase):
         return mbed_dev
 
     def get_mount_point(self, dev_name, mount_list):
-        """ Find mount points for MBED devices using mount command output  """
+        """ Find mount points for MBED devices using mount command output
+        """
         mount_media_pattern = "^/[a-zA-Z0-9/]*/" + dev_name  + " on (/[a-zA-Z0-9/]*) "
         mmp = re.compile(mount_media_pattern)
         for mount in mount_list:
