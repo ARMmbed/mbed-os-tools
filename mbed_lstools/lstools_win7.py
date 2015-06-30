@@ -40,9 +40,9 @@ class MbedLsToolsWin7(MbedLsToolsBase):
     def list_mbeds(self):
         """! Returns detailed list of connected mbeds
 
-            @return Returns list of structures with detailed info about each mbed
+        @return Returns list of structures with detailed info about each mbed
 
-            @details Function returns list of dictionaries with mbed attributes such as mount point, TargetID name etc.
+        @details Function returns list of dictionaries with mbed attributes such as mount point, TargetID name etc.
         """
         self.ERRORLEVEL_FLAG = 0
 
@@ -65,9 +65,9 @@ class MbedLsToolsWin7(MbedLsToolsBase):
     def discover_connected_mbeds(self, defs={}):
         """! Function produces list of mbeds with additional information and bind mbed with correct TargetID
 
-            @return Returns [(<mbed_mount_point>, <mbed_id>, <com port>, <board model>), ..]
+        @return Returns [(<mbed_mount_point>, <mbed_id>, <com port>, <board model>), ..]
 
-            @details Notice: this function is permissive: adds new elements in-places when and if found
+        @details Notice: this function is permissive: adds new elements in-places when and if found
         """
         mbeds = [(m[0], m[1], None, None) for m in self.get_connected_mbeds()]
         for i in range(len(mbeds)):

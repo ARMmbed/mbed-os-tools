@@ -34,38 +34,43 @@ class MbedLsToolsUbuntu(MbedLsToolsBase):
         self.mount_media_pattern = "^/[a-zA-Z0-9/]* on (/[a-zA-Z0-9/]*) "
 
     def list_mbeds(self):
-        """ Function returns mbed list with platform names if possible
-            all_devices =
-            [
-                ['*not detected', 'sdi', '/media/usb3', '/dev/ttyACM7', 'usb-MBED_microcontroller_066EFF534951775087215736-0:0 -> ../../sdi'],
-                ['*not detected', 'sdg', '/media/usb5', '/dev/ttyACM5', 'usb-MBED_microcontroller_066EFF525257775087141721-0:0 -> ../../sdg'],
-                ['*not detected', 'sdf', '/media/przemek/NUCLEO', '/dev/ttyACM4', 'usb-MBED_microcontroller_0671FF534951775087131543-0:0 -> ../../sdf'],
-                ['*not detected', 'sdd', '/media/usb4', '/dev/ttyACM2', 'usb-MBED_microcontroller_0670FF494951785087152739-0:0 -> ../../sdd'],
-                ['*not detected', 'sdb', '/media/usb0', '/dev/ttyACM0', 'usb-MBED_microcontroller_0674FF484951775087083114-0:0 -> ../../sdb'],
-                ['*not detected', 'sdh', '/media/usb6', '/dev/ttyACM6', 'usb-MBED_microcontroller_066FFF525257775087155144-0:0 -> ../../sdh'],
-                ['*not detected', 'sdc', '/media/usb1', '/dev/ttyACM1', 'usb-MBED_microcontroller_066AFF494956805087155327-0:0 -> ../../sdc'],
-                ['*not detected', 'sde', '/media/usb2', '/dev/ttyACM3', 'usb-MBED_microcontroller_066CFF534951775087112139-0:0 -> ../../sde']
-            ]
+        """! Returns detailed list of connected mbeds
 
-            MBED format
-            {
-                'mount_point' : <>,
-                'serial_port' : <>,
-                'target_id' : <>,
-                'platform_name' : <>,
-            }
+        @return Returns list of structures with detailed info about each mbed
 
-            TIDS format
-            {
-                "1168": "LPC11U68",
-                "1549": "LPC1549",
-                "1070": "NRF51822",
-                "0200": "KL25Z",
-                "0220": "KL46Z",
-                "0230": "K20D50M",
-                "0240": "K64F"
-            }
+        @details Function returns list of dictionaries with mbed attributes such as mount point, TargetID name etc.
 
+        Function returns mbed list with platform names if possible
+        all_devices =
+        [
+            ['*not detected', 'sdi', '/media/usb3', '/dev/ttyACM7', 'usb-MBED_microcontroller_066EFF534951775087215736-0:0 -> ../../sdi'],
+            ['*not detected', 'sdg', '/media/usb5', '/dev/ttyACM5', 'usb-MBED_microcontroller_066EFF525257775087141721-0:0 -> ../../sdg'],
+            ['*not detected', 'sdf', '/media/przemek/NUCLEO', '/dev/ttyACM4', 'usb-MBED_microcontroller_0671FF534951775087131543-0:0 -> ../../sdf'],
+            ['*not detected', 'sdd', '/media/usb4', '/dev/ttyACM2', 'usb-MBED_microcontroller_0670FF494951785087152739-0:0 -> ../../sdd'],
+            ['*not detected', 'sdb', '/media/usb0', '/dev/ttyACM0', 'usb-MBED_microcontroller_0674FF484951775087083114-0:0 -> ../../sdb'],
+            ['*not detected', 'sdh', '/media/usb6', '/dev/ttyACM6', 'usb-MBED_microcontroller_066FFF525257775087155144-0:0 -> ../../sdh'],
+            ['*not detected', 'sdc', '/media/usb1', '/dev/ttyACM1', 'usb-MBED_microcontroller_066AFF494956805087155327-0:0 -> ../../sdc'],
+            ['*not detected', 'sde', '/media/usb2', '/dev/ttyACM3', 'usb-MBED_microcontroller_066CFF534951775087112139-0:0 -> ../../sde']
+        ]
+
+        MBED format
+        {
+            'mount_point' : <>,
+            'serial_port' : <>,
+            'target_id' : <>,
+            'platform_name' : <>,
+        }
+
+        TIDS format
+        {
+            "1168": "LPC11U68",
+            "1549": "LPC1549",
+            "1070": "NRF51822",
+            "0200": "KL25Z",
+            "0220": "KL46Z",
+            "0230": "K20D50M",
+            "0240": "K64F"
+        }
         """
         # We harness information about what is mounted and connected to serial ports
         disk_ids = self.get_dev_by_id('disk')
@@ -116,8 +121,11 @@ class MbedLsToolsUbuntu(MbedLsToolsBase):
     # Private methods
 
     def get_dev_by_id(self, subdir):
-        """ Lists disk devices by id
-            Command: 'ls -oA /dev/disk/by-id/'
+        """! Lists disk devices by id
+
+        @return List of strings from 'ls' command executed in shell
+
+        @details Uses Linux shell command: 'ls -oA /dev/disk/by-id/'
         """
         result = []
         cmd = 'ls -oA /dev/' + subdir + '/by-id/'
@@ -133,7 +141,11 @@ class MbedLsToolsUbuntu(MbedLsToolsBase):
         return result
 
     def get_mounts(self):
-        """ Lists mounted devices with vfat file system (potential mbeds)
+        """! Lists mounted devices with vfat file system (potential mbeds)
+
+        @result Returns list of all mounted vfat devices
+
+        @details Uses Linux shell command: 'mount | grep vfat'
         """
         result = []
         cmd = 'mount | grep vfat'
@@ -149,7 +161,13 @@ class MbedLsToolsUbuntu(MbedLsToolsBase):
         return result
 
     def get_disk_hex_ids(self, disk_list):
-        """ Get only hexadecimal IDs for mbed disks
+        """! Get only hexadecimal IDs for mbed disks
+
+        @param disk_list List of disks in a system with USBID decoration
+
+        @return Returns map of disks and corresponding disks' Hex ids
+
+        @details Uses regular expressions to get Hex strings (TargeTIDs) from list of disks
         """
         nlp = re.compile(self.name_link_pattern)
         hup = re.compile(self.hex_uuid_pattern)
@@ -164,7 +182,14 @@ class MbedLsToolsUbuntu(MbedLsToolsBase):
         return disk_hex_ids
 
     def get_mbed_serial(self, serial_list, dhi):
-        """ Get mbed serial by unique hex id (dhi) in disk name
+        """! Get mbed serial by unique hex id (dhi) in disk name
+
+        @return Returns None if corresponding serial device is not found, else returns serial device path
+
+        @param serial_list List of all serial ports
+        @param dhi Unique Hex id of possible mbed device
+
+        @details Devices are located in Linux '/dev/' directory structure
         """
         nlp = re.compile(self.name_link_pattern)
         for sl in serial_list:
@@ -177,7 +202,16 @@ class MbedLsToolsUbuntu(MbedLsToolsBase):
         return None
 
     def get_detected(self, tids, disk_list, serial_list, mount_list):
-        """ Find all known mbed devices
+        """! Find all known mbed devices and assign name by targetID
+
+        @return list of lists [mbed_name, mbed_dev_disk, mbed_mount_point, mbed_dev_serial, disk_hex_id]
+
+        @param tids TargetID comprehensive list for detection (manufacturers_ids)
+        @param disk_list List of disks (mount points in /dev/disk)
+        @param serial_list List of serial devices (serial ports in /dev/serial)
+        @param mount_list
+
+        @details Find for all disk connected all MBED ones we know about from TID list
         """
         # Find for all disk connected all MBED ones we know about from TID list
         disk_hex_ids = self.get_disk_hex_ids(disk_list)
@@ -204,7 +238,16 @@ class MbedLsToolsUbuntu(MbedLsToolsBase):
         return result
 
     def get_not_detected(self, tids, disk_list, serial_list, mount_list):
-        """ Find all unknown mbed-enabled devices
+        """! Find all unknown mbed-enabled devices (may have 'mbed' string in USBID name)
+
+        @return list of lists [mbed_name, mbed_dev_disk, mbed_mount_point, mbed_dev_serial, disk_hex_id]
+
+        @param tids TargetID comprehensive list for detection (manufacturers_ids)
+        @param disk_list List of disks (mount points in /dev/disk)
+        @param serial_list List of serial devices (serial ports in /dev/serial)
+        @param mount_list
+
+        @details Find for all disk connected all MBED ones we know about from TID list
         """
         map_tid_to_mbed = self.get_tid_mbed_name_remap(tids)
         orphan_mbeds = []
@@ -249,6 +292,13 @@ class MbedLsToolsUbuntu(MbedLsToolsBase):
 
     def get_mount_point(self, dev_name, mount_list):
         """ Find mount points for MBED devices using mount command output
+
+        @return Returns None if mount point not found. Else returns device mount path
+
+        @param dev_name Device name (e.g 'sda')
+        @param mount_list List of all mounted devices (strings from Linux mount shell command)
+
+        @details
         """
         mount_media_pattern = "^/[a-zA-Z0-9/]*/" + dev_name  + " on (/[a-zA-Z0-9/]*) "
         mmp = re.compile(mount_media_pattern)
