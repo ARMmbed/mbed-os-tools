@@ -20,7 +20,7 @@ import os
 import json
 
 class MbedLsToolsBase:
-    """ Base class for mbed-lstools used by test suite
+    """ Base class for mbed-lstools, defines mbed-ls tools interface for mbed-enabled devices detection for various hosts
     """
     def __init__(self):
         """ ctor
@@ -161,9 +161,11 @@ class MbedLsToolsBase:
 
     # Interface
     def list_mbeds(self):
-        """ Get information about mbeds connected to device
+        """! Get information about mbeds connected to device
 
-        MBED_BOARD
+        @return Returns None or if no error MBED_BOARDS = [ <MBED_BOARD>, ]
+
+        @details MBED_BOARD
         {
             'mount_point' : <>,
             'serial_port' : <>,
@@ -171,16 +173,15 @@ class MbedLsToolsBase:
             'platform_name' : <>,
         }
         # If field unknown, place None
-
-        @return MBED_BOARDS = [ <MBED_BOARD>, ]
-
         """
         return None
 
     def list_mbeds_ext(self):
-        """ Get information about mbeds with extended parameters/info included
+        """! Function adds extra information for each mbed device
 
-            Returns list of dictionaries
+        @return Returns list of mbed devices plus extended data like 'platform_name_unique'
+
+        @details Get information about mbeds with extended parameters/info included
         """
         platform_names = {} # Count existing platforms and assign unique number
 
@@ -199,9 +200,11 @@ class MbedLsToolsBase:
 
     def list_mbeds_by_targetid(self):
         """ Get information about mbeds with extended parameters/info included
-            Ordered by target id (key: target_id)
 
-            Returns dictionary
+            @return Returns dictionary where keys are TargetIDs and values are mbed structures
+
+            @details Ordered by target id (key: target_id).
+
         """
         result = {}
         mbed_list = self.list_mbeds_ext()
@@ -219,23 +222,40 @@ class MbedLsToolsBase:
         pass
 
     def err(self, text):
-        """ Prints error messages
+        """! Prints error messages
+
+        @param text Text to be included in error message
+
+        @details Function prints directly on console
         """
         print 'error: %s'% text
 
     def debug(self, name, text):
-        """ Prints error messages
-            @param name - called function name
+        """! Prints error messages
+
+        @param name Called function name
+        @param text Text to be included in debug message
+
+        @details Function prints directly on console
         """
         print 'debug @%s.%s: %s'% (self.__class__.__name__, name, text)
 
     def __str__(self):
-        """ Object to string casting
+        """! Object to string casting
+
+        @return Stringified class object should be prettytable formated string
         """
         return self.get_string()
 
     def get_string(self, border=False, header=True, padding_width=0, sortby='platform_name'):
-        """ Printing with some sql table like decorators
+        """! Printing with some sql table like decorators
+
+        @param border Table border visibility
+        @param header Table header visibility
+        @param padding_width Table padding
+        @param sortby Column used to sort results
+
+        @return Returns string which can be printed on console
         """
         from prettytable import PrettyTable
         from prettytable import PLAIN_COLUMNS
@@ -262,8 +282,9 @@ class MbedLsToolsBase:
     # Private functions supporting API
 
     def get_json_data_from_file(self, json_spec_filename, verbose=False):
-        """ Loads from file JSON formatted string to data structure
-            @return None if JSON can be loaded
+        """! Loads from file JSON formatted string to data structure
+
+        @return None if JSON can be loaded
         """
         result = None
         try:
@@ -280,10 +301,11 @@ class MbedLsToolsBase:
         return result
 
     def get_mbed_htm_target_id(self, mount_point):
-        """ Function scans mbed.htm to get information about TargetID.
-            Function returns targetID, in case of failure returns None.
+        """! Function scans mbed.htm to get information about TargetID.
 
-            Note: This function should be improved to scan variety of boards' mbed.htm files
+        @return Function returns targetID, in case of failure returns None.
+
+        @details Note: This function should be improved to scan variety of boards' mbed.htm files
         """
         result = None
         MBED_HTM_LIST = ['mbed.htm', 'MBED.HTM', 'MBED.htm']
@@ -302,9 +324,9 @@ class MbedLsToolsBase:
         return result
 
     def scan_html_line_for_target_id(self, line):
-        """ Scan if given line contains target id encoded in URL.
+        """! Scan if given line contains target id encoded in URL.
 
-            @return Returns None when no target_id string in line
+        @return Returns None when no target_id string in line
         """
         # Detecting modern mbed.htm file format
         m = re.search('\?code=([a-fA-F0-9]+)', line)
