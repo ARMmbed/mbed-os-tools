@@ -1,6 +1,6 @@
 """
 mbed SDK
-Copyright (c) 2011-2013 ARM Limited
+Copyright (c) 2011-2015 ARM Limited
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -24,6 +24,8 @@ from lstools_base import MbedLsToolsBase
 
 
 class MbedLsToolsWin7(MbedLsToolsBase):
+    """ Class derived from MbedLsToolsBase ports mbed-ls functionality for Windows 7 OS
+    """
     def __init__(self):
         """ MbedLsToolsWin7 supports mbed enabled platforms detection across Windows7 OS family
         """
@@ -36,7 +38,11 @@ class MbedLsToolsWin7(MbedLsToolsBase):
         self.winreg = winreg
 
     def list_mbeds(self):
-        """Returns connected mbeds as an mbeds dictionary
+        """! Returns detailed list of connected mbeds
+
+            @return Returns list of structures with detailed info about each mbed
+
+            @details Function returns list of dictionaries with mbed attributes such as mount point, TargetID name etc.
         """
         self.ERRORLEVEL_FLAG = 0
 
@@ -57,8 +63,11 @@ class MbedLsToolsWin7(MbedLsToolsBase):
         return mbeds
 
     def discover_connected_mbeds(self, defs={}):
-        """ Returns [(<mbed_mount_point>, <mbed_id>, <com port>, <board model>), ..]
-            Notice: this function is permissive: adds new elements in-places when and if found
+        """! Function produces list of mbeds with additional information and bind mbed with correct TargetID
+
+            @return Returns [(<mbed_mount_point>, <mbed_id>, <com port>, <board model>), ..]
+
+            @details Notice: this function is permissive: adds new elements in-places when and if found
         """
         mbeds = [(m[0], m[1], None, None) for m in self.get_connected_mbeds()]
         for i in range(len(mbeds)):
@@ -80,8 +89,12 @@ class MbedLsToolsWin7(MbedLsToolsBase):
         return mbeds
 
     def get_mbed_com_port(self, id):
-        """ This goes through a whole new loop, but this assures that even if
-            serial port (COM) is not detected, we still get the rest of info like mount point etc.
+        """! Function checks mbed serial port in Windows registry entries
+
+        @return Returns None if port is not found. In normal circumstances it should never return None
+
+        @details This goes through a whole new loop, but this assures that even if serial port (COM)
+                 is not detected, we still get the rest of info like mount point etc.
         """
         self.winreg.Enum = self.winreg.OpenKey(self.winreg.HKEY_LOCAL_MACHINE, r'SYSTEM\CurrentControlSet\Enum')
         usb_devs = self.winreg.OpenKey(self.winreg.Enum, 'USB')
@@ -126,17 +139,25 @@ class MbedLsToolsWin7(MbedLsToolsBase):
                 pass
 
     def get_connected_mbeds(self):
-        """ Returns [(<mbed_mount_point>, <mbed_id>), ..]
+        """! Function  return mbeds with existing mount point
+
+        @return Returns [(<mbed_mount_point>, <mbed_id>), ..]
+
+        @details Helper function
         """
         return [m for m in self.get_mbeds() if os.path.exists(m[0])]
 
     def get_mbeds(self):
-        """ Returns [(<mbed_mount_point>, <mbed_id>), ..]
+        """! Function filters devices' mount points for valid TargetID
+
+        @return Returns [(<mbed_mount_point>, <mbed_id>), ..]
+
+        @details TargetID should be a hex string with 10-48 chars
         """
         mbeds = []
         for mbed in self.get_mbed_devices():
             mountpoint = re.match('.*\\\\(.:)$', mbed[0]).group(1)
-            # id is a hex string with 10-36 chars
+            # id is a hex string with 10-48 chars
             id = re.search('[0-9A-Fa-f]{10,48}', mbed[1]).group(0)
             mbeds += [(mountpoint, id)]
             if self.DEBUG_FLAG:
@@ -164,9 +185,12 @@ class MbedLsToolsWin7(MbedLsToolsBase):
             yield self.winreg.EnumValue(key, i)
 
     def get_mbed_devices(self):
-        """ Get MBED devices (connected or not)
-            Note: We will detect also non-standard MBED devices mentioned on 'usb_vendor_list' list.
-                  This will help to detect boards like EFM boards.
+        """! Get MBED devices (connected or not)
+
+        @return List of devices
+
+        @details Note: We will detect also non-standard MBED devices mentioned on 'usb_vendor_list' list.
+                 This will help to detect boards like EFM boards.
         """
         result = []
         for ven in self.usb_vendor_list:
