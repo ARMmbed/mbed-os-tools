@@ -17,6 +17,20 @@ limitations under the License.
 Author: Przemyslaw Wirkus <Przemyslaw.Wirkus@arm.com>
 """
 
+
+"""! @package mbed-host-tests
+
+Flash, reset and  perform host supervised tests on mbed platforms.
+
+mbed's test suite (codenamed Greentea) supports the test supervisor concept.
+This concept is realised by a separate Python script called "host test", which
+is executed in parallel with the test runner (a binary running on the target
+hardware) to monitor the test execution's progress or to control the test flow
+(interaction with the mbed device under test - MUT). The host test is also
+responsible for grabbing the test result, or deducing it from the test runner's
+behaviour.
+"""
+
 import sys
 from optparse import OptionParser
 
@@ -68,14 +82,21 @@ HOSTREGISTRY.register_host_test("test_socket_server_tcp", TCPSocketServerEchoExt
 
 
 def get_host_test(ht_name):
-    """ Returns registered host test supervisor.
-        If host test is not registered by name function returns None.
+    """! Fetches host test object from HOSTREGISTRY
+
+    @param ht_name Host test name
+
+    @return Returns registered host test supervisor.
+            If host test is not registered by name function returns None.
     """
     return HOSTREGISTRY.get_host_test(ht_name)
 
 def is_host_test(ht_name):
     """ Checks if host test supervisor is registered in host test registry.
-        If so return True otherwise False.
+
+    @param ht_name Host test name
+
+    @return If host test supervisor is registered returns True otherwise False.
     """
     return HOSTREGISTRY.is_host_test(ht_name)
 
@@ -84,6 +105,8 @@ class DefaultTestSelector(DefaultTestSelectorBase):
     test_supervisor = get_host_test("default")
 
     def __init__(self, options=None):
+        """ ctor
+        """
         self.options = options
 
         # Handle extra command from
@@ -104,15 +127,16 @@ class DefaultTestSelector(DefaultTestSelectorBase):
             print "'%s'%s : %s()" % (ht, ' '*(str_len - len(ht)), HOSTREGISTRY.HOST_TESTS[ht].__class__)
 
     def setup(self):
-        """ Additional setup before workflow execution
+        """ Additional setup before work-flow execution
         """
         pass
 
     def run(self):
-        """ This function will perform extra setup and proceed
-            with test selector's work flow
+        """ This function will perform extra setup and proceed with test selector's work flow
+
+        @details This function will call execute() but first will call setup() to perform extra actions
         """
-        self.setup()
+        self.setup()    # Additional setup (optional before execute() call)
 
         if self.mbed.options:
             # We would like to run some binaries, not as tests but as examples, demos etc.
@@ -124,8 +148,13 @@ class DefaultTestSelector(DefaultTestSelectorBase):
         self.execute()
 
     def execute_run(self):
-        """ Feature allows users to simply flash, reset and run binary without host test
-            direct involvement
+        """ This function implements a feature which allows users to simply
+            flash, reset and run binary without host test instrumentation
+
+        @return This function doesn't return. It prints result on serial port from host test supervisor.
+                Test result string is cough by test framework
+
+        @details This feature is sensitive for flags such as --skip-reset or --skip-flashing
         """
         # Copy image to device
         if self.options.skip_flashing is False:
@@ -170,11 +199,22 @@ class DefaultTestSelector(DefaultTestSelectorBase):
             self.print_result(self.RESULT_ERROR)
 
     def execute(self):
-        """ Test runner for host test. This function will start executing
-            test and forward test result via serial port to test suite
+        """ Test runner for host test.
+
+        @return This function doesn't return. It prints result on serial port from host test supervisor.
+                Test result string is cough by test framework
+
+        @details This function will start executing test and forward test result via serial port
+                 to test suite. This function is sensitive to work-flow flags such as --skip-flashing,
+                 --skip-reset etc.
+                 First function will flash device with binary, initialize serial port for communication,
+                 reset target. On serial port handshake with test case will be performed. It is when host
+                 test reads property data from serial port (sent over serial port).
+                 At the end of the procedure proper host test (defined in set properties) will be executed
+                 and test execution timeout will be measured.
         """
         # Copy image to device
-        if self.options.skip_flashing is False:        
+        if self.options.skip_flashing is False:
             self.notify("HOST: Copy image onto target...")
             result = self.mbed.copy_image()
             if not result:
@@ -216,8 +256,11 @@ class DefaultTestSelector(DefaultTestSelectorBase):
             self.print_result(self.RESULT_ERROR)
 
 def init_host_test_cli_params():
-    """ Function creates parser object and returns populated options object.
-        Options object later can be used to populate host test selector script.
+    """ Function creates CLI parser object and returns populated options object.
+
+    @return Function returns 'options' object returned from OptionParser class
+
+    @details Options object later can be used to populate host test selector script.
     """
     parser = OptionParser()
 
