@@ -82,7 +82,7 @@ class HostTestPluginBase:
     def check_mount_point_ready(self, destination_disk, init_delay=0.2, loop_delay=0.25):
         """ Checks if destination_disk is ready and can be accessed by e.g. copy commands
             @init_delay - Initial delay time before first access check
-            @loop_delay - pooling delay for access check
+            @loop_delay - polling delay for access check
         """
         # Let's wait for 30 * loop_delay + init_delay max
         if not access(destination_disk, F_OK):

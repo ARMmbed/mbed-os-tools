@@ -41,7 +41,7 @@ class WaitusTest(BaseHostTest):
             c = selftest.mbed.serial_read(1) # Re-read first 'tick'
             if c is None:
                 return selftest.RESULT_IO_SERIAL
-        start_serial_pool = time()
+        start_serial_poll = time()
         start = time()
 
         success_counter = 0
@@ -63,7 +63,7 @@ class WaitusTest(BaseHostTest):
             start = time()
             if success_counter >= self.TICK_LOOP_SUCCESSFUL_COUNTS:
                 break
-        measurement_time = time() - start_serial_pool
+        measurement_time = time() - start_serial_poll
         selftest.notify("Consecutive OK timer reads: %d"% success_counter)
         selftest.notify("Completed in %.2f sec" % (measurement_time))
         test_result = True if success_counter >= self.TICK_LOOP_SUCCESSFUL_COUNTS else False

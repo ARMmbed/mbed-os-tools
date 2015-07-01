@@ -21,14 +21,8 @@ Author: Przemyslaw Wirkus <Przemyslaw.Wirkus@arm.com>
 """! @package mbed-host-tests
 
 Flash, reset and  perform host supervised tests on mbed platforms.
+Write your own programs (import this package) or use 'mbedhtrun' command line tool instead.
 
-mbed's test suite (codenamed Greentea) supports the test supervisor concept.
-This concept is realised by a separate Python script called "host test", which
-is executed in parallel with the test runner (a binary running on the target
-hardware) to monitor the test execution's progress or to control the test flow
-(interaction with the mbed device under test - MUT). The host test is also
-responsible for grabbing the test result, or deducing it from the test runner's
-behaviour.
 """
 
 import sys
@@ -92,7 +86,7 @@ def get_host_test(ht_name):
     return HOSTREGISTRY.get_host_test(ht_name)
 
 def is_host_test(ht_name):
-    """ Checks if host test supervisor is registered in host test registry.
+    """! Checks if host test supervisor is registered in host test registry.
 
     @param ht_name Host test name
 
@@ -132,7 +126,7 @@ class DefaultTestSelector(DefaultTestSelectorBase):
         pass
 
     def run(self):
-        """ This function will perform extra setup and proceed with test selector's work flow
+        """! This function will perform extra setup and proceed with test selector's work flow
 
         @details This function will call execute() but first will call setup() to perform extra actions
         """
@@ -148,7 +142,7 @@ class DefaultTestSelector(DefaultTestSelectorBase):
         self.execute()
 
     def execute_run(self):
-        """ This function implements a feature which allows users to simply
+        """! This function implements a feature which allows users to simply
             flash, reset and run binary without host test instrumentation
 
         @return This function doesn't return. It prints result on serial port from host test supervisor.
@@ -199,7 +193,7 @@ class DefaultTestSelector(DefaultTestSelectorBase):
             self.print_result(self.RESULT_ERROR)
 
     def execute(self):
-        """ Test runner for host test.
+        """! Test runner for host test.
 
         @return This function doesn't return. It prints result on serial port from host test supervisor.
                 Test result string is cough by test framework
@@ -256,7 +250,7 @@ class DefaultTestSelector(DefaultTestSelectorBase):
             self.print_result(self.RESULT_ERROR)
 
 def init_host_test_cli_params():
-    """ Function creates CLI parser object and returns populated options object.
+    """! Function creates CLI parser object and returns populated options object.
 
     @return Function returns 'options' object returned from OptionParser class
 

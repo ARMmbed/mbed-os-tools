@@ -29,9 +29,14 @@ from threading import Lock
 
 
 class Mbed:
-    """ Base class for a host driven test
+    """! Base class for a host driven test
+
+    @details This class stores information about things like disk, port, serial speed etc.
+             Class is also responsible for manipulation of serial port between host and mbed device
     """
     def __init__(self, options=None):
+        """ ctor
+        """
         # For compatibility with old mbed. We can use command line options for Mbed object
         # or we can pass options directly from .
         self.options = options
@@ -72,15 +77,25 @@ class Mbed:
         print 'MBED: Instrumentation: "%s" and disk: "%s"' % (self.port, self.disk)
 
     def init_serial_params(self, serial_baud=9600, serial_timeout=1):
-        """ Initialize port parameters.
-            This parameters will be used by self.init_serial() function to open serial port
+        """! Initialize port parameters.
+
+        @param serial_baud Serial port default speed
+        @param serial_timeout Serial port timeout for blocking reads
+
+        @details This parameters will be used by self.init_serial() function to open serial port
         """
         self.serial_baud = serial_baud
         self.serial_timeout = serial_timeout
 
     def init_serial(self, serial_baud=None, serial_timeout=None):
-        """ Initialize serial port.
-            Function will return error is port can't be opened or initialized
+        """! Initialize serial port
+
+        @param serial_baud Serial port default speed
+        @param serial_timeout Serial port timeout for blocking reads
+
+        @details Function flushes serial if it was opened
+
+        @return Function will return error is port can't be opened or initialized
         """
         # Overload serial port configuration from default to parameters' values if they are specified
         serial_baud = serial_baud if serial_baud is not None else self.serial_baud
@@ -91,22 +106,30 @@ class Mbed:
             self.serial.close()
             self.serial = None
 
-        # We will pool for serial to be re-mounted if it was unmounted after device reset
-        result = self.pool_for_serial_init(serial_baud, serial_timeout) # Blocking
+        # We will poll for serial to be re-mounted if it was unmounted after device reset
+        result = self.poll_for_serial_init(serial_baud, serial_timeout) # Blocking
 
         # Port can be opened
         if result:
             self.flush()
         return result
 
-    def pool_for_serial_init(self, serial_baud, serial_timeout, pooling_loops=40, init_delay=0.5, loop_delay=0.25):
-        """ Functions pools for serial port readiness
+    def poll_for_serial_init(self, serial_baud, serial_timeout, polling_loops=40, init_delay=0.5, loop_delay=0.25):
+        """! Functions polls for serial port readiness
+
+        @param serial_baud Serial port speed
+        @param serial_timeout Serial port timeout for blocking reads
+        @param polling_loops How many polling loops before we assume port is not ready
+        @param init_delay What is initial delay before polling (sec)
+        @param loop_delay What is delay between each serial port poll check (sec)
+
+        @return Function return True if serial port is not ready (can't be open after init_delay + (polling_loops * loop_delay) (sec)
         """
         result = True
         last_error = None
         # This loop is used to check for serial port availability due to
         # some delays and remounting when devices are being flashed with new software.
-        for i in range(pooling_loops):
+        for i in range(polling_loops):
             sleep(loop_delay if i else init_delay)
             try:
                 self.serial = Serial(self.port, baudrate=serial_baud, timeout=serial_timeout)
@@ -124,7 +147,9 @@ class Mbed:
         return result
 
     def set_serial_timeout(self, timeout):
-        """ Wraps self.mbed.serial object timeout property
+        """! Wraps self.mbed.serial object timeout property
+
+        @return Returns True if timeout can be set
         """
         result = None
         if self.serial:
@@ -133,7 +158,11 @@ class Mbed:
         return result
 
     def serial_read(self, count=1):
-        """ Wraps self.mbed.serial object read method
+        """! Wraps self.mbed.serial object read method
+
+        @count NUmber of characters to read from serial port
+
+        @return Returns None if serial port read fails
         """
         result = None
         self.mutex.acquire(1)
@@ -146,7 +175,11 @@ class Mbed:
         return result
 
     def serial_readline(self, timeout=5):
-        """ Wraps self.mbed.serial object read method to read one line from serial port
+        """! Wraps self.mbed.serial object read method to read one line from serial port
+
+        @param timeout Blocking timeout for data read
+
+        @return None if reading fails, empty string if no data
         """
         result = ''
         self.mutex.acquire(1)
@@ -166,7 +199,9 @@ class Mbed:
         return result
 
     def serial_write(self, write_buffer):
-        """ Wraps self.mbed.serial object write method
+        """! Wraps self.mbed.serial object write method
+
+        @param write_buffer Buffer to write
         """
         result = None
         self.mutex.acquire(1)
@@ -179,7 +214,9 @@ class Mbed:
         return result
 
     def reset_timeout(self, timeout):
-        """ Timeout executed just after reset command is issued
+        """! Timeout executed just after reset command is issued
+
+        @param timeout Timeout duration (sec)
         """
         self.mutex.acquire(1)
         for n in range(0, timeout):
@@ -187,8 +224,11 @@ class Mbed:
         self.mutex.release()
 
     def reset(self):
-        """ Calls proper reset plugin to do the job.
-            Please refer to host_test_plugins functionality
+        """! Calls proper reset plugin to do the job.
+
+        @return Returns result from reset plugin
+
+        @details Please refer to host_test_plugins functionality
         """
         # Flush serials to get only input after reset
         self.flush()
@@ -202,8 +242,9 @@ class Mbed:
         return result
 
     def copy_image(self, image_path=None, disk=None, copy_method=None):
-        """ Closure for copy_image_raw() method.
-            Method which is actually copying image to mbed
+        """! Closure for copy_image_raw() method.
+
+        @return Returns result from copy plugin
         """
         # Set closure environment
         image_path = image_path if image_path is not None else self.image_path
@@ -215,8 +256,12 @@ class Mbed:
         return result
 
     def copy_image_raw(self, image_path=None, disk=None, copy_method=None):
-        """ Copy file depending on method you want to use. Handles exception
+        """! Copy file depending on method you want to use. Handles exception
             and return code from shell copy commands.
+
+        @return Returns result from copy plugin
+
+        @details Method which is actually copying image to mbed
         """
         if copy_method is not None:
             # image_path - Where is binary with target's firmware
@@ -227,7 +272,7 @@ class Mbed:
         return result;
 
     def flush(self):
-        """ Flush serial ports
+        """ Flushes serial port I/O
         """
         result = False
         self.mutex.acquire(1)

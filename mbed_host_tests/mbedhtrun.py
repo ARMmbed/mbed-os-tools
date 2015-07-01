@@ -21,8 +21,11 @@ from mbed_host_tests import DefaultTestSelector         # Default adapter for De
 from mbed_host_tests import init_host_test_cli_params   # Provided command line options
 
 def main():
-    # 1. Create DefaultTestSelector object and pass command line parameters
-    # 2. Call default test execution function run() to start test instrumentation
+    """! This function drives command line tool 'mbedhtrun' which is using DefaultTestSelector
+
+    @details 1. Create DefaultTestSelector object and pass command line parameters
+             2. Call default test execution function run() to start test instrumentation
+    """
     test_selector = DefaultTestSelector(init_host_test_cli_params())
     try:
         test_selector.run()

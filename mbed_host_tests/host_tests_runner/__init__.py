@@ -16,3 +16,10 @@ limitations under the License.
 
 Author: Przemyslaw Wirkus <Przemyslaw.Wirkus@arm.com>
 """
+
+"""! @package mbed-host-test-runner
+
+This package contains basic host test implementation with algorithms to flash and reset device.
+Functionality can be overridden by set of plugins which can provide specialised flashing and reset implementations.
+
+"""
