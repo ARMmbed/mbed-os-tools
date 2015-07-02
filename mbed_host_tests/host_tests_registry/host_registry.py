@@ -19,20 +19,40 @@ Author: Przemyslaw Wirkus <Przemyslaw.Wirkus@arm.com>
 
 class HostRegistry:
     """ Class stores registry with host tests and objects representing them
-    """ 
-    HOST_TESTS = {} # host_test_name -> host_test_ojbect
+    """
+    HOST_TESTS = {} # Map between host_test_name -> host_test_object
 
     def register_host_test(self, ht_name, ht_object):
+        """! Registers host test object by name
+
+        @param ht_name Host test unique name
+        @param ht_object Host test class object
+        """
         if ht_name not in self.HOST_TESTS:
             self.HOST_TESTS[ht_name] = ht_object
-    
+
     def unregister_host_test(self, ht_name):
+        """! Unregisters host test object by name
+
+        @param ht_name Host test unique name
+        """
         if ht_name in self.HOST_TESTS:
             self.HOST_TESTS[ht_name] = None
 
     def get_host_test(self, ht_name):
+        """! Fetches host test object by name
+
+        @param ht_name Host test unique name
+
+        @return Host test callable object or None if object is not found
+        """
         return self.HOST_TESTS[ht_name] if ht_name in self.HOST_TESTS else None
 
     def is_host_test(self, ht_name):
+        """! Checks (by name) if host test object is registered already
+
+        @param ht_name Host test unique name
+
+        @return True if ht_name is registered (available), else False
+        """
         return ht_name in self.HOST_TESTS and self.HOST_TESTS[ht_name] is not None
-        

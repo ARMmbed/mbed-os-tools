@@ -17,4 +17,10 @@ limitations under the License.
 Author: Przemyslaw Wirkus <Przemyslaw.Wirkus@arm.com>
 """
 
+"""! @package host_registry
+
+Host registry is used to store all host tests (by id) which can be called from test framework
+
+"""
+
 from host_registry import HostRegistry
