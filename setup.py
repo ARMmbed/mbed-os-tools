@@ -47,8 +47,9 @@ setup(name='mbed-greentea',
       url='https://github.com/mbedmicro/mbed',
       packages=find_packages(),
       license=LICENSE,
+      test_suite = 'test',
       entry_points={
         "console_scripts": ["mbedgt=mbed_greentea.mbed_greentea_cli:main",],
       },
       install_requires=["PrettyTable>=0.7.2", "PySerial>=2.7",
-        "mbed-host-tests>=0.1.4", "mbed-ls>=0.1.5", "junit-xml>=1.4"])
+        "mbed-host-tests>=0.1.9", "mbed-ls>=0.1.13", "junit-xml>=1.4"])
