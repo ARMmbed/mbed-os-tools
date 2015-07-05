@@ -95,7 +95,8 @@ def is_host_test(ht_name):
     return HOSTREGISTRY.is_host_test(ht_name)
 
 class DefaultTestSelector(DefaultTestSelectorBase):
-    # Select default host_test supervision (replaced after autodetection)
+    """ Select default host_test supervision (replaced after auto detection)
+    """
     test_supervisor = get_host_test("default")
 
     def __init__(self, options=None):

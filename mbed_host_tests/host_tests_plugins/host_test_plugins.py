@@ -24,7 +24,7 @@ from subprocess import call
 
 
 class HostTestPluginBase:
-    """ Base class for all plug-ins used with host tests.
+    """ Base class for all plugins used with host tests
     """
     ###########################################################################
     # Interface:
@@ -48,9 +48,15 @@ class HostTestPluginBase:
         return False
 
     def execute(self, capabilitity, *args, **kwargs):
-        """ Executes capability by name.
-            Each capability e.g. may directly just call some command line
-            program or execute building pythonic function
+        """! Executes capability by name
+
+        @param capabilitity Capabilitity name
+        @param args Additional arguments
+        @param kwargs Additional arguments
+
+        @details Each capability e.g. may directly just call some command line program or execute building pythonic function
+
+        @return Capability call return value
         """
         return False
 
@@ -58,13 +64,19 @@ class HostTestPluginBase:
     # Interface helper methods - overload only if you need to have custom behaviour
     ###########################################################################
     def print_plugin_error(self, text):
-        """ Function prints error in console and exits always with False
+        """! Function prints error in console and exits always with False
+
+        @param text Text to print
         """
         print "Plugin error: %s::%s: %s"% (self.name, self.type, text)
         return False
 
     def print_plugin_info(self, text, NL=True):
-        """ Function prints notification in console and exits always with True
+        """! Function prints notification in console and exits always with True
+
+        @param text Text to print
+
+        @param NL Newline will be added behind text if this flag is True
         """
         if NL:
             print "Plugin info: %s::%s: %s"% (self.name, self.type, text)
@@ -80,23 +92,35 @@ class HostTestPluginBase:
         return True
 
     def check_mount_point_ready(self, destination_disk, init_delay=0.2, loop_delay=0.25):
-        """ Checks if destination_disk is ready and can be accessed by e.g. copy commands
-            @init_delay - Initial delay time before first access check
-            @loop_delay - polling delay for access check
+        """! Waits until destination_disk is ready and can be accessed by e.g. copy commands
+
+        @return True if mount point was ready in given time, False otherwise
+
+        @param destination_disk Mount point (disk) which will be checked for readiness
+        @param init_delay - Initial delay time before first access check
+        @param loop_delay - polling delay for access check
         """
+        result = False
         # Let's wait for 30 * loop_delay + init_delay max
         if not access(destination_disk, F_OK):
             self.print_plugin_info("Waiting for mount point '%s' to be ready..."% destination_disk, NL=False)
             sleep(init_delay)
             for i in range(30):
                 if access(destination_disk, F_OK):
+                    result = True
                     break
                 sleep(loop_delay)
                 self.print_plugin_char('.')
+        return result
 
     def check_parameters(self, capabilitity, *args, **kwargs):
-        """ This function should be ran each time we call execute()
-            to check if none of the required parameters is missing.
+        """! This function should be ran each time we call execute() to check if none of the required parameters is missing
+
+        @return Returns True if all parameters are passed to plugin, else return False
+
+        @param capability Capability name
+        @param args Additional parameters
+        @param kwargs Additional parameters
         """
         missing_parameters = []
         for parameter in self.required_parameters:
@@ -108,7 +132,14 @@ class HostTestPluginBase:
         return True
 
     def run_command(self, cmd, shell=True):
-        """ Runs command from command line.
+        """! Runs command from command line.
+
+        @param cmd Command to execute
+        @param shell True if shell command should be executed (eg. ls, ps)
+
+        @details Function prints 'cmd' return code if execution failed
+
+        @return True if command successfully executed
         """
         result = True
         try:

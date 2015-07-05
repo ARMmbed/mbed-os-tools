@@ -17,6 +17,13 @@ limitations under the License.
 Author: Przemyslaw Wirkus <Przemyslaw.Wirkus@arm.com>
 """
 
+"""! @package mbed-host-test-plugins
+
+This package contains plugins used by host test to reset, flash devices etc.
+This package can be extended with new packages to add more generic functionality
+
+"""
+
 import host_test_registry
 
 # This plugins provide 'flashing' methods to host test scripts
@@ -54,13 +61,22 @@ HOST_TEST_PLUGIN_REGISTRY.register_plugin(module_reset_silabs.load_plugin())
 # Functional interface for host test plugin registry
 ###############################################################################
 def call_plugin(type, capability, *args, **kwargs):
-    """ Interface to call plugin registry functional way
+    """! Interface to call plugin registry functional way
+
+    @param capability Plugin capability we want to call
+    @param args Additional parameters passed to plugin
+    @param kwargs Additional parameters passed to plugin
+
+    @return Returns return value from call_plugin call
     """
     return HOST_TEST_PLUGIN_REGISTRY.call_plugin(type, capability, *args, **kwargs)
 
 def get_plugin_caps(type):
-    """ Returns list of all capabilities for plugin family with the same type.
-        If there are no capabilities empty list is returned
+    """! Get list of all capabilities for plugin family with the same type
+
+    @param type Type of a plugin
+
+    @return Returns list of all capabilities for plugin family with the same type. If there are no capabilities empty list is returned
     """
     return HOST_TEST_PLUGIN_REGISTRY.get_plugin_caps(type)
 
