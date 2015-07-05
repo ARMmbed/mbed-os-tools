@@ -46,7 +46,12 @@ MBED_HOST_TESTS = 'mbed_host_tests' in sys.modules
 
 
 def main():
+    """! This is main CLI function with all command line parameters
 
+    @details This function also implements CLI workflow depending on CLI parameters inputed
+
+    @return This function doesn't return, it exits to environment with proper success code
+    """
     if not MBED_LMTOOLS:
         print "Error: mbed-lstools mbed proprietary module not installed"
         exit(-1)

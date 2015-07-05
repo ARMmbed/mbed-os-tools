@@ -19,7 +19,11 @@ Author: Przemyslaw Wirkus <Przemyslaw.wirkus@arm.com>
 
 
 def exporter_junit(test_result_ext, test_suite_properties=None):
-    """ Export test results in JUnit XML compliant format
+    """! Export test results in JUnit XML compliant format
+
+    @details This function will import junit_xml library to perform report conversion
+
+    @return String containing Junit XML formatted test result output
     """
     from junit_xml import TestSuite, TestCase
 
@@ -53,5 +57,10 @@ def exporter_junit(test_result_ext, test_suite_properties=None):
 
 
 def exporter_text(test_result_ext, test_suite_properties=None):
-    from prettytable import PrettyTable
+    """! Exports test results to text formated output
+
+    @details This is a humab friendly format
+    """
+    #from prettytable import PrettyTable
+    #TODO: export to text, preferably to PrettyTable (SQL like) format
     pass

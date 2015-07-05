@@ -68,3 +68,6 @@ debug.log
 # PyCharm
 *.idea
 
+# Doxygen
+html/
+latex/

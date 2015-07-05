@@ -70,17 +70,29 @@ def run_host_test(image_path, disk, port, duration=10,
                   micro=None, reset=None, reset_tout=None,
                   verbose=False, copy_method=None, program_cycle_s=None,
                   digest_source=None, json_test_cfg=None, run_app=None):
-    """ This function runs host test supervisor (executes mbedhtrun) and checks
-        output from host test process.
+    """! This function runs host test supervisor (executes mbedhtrun) and checks output from host test process.
 
-        @param digest_source - if None mbedhtrun will be executed. If 'stdin',
-                               stdin will be used via StdInObserver or file (if
-                               file name was given as switch option)
+    @return Tuple with test results, test output and test duration times
+
+    @param image_path Path to binary file for flashing
+    @param disk Currently mounted mbed-enabled devices disk (mount point)
+    @param port Currently mounted mbed-enabled devices serial port (console)
+    @param duration Test case timeout
+    @param micro Mbed-nebaled device name
+    @param reset Reset type
+    @param reset_tout Reset timeout (sec)
+    @param verbose Verbose mode flag
+    @param copy_method Copy method type (name)
+    @param program_cycle_s Wait after flashing delay (sec)
+    @param json_test_cfg Additional test configuration file path passed to host tests in JSON format
+    @param run_app Run application mode flag (we run application and grab serial port data)
+    @param digest_source Ff None mbedhtrun will be executed. If 'stdin',
+                           stdin will be used via StdInObserver or file (if
+                           file name was given as switch option)
     """
 
     class StdInObserver(Thread):
-        """ process used to read stdin only as console
-            input from MUT
+        """ Process used to read stdin only as console input from MUT
         """
         def __init__(self):
             Thread.__init__(self)
@@ -102,8 +114,7 @@ def run_host_test(image_path, disk, port, duration=10,
                 pass
 
     class FileObserver(Thread):
-        """ process used to read file content as console
-            input from MUT
+        """ process used to read file content as console input from MUT
         """
         def __init__(self, filename):
             Thread.__init__(self)
@@ -127,8 +138,7 @@ def run_host_test(image_path, disk, port, duration=10,
                 pass
 
     class ProcessObserver(Thread):
-        """ Default process used to observe stdout of
-            another process as console input from MUT
+        """ Default process used to observe stdout of another process as console input from MUT
         """
         def __init__(self, proc):
             Thread.__init__(self)
@@ -171,7 +181,11 @@ def run_host_test(image_path, disk, port, duration=10,
         return c
 
     def get_test_result(output):
-        """ Parse test 'output' data
+        """! Parse test 'output' data
+
+        @details If test result not found returns by default TEST_RESULT_TIMEOUT value
+
+        @return Returns found test result
         """
         result = TEST_RESULT_TIMEOUT
         for line in "".join(output).splitlines():
@@ -182,8 +196,11 @@ def run_host_test(image_path, disk, port, duration=10,
         return result
 
     def get_auto_property_value(property_name, line):
-        """ Scans auto detection line from MUT and returns scanned parameter 'property_name'
-            Returns string or None if property search failed
+        """! Scans auto detection line from MUT and returns scanned parameter 'property_name'
+
+        @details Host test case has to print additional properties for test to be set up
+
+        @return Returns string or None if property search failed
         """
         result = None
         if re.search("HOST: Property '%s'"% property_name, line) is not None:
@@ -290,8 +307,12 @@ def run_host_test(image_path, disk, port, duration=10,
     return (result, "".join(output), testcase_duration, duration)
 
 def run_cli_command(cmd, shell=True, verbose=False):
-    """ Runs command from command line.
-        Return True if command was executed successfully.
+    """! Runs command from command line
+
+    @param shell Shell command (e.g. ls, ps)
+    @param verbose Verbose mode flag
+
+    @return Returns True if command was executed successfully else return False
     """
     result = True
     try:
@@ -308,7 +329,11 @@ def run_cli_command(cmd, shell=True, verbose=False):
     return result
 
 def run_cli_process(cmd):
-    """ Runs command as a process and return stdout, stderr and ret code
+    """! Runs command as a process and return stdout, stderr and ret code
+
+    @param cmd Command to execute
+
+    @return Tuple of (stdout, stderr, returncode)
     """
     p = Popen(cmd, stdout=PIPE, stderr=PIPE)
     _stdout, _stderr = p.communicate()

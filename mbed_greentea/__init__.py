@@ -18,3 +18,12 @@ Author: Przemyslaw Wirkus <Przemyslaw.Wirkus@arm.com>
 """
 
 from .mbed_greentea_cli import main
+
+"""! @package mbed-greentea
+
+This is a test suite used by mbed project. If you have yotta package with tests you can run them on supported hardware
+This test suite supports:
+* mbed-ls           - mbed-enabled device auto detection module
+* mbed-host-test    - mbed-enabled device test framework (flash, reset and make host tests)
+
+"""

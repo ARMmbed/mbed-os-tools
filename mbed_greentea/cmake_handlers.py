@@ -23,26 +23,27 @@ import os.path
 
 
 def load_ctest_testsuite(link_target, binary_type='.bin', verbose=False):
-    """ Loads CMake.CTest formatted data about tests from test directory
+    """! Loads CMake.CTest formatted data about tests from test directory
 
-        Example path with CTestTestFile.cmake:
-        c:/temp/xxx/mbed-sdk-private/build/frdm-k64f-gcc/test/
+    @return Dictionary of { test_case : test_case_path } pairs
 
-        Example format of CTestTestFile.cmake:
-        # CMake generated Testfile for
-        # Source directory: c:/temp/xxx/mbed-sdk-private/build/frdm-k64f-gcc/test
-        # Build directory: c:/temp/xxx/mbed-sdk-private/build/frdm-k64f-gcc/test
-        #
-        # This file includes the relevant testing commands required for
-        # testing this directory and lists subdirectories to be tested as well.
-        add_test(mbed-test-stdio "mbed-test-stdio")
-        add_test(mbed-test-call_before_main "mbed-test-call_before_main")
-        add_test(mbed-test-dev_null "mbed-test-dev_null")
-        add_test(mbed-test-div "mbed-test-div")
-        add_test(mbed-test-echo "mbed-test-echo")
-        add_test(mbed-test-ticker "mbed-test-ticker")
-        add_test(mbed-test-hello "mbed-test-hello")
+    @details Example path with CTestTestFile.cmake:
+             c:/temp/xxx/mbed-sdk-private/build/frdm-k64f-gcc/test/
 
+             Example format of CTestTestFile.cmake:
+             # CMake generated Testfile for
+             # Source directory: c:/temp/xxx/mbed-sdk-private/build/frdm-k64f-gcc/test
+             # Build directory: c:/temp/xxx/mbed-sdk-private/build/frdm-k64f-gcc/test
+             #
+             # This file includes the relevant testing commands required for
+             # testing this directory and lists subdirectories to be tested as well.
+             add_test(mbed-test-stdio "mbed-test-stdio")
+             add_test(mbed-test-call_before_main "mbed-test-call_before_main")
+             add_test(mbed-test-dev_null "mbed-test-dev_null")
+             add_test(mbed-test-div "mbed-test-div")
+             add_test(mbed-test-echo "mbed-test-echo")
+             add_test(mbed-test-ticker "mbed-test-ticker")
+             add_test(mbed-test-hello "mbed-test-hello")
     """
     result = {}
     add_test_pattern = '[adtesADTES_]{8}\([\w\d_-]+ \"([\w\d_-]+)\"'
@@ -63,8 +64,9 @@ def load_ctest_testsuite(link_target, binary_type='.bin', verbose=False):
     return result
 
 def list_binaries_for_targets(build_dir='./build'):
-    """ Prints tests in target directories, only if tests exist.
-        Skips empty / no tests for target directories.
+    """! Prints tests in target directories, only if tests exist.
+    
+    @details Skips empty / no tests for target directories.
     """
     dir = build_dir
     sub_dirs = [os.path.join(dir, o) for o in os.listdir(dir) if os.path.isdir(os.path.join(dir, o))]
