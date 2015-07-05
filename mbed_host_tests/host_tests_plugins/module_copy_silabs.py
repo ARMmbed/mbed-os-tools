@@ -34,22 +34,22 @@ class HostTestPluginCopyMethod_Silabs(HostTestPluginBase):
         self.EACOMMANDER_CMD = 'eACommander.exe'
         return True
 
-    def execute(self, capabilitity, *args, **kwargs):
+    def execute(self, capability, *args, **kwargs):
         """ Executes capability by name.
             Each capability may directly just call some command line
             program or execute building pythonic function
         """
         result = False
-        if self.check_parameters(capabilitity, *args, **kwargs) is True:
+        if self.check_parameters(capability, *args, **kwargs) is True:
             image_path = kwargs['image_path']
             destination_disk = kwargs['destination_disk']
-            if capabilitity == 'eACommander':
+            if capability == 'eACommander':
                 cmd = [self.EACOMMANDER_CMD,
                        '--serialno', destination_disk,
                        '--flash', image_path,
                        '--resettype', '2', '--reset']
                 result = self.run_command(cmd)
-            elif capabilitity == 'eACommander-usb':
+            elif capability == 'eACommander-usb':
                 cmd = [self.EACOMMANDER_CMD,
                        '--usb', destination_disk,
                        '--flash', image_path]

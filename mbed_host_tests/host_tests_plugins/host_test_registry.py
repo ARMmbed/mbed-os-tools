@@ -25,15 +25,23 @@ class HostTestRegistry:
     PLUGINS = {}    # 'Plugin Name' : Plugin Object
 
     def print_error(self, text):
+        """! Prints error directly on console
+
+        @param text Error message text message
+        """
         print "Plugin load failed. Reason: %s"% text
 
     def register_plugin(self, plugin):
-        """ Registers and stores plugin inside registry for further use.
-            Method also calls plugin's setup() function to configure plugin if needed.
+        """! Registers and stores plugin inside registry for further use.
 
-            Note: Different groups of plugins may demand different extra parameter. Plugins
-            should be at least for one type of plugin configured with the same parameters
-            because we do not know which of them will actually use particular parameter.
+        @param plugin Plugin name
+
+        @return True if plugin setup was successful and plugin can be registered, else False
+
+        @details Method also calls plugin's setup() function to configure plugin if needed.
+                 Note: Different groups of plugins may demand different extra parameter. Plugins
+                 should be at least for one type of plugin configured with the same parameters
+                 because we do not know which of them will actually use particular parameter.
         """
         # TODO:
         # - check for unique caps for specified type
@@ -48,7 +56,14 @@ class HostTestRegistry:
         return False
 
     def call_plugin(self, type, capability, *args, **kwargs):
-        """ Execute plugin functionality respectively to its purpose
+        """! Execute plugin functionality respectively to its purpose
+
+        @param type Plugin type
+        @param capability Plugin capability name
+        @param args Additional plugin parameters
+        @param kwargs Additional plugin parameters
+
+        @return Returns result from plugin's execute() method
         """
         for plugin_name in self.PLUGINS:
             plugin = self.PLUGINS[plugin_name]
@@ -57,8 +72,11 @@ class HostTestRegistry:
         return False
 
     def get_plugin_caps(self, type):
-        """ Returns list of all capabilities for plugin family with the same type.
-            If there are no capabilities empty list is returned
+        """! Returns list of all capabilities for plugin family with the same type
+
+        @param type Plugin type
+
+        @return Returns list of capabilities for plugin. If there are no capabilities empty list is returned
         """
         result = []
         for plugin_name in self.PLUGINS:
@@ -68,13 +86,19 @@ class HostTestRegistry:
         return sorted(result)
 
     def load_plugin(self, name):
-        """ Used to load module from
+        """! Used to load module from system (by import)
+
+        @param name name of the module to import
+
+        @return Returns result of __import__ operation
         """
         mod = __import__("module_%s"% name)
         return mod
 
     def __str__(self):
-        """ User friendly printing method to show hooked plugins
+        """! User friendly printing method to show hooked plugins
+
+        @return Returns string formatted with PrettyTable
         """
         from prettytable import PrettyTable
         column_names = ['name', 'type', 'capabilities', 'stable']

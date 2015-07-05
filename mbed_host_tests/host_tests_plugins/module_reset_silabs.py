@@ -36,23 +36,23 @@ class HostTestPluginResetMethod_SiLabs(HostTestPluginBase):
         self.EACOMMANDER_CMD = 'eACommander.exe'
         return True
 
-    def execute(self, capabilitity, *args, **kwargs):
+    def execute(self, capability, *args, **kwargs):
         """ Executes capability by name.
             Each capability may directly just call some command line
             program or execute building pythonic function
         """
         result = False
-        if self.check_parameters(capabilitity, *args, **kwargs) is True:
+        if self.check_parameters(capability, *args, **kwargs) is True:
             disk = kwargs['disk'].rstrip('/\\')
 
-            if capabilitity == 'eACommander':
+            if capability == 'eACommander':
                 # For this copy method 'disk' will be 'serialno' for eACommander command line parameters
                 # Note: Commands are executed in the order they are specified on the command line
                 cmd = [self.EACOMMANDER_CMD,
                        '--serialno', disk,
                        '--resettype', '2', '--reset',]
                 result = self.run_command(cmd)
-            elif capabilitity == 'eACommander-usb':
+            elif capability == 'eACommander-usb':
                 # For this copy method 'disk' will be 'usb address' for eACommander command line parameters
                 # Note: Commands are executed in the order they are specified on the command line
                 cmd = [self.EACOMMANDER_CMD,

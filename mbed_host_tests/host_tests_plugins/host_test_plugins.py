@@ -47,10 +47,10 @@ class HostTestPluginBase:
         """
         return False
 
-    def execute(self, capabilitity, *args, **kwargs):
+    def execute(self, capability, *args, **kwargs):
         """! Executes capability by name
 
-        @param capabilitity Capabilitity name
+        @param capability Capability name
         @param args Additional arguments
         @param kwargs Additional arguments
 
@@ -113,7 +113,7 @@ class HostTestPluginBase:
                 self.print_plugin_char('.')
         return result
 
-    def check_parameters(self, capabilitity, *args, **kwargs):
+    def check_parameters(self, capability, *args, **kwargs):
         """! This function should be ran each time we call execute() to check if none of the required parameters is missing
 
         @return Returns True if all parameters are passed to plugin, else return False

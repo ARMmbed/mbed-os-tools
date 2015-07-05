@@ -90,14 +90,14 @@ class HostTestPluginCopyMethod_MPS2(HostTestPluginBase):
         """
         return True
 
-    def execute(self, capabilitity, *args, **kwargs):
+    def execute(self, capability, *args, **kwargs):
         """ Executes capability by name.
             Each capability may directly just call some command line
             program or execute building pythonic function
         """
         result = False
-        if self.check_parameters(capabilitity, *args, **kwargs) is True:
-            if capabilitity == 'mps2':
+        if self.check_parameters(capability, *args, **kwargs) is True:
+            if capability == 'mps2':
                 #  TODO: Implement MPS2 firmware setup here
                 pass
         return result

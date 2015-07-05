@@ -22,6 +22,10 @@ from host_test_plugins import HostTestPluginBase
 
 
 class HostTestPluginCopyMethod_Firefox(HostTestPluginBase):
+    """ Plugin used to flash device using Firefox browser
+
+    @details Unstable
+    """
 
     def file_store_firefox(self, file_path, dest_disk):
         try:
@@ -44,6 +48,7 @@ class HostTestPluginCopyMethod_Firefox(HostTestPluginBase):
     type = 'CopyMethod'
     capabilities = ['firefox']
     required_parameters = ['image_path', 'destination_disk']
+    stable = False
 
     def setup(self, *args, **kwargs):
         """ Configure plugin, this function should be called before plugin execute() method is used.
@@ -55,19 +60,19 @@ class HostTestPluginCopyMethod_Firefox(HostTestPluginBase):
             return False
         return True
 
-    def execute(self, capabilitity, *args, **kwargs):
+    def execute(self, capability, *args, **kwargs):
         """ Executes capability by name.
             Each capability may directly just call some command line
             program or execute building pythonic function
         """
         result = False
-        if self.check_parameters(capabilitity, *args, **kwargs) is True:
+        if self.check_parameters(capability, *args, **kwargs) is True:
             image_path = kwargs['image_path']
             destination_disk = kwargs['destination_disk']
             # Prepare correct command line parameter values
             image_base_name = basename(image_path)
             destination_path = join(destination_disk, image_base_name)
-            if capabilitity == 'firefox':
+            if capability == 'firefox':
                 self.file_store_firefox(image_path, destination_path)
         return result
 
