@@ -168,7 +168,7 @@ class Test(HostTestResults):
             if c is not None:
                 self.notify(c, newline=False)
             else:
-                self.print_result(selftest.RESULT_IO_SERIAL)
+                self.print_result(self.RESULT_IO_SERIAL)
         self.print_thread = None
 
     def dump_serial_end(self):
