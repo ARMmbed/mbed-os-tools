@@ -23,11 +23,12 @@ from host_test_plugins import HostTestPluginBase
 # Note: This plugin is not fully functional, needs improvements
 
 class HostTestPluginResetMethod_MPS2(HostTestPluginBase):
-    """ Plugin used to reset ARM_MPS2 platform
-    Supports:
-         reboot.txt   - startup from standby state, reboots when in run mode.
-         shutdown.txt - shutdown from run mode.
-         reset.txt    - reset FPGA during run mode.
+    """! Plugin used to reset ARM_MPS2 platform
+    
+    @details Supports:
+             reboot.txt   - startup from standby state, reboots when in run mode.
+             shutdown.txt - shutdown from run mode.
+             reset.txt    - reset FPGA during run mode.
     """
     def touch_file(self, path):
         """ Touch file and set timestamp to items
@@ -49,9 +50,15 @@ class HostTestPluginResetMethod_MPS2(HostTestPluginBase):
         return True
 
     def execute(self, capability, *args, **kwargs):
-        """ Executes capability by name.
-            Each capability may directly just call some command line
-            program or execute building pythonic function
+        """! Executes capability by name
+
+        @param capability Capability name
+        @param args Additional arguments
+        @param kwargs Additional arguments
+
+        @details Each capability e.g. may directly just call some command line program or execute building pythonic function
+
+        @return Capability call return value
         """
         result = False
         if self.check_parameters(capability, *args, **kwargs) is True:

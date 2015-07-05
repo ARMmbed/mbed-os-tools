@@ -37,9 +37,15 @@ class HostTestPluginCopyMethod_Shell(HostTestPluginBase):
         return True
 
     def execute(self, capability, *args, **kwargs):
-        """ Executes capability by name.
-            Each capability may directly just call some command line
-            program or execute building pythonic function
+        """! Executes capability by name
+
+        @param capability Capability name
+        @param args Additional arguments
+        @param kwargs Additional arguments
+
+        @details Each capability e.g. may directly just call some command line program or execute building pythonic function
+
+        @return Capability call return value
         """
         result = False
         if self.check_parameters(capability, *args, **kwargs) is True:

@@ -26,10 +26,12 @@ class HostTestPluginCopyMethod_MPS2(HostTestPluginBase):
 
     # MPS2 specific flashing / binary setup funcitons
     def mps2_set_board_image_file(self, disk, images_cfg_path, image0file_path, image_name='images.txt'):
-        """ This function will alter image cfg file.
-            Main goal of this function is to change number of images to 1, comment all
-            existing image entries and append at the end of file new entry with test path.
-            @return True when all steps succeed.
+        """ This function will alter image cfg file
+
+        @details Main goal of this function is to change number of images to 1, comment all
+                 existing image entries and append at the end of file new entry with test path
+
+        @return True when all steps were successful
         """
         MBED_SDK_TEST_STAMP = 'test suite entry'
         image_path = join(disk, images_cfg_path, image_name)

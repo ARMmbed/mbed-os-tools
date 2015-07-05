@@ -23,13 +23,15 @@ from host_test_plugins import HostTestPluginBase
 class HostTestPluginResetMethod_Mbed(HostTestPluginBase):
 
     def safe_sendBreak(self, serial):
-        """ Wraps serial.sendBreak() to avoid serial::serialposix.py exception on Linux
-            Traceback (most recent call last):
-              File "make.py", line 189, in <module>
-                serial.sendBreak()
-              File "/usr/lib/python2.7/dist-packages/serial/serialposix.py", line 511, in sendBreak
-                termios.tcsendbreak(self.fd, int(duration/0.25))
-            error: (32, 'Broken pipe')
+        """! Wraps serial.sendBreak() to avoid serial::serialposix.py exception on Linux
+        @details  Traceback (most recent call last):
+                    File "make.py", line 189, in <module>
+                      serial.sendBreak()
+                    File "/usr/lib/python2.7/dist-packages/serial/serialposix.py", line 511, in sendBreak
+                      termios.tcsendbreak(self.fd, int(duration/0.25))
+                  error: (32, 'Broken pipe')
+
+        @return Returns True if command was successful
         """
         result = True
         try:
@@ -56,9 +58,15 @@ class HostTestPluginResetMethod_Mbed(HostTestPluginBase):
         return True
 
     def execute(self, capability, *args, **kwargs):
-        """ Executes capability by name.
-            Each capability may directly just call some command line
-            program or execute building pythonic function
+        """! Executes capability by name
+
+        @param capability Capability name
+        @param args Additional arguments
+        @param kwargs Additional arguments
+
+        @details Each capability e.g. may directly just call some command line program or execute building pythonic function
+
+        @return Capability call return value
         """
         result = False
         if self.check_parameters(capability, *args, **kwargs) is True:
