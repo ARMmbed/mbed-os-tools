@@ -17,10 +17,6 @@ limitations under the License.
 """
 
 import unittest
-import os
-import errno
-import logging
-
 
 class BasicTestCase(unittest.TestCase):
     """ Basic true asserts to see that testing is executed
