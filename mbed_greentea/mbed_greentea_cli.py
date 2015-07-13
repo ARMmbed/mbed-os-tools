@@ -174,7 +174,9 @@ def main():
         print "\treason: no --target switch set"
         list_of_targets = [current_target]
 
-    test_exec_retcode = 0   # Decrement this value each time test case result is not 'OK'
+    test_exec_retcode = 0       # Decrement this value each time test case result is not 'OK'
+    test_platforms_match = 0    # Count how many tests were actually ran with current settings
+    target_platforms_match = 0  # Count how many platforms were actually tested with current settings
 
     for mut in mbeds_list:
         print "\tdetected %s, console at: %s, mounted at: %s"% (mut['platform_name'],
@@ -188,6 +190,9 @@ def main():
         if mut_info is not None:
             for yotta_target in mut_info['yotta_targets']:
                 yotta_target_name = yotta_target['yotta_target']
+
+                if yotta_target_name in list_of_targets:
+                    target_platforms_match += 1
 
                 # Configuration print mode:
                 if opts.verbose_test_configuration_only:
@@ -204,6 +209,7 @@ def main():
                     copy_method = opts.copy_method if opts.copy_method else 'shell'
                     verbose = opts.verbose_test_result_only
 
+                    test_platforms_match += 1
                     host_test_result = run_host_test(opts.run_app, disk, port,
                                                 micro=micro,
                                                 copy_method=copy_method,
@@ -215,7 +221,7 @@ def main():
                     single_test_result, single_test_output, single_testduration, single_timeout = host_test_result
                     status = TEST_RESULTS.index(single_test_result) if single_test_result in TEST_RESULTS else -1
                     if single_test_result != TEST_RESULT_OK:
-                        test_exec_retcode -= 1
+                        test_exec_retcode += 1
                     continue
 
                 # Regression test mode:
@@ -266,6 +272,7 @@ def main():
                                 copy_method = opts.copy_method if opts.copy_method else 'shell'
                                 verbose = opts.verbose_test_result_only
 
+                                test_platforms_match += 1
                                 print "\trunning host test..."
                                 host_test_result = run_host_test(image_path, disk, port,
                                     micro=micro,
@@ -277,7 +284,7 @@ def main():
                                 single_test_result, single_test_output, single_testduration, single_timeout = host_test_result
                                 test_result = single_test_result
                                 if single_test_result != TEST_RESULT_OK:
-                                    test_exec_retcode -= 1
+                                    test_exec_retcode += 1
 
                                 # Update report for optional reporting feature
                                 test_name = test_bin.lower()
@@ -295,7 +302,8 @@ def main():
                     # We need to stop executing if yotta build fails
                     if not yotta_result:
                         print "mbedgt: yotta build failed!"
-                        exit(int(ord('y')))
+                        test_exec_retcode = -1
+                        exit(test_exec_retcode)
         else:
             print "mbed-ls: mbed classic target name '%s' is not in target database"% (mut['platform_name'])
 
@@ -307,5 +315,20 @@ def main():
     if opts.verbose_test_configuration_only:
         print
         print "Example: execute 'mbedgt --target=TARGET_NAME' to start testing for TARGET_NAME target"
+
+    # This tool is designed to work in CI
+    # We want to return success codes based on tool actions,
+    # only if testes were executed and all passed we want to
+    # return 0 (success)
+    if not opts.only_build_tests:
+        # This flag guards 'build only' so we expect only yotta errors
+        if test_platforms_match == 0:
+            # No tests were executed
+            print "mbedgt: no target matching tests were found!"
+            test_exec_retcode += -10
+        if target_platforms_match == 0:
+            # No platforms were tested
+            print "mbedgt: no target matching platforms were found!"
+            test_exec_retcode += -100
 
     exit(test_exec_retcode)
