@@ -40,9 +40,9 @@ class MbedLsToolsWin7(MbedLsToolsBase):
     def list_mbeds(self):
         """! Returns detailed list of connected mbeds
 
-        @return Returns list of structures with detailed info about each mbed
+            @return Returns list of structures with detailed info about each mbed
 
-        @details Function returns list of dictionaries with mbed attributes such as mount point, TargetID name etc.
+            @details Function returns list of dictionaries with mbed attributes such as mount point, TargetID name etc.
         """
         self.ERRORLEVEL_FLAG = 0
 
@@ -65,31 +65,28 @@ class MbedLsToolsWin7(MbedLsToolsBase):
     def discover_connected_mbeds(self, defs={}):
         """! Function produces list of mbeds with additional information and bind mbed with correct TargetID
 
-        @return Returns [(<mbed_mount_point>, <mbed_id>, <com port>, <board model>), ..]
+            @return Returns [(<mbed_mount_point>, <mbed_id>, <com port>, <board model>), ..]
 
-        @details Notice: this function is permissive: adds new elements in-places when and if found
+            @details Notice: this function is permissive: adds new elements in-places when and if found
         """
         mbeds = [(m[0], m[1], None, None) for m in self.get_connected_mbeds()]
         for i in range(len(mbeds)):
             mbed = mbeds[i]
-            mnt, mbed_id = mbed[0], mbed[1]
-            mbed_id_prefix = mbed_id[0:4]
+            mnt = mbed[0]
+            mbed_htm_target_id = self.get_mbed_htm_target_id(mnt)
             # Deducing mbed-enabled TargetID based on available targetID definition DB.
             # If TargetID from USBID is not recognized we will try to check URL in mbed.htm
-            mbed_htm_target_id = self.get_mbed_htm_target_id(mnt)
-            if mbed_htm_target_id:
-                mbed_id = mbed_htm_target_id if mbed_htm_target_id is not None else mbed_id
+            mbed_id = mbed_htm_target_id if mbed_htm_target_id is not None else mbed[1]
             mbed_id_prefix = mbed_id[0:4]
             board = defs[mbed_id_prefix] if mbed_id_prefix in defs else None
-            mbeds[i] = (mnt, mbed_id, mbeds[i][2], board)
-
             port = self.get_mbed_com_port(mbed[1])
-            if port:
-                mbeds[i] = (mnt, mbed_id, port, mbeds[i][3], mbed[1], mbed_htm_target_id)
+            mbeds[i] = (mnt, mbed_id, port, board, mbed[1], mbed_htm_target_id)
         return mbeds
 
-    def get_mbed_com_port(self, id):
+    def get_mbed_com_port(self, tid):
         """! Function checks mbed serial port in Windows registry entries
+
+        @param tid TargetID
 
         @return Returns None if port is not found. In normal circumstances it should never return None
 
@@ -100,13 +97,13 @@ class MbedLsToolsWin7(MbedLsToolsBase):
         usb_devs = self.winreg.OpenKey(self.winreg.Enum, 'USB')
 
         if self.DEBUG_FLAG:
-            self.debug(self.get_mbed_com_port.__name__, 'ID: ' + id)
+            self.debug(self.get_mbed_com_port.__name__, 'ID: ' + tid)
 
-        # first try to find all devs keys (by id)
+        # first try to find all devs keys (by tid)
         dev_keys = []
         for vid in self.iter_keys(usb_devs):
             try:
-                dev_keys += [self.winreg.OpenKey(vid, id)]
+                dev_keys += [self.winreg.OpenKey(vid, tid)]
             except:
                 pass
 
@@ -137,6 +134,8 @@ class MbedLsToolsWin7(MbedLsToolsBase):
                         return port
             except:
                 pass
+        # If everything fails, return None
+        return None
 
     def get_connected_mbeds(self):
         """! Function  return mbeds with existing mount point
@@ -157,11 +156,11 @@ class MbedLsToolsWin7(MbedLsToolsBase):
         mbeds = []
         for mbed in self.get_mbed_devices():
             mountpoint = re.match('.*\\\\(.:)$', mbed[0]).group(1)
-            # id is a hex string with 10-48 chars
-            id = re.search('[0-9A-Fa-f]{10,48}', mbed[1]).group(0)
-            mbeds += [(mountpoint, id)]
+            # TargetID is a hex string with 10-48 chars
+            tid = re.search('[0-9A-Fa-f]{10,48}', mbed[1]).group(0)
+            mbeds += [(mountpoint, tid)]
             if self.DEBUG_FLAG:
-                self.debug(self.get_mbeds.__name__, (mountpoint, id))
+                self.debug(self.get_mbeds.__name__, (mountpoint, tid))
         return mbeds
 
     # =============================== Registry ====================================
