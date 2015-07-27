@@ -37,7 +37,7 @@ def read(fname):
 
 
 setup(name='mbed-host-tests',
-      version='0.1.9',
+      version='0.1.10',
       description=DESCRIPTION,
       long_description=read('README.md'),
       author=OWNER_NAMES,
