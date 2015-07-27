@@ -27,12 +27,12 @@ class HostTestPluginCopyMethod_Mbed(HostTestPluginBase):
 
     def generic_mbed_copy(self, image_path, destination_disk):
         """! Generic mbed copy method for "mbed enabled" devices.
-        
+
         @param image_path Path to binary file to be flashed
         @param destination_disk Path to destination (mbed mount point)
 
         @details It uses standard python shutil function to copy image_file (target specific binary) to device's disk.
-        
+
         @return Returns True if copy (flashing) was successful
         """
         result = True
@@ -50,7 +50,7 @@ class HostTestPluginCopyMethod_Mbed(HostTestPluginBase):
     name = 'HostTestPluginCopyMethod_Mbed'
     type = 'CopyMethod'
     stable = True
-    capabilities = ['default']
+    capabilities = ['shutil', 'default']
     required_parameters = ['image_path', 'destination_disk']
 
     def setup(self, *args, **kwargs):
@@ -60,14 +60,15 @@ class HostTestPluginCopyMethod_Mbed(HostTestPluginBase):
 
     def execute(self, capability, *args, **kwargs):
         """! Executes capability by name.
-        
+
         @details Each capability may directly just call some command line program or execute building pythonic function
-        
+
         @return Returns True if 'capability' operation was successful
         """
         result = False
         if self.check_parameters(capability, *args, **kwargs) is True:
-            if capability == 'default':
+            # Capability 'default' is a dummy capability
+            if capability == 'shutil':
                 image_path = kwargs['image_path']
                 destination_disk = kwargs['destination_disk']
                 # Wait for mount point to be ready

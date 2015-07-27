@@ -263,12 +263,14 @@ class Mbed:
 
         @details Method which is actually copying image to mbed
         """
+        # image_path - Where is binary with target's firmware
         if copy_method is not None:
-            # image_path - Where is binary with target's firmware
-            result = ht_plugins.call_plugin('CopyMethod', copy_method, image_path=image_path, destination_disk=disk)
+            # We override 'default' method with 'shell' method
+            if copy_method == 'default':
+                copy_method = 'shell'
         else:
-            copy_method = 'default'
-            result = ht_plugins.call_plugin('CopyMethod', copy_method, image_path=image_path, destination_disk=disk)
+            copy_method = 'shell'
+        result = ht_plugins.call_plugin('CopyMethod', copy_method, image_path=image_path, destination_disk=disk)
         return result;
 
     def flush(self):
