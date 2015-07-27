@@ -23,7 +23,7 @@ def read(fname):
 
 
 setup(name='mbed-ls',
-      version='0.1.14',
+      version='0.1.15',
       description=DESCRIPTION,
       long_description=read('README.md'),
       author=OWNER_NAMES,
