@@ -70,7 +70,9 @@ $ python
 Python 2.7.8 (default, Jun 30 2014, 16:03:49) [MSC v.1500 32 bit (Intel)] on win32
 Type "help", "copyright", "credits" or "license" for more information.
 ```
-```
+
+Generic mbedls API example:
+```python
 >>> import mbed_lstools
 >>> mbeds = mbed_lstools.create()
 >>> mbeds
@@ -78,6 +80,17 @@ Type "help", "copyright", "credits" or "license" for more information.
 >>> mbeds.list_mbeds()
 [{'platform_name': 'K64F', 'mount_point': 'E:', 'target_id': '02400203D94B0E7724B7F3CF', 'serial_port': u'COM61'}]
 >>> print mbeds
+```
+
+Extended mbedls API example:
+```python
+>>> import mbed_lstools
+>>> m = mbed_lstools.create()
+>>> dir(m)
+['DEBUG_FLAG', 'ERRORLEVEL_FLAG', '__doc__', '__init__', '__module__', '__str__', 'debug', 'discover_connected_mbeds', 'err', 'get_connected_mbeds', 'get_dos_devices', 'get_json_data_from_file', 'get_mbed_com_port', 'get_mbed_devices', 'get_mbed_htm_target_id', 'get_mbeds', 'get_mounted_devices', 'get_string', 'iter_keys', 'iter_keys_as_str', 'iter_vals', 'list_mbeds', 'list_mbeds_by_targetid', 'list_mbeds_ext', 'list_platforms', 'list_platforms_ext', 'load_mbed_description', 'manufacture_ids', 'os_supported', 'regbin2str', 'scan_html_line_for_target_id', 'usb_vendor_list', 'winreg'] >>> m.list_platforms()
+['LPC1768', 'K64F']
+>>> m.list_platforms_ext()
+{'K64F': 1, 'LPC1768': 2}
 ```
 
 ## Installation from PyPI (Python Package Index)
