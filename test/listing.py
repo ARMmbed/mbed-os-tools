@@ -69,11 +69,20 @@ class MbedListingestCase(unittest.TestCase):
         for mbed in mbeds:
             self.assertIn('platform_name_unique', mbed)
 
-    def test_(self):
-        pass
+    def test_list_platforms(self):
+        platforms = self.mbeds.list_platforms()
+        self.assertIs(type(platforms), list)
+        for p in platforms:
+            self.assertIs(type(p), str)
 
-    def test_(self):
-        pass
+    def test_list_platforms_ext(self):
+        platforms = self.mbeds.list_platforms_ext()
+        self.assertIs(type(platforms), dict)
+        for p in platforms:
+            self.assertIs(type(p), str)
+            self.assertIs(type(platforms[p]), int)
+            self.assertTrue(type(platforms[p]) >= 0)
+
 
 if __name__ == '__main__':
     unittest.main()

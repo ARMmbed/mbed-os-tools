@@ -198,6 +198,32 @@ class MbedLsToolsBase:
                 self.debug(self.list_mbeds_ext.__name__, (mbeds[i]['platform_name_unique'], val['target_id']))
         return mbeds
 
+    def list_platforms(self):
+        """ Useful if you just want to know which platforms are currently available on the system
+            @return List of (unique values) available platforms
+        """
+        result = []
+        mbeds = self.list_mbeds()
+        for i, val in enumerate(mbeds):
+            platform_name = val['platform_name']
+            if platform_name not in result:
+                result.append(platform_name)
+        return result
+
+    def list_platforms_ext(self):
+        """ Useful if you just want to know how many platforms of each type are currently available on the system
+            @return Dict of platform: platform_count
+        """
+        result = {}
+        mbeds = self.list_mbeds()
+        for i, val in enumerate(mbeds):
+            platform_name = val['platform_name']
+            if platform_name not in result:
+                result[platform_name] = 1
+            else:
+                result[platform_name] += 1
+        return result
+
     def list_mbeds_by_targetid(self):
         """ Get information about mbeds with extended parameters/info included
 
