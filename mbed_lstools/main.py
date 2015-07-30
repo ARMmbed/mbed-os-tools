@@ -87,17 +87,29 @@ def cmd_parser_setup():
                       action="store_true",
                       help='Parser friendly verbose mode')
 
-    parser.add_option('', '--json',
+    parser.add_option('-j', '--json',
                       dest='json',
                       default=False,
                       action="store_true",
-                      help='JSON formatted output (list)')
+                      help='JSON formatted list of targets detailed information')
 
-    parser.add_option('', '--json-by-target-id',
+    parser.add_option('-J', '--json-by-target-id',
                       dest='json_by_target_id',
                       default=False,
                       action="store_true",
-                      help='JSON formatted output where keys are TargetIDs (dict)')
+                      help='JSON formatted dictionary ordered by TargetID of targets detailed information')
+
+    parser.add_option('-p', '--json-platforms',
+                      dest='json_platforms',
+                      default=False,
+                      action="store_true",
+                      help='JSON formatted list of available platforms')
+
+    parser.add_option('-P', '--json-platforms-ext',
+                      dest='json_platforms_ext',
+                      default=False,
+                      action="store_true",
+                      help='JSON formatted dictionary of platforms count')
 
     parser.add_option('-d', '--debug',
                       dest='debug',
@@ -127,8 +139,16 @@ def mbedls_main():
 
     if opts.json:
         print json.dumps(mbeds.list_mbeds_ext(), indent=4, sort_keys=True)
+
     elif opts.json_by_target_id:
         print json.dumps(mbeds.list_mbeds_by_targetid(), indent=4, sort_keys=True)
+
+    elif opts.json_platforms:
+        print json.dumps(mbeds.list_platforms(), indent=4, sort_keys=True)
+
+    elif opts.json_platforms_ext:
+        print json.dumps(mbeds.list_platforms_ext(), indent=4, sort_keys=True)
+
     else:
         print mbeds.get_string(border=not opts.simple, header=not opts.simple)
 
