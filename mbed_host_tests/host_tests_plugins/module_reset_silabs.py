@@ -25,9 +25,9 @@ class HostTestPluginResetMethod_SiLabs(HostTestPluginBase):
     # Plugin interface
     name = 'HostTestPluginResetMethod_SiLabs'
     type = 'ResetMethod'
-    stable = True
     capabilities = ['eACommander', 'eACommander-usb']
     required_parameters = ['disk']
+    stable = True
 
     def setup(self, *args, **kwargs):
         """ Configure plugin, this function should be called before plugin execute() method is used.

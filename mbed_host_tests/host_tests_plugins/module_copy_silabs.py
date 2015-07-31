@@ -27,6 +27,7 @@ class HostTestPluginCopyMethod_Silabs(HostTestPluginBase):
     type = 'CopyMethod'
     capabilities = ['eACommander', 'eACommander-usb']
     required_parameters = ['image_path', 'destination_disk']
+    stable = True
 
     def setup(self, *args, **kwargs):
         """ Configure plugin, this function should be called before plugin execute() method is used.

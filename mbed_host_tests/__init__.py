@@ -100,7 +100,7 @@ class DefaultTestSelector(DefaultTestSelectorBase):
     test_supervisor = get_host_test("default")
 
     def __init__(self, options=None):
-        """ ctor
+        """! ctor
         """
         self.options = options
 
@@ -110,10 +110,15 @@ class DefaultTestSelector(DefaultTestSelectorBase):
                 self.print_ht_list()
                 sys.exit(0)
 
+            if options.list_plugins:    # --plugins option
+                host_tests_plugins.print_plugin_info()
+                sys.exit(0)
+
         DefaultTestSelectorBase.__init__(self, options)
 
     def print_ht_list(self):
-        """ Prints list of registered host test classes (by name)
+        """! Prints list of registered host test classes (by name)
+            @Detail For devel & debug purposes
         """
         str_len = 0
         for ht in HOSTREGISTRY.HOST_TESTS:
@@ -121,8 +126,14 @@ class DefaultTestSelector(DefaultTestSelectorBase):
         for ht in sorted(HOSTREGISTRY.HOST_TESTS.keys()):
             print "'%s'%s : %s()" % (ht, ' '*(str_len - len(ht)), HOSTREGISTRY.HOST_TESTS[ht].__class__)
 
+    def print_plugin_list(self):
+        """! Prints current plugin status
+            @Detail For devel & debug purposes
+        """
+
+
     def setup(self):
-        """ Additional setup before work-flow execution
+        """! Additional setup before work-flow execution
         """
         pass
 
@@ -312,11 +323,17 @@ def init_host_test_cli_params():
                       action="store_true",
                       help='Prints registered host test and exits')
 
+    parser.add_option('', '--plugins',
+                      dest='list_plugins',
+                      default=False,
+                      action="store_true",
+                      help='Prints registered plugins and exits')
+
     parser.add_option('', '--run',
                       dest='run_binary',
                       default=False,
                       action="store_true",
-                      help='Runs binary image on target (workflow: flash, reset, print console')
+                      help='Runs binary image on target (workflow: flash, reset, output console)')
 
     parser.add_option('', '--skip-flashing',
                       dest='skip_flashing',

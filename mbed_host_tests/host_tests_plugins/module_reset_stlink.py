@@ -25,9 +25,9 @@ class HostTestPluginResetMethod_Stlink(HostTestPluginBase):
     # Plugin interface
     name = 'HostTestPluginResetMethod_Stlink'
     type = 'ResetMethod'
-    stable = True
     capabilities = ['stlink']
     required_parameters = []
+    stable = False
 
     def setup(self, *args, **kwargs):
         """ Configure plugin, this function should be called before plugin execute() method is used.
