@@ -50,8 +50,10 @@ class HostTestPluginResetMethod_Stlink(HostTestPluginBase):
         result = False
         if self.check_parameters(capability, *args, **kwargs) is True:
             if capability == 'stlink':
+                # Example:
+                # ST-LINK_CLI.exe -Rst -Run
                 cmd = [self.ST_LINK_CLI,
-                       '-Rst']
+                       '-Rst', '-Run']
                 result = self.run_command(cmd)
         return result
 

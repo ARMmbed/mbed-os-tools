@@ -50,10 +50,10 @@ class HostTestPluginCopyMethod_Stlink(HostTestPluginBase):
             image_path = kwargs['image_path']
             if capability == 'stlink':
                 # Example:
-                # ST-LINK_CLI.exe -p "C:\Work\mbed\build\test\DISCO_F429ZI\GCC_ARM\MBED_A1\basic.bin" -Rst -Run
+                # ST-LINK_CLI.exe -p "C:\Work\mbed\build\test\DISCO_F429ZI\GCC_ARM\MBED_A1\basic.bin"
                 cmd = [self.ST_LINK_CLI,
                        '-p', image_path,
-                       '-Rst', '-Run']
+                       ]
                 result = self.run_command(cmd)
         return result
 
