@@ -297,15 +297,17 @@ def init_host_test_cli_params():
                       help="Copy (flash the target) method selector. " + copy_methods_str,
                       metavar="COPY_METHOD")
 
+    reset_methods_str = "Plugin support: " + ', '.join(host_tests_plugins.get_plugin_caps('ResetMethod'))
+
+    parser.add_option("-r", "--reset",
+                      dest="forced_reset_type",
+                      help="Forces different type of reset. " + reset_methods_str)
+
     parser.add_option("-C", "--program_cycle_s",
                       dest="program_cycle_s",
                       help="Program cycle sleep. Define how many seconds you want wait after copying binary onto target",
                       type="float",
                       metavar="PROGRAM_CYCLE_S")
-
-    parser.add_option("-r", "--reset",
-                      dest="forced_reset_type",
-                      help="Forces different type of reset")
 
     parser.add_option("-R", "--reset-timeout",
                       dest="forced_reset_timeout",

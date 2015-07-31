@@ -46,7 +46,7 @@ class Mbed:
         self.DEFAULT_RESET_TOUT = 0
 
         if self.options and self.options.port is None:
-            raise Exception("The serial port of the target mbed have to be provided as command line arguments")
+            raise Exception("The serial port (see: -p PORT) of the target mbed have to be provided as command line arguments")
 
         # Options related to copy / reset mbed device
         self.port = self.options.port
