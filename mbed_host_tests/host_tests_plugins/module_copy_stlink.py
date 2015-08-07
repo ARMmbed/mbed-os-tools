@@ -52,7 +52,8 @@ class HostTestPluginCopyMethod_Stlink(HostTestPluginBase):
                 # Example:
                 # ST-LINK_CLI.exe -p "C:\Work\mbed\build\test\DISCO_F429ZI\GCC_ARM\MBED_A1\basic.bin"
                 cmd = [self.ST_LINK_CLI,
-                       '-p', image_path, '0x08000000'
+                       '-p', image_path, '0x08000000',
+                       '-V'
                        ]
                 result = self.run_command(cmd)
         return result
