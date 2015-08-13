@@ -79,11 +79,28 @@ mbed-ls==0.1.5
 
 ## Installing Greentea
 
-To install the mbed test suite go to the Tools folder in your release and run the setup.py script with the install option.
+To install the mbed test suite, first clone the `greentea` repository:
 
 ```
-$ cd tools/mbed-greentea
+$ git clone <link-to-greentea-repo>
+```
+
+Change the directory to the `greentea` directory:
+
+```
+$ cd greentea
+```
+
+Now you are ready to install `greentea`:
+
+```
 $ python setup.py install
+```
+
+On Linux, if you have a problem with permissions, use `sudo`:
+
+```
+$ sudo python setup.py install
 ```
 
 To check whether the installation was successful try running the ```mbedgt --help``` command and check that it returns information (you may need to restart your terminal first):
