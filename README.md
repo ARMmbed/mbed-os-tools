@@ -4,24 +4,11 @@ Hello and welcome to the mbed SDK test suite, codename *Greentea*. The test suit
 
 In its current configuration, the mbed test suite can automatically detect most of the popular mbed-enabled platforms connected to the host via the USB interface. The test suite uses the ```mbed-ls``` module to check for connected devices. A separate module called ```mbed-host-tests``` is used to flash and supervise each platform's test. This decoupling allows us to make better software and maintain each of the functionalities as a separate domain.
 
-# Supported Targets
+# Supported operating systems
 
-Operating systems:
-
-* Windows.
-
-mbed platforms:
-
-* [FRDM-K64F](http://developer.mbed.org/platforms/FRDM-K64F/).
-* [NUCLEO_F401RE](http://developer.mbed.org/platforms/ST-Nucleo-F401RE/).
-
-yotta targets:
-
-* ```frdm-k64f-gcc```.
-* ```frdm-k64f-armcc```.
-* ```st-nucleo-f401re-gcc```.
-
-**Note:** More platforms and yotta targets will be added. For most platforms and targets, only the meta-data must be updated.
+* Windows
+* Linux (experimental)
+* OS X 10.10 (experimental)
 
 # Getting Started
 
@@ -55,7 +42,7 @@ Please install the following:
 
 	* pyOCD (install using ``pip``).
 
-* The ``cp`` shell command must be available to flash certain boards, such as the Nucleo F401RE. It is sometimes available by default, for example on Linux, or you can install the [Git command line tools](https://github.com/github/hub).
+* The ``cp`` shell command must be available to flash certain boards. It is sometimes available by default, for example on Linux, or you can install the [Git command line tools](https://github.com/github/hub).
 
 * [Grep](http://gnuwin32.sourceforge.net/packages/grep.htm).
 
@@ -129,23 +116,22 @@ Make sure you have installed all of the tools. For example you can list all mbed
 |platform_name        |mount_point        |serial_port        |target_id                       |
 +---------------------+-------------------+-------------------+--------------------------------+
 |K64F                 |E:                 |COM61              |02400203D94B0E7724B7F3CF        |
-|NUCLEO_F401RE        |F:                 |COM52              |07200200073E650A385BF317        |
 +---------------------+-------------------+-------------------+--------------------------------+
 ```
 
 ## Building the SDK for the Target
 
-You need to build the SDK for the target you're testing. Two targets are currently supported: **Freescale FRDM-K64F** and **ST Nucleo-F401RE**.
+You need to build the SDK for the target you're testing. We'll use the **Freescale FRDM-K64F** as an example.
 
 Change directories to the mbed sources included in your release files:
 
 ```
-$ cd libraries/mbed-sdk
+$ cd mbed-drivers
 ```
 
 Set your target, for example:
 
-```yotta target st-nucleo-f401re-gcc```
+```yotta target frdm-k64f-gcc```
 
 Then build the SDK:
 
@@ -153,7 +139,7 @@ Then build the SDK:
 
 # Testing
 
-Start by examining the current configuration using ``mbedgt`` (which itself uses ``mbed-ls``). In this example, two boards are connected to the host system: ``` K64F```, ```NUCLEO_F401RE ```:
+Start by examining the current configuration using ``mbedgt`` (which itself uses ``mbed-ls``). In this example, a ``` K64F``` board is connected to the host system:
 
 ```
 $ mbedgt --config
@@ -166,15 +152,12 @@ mbed-ls: detecting connected mbed-enabled devices...
 mbed-ls: detected K64F, console at: COM61, mounted at: E:
         got yotta target 'frdm-k64f-gcc'
         got yotta target 'frdm-k64f-armcc'
-mbed-ls: detected NUCLEO_F401RE, console at: COM52, mounted at: F:
-        got yotta target 'st-nucleo-f401re-gcc'
 ```
 
 ```mbedgt``` proposed a few supported yotta targets:
 
 * ```frdm-k64f-gcc``` - Freescale K64F platform compiled with the GCC cross-compiler.
 * ```frdm-k64f-armcc``` - Freescale K64F platform compiled with the Keil armcc cross-compiler.
-* ```st-nucleo-f401re-gcc``` - STMicro Nucleo F401RE platform compiled with the GCC cross-compiler.
 
 For simplicity, only the GCC targets are described below.  
 
@@ -184,7 +167,7 @@ You can invoke yotta from the test suite to build the targets. In this example:
 * The option ```-O``` is used to tell the test suite to *build* sources and tests, but not to *run* the tests.
 
 ```
-$ mbedgt --target=frdm-k64f-gcc,st-nucleo-f401re-gcc -O
+$ mbedgt --target=frdm-k64f-gcc -O
 ```
 
 You'll get:
@@ -208,28 +191,12 @@ GNU-ASM.cmake included
 -- Generating done
 -- Build files have been written to: C:/temp/xxx/mbed-sdk-private/build/frdm-k64f-gcc
 ninja: no work to do.
-        got yotta target 'frdm-k64f-armcc'
-mbed-ls: detected NUCLEO_F401RE, console at: COM52, mounted at: F:
-        got yotta target 'st-nucleo-f401re-gcc'
-mbed-ls: calling yotta to build your sources and tests
-info: generate for target: st-nucleo-f401re-gcc 0.0.5 at c:\temp\xxx\mbed-sdk-private\yotta_targets\st-nucleo-f401re-gcc
-mbedOS.cmake included
-GCC-C.cmake included
-mbedOS-GNU-C.cmake included
-GCC-GXX.cmake included
-mbedOS-GNU-CXX.cmake included
-GCC version is: 4.8.4
-GNU-ASM.cmake included
--- Configuring done
--- Generating done
--- Build files have been written to: C:/temp/xxx/mbed-sdk-private/build/st-nucleo-f401re-gcc
-ninja: no work to do.
 ```
 
-Now that the tests are built, the test suite can be called again to run the tests. From the same director, invoke ```mbedgt``` again as shown below (this is the same command, but without the -O option):
+Now that the tests are built, the test suite can be called again to run the tests. From the same directory, invoke ```mbedgt``` again as shown below (this is the same command, but without the -O option):
 
 ```
-$ mbedgt --target=frdm-k64f-gcc,st-nucleo-f401re-gcc
+$ mbedgt --target=frdm-k64f-gcc
 ```
 
 You'll see
@@ -266,38 +233,6 @@ mbedgt: running tests...
         test 'mbed-test-ticker_2' .................................................... OK
         test 'mbed-test-timeout' ..................................................... OK
         test 'mbed-test-rtc' ......................................................... OK
-        test 'mbed-test-echo' ........................................................ OK
-        test 'mbed-test-hello' ....................................................... OK
-        got yotta target 'frdm-k64f-armcc'
-mbed-ls: detected NUCLEO_F401RE, console at: COM52, mounted at: F:
-        got yotta target 'st-nucleo-f401re-gcc'
-mbed-ls: calling yotta to build your sources and tests
-info: generate for target: st-nucleo-f401re-gcc 0.0.5 at c:\temp\xxx\mbed-sdk-private\yotta_targets\st-nucleo-f401re-gcc
-mbedOS.cmake included
-GCC-C.cmake included
-mbedOS-GNU-C.cmake included
-GCC-GXX.cmake included
-mbedOS-GNU-CXX.cmake included
-GCC version is: 4.8.4
-GNU-ASM.cmake included
--- Configuring done
--- Generating done
--- Build files have been written to: C:/temp/xxx/mbed-sdk-private/build/st-nucleo-f401re-gcc
-ninja: no work to do.
-mbedgt: running tests...
-        test 'mbed-test-dev_null' .................................................... OK
-        test 'mbed-test-cpp' ......................................................... OK
-        test 'mbed-test-time_us' ..................................................... OK
-        test 'mbed-test-ticker' ...................................................... OK
-        test 'mbed-test-div' ......................................................... OK
-        test 'mbed-test-detect' ...................................................... SKIPPED
-        test 'mbed-test-call_before_main' ............................................ OK
-        test 'mbed-test-basic' ....................................................... OK
-        test 'mbed-test-stdio' ....................................................... OK
-        test 'mbed-test-ticker_3' .................................................... OK
-        test 'mbed-test-ticker_2' .................................................... OK
-        test 'mbed-test-timeout' ..................................................... OK
-        test 'mbed-test-rtc' ......................................................... FAIL
         test 'mbed-test-echo' ........................................................ OK
         test 'mbed-test-hello' ....................................................... OK
 ```
