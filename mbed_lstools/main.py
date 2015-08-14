@@ -117,6 +117,12 @@ def cmd_parser_setup():
                       action="store_true",
                       help='Outputs extra debug information')
 
+    parser.add_option('', '--version',
+                      dest='version',
+                      default=False,
+                      action="store_true",
+                      help='Prints package version and exits')
+
     (opts, args) = parser.parse_args()
     return (opts, args)
 
@@ -148,6 +154,11 @@ def mbedls_main():
 
     elif opts.json_platforms_ext:
         print json.dumps(mbeds.list_platforms_ext(), indent=4, sort_keys=True)
+
+    elif opts.version:
+        import pkg_resources  # part of setuptools
+        version = pkg_resources.require("mbed-ls")[0].version
+        print version
 
     else:
         print mbeds.get_string(border=not opts.simple, header=not opts.simple)
