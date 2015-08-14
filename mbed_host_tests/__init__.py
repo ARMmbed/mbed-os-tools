@@ -114,6 +114,12 @@ class DefaultTestSelector(DefaultTestSelectorBase):
                 host_tests_plugins.print_plugin_info()
                 sys.exit(0)
 
+            if options.version:         # --version
+                import pkg_resources  # part of setuptools
+                version = pkg_resources.require("mbed-host-tests")[0].version
+                print version
+                sys.exit(0)
+
         DefaultTestSelectorBase.__init__(self, options)
 
     def print_ht_list(self):
@@ -348,6 +354,12 @@ def init_host_test_cli_params():
                       default=False,
                       action="store_true",
                       help='Skips use of reset plugin. Note: target will not be reset')
+
+    parser.add_option('', '--version',
+                      dest='version',
+                      default=False,
+                      action="store_true",
+                      help='Prints package version and exits')
 
     (options, _) = parser.parse_args()
     return options
