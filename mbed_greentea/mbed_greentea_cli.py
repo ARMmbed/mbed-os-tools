@@ -134,6 +134,12 @@ def main():
                     action="store_true",
                     help='Verbose mode (prints some extra information)')
 
+    parser.add_option('', '--version',
+                      dest='version',
+                      default=False,
+                      action="store_true",
+                      help='Prints package version and exits')
+
     parser.description = """This automated test script is used to test mbed SDK 3.0 on mbed-enabled deviecs with support from yotta build tool"""
     parser.epilog = """Example: mbedgt --auto --target frdm-k64f-gcc"""
 
@@ -142,6 +148,13 @@ def main():
     # List available test binaries (names, no extension)
     if opts.list_binaries:
         list_binaries_for_targets()
+        exit(0)
+
+    # Prints version and exits
+    if opts.version:
+        import pkg_resources  # part of setuptools
+        version = pkg_resources.require("mbed-greentea")[0].version
+        print version
         exit(0)
 
     # Capture alternative test console inputs, used e.g. in 'yotta test command'
