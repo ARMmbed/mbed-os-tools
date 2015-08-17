@@ -64,9 +64,13 @@ class Test(HostTestResults):
                  running on hardware (on on other end of communication channel.
                  In mbed case it is a serial port).
         """
+        self.notify("HOST: Detecting test case properties...")
         result = {}
         while True:
             line = self.mbed.serial_readline()
+            if line is None:
+                self.print_result(self.RESULT_IO_SERIAL)
+                break
             if "{start}" in line:
                 self.notify("HOST: Start test...")
                 break
@@ -79,7 +83,7 @@ class Test(HostTestResults):
                 if m and len(m.groups()) == 2:
                     key = m.group(1)
 
-                    # clean up quote characters and concatinate
+                    # clean up quote characters and concatenate
                     # multiple quoted strings.
                     g = re.findall('[\"\'](.*?)[\"\']',m.group(2))
                     if len(g)>0:
@@ -92,7 +96,7 @@ class Test(HostTestResults):
                     if verbose:
                         self.notify("HOST: Property '%s' = '%s'"% (key, val))
                 else:
-                    # We can check if this is TArget Id in mbed specific format
+                    # We can check if this is Target Id in mbed specific format
                     m2 = re.search('^([\$]+)([a-fA-F0-9]+)', line[:-1])
                     if m2 and len(m2.groups()) == 2:
                         if verbose:
@@ -190,8 +194,8 @@ class Test(HostTestResults):
         """
         self.dump_serial_end()
         # We are waiting for serial port thread dump to end
-        while self.print_thread_flag:
-            pass
+        #while self.print_thread_flag:
+        #    pass
 
 class DefaultTestSelectorBase(Test):
     """! Test class with serial port initialization

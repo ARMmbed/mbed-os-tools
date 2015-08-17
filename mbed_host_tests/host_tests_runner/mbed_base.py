@@ -135,7 +135,13 @@ class Mbed:
                 self.serial = Serial(self.port, baudrate=serial_baud, timeout=serial_timeout)
             except Exception as e:
                 result = False
-                last_error = "MBED: %s"% str(e)
+                last_error = "MBED: poll_for_serial_init(%s, %s, %s, %s, %s)"% (str(serial_baud),
+                                                                                str(serial_timeout),
+                                                                                str(polling_loops),
+                                                                                str(init_delay),
+                                                                                str(loop_delay))
+                last_error += "\n"
+                last_error += "MBED: %s" % (str(e))
                 stdout.write('.')
                 stdout.flush()
             else:
@@ -170,6 +176,7 @@ class Mbed:
             try:
                 result = self.serial.read(count)
             except:
+                print "MBED: serial_read(%d) failed" % (count)
                 result = None
         self.mutex.release()
         return result
@@ -190,6 +197,7 @@ class Mbed:
                     c = self.serial.read(1)
                     result += c
                 except Exception as e:
+                    print "MBED: serial_readline(%d) failed" % (timeout)
                     print "MBED: %s" % str(e)
                     result = None
                     break
@@ -209,6 +217,7 @@ class Mbed:
             try:
                 result = self.serial.write(write_buffer)
             except:
+               print "MBED: serial_write(%d) failed" % (len(write_buffer))
                result = None
         self.mutex.release()
         return result

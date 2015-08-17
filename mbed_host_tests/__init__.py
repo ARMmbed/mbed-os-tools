@@ -137,7 +137,6 @@ class DefaultTestSelector(DefaultTestSelectorBase):
             @Detail For devel & debug purposes
         """
 
-
     def setup(self):
         """! Additional setup before work-flow execution
         """
@@ -231,6 +230,7 @@ class DefaultTestSelector(DefaultTestSelectorBase):
             result = self.mbed.copy_image()
             if not result:
                 self.print_result(self.RESULT_IOERR_COPY)
+                return  # No need to continue, we can't flash device
         else:
             self.notify("HOST: Copy image onto target... SKIPPED!")
 
@@ -239,6 +239,7 @@ class DefaultTestSelector(DefaultTestSelectorBase):
         result = self.mbed.init_serial()
         if not result:
             self.print_result(self.RESULT_IO_SERIAL)
+            return  # No need to continue, we can't open serial port
 
         # Reset device
         if self.options.skip_reset is False:
@@ -246,6 +247,7 @@ class DefaultTestSelector(DefaultTestSelectorBase):
             result = self.mbed.reset()
             if not result:
                 self.print_result(self.RESULT_IO_SERIAL)
+                return
         else:
             self.notify("HOST: Reset target... SKIPPED!")
 
