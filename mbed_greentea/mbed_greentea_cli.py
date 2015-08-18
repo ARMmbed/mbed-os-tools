@@ -334,10 +334,6 @@ def main():
         else:
             print "mbed-ls: mbed classic target name '%s' is not in target database"% (mut['platform_name'])
 
-    if opts.report_junit_file_name:
-        junit_report = exporter_junit(test_report)
-        with open(opts.report_junit_file_name, 'w') as f:
-            f.write(junit_report)
 
     if opts.verbose_test_configuration_only:
         print
@@ -348,18 +344,25 @@ def main():
     # only if testes were executed and all passed we want to
     # return 0 (success)
     if not opts.only_build_tests:
-        # Reports
+        # Reports (to file)
         if opts.report_junit_file_name:
-            print "mbedgt: exporting to junit '%s'..."% (opts.report_junit_file_name)
+            junit_report = exporter_junit(test_report)
+            with open(opts.report_junit_file_name, 'w') as f:
+                f.write(junit_report)
+        if opts.report_text_file_name:
+            print "mbedgt: exporting to junit '%s'..."% (opts.report_text_file_name)
             text_report = exporter_text(test_report)
             with open(opts.report_text_file_name, 'w') as f:
                 f.write(text_report)
-        elif opts.report_json:
+        # Reports (to console)
+        if opts.report_json:
+            # We will not print summary and json report together
             print "mbedgt: json test report:"
             print exporter_json(test_report)
-        # Final summary
-        print "mbedgt: test report:"
-        print exporter_text(test_report)
+        else:
+            # Final summary
+            print "mbedgt: test report:"
+            print exporter_text(test_report)
 
         # This flag guards 'build only' so we expect only yotta errors
         if test_platforms_match == 0:
