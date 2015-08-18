@@ -29,6 +29,8 @@ from mbed_test_api import TEST_RESULTS
 from mbed_test_api import TEST_RESULT_OK
 from cmake_handlers import load_ctest_testsuite
 from cmake_handlers import list_binaries_for_targets
+from mbed_report_api import exporter_text
+from mbed_report_api import exporter_json
 from mbed_report_api import exporter_junit
 from mbed_target_info import get_mbed_clasic_target_info
 from mbed_target_info import get_mbed_supported_test
@@ -121,6 +123,16 @@ def main():
     parser.add_option('', '--report-junit',
                     dest='report_junit_file_name',
                     help='You can log test suite results in form of JUnit compliant XML report')
+
+    parser.add_option('', '--report-text',
+                    dest='report_text_file_name',
+                    help='You can log test suite results to text file')
+
+    parser.add_option('', '--report-json',
+                    dest='report_json',
+                    default=False,
+                    action="store_true",
+                    help='Outputs test results in JSON')
 
     parser.add_option('-V', '--verbose-test-result',
                     dest='verbose_test_result_only',
@@ -309,6 +321,8 @@ def main():
                                 test_report[yotta_target_name][test_name]['single_test_result'] = single_test_result
                                 test_report[yotta_target_name][test_name]['single_test_output'] = single_test_output
                                 test_report[yotta_target_name][test_name]['elapsed_time'] = single_testduration
+                                test_report[yotta_target_name][test_name]['platform_name'] = micro
+                                test_report[yotta_target_name][test_name]['copy_method'] = copy_method
 
                                 print "\ttest '%s' %s"% (test_bin, '.' * (80 - len(test_bin))),
                                 print " %s in %.2f sec"% (test_result, single_testduration)
@@ -334,6 +348,19 @@ def main():
     # only if testes were executed and all passed we want to
     # return 0 (success)
     if not opts.only_build_tests:
+        # Reports
+        if opts.report_junit_file_name:
+            print "mbedgt: exporting to junit '%s'..."% (opts.report_junit_file_name)
+            text_report = exporter_text(test_report)
+            with open(opts.report_text_file_name, 'w') as f:
+                f.write(text_report)
+        elif opts.report_json:
+            print "mbedgt: json test report:"
+            print exporter_json(test_report)
+        # Final summary
+        print "mbedgt: test report:"
+        print exporter_text(test_report)
+
         # This flag guards 'build only' so we expect only yotta errors
         if test_platforms_match == 0:
             # No tests were executed

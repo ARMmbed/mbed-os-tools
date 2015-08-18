@@ -56,11 +56,39 @@ def exporter_junit(test_result_ext, test_suite_properties=None):
     return TestSuite.to_xml_string(test_suites)
 
 
-def exporter_text(test_result_ext, test_suite_properties=None):
-    """! Exports test results to text formated output
+def exporter_json(test_result_ext, test_suite_properties=None):
+    """! Exports test results to indented JSON format
 
-    @details This is a humab friendly format
+    @details This is a machine friendly format
     """
-    #from prettytable import PrettyTable
+    import json
+    return json.dumps(test_result_ext, indent=4)
+
+
+def exporter_text(test_result_ext, test_suite_properties=None):
+    """! Exports test results to text formatted output
+
+    @details This is a human friendly format
+    """
+    from prettytable import PrettyTable
     #TODO: export to text, preferably to PrettyTable (SQL like) format
-    pass
+    cols = ['target', 'platform_name', 'test', 'result', 'elapsed_time (sec)', 'copy_method']
+    pt = PrettyTable(cols)
+    for col in cols:
+        pt.align[col] = "l"
+    pt.padding_width = 1 # One space between column edges and contents (default)
+
+    for target_name in test_result_ext:
+        test_results = test_result_ext[target_name]
+        row = []
+        for test_name in test_results:
+            test = test_results[test_name]
+            row.append(target_name)
+            row.append(test['platform_name'])
+            row.append(test_name)
+            row.append(test['single_test_result'])
+            row.append(round(test['elapsed_time'], 2))
+            row.append(test['copy_method'])
+            pt.add_row(row)
+            row = []
+    return pt.get_string()
