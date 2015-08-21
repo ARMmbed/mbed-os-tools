@@ -263,8 +263,6 @@ class LWM2MClientAutoTest():
         result = selftest.RESULT_PASSIVE
         testoutput = ""
         
-        selftest.notify("HOST: TEST PRINT!: %s" %(os.getcwd()))
-        
         self.stopServers()
         time.sleep(5.0)
         
