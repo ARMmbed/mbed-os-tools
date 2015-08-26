@@ -28,6 +28,7 @@ import signal
 import subprocess
 import os
 
+
 class TestConfiguration():
     
     def __init__(self, test_cfg):
@@ -262,44 +263,29 @@ class LWM2MClientAutoTest():
     def test(self, selftest):
         result = selftest.RESULT_PASSIVE
         testoutput = ""
-        
-        self.stopServers()
-        time.sleep(5.0)
-        
+                
         self.testconfig = TestConfiguration(selftest.mbed.test_cfg)
 
         selftest.notify("HOST: Running folder: %s" %(os.getcwd()))
-        
-        selftest.notify("HOST: PC IP address to be used by servers: %s" %self.testconfig.OWN_PC_ADDRESS)           
-
-        os.chdir(self.testconfig.BOOTSTRAP_SERVER_PATH)
-        selftest.notify("HOST: Bootstrap Server folder %s" %self.testconfig.BOOTSTRAP_SERVER_PATH)
-        status, _p = self.createServer(self.testconfig.BOOTSTRAP_SERVER_CMD)
-        
-        os.chdir(self.testconfig.DEVICE_SERVER_PATH)
-
-        selftest.notify("HOST: Device Server folder %s" %self.testconfig.DEVICE_SERVER_PATH)
-        status, _p = self.createServer(self.testconfig.DEVICE_SERVER_CMD)       
-        time.sleep(30)
-     
+             
         #Add endpoint name as a client to OMA bootstrap server if it doesn't already exist
-        bootstrap_server = BootstrapServerAdapter(self.testconfig)
-        selftest.notify("HOST: BootstrapServerAdapter done")
+        #bootstrap_server = BootstrapServerAdapter(self.testconfig)
+        #selftest.notify("HOST: BootstrapServerAdapter done")
         
-        bootstrap_server.AddOMAServer(selftest)
-        selftest.notify("HOST: AddOMAServer done")        
+        #bootstrap_server.AddOMAServer(selftest)
+        #selftest.notify("HOST: AddOMAServer done")        
         
-        if not bootstrap_server.ClientMappingExists(self.testconfig.EP_NAME):
-            selftest.notify("HOST: Adding OMA bootstrap client mapping for %s" % self.testconfig.EP_NAME)
-            bootstrap_server.AddClientMapping(self.testconfig.EP_NAME)
-            time.sleep(1)
-            if bootstrap_server.ClientMappingExists(self.testconfig.EP_NAME):
-                selftest.notify("HOST: client added successfully")
+        #if not bootstrap_server.ClientMappingExists(self.testconfig.EP_NAME):
+        #    selftest.notify("HOST: Adding OMA bootstrap client mapping for %s" % self.testconfig.EP_NAME)
+        #    bootstrap_server.AddClientMapping(self.testconfig.EP_NAME)
+        #    time.sleep(1)
+        #    if bootstrap_server.ClientMappingExists(self.testconfig.EP_NAME):
+        #        selftest.notify("HOST: client added successfully")
         
         time.sleep(2)
         
         # Send test configuration to MUT
-        self.send_configuration(selftest)
+        #self.send_configuration(selftest)
         
         start_time = time.time()
         try:
@@ -319,12 +305,9 @@ class LWM2MClientAutoTest():
             selftest.notify("\r\n[CTRL+C] exit")
             result = selftest.RESULT_ERROR
         
-        selftest.notify("HOST: Deleting OMA bootstrap client mapping for %s" % self.testconfig.EP_NAME)
-        
-        bootstrap_server.DeleteClientMapping(self.testconfig.EP_NAME)
+        #selftest.notify("HOST: Deleting OMA bootstrap client mapping for %s" % self.testconfig.EP_NAME)
+        #bootstrap_server.DeleteClientMapping(self.testconfig.EP_NAME)
 
-        #self.stopServers()
-        
         elapsedTime = time.time() - start_time
         selftest.notify("HOST:Test completed in %.0f seconds\n" % elapsedTime)
         
