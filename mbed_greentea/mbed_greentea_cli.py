@@ -64,13 +64,13 @@ def main():
 
     parser = optparse.OptionParser()
 
-    parser.add_option('', '--target',
+    parser.add_option('-t', '--target',
                     dest='list_of_targets',
                     help='You can specify list of targets you want to build. Use comma to sepatate them')
 
     parser.add_option('-n', '--test-by-names',
-                      dest='test_by_names',
-                      help='Runs only test enumerated it this switch. Use comma to separate test case names.')
+                    dest='test_by_names',
+                    help='Runs only test enumerated it this switch. Use comma to separate test case names.')
 
     parser.add_option("-O", "--only-build",
                     action="store_true",
@@ -134,6 +134,12 @@ def main():
                     action="store_true",
                     help='Outputs test results in JSON')
 
+    parser.add_option('', '--report-fails',
+                    dest='report_fails',
+                    default=False,
+                    action="store_true",
+                    help='Prints console outputs for failed tests')
+
     parser.add_option('-V', '--verbose-test-result',
                     dest='verbose_test_result_only',
                     default=False,
@@ -147,10 +153,10 @@ def main():
                     help='Verbose mode (prints some extra information)')
 
     parser.add_option('', '--version',
-                      dest='version',
-                      default=False,
-                      action="store_true",
-                      help='Prints package version and exits')
+                    dest='version',
+                    default=False,
+                    action="store_true",
+                    help='Prints package version and exits')
 
     parser.description = """This automated test script is used to test mbed SDK 3.0 on mbed-enabled devices with support from yotta build tool"""
     parser.epilog = """Example: mbedgt --target frdm-k64f-gcc"""
@@ -324,6 +330,13 @@ def main():
                                 test_report[yotta_target_name][test_name]['platform_name'] = micro
                                 test_report[yotta_target_name][test_name]['copy_method'] = copy_method
 
+                                if single_test_result != 'OK' and not verbose and opts.report_fails:
+                                    # In some cases we want to print console to see why test failed
+                                    # even if we are not in verbose mode
+                                    print "\ttest failed, reporting console output (specified with --report-fails option)"
+                                    print
+                                    print single_test_output
+
                                 print "\ttest '%s' %s"% (test_bin, '.' * (80 - len(test_bin))),
                                 print " %s in %.2f sec"% (test_result, single_testduration)
                     # We need to stop executing if yotta build fails
@@ -333,7 +346,6 @@ def main():
                         exit(test_exec_retcode)
         else:
             print "mbed-ls: mbed classic target name '%s' is not in target database"% (mut['platform_name'])
-
 
     if opts.verbose_test_configuration_only:
         print

@@ -63,7 +63,6 @@ TARGET_TOOLCAHINS = {
 }
 
 NOT_SUPPORTED_TESTS = [
-    "mbed-test-detect",
     "mbed-test-serial_interrupt",
     "mbed-test-stl",
     "mbed-test-sleep_timeout",
