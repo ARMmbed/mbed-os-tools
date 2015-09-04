@@ -341,8 +341,11 @@ error level is 5
 
 # Common Issues
 
+* Issue: In this release there are known issues related to Virtual Machine support.
+  * Note: We are not planning to support VMs soon. If you are using our testing tools on VM and experiencing e.g. ``` IOERR_SERIAL``` errors you should probably switch to native OS.
 * Issue: In this release there are known issues related to Linux serial port handling during test.
-  * Solution: Investigation is ongoing.
+  * Solution: Please use latest interface chip firmware for your mbed-enabled boards.
+  * Example for Freescale's FRDM-K64F platform: Please use firmware ver. ```0226_k20dx128_k64f_0x5000.bin``` or greater.
 * Issue: Some boards show up as 'unknown'.
   * Solution: We will add them in coming releases.
 * Issue: Not all mbed platforms have targets mapped to them.
