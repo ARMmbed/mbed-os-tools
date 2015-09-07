@@ -24,8 +24,8 @@ from distutils.core import setup
 from setuptools import find_packages
 
 DESCRIPTION = "mbed-ls is a Python module that detects and lists mbed-enabled devices connected to the host computer"
-OWNER_NAMES = 'Przemyslaw Wirkus, Johan Seferidis'
-OWNER_EMAILS = 'Przemyslaw.Wirkus@arm.com, Johan.Seferidis@arm.com'
+OWNER_NAMES = 'Przemyslaw Wirkus, Johan Seferidis, James Crosby'
+OWNER_EMAILS = 'Przemyslaw.Wirkus@arm.com, Johan.Seferidis@arm.com, James.Crosby@arm.com'
 
 
 # Utility function to cat in a file (used for the README)
