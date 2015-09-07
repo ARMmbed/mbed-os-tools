@@ -28,9 +28,9 @@ from setuptools import find_packages
 
 
 LICENSE = open('LICENSE').read()
-DESCRIPTION = "Test suite for mbed SDK 3.0. A set of Python scripts that can be used to test programs written on top of the mbed SDK"
-OWNER_NAMES = 'przemekw, bogdanm'
-OWNER_EMAILS = 'Przemyslaw.Wirkus@arm.com, Bogdan.Marinescu@arm.com'
+DESCRIPTION = "mbed 3.0 test suite, codename Greentea. The test suite is a collection of tools that enable automated testing on mbed-enabled platforms"
+OWNER_NAMES = 'Przemyslaw Wirkus'
+OWNER_EMAILS = 'Przemyslaw.Wirkus@arm.com'
 
 # Utility function to cat in a file (used for the README)
 def read(fname):
@@ -44,12 +44,15 @@ setup(name='mbed-greentea',
       author_email=OWNER_EMAILS,
       maintainer=OWNER_NAMES,
       maintainer_email=OWNER_EMAILS,
-      url='https://github.com/mbedmicro/mbed',
+      url='https://github.com/ARMmbed/greentea',
       packages=find_packages(),
       license=LICENSE,
       test_suite = 'test',
       entry_points={
         "console_scripts": ["mbedgt=mbed_greentea.mbed_greentea_cli:main",],
       },
-      install_requires=["PrettyTable>=0.7.2", "PySerial>=2.7",
-        "mbed-host-tests>=0.1.9", "mbed-ls>=0.1.13", "junit-xml>=1.4"])
+      install_requires=["PrettyTable>=0.7.2",
+        "PySerial>=2.7",
+        "mbed-host-tests>=0.1.9",
+        "mbed-ls>=0.1.13", 
+        "junit-xml>=1.4"])
