@@ -26,7 +26,7 @@ import os
 from distutils.core import setup
 from setuptools import find_packages
 
-DESCRIPTION = "Host tests module with extracted from mbed SDK 2.0 workspace_tools/host_tests. Decoupling for mbed 2.0 and 3.0 common use cases."
+DESCRIPTION = "mbed tools used to flash, reset and supervise test execution for mbed-enabled devices"
 OWNER_NAMES = 'Przemyslaw Wirkus'
 OWNER_EMAILS = 'Przemyslaw.Wirkus@arm.com'
 
@@ -34,7 +34,6 @@ OWNER_EMAILS = 'Przemyslaw.Wirkus@arm.com'
 # Utility function to cat in a file (used for the README)
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
-
 
 setup(name='mbed-host-tests',
       version='0.1.13',
@@ -44,7 +43,7 @@ setup(name='mbed-host-tests',
       author_email=OWNER_EMAILS,
       maintainer=OWNER_NAMES,
       maintainer_email=OWNER_EMAILS,
-      url='https://github.com/mbedmicro/mbed',
+      url='https://github.com/ARMmbed/htrun',
       packages=find_packages(),
       license="Apache-2.0",
       test_suite = 'test',
