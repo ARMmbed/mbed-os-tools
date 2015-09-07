@@ -12,7 +12,7 @@ import os
 from distutils.core import setup
 from setuptools import find_packages
 
-DESCRIPTION = "Command line tools used to detect connected mbed-enabled devices. See http://mbed.org for details"
+DESCRIPTION = "mbed-ls is a Python module that detects and lists mbed-enabled devices connected to the host computer"
 OWNER_NAMES = 'Przemyslaw Wirkus, Johan Seferidis'
 OWNER_EMAILS = 'Przemyslaw.Wirkus@arm.com, Johan.Seferidis@arm.com'
 
@@ -20,7 +20,6 @@ OWNER_EMAILS = 'Przemyslaw.Wirkus@arm.com, Johan.Seferidis@arm.com'
 # Utility function to cat in a file (used for the README)
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
-
 
 setup(name='mbed-ls',
       version='0.1.17',
@@ -30,7 +29,7 @@ setup(name='mbed-ls',
       author_email=OWNER_EMAILS,
       maintainer=OWNER_NAMES,
       maintainer_email=OWNER_EMAILS,
-      url='https://github.com/mbedmicro/mbed',
+      url='https://github.com/ARMmbed/mbed-ls',
       packages=find_packages(),
       license="Apache-2.0",
       test_suite = 'test',
