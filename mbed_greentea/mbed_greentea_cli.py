@@ -189,7 +189,8 @@ def main():
     mbeds_list = mbeds.list_mbeds()
 
     current_target = get_mbed_target_from_current_dir()
-    print "mbedgt: current yotta target is: %s"% (current_target if current_target is not None else 'not set')
+    current_target_text = current_target if current_target is not None else 'not set'
+    print "mbedgt: yotta target in current directory is set to '%s'"% current_target_text
 
     if opts.list_of_targets is None:
         if current_target is not None:
@@ -210,7 +211,7 @@ def main():
     target_platforms_match = 0  # Count how many platforms were actually tested with current settings
 
     for mut in mbeds_list:
-        print "\tdetected %s, console at: %s, mounted at: %s"% (mut['platform_name'],
+        print "\tdetected '%s', console at '%s', mounted at '%s'"% (mut['platform_name'],
             mut['serial_port'],
             mut['mount_point'])
 
@@ -268,7 +269,7 @@ def main():
                     elif opts.build_to_debug:
                         cmd.append('-d')
 
-                    print "mbedgt: calling yotta to build your sources and tests: %s" % (' '.join(cmd))
+                    print "mbedgt: calling yotta to build your sources and tests: %s"% (' '.join(cmd))
                     yotta_result, yotta_ret = run_cli_command(cmd, shell=False, verbose=opts.verbose)
 
                     print "mbedgt: yotta build %s"% ('successful' if yotta_result else 'failed')
@@ -341,7 +342,7 @@ def main():
                                 print " %s in %.2f sec"% (test_result, single_testduration)
                     # We need to stop executing if yotta build fails
                     if not yotta_result:
-                        print "mbedgt: yotta returned %d" % yotta_ret
+                        print "mbedgt: yotta returned %d"% yotta_ret
                         test_exec_retcode = -1
                         exit(test_exec_retcode)
         else:
@@ -350,6 +351,7 @@ def main():
     if opts.verbose_test_configuration_only:
         print
         print "Example: execute 'mbedgt --target=TARGET_NAME' to start testing for TARGET_NAME target"
+        exit(0)
 
     # This tool is designed to work in CI
     # We want to return success codes based on tool actions,

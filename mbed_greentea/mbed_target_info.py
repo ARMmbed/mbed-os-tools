@@ -82,8 +82,9 @@ def get_mbed_target_from_current_dir():
     _stdout, _stderr, _ret = run_cli_process(cmd)
     if not _ret:
         for line in _stdout.splitlines():
-            if ',' in line:
-                result = line
+            m = re.search(' \d+\.\d+\.\d+$', line)
+            if m and len(m.group()):
+                result = line.split()[0]
                 break
     return result
 
