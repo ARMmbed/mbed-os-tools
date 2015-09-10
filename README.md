@@ -196,6 +196,17 @@ Please install:
 
 **Note:** if your OS is Windows, please follow the installation instructions [for the serial port driver](https://developer.mbed.org/handbook/Windows-serial-configuration).
 
+## Installation from PyPI (Python Package Index)
+
+mbed-ls module is redistributed via PyPI. We recommend you use the [application pip](https://pip.pypa.io/en/latest/installing.html#install-pip).
+
+To install mbed-ls from Python Package Index use command:
+```
+$ pip install mbed-ls
+```
+
+**Note:** Python 2.7.9 and later (on the Python 2 series), and Python 3.4 and later include pip by default, so you may have pip already.
+
 ## Installation from Python sources 
 
 Clone the mbed-host-tests GitHub repository:
@@ -263,9 +274,3 @@ Options:
 
 Example: mbedgt --auto --target frdm-k64f-gcc
 ```
-
-## Installation from PyPI (Python Package Index)
-
-In the near future the mbed-ls module will be redistributed via PyPI. We recommend you use the [application pip](https://pip.pypa.io/en/latest/installing.html#install-pip).
-
-**Note:** Python 2.7.9 and later (on the Python 2 series), and Python 3.4 and later include pip by default, so you may have pip already.
