@@ -198,11 +198,11 @@ Please install:
 
 ## Installation from PyPI (Python Package Index)
 
-mbed-ls module is redistributed via PyPI. We recommend you use the [application pip](https://pip.pypa.io/en/latest/installing.html#install-pip).
+mbed-host-tests module is redistributed via PyPI. We recommend you use the [application pip](https://pip.pypa.io/en/latest/installing.html#install-pip).
 
-To install mbed-ls from Python Package Index use command:
+To install mbed-host-tests from Python Package Index use command:
 ```
-$ pip install mbed-ls
+$ pip install mbed-host-tests
 ```
 
 **Note:** Python 2.7.9 and later (on the Python 2 series), and Python 3.4 and later include pip by default, so you may have pip already.
