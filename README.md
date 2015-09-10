@@ -23,6 +23,17 @@ mbedls provides these points of information for all connected boards at once in 
 
 **Tip:** Because we are all automation fanatics, the ```mbedls``` command will also output mbed-enabled auto-detection data in JSON format (see below).
 
+## Installation from PyPI (Python Package Index)
+
+mbed-ls module is redistributed via PyPI. We recommend you use the [application pip](https://pip.pypa.io/en/latest/installing.html#install-pip).
+
+To install mbed-ls from Python Package Index use command:
+```
+$ pip install mbed-ls
+```
+
+**Note:** Python 2.7.9 and later (on the Python 2 series), and Python 3.4 and later include pip by default, so you may have pip already.
+
 ## Installation from Python sources 
 
 **Prerequisites:** you need to have [Python 2.7.x](https://www.python.org/download/releases/2.7/) installed on your system.
