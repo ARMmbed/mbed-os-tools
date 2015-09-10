@@ -269,7 +269,7 @@ def main():
                         cmd.append('-d')
 
                     print "mbedgt: calling yotta to build your sources and tests: %s" % (' '.join(cmd))
-                    yotta_result = run_cli_command(cmd, shell=False, verbose=opts.verbose)
+                    yotta_result, yotta_ret = run_cli_command(cmd, shell=False, verbose=opts.verbose)
 
                     print "mbedgt: yotta build %s"% ('successful' if yotta_result else 'failed')
                     # Build phase will be followed by test execution for each target
@@ -341,7 +341,7 @@ def main():
                                 print " %s in %.2f sec"% (test_result, single_testduration)
                     # We need to stop executing if yotta build fails
                     if not yotta_result:
-                        print "mbedgt: yotta build failed!"
+                        print "mbedgt: yotta returned %d" % yotta_ret
                         test_exec_retcode = -1
                         exit(test_exec_retcode)
         else:

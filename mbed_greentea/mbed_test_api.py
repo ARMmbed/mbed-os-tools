@@ -312,9 +312,10 @@ def run_cli_command(cmd, shell=True, verbose=False):
     @param shell Shell command (e.g. ls, ps)
     @param verbose Verbose mode flag
 
-    @return Returns True if command was executed successfully else return False
+    @return Returns (True, 0) if command was executed successfully else return (False, error code)
     """
     result = True
+    ret = 0
     try:
         ret = call(cmd, shell=shell)
         if ret:
@@ -326,7 +327,7 @@ def run_cli_command(cmd, shell=True, verbose=False):
         if verbose:
             print "mbedgt: [ret=%d] Command: %s"% (int(ret), cmd)
             print str(e)
-    return result
+    return (result, ret)
 
 def run_cli_process(cmd):
     """! Runs command as a process and return stdout, stderr and ret code
