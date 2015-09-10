@@ -65,7 +65,18 @@ mbed-ls==0.1.5
 ```
 
 ## Installing Greentea
+### Installation from PyPI (Python Package Index)
 
+mbed-greentea module is redistributed via PyPI. We recommend you use the [application pip](https://pip.pypa.io/en/latest/installing.html#install-pip).
+
+To install mbed-greentea from Python Package Index use command:
+```
+$ pip install mbed-greentea
+```
+
+**Note:** Python 2.7.9 and later (on the Python 2 series), and Python 3.4 and later include pip by default, so you may have pip already.
+
+### Installation from Python sources
 To install the mbed test suite, first clone the `greentea` repository:
 
 ```
