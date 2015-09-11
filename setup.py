@@ -33,7 +33,7 @@ def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
 setup(name='mbed-ls',
-      version='0.1.18',
+      version='0.1.19',
       description=DESCRIPTION,
       author=OWNER_NAMES,
       author_email=OWNER_EMAILS,
