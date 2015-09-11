@@ -39,7 +39,10 @@ from mbed_greentea_log import gt_log
 from mbed_greentea_log import gt_bright
 from mbed_greentea_log import gt_log_tab
 from mbed_greentea_log import gt_log_err
-from mbed_greentea_log import gt_log_warn
+from mbed_greentea_dlm import GREENTEA_KETTLE_PATH
+from mbed_greentea_dlm import greentea_get_app_sem
+from mbed_greentea_dlm import greentea_update_kettle
+from mbed_greentea_dlm import greentea_clean_kettle
 
 
 try:
@@ -53,17 +56,7 @@ MBED_HOST_TESTS = 'mbed_host_tests' in sys.modules
 
 
 def main():
-    """! This is main CLI function with all command line parameters
-    @details This function also implements CLI workflow depending on CLI parameters inputed
-    @return This function doesn't return, it exits to environment with proper success code
-    """
-    if not MBED_LMTOOLS:
-        gt_log_err("error: mbed-ls proprietary module not installed")
-        exit(-1)
-
-    if not MBED_HOST_TESTS:
-        gt_log_err("error: mbed-host-tests proprietary module not installed")
-        exit(-1)
+    """ Closure for main_cli() function """
 
     parser = optparse.OptionParser()
 
@@ -116,6 +109,12 @@ def main():
                     default=False,
                     action="store_true",
                     help='List available binaries')
+
+    parser.add_option('', '--lock',
+                    dest='lock_by_target',
+                    default=False,
+                    action="store_true",
+                    help='Use simple resource locking mechanism to run multiple application instances')
 
     parser.add_option('', '--digest',
                     dest='digest_source',
@@ -172,17 +171,66 @@ def main():
 
     (opts, args) = parser.parse_args()
 
+    cli_ret = 0
+
+    if opts.lock_by_target:
+        # We are using Greentea proprietary locking meachnism to lock between platforms and targets
+        gt_log("using (experimental) simple locking mechaism")
+        gt_log_tab("kettle: %s"% GREENTEA_KETTLE_PATH)
+        gt_file_sem, gt_file_sem_name, gt_instance_uuid = greentea_get_app_sem()
+        with gt_file_sem:
+            greentea_update_kettle(gt_instance_uuid)
+            try:
+                cli_ret = main_cli(opts, args, gt_instance_uuid)
+            except KeyboardInterrupt:
+                greentea_clean_kettle(gt_instance_uuid)
+                gt_log_err("ctrl+c keyboard interrupt!")
+                exit(-2)    # Keyboard interrupt
+            except:
+                greentea_clean_kettle(gt_instance_uuid)
+                gt_log_err("Unexpected error:")
+                gt_log_tab(sys.exc_info()[0])
+                raise
+            greentea_clean_kettle(gt_instance_uuid)
+    else:
+        # Standard mode of operation
+        # Other instance must provide mutually exclusive access control to platforms and targets
+        try:
+            cli_ret = main_cli(opts, args)
+        except KeyboardInterrupt:
+            gt_log_err("ctrl+c keyboard interrupt!")
+            exit(-2)    # Keyboard interrupt
+        except:
+            gt_log_err("Unexpected error:")
+            gt_log_tab(sys.exc_info()[0])
+            raise
+    exit(cli_ret)
+
+def main_cli(opts, args, gt_instance_uuid=None):
+    """! This is main CLI function with all command line parameters
+    @details This function also implements CLI workflow depending on CLI parameters inputed
+    @return This function doesn't return, it exits to environment with proper success code
+    """
+
+    if not MBED_LMTOOLS:
+        gt_log_err("error: mbed-ls proprietary module not installed")
+        return (-1)
+
+    if not MBED_HOST_TESTS:
+        gt_log_err("error: mbed-host-tests proprietary module not installed")
+        return (-1)
+
     # List available test binaries (names, no extension)
     if opts.list_binaries:
         list_binaries_for_targets()
-        exit(0)
+        return (0)
 
     # Prints version and exits
     if opts.version:
         import pkg_resources  # part of setuptools
         version = pkg_resources.require("mbed-greentea")[0].version
         print version
-        exit(0)
+        return (0)
 
     # Capture alternative test console inputs, used e.g. in 'yotta test command'
     if opts.digest_source:
@@ -194,11 +242,12 @@ def main():
 
         single_test_result, single_test_output, single_testduration, single_timeout = host_test_result
         status = TEST_RESULTS.index(single_test_result) if single_test_result in TEST_RESULTS else -1
-        sys.exit(status)
+        return (status)
 
     # mbed-enabled devices auto-detection procedures
     mbeds = mbed_lstools.create()
     mbeds_list = mbeds.list_mbeds()
+    platform_list = mbeds.list_platforms_ext()
 
     current_target = get_mbed_target_from_current_dir()
 
@@ -217,9 +266,14 @@ def main():
             gt_bright('mbedgt -t <target>'),
             gt_bright('yotta target')
         ))
-        exit(-1)
+        return (-1)
 
     gt_log("detecting connected mbed-enabled devices... %s"% ("no devices detected" if not len(mbeds_list) else ""))
+    if mbeds_list:
+        gt_log("detected %d device%s"% (len(mbeds_list), 's' if len(mbeds_list) != 1 else ''))
+    else:
+        gt_log("no devices detected")
+
     list_of_targets = opts.list_of_targets.split(',') if opts.list_of_targets is not None else None
 
     test_report = {}    # Test report used to export to Junit, HTML etc...
@@ -237,6 +291,7 @@ def main():
         platform_text = gt_bright(mut['platform_name'])
         serial_text = gt_bright(mut['serial_port'])
         mount_text = gt_bright(mut['mount_point'])
+        platform_target_id = gt_bright(mut['target_id'])    # We can use it to do simple resource lock
 
         if not all([platform_text, serial_text, mount_text]):
             gt_log_err("can't detect all properties of the device!")
@@ -387,14 +442,14 @@ def main():
                     if not yotta_result:
                         gt_log_err("yotta returned %d"% yotta_ret)
                         test_exec_retcode = -1
-                        exit(test_exec_retcode)
+                        return (test_exec_retcode)
         else:
             gt_log_err("mbed classic target name '%s' is not in target database"% gt_bright(mut['platform_name']))
 
     if opts.verbose_test_configuration_only:
         print
         print "Example: execute 'mbedgt --target=TARGET_NAME' to start testing for TARGET_NAME target"
-        exit(0)
+        return (0)
 
     # This tool is designed to work in CI
     # We want to return success codes based on tool actions,
@@ -434,4 +489,4 @@ def main():
             gt_log("no target matching platforms were found!")
             test_exec_retcode += -100
 
-    exit(test_exec_retcode)
+    return (test_exec_retcode)
