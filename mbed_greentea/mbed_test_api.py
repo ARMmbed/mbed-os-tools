@@ -83,6 +83,7 @@ def run_host_test(image_path,
                   program_cycle_s=None,
                   digest_source=None,
                   json_test_cfg=None,
+                  max_failed_properties=5,
                   run_app=None):
     """! This function runs host test supervisor (executes mbedhtrun) and checks output from host test process.
     @return Tuple with test results, test output and test duration times
@@ -97,6 +98,7 @@ def run_host_test(image_path,
     @param copy_method Copy method type (name)
     @param program_cycle_s Wait after flashing delay (sec)
     @param json_test_cfg Additional test configuration file path passed to host tests in JSON format
+    @param max_failed_properties After how many unknown properties we will assume test is not ported
     @param run_app Run application mode flag (we run application and grab serial port data)
     @param digest_source if None mbedhtrun will be executed. If 'stdin',
                            stdin will be used via StdInObserver or file (if
@@ -263,10 +265,11 @@ def run_host_test(image_path,
         obs = ProcessObserver(proc)
 
     update_once_flag = {}   # Stores flags checking if some auto-parameter was already set
+    unknown_property_count = 0
     line = ''
     output = []
     start_time = time()
-    while (time() - start_time) < (2 * duration):
+    while (time() - start_time) < (duration):
         try:
             c = get_char_from_queue(obs)
         except:
@@ -278,6 +281,14 @@ def run_host_test(image_path,
             output.append(c)
             # Give the mbed under test a way to communicate the end of the test
             if c in ['\n', '\r']:
+
+                # Check for unknown property prints
+                # If there are too many we will stop test exeuction and assume test is not ported
+                if "HOST: Unknown property" in line:
+                    unknown_property_count += 1
+                    if unknown_property_count >= max_failed_properties:
+                        output.append('{{error}}')
+                        break
 
                 # Checking for auto-detection information from the test about MUT reset moment
                 if 'reset_target' not in update_once_flag and "HOST: Reset target..." in line:
@@ -303,6 +314,11 @@ def run_host_test(image_path,
                 line = ''
             else:
                 line += c
+
+    # We want to let the test suite know we've finished after we return from the loop
+    if '{end}' not in line:
+        output.append('{{end}}')
+
     end_time = time()
     testcase_duration = end_time - start_time   # Test case duration from reset to {end}
 
