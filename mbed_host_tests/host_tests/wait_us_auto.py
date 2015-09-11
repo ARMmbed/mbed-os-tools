@@ -59,7 +59,7 @@ class WaitusTest(BaseHostTest):
             deviation_ok = True if delta > 0 and deviation <= self.DEVIATION else False
             success_counter = success_counter+1 if deviation_ok else 0
             msg = "OK" if deviation_ok else "FAIL"
-            selftest.notify("%s in %.2f sec (%.2f) [%s]"% (c, delta, deviation, msg))
+            selftest.notify("%s in %+.2f sec (deviation from expected 1 sec: %+.2f) [%s]"% (c, delta, deviation, msg))
             start = time()
             if success_counter >= self.TICK_LOOP_SUCCESSFUL_COUNTS:
                 break
