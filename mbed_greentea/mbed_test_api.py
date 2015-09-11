@@ -85,9 +85,7 @@ def run_host_test(image_path,
                   json_test_cfg=None,
                   run_app=None):
     """! This function runs host test supervisor (executes mbedhtrun) and checks output from host test process.
-
     @return Tuple with test results, test output and test duration times
-
     @param image_path Path to binary file for flashing
     @param disk Currently mounted mbed-enabled devices disk (mount point)
     @param port Currently mounted mbed-enabled devices serial port (console)
@@ -196,9 +194,7 @@ def run_host_test(image_path,
 
     def get_test_result(output):
         """! Parse test 'output' data
-
         @details If test result not found returns by default TEST_RESULT_TIMEOUT value
-
         @return Returns found test result
         """
         result = TEST_RESULT_TIMEOUT
@@ -211,9 +207,7 @@ def run_host_test(image_path,
 
     def get_auto_property_value(property_name, line):
         """! Scans auto detection line from MUT and returns scanned parameter 'property_name'
-
         @details Host test case has to print additional properties for test to be set up
-
         @return Returns string or None if property search failed
         """
         result = None
@@ -329,10 +323,8 @@ def run_host_test(image_path,
 
 def run_cli_command(cmd, shell=True, verbose=False):
     """! Runs command from command line
-
     @param shell Shell command (e.g. ls, ps)
     @param verbose Verbose mode flag
-
     @return Returns (True, 0) if command was executed successfully else return (False, error code)
     """
     result = True
@@ -352,9 +344,7 @@ def run_cli_command(cmd, shell=True, verbose=False):
 
 def run_cli_process(cmd):
     """! Runs command as a process and return stdout, stderr and ret code
-
     @param cmd Command to execute
-
     @return Tuple of (stdout, stderr, returncode)
     """
     p = Popen(cmd, stdout=PIPE, stderr=PIPE)

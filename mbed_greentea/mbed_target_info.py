@@ -20,8 +20,8 @@ Author: Przemyslaw Wirkus <Przemyslaw.Wirkus@arm.com>
 import re
 from mbed_test_api import run_cli_process
 from mbed_greentea_log import gt_log
-from mbed_greentea_log import gt_log_tab
 from mbed_greentea_log import gt_bright
+from mbed_greentea_log import gt_log_tab
 
 
 TARGET_INFO_MAPPING = {

@@ -36,9 +36,10 @@ from mbed_target_info import get_mbed_clasic_target_info
 from mbed_target_info import get_mbed_supported_test
 from mbed_target_info import get_mbed_target_from_current_dir
 from mbed_greentea_log import gt_log
+from mbed_greentea_log import gt_bright
 from mbed_greentea_log import gt_log_tab
 from mbed_greentea_log import gt_log_err
-from mbed_greentea_log import gt_bright
+from mbed_greentea_log import gt_log_warn
 
 
 try:
@@ -80,6 +81,12 @@ def main():
                     default=False,
                     help="Only build repository and tests, skips actual test procedures (flashing etc.)")
 
+    parser.add_option("", "--skip-build",
+                    action="store_true",
+                    dest="skip_yotta_build",
+                    default=False,
+                    help="Skip calling 'yotta build' on this module")
+
     copy_methods_str = "Plugin support: " + ', '.join(mbed_host_tests.host_tests_plugins.get_plugin_caps('CopyMethod'))
     parser.add_option("-c", "--copy",
                     dest="copy_method",
@@ -116,7 +123,7 @@ def main():
 
     parser.add_option('', '--test-cfg',
                     dest='json_test_configuration',
-                    help='Pass to host test data about host test configuration')
+                    help='Pass to host test data with host test configuration')
 
     parser.add_option('', '--run',
                     dest='run_app',
@@ -230,6 +237,12 @@ def main():
         platform_text = gt_bright(mut['platform_name'])
         serial_text = gt_bright(mut['serial_port'])
         mount_text = gt_bright(mut['mount_point'])
+
+        if not all([platform_text, serial_text, mount_text]):
+            gt_log_err("can't detect all properties of the device!")
+            gt_log_tab("detected '%s', console at '%s', mounted at '%s'"% (platform_text, serial_text, mount_text))
+            continue
+
         gt_log_tab("detected '%s', console at '%s', mounted at '%s'"% (platform_text, serial_text, mount_text))
 
         # Check if mbed classic target name can be translated to yotta target name
@@ -289,14 +302,18 @@ def main():
                     elif opts.build_to_debug:
                         cmd.append('-d')
 
-                    gt_log("building your sources and tests with yotta...")
-                    gt_log_tab("calling yotta: %s"% " ".join(cmd))
-                    yotta_result, yotta_ret = run_cli_command(cmd, shell=False, verbose=opts.verbose)
-
-                    if yotta_result:
-                        gt_log("yotta build for target '%s' was successful"% gt_bright(yotta_target_name))
+                    if not opts.skip_yotta_build:
+                        gt_log("building your sources and tests with yotta...")
+                        gt_log_tab("calling yotta: %s"% " ".join(cmd))
+                        yotta_result, yotta_ret = run_cli_command(cmd, shell=False, verbose=opts.verbose)
+                        if yotta_result:
+                            gt_log("yotta build for target '%s' was successful"% gt_bright(yotta_target_name))
+                        else:
+                            gt_log_err("yotta build failed!")
                     else:
-                        gt_log_err("yotta build failed!")
+                        gt_log("skipping calling yotta (specified with --skip-build option)")
+                        yotta_result, yotta_ret = True, 0   # Skip build and assume 'yotta build' was successful
+
                     # Build phase will be followed by test execution for each target
                     if yotta_result and not opts.only_build_tests:
                         binary_type = mut_info['properties']['binary_type']

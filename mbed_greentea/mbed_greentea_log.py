@@ -42,6 +42,7 @@ else:
     GREEN  = colorama.Fore.GREEN
     RED    = colorama.Fore.RED
     BLUE   = colorama.Fore.BLUE
+    YELLOW = colorama.Fore.YELLOW
     RESET  = colorama.Style.RESET_ALL
 
 
@@ -73,8 +74,20 @@ def gt_log_err(text, print_text=True):
         print result
     return result
 
+def gt_log_warn(text, print_text=True):
+    """! Prints error log message (in color if colorama is installed)
+    @param print_text Forces log function to print on screen (not only return message)
+    @return Returns string with message
+    """
+    result = YELLOW + "mbedgt: " + RESET + text
+    if print_text:
+        print result
+    return result
+
 def gt_bright(text):
     """! Created bright text using colorama
     @return Returns string with additional BRIGHT color codes
     """
+    if not text:
+        text = ''
     return BLUE + BRIGHT + text + RESET
