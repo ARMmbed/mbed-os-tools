@@ -35,7 +35,6 @@ def read(fname):
 setup(name='mbed-ls',
       version='0.1.18',
       description=DESCRIPTION,
-      long_description=read('README.md'),
       author=OWNER_NAMES,
       author_email=OWNER_EMAILS,
       maintainer=OWNER_NAMES,
