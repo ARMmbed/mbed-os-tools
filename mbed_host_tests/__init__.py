@@ -257,17 +257,18 @@ class DefaultTestSelector(DefaultTestSelectorBase):
         try:
             CONFIG = self.detect_test_config(verbose=True) # print CONFIG
 
+            result = None
             if "host_test_name" in CONFIG:
                 if is_host_test(CONFIG["host_test_name"]):
                     #self.notify("HOST: CONFIG['host_test_name'] is '%s'" % CONFIG["host_test_name"])
                     self.test_supervisor = get_host_test(CONFIG["host_test_name"])
+                    result = self.test_supervisor.test(self)    #result = self.test()
                 else:
                     self.notify("HOST: Error! Unknown host test name '%s' (use 'mbedhtrun --list' to verify)!"% CONFIG["host_test_name"])
                     self.print_result(self.RESULT_ERROR)
             else:
                 self.notify("HOST: Error! No host test name defined in preamble")
                 self.print_result(self.RESULT_ERROR)
-            result = self.test_supervisor.test(self)    #result = self.test()
 
             if result is not None:
                 self.print_result(result)
