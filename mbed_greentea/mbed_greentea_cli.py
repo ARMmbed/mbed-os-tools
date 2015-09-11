@@ -22,6 +22,7 @@ Author: Przemyslaw Wirkus <Przemyslaw.Wirkus@arm.com>
 import os
 import sys
 import optparse
+from time import time
 
 from mbed_test_api import run_host_test
 from mbed_test_api import run_cli_command
@@ -173,6 +174,7 @@ def main():
 
     cli_ret = 0
 
+    start = time()
     if opts.lock_by_target:
         # We are using Greentea proprietary locking meachnism to lock between platforms and targets
         gt_log("using (experimental) simple locking mechaism")
@@ -204,6 +206,8 @@ def main():
             gt_log_err("Unexpected error:")
             gt_log_tab(sys.exc_info()[0])
             raise
+
+    print "Completed in %.2f sec"% (time() - start)
     exit(cli_ret)
 
 def main_cli(opts, args, gt_instance_uuid=None):
