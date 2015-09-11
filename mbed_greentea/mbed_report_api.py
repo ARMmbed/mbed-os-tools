@@ -65,6 +65,7 @@ def exporter_json(test_result_ext, test_suite_properties=None):
 def exporter_text(test_result_ext, test_suite_properties=None):
     """! Exports test results to text formatted output
     @details This is a human friendly format
+    @return Tuple with table of results and result quantity summary string
     """
     from prettytable import PrettyTable
     #TODO: export to text, preferably to PrettyTable (SQL like) format
@@ -74,11 +75,20 @@ def exporter_text(test_result_ext, test_suite_properties=None):
         pt.align[col] = "l"
     pt.padding_width = 1 # One space between column edges and contents (default)
 
+    result_dict = {}    # Used to print mbed 2.0 test result like short summary
+
     for target_name in test_result_ext:
         test_results = test_result_ext[target_name]
         row = []
         for test_name in test_results:
             test = test_results[test_name]
+
+            # Grab quantity of each test result
+            if test['single_test_result'] in result_dict:
+                result_dict[test['single_test_result']] += 1
+            else:
+                result_dict[test['single_test_result']] = 1
+
             row.append(target_name)
             row.append(test['platform_name'])
             row.append(test_name)
@@ -87,4 +97,7 @@ def exporter_text(test_result_ext, test_suite_properties=None):
             row.append(test['copy_method'])
             pt.add_row(row)
             row = []
-    return pt.get_string()
+
+    result_pt = pt.get_string()
+    result_res = ' / '.join(['%s %s' % (value, key) for (key, value) in {k: v for k, v in result_dict.items() if v != 0}.iteritems()])
+    return result_pt, result_res

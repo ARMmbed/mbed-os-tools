@@ -281,18 +281,21 @@ def main():
                     gt_log("calling yotta to build your sources and tests: %s"% ' '.join(cmd))
                     yotta_result, yotta_ret = run_cli_command(cmd, shell=False, verbose=opts.verbose)
 
-                    gt_log_err("yotta build %s"% ('is successful' if yotta_result else 'failed!'))
+                    if yotta_result:
+                        gt_log("yotta build for target '%s' was successful"% gt_bright(yotta_target_name))
+                    else:
+                        gt_log_err("yotta build failed!")
                     # Build phase will be followed by test execution for each target
                     if yotta_result and not opts.only_build_tests:
                         binary_type = mut_info['properties']['binary_type']
                         ctest_test_list = load_ctest_testsuite(os.path.join('.', 'build', yotta_target_name),
                             binary_type=binary_type)
 
-                        gt_log("running tests for '%s' target" % gt_bright(yotta_target_name))
+                        gt_log("running tests for target '%s'" % gt_bright(yotta_target_name))
                         test_list = None
                         if opts.test_by_names:
                             test_list = opts.test_by_names.lower().split(',')
-                            gt_log("test case filter: %s (specified with -n option)" % ', '.join(["'%s'"% t for t in test_list]))
+                            gt_log("test case filter: %s (specified with -n option)"% ', '.join(["'%s'"% gt_bright(t) for t in test_list]))
 
                             for test_n in test_list:
                                 if test_n not in ctest_test_list:
@@ -374,7 +377,7 @@ def main():
                 f.write(junit_report)
         if opts.report_text_file_name:
             gt_log("exporting to junit '%s'..."% gt_bright(opts.report_text_file_name))
-            text_report = exporter_text(test_report)
+            text_report, text_results = exporter_text(test_report)
             with open(opts.report_text_file_name, 'w') as f:
                 f.write(text_report)
         # Reports (to console)
@@ -385,7 +388,10 @@ def main():
         else:
             # Final summary
             gt_log("test report:")
-            print exporter_text(test_report)
+            text_report, text_results = exporter_text(test_report)
+            print text_report
+            print
+            print text_results
 
         # This flag guards 'build only' so we expect only yotta errors
         if test_platforms_match == 0:
