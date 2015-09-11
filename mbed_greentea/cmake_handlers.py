@@ -79,4 +79,4 @@ def list_binaries_for_targets(build_dir='./build'):
             for test in test_list:
                 gt_log_tab("test '%s'"% test)
     print
-    print "Example: execute 'mbedgt --target=TARGET_NAME -n TEST_NAME' to run TEST_NAME test only"
+    print "Example: execute 'mbedgt -t TARGET_NAME -n TEST_NAME' to run test TEST_NAME for target TARGET_NAME"
