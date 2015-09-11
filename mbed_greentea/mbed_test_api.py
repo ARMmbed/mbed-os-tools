@@ -266,10 +266,11 @@ def run_host_test(image_path,
 
     update_once_flag = {}   # Stores flags checking if some auto-parameter was already set
     unknown_property_count = 0
+    total_duration = 20     # This for flashing, reset and other serial port operations
     line = ''
     output = []
     start_time = time()
-    while (time() - start_time) < (duration):
+    while (time() - start_time) < (total_duration):
         try:
             c = get_char_from_queue(obs)
         except:
@@ -295,13 +296,14 @@ def run_host_test(image_path,
                     # We will update this marker only once to prevent multiple time resets
                     update_once_flag['reset_target'] = True
                     start_time = time()
+                    total_duration = duration   # After reset we gonna use real test case duration
 
                 # Checking for auto-detection information from the test about timeout
                 auto_timeout_val = get_auto_property_value('timeout', line)
                 if 'timeout' not in update_once_flag and auto_timeout_val is not None:
                     # We will update this marker only once to prevent multiple time resets
                     update_once_flag['timeout'] = True
-                    duration = int(auto_timeout_val)
+                    total_duration = int(auto_timeout_val)
 
                 # Detect mbed assert:
                 if 'mbed assertation failed: ' in line:
@@ -315,12 +317,8 @@ def run_host_test(image_path,
             else:
                 line += c
 
-    # We want to let the test suite know we've finished after we return from the loop
-    if '{end}' not in line:
+    if not '{end}' in line:
         output.append('{{end}}')
-
-    end_time = time()
-    testcase_duration = end_time - start_time   # Test case duration from reset to {end}
 
     c = get_char_from_queue(obs)
 
@@ -332,6 +330,10 @@ def run_host_test(image_path,
 
     # Stop test process
     obs.stop()
+
+    end_time = time()
+    testcase_duration = end_time - start_time   # Test case duration from reset to {end}
+
     if verbose:
         gt_log("mbed-host-test-runner: stopped")
     result = get_test_result(output)

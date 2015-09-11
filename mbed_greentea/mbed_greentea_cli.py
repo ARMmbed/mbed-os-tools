@@ -207,6 +207,7 @@ def main():
             gt_log_tab(sys.exc_info()[0])
             raise
 
+
     print "Completed in %.2f sec"% (time() - start)
     exit(cli_ret)
 
