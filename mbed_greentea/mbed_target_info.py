@@ -20,6 +20,7 @@ Author: Przemyslaw Wirkus <Przemyslaw.Wirkus@arm.com>
 import re
 from mbed_test_api import run_cli_process
 from mbed_greentea_log import gt_log
+from mbed_greentea_log import gt_log_tab
 from mbed_greentea_log import gt_bright
 
 
@@ -75,12 +76,12 @@ NOT_SUPPORTED_TESTS = [
 
 def get_mbed_target_from_current_dir():
     """! Function uses yotta target command to check current target
-
     @return Returns current target or None if target not found (e.g. not yotta package)
     """
     result = None
     cmd = ['yotta', 'target']
-    gt_log("yotta search for existing mbed-target")
+    gt_log("checking yotta target in current directory")
+    gt_log_tab("calling yotta: %s"% " ".join(cmd))
     _stdout, _stderr, _ret = run_cli_process(cmd)
     if not _ret:
         for line in _stdout.splitlines():
@@ -103,7 +104,7 @@ def get_mbed_targets_from_yotta(mbed_classic_name):
     result = []
     cmd = ['yotta', 'search', '-k', 'mbed-target:%s'% mbed_classic_name.lower().strip(), 'target']
     gt_log("yotta search for mbed-target '%s'"% gt_bright(mbed_classic_name.lower().strip()))
-    print "\tcalling yotta: %s"% " ".join(cmd)
+    gt_log_tab("calling yotta: %s"% " ".join(cmd))
     _stdout, _stderr, _ret = run_cli_process(cmd)
     if not _ret:
         for line in _stdout.splitlines():
@@ -111,7 +112,7 @@ def get_mbed_targets_from_yotta(mbed_classic_name):
             if m and len(m.groups()):
                 yotta_target_name = m.groups()[0]
                 result.append(yotta_target_name)
-                print "\tfound target '%s'" % gt_bright(yotta_target_name)
+                gt_log_tab("found target '%s'" % gt_bright(yotta_target_name))
     return result
 
 def add_target_info_mapping(mbed_classic_name):
@@ -141,7 +142,7 @@ def add_target_info_mapping(mbed_classic_name):
         # Check if any of yotta targets is new to TARGET_INFO_MAPPING
         for new_yt_target in yotta_target_search:
             if new_yt_target not in mbeds_yt_targets:
-                print "\tdiscovered extra target '%s'" % new_yt_target
+                gt_log_tab("discovered extra target '%s'"% new_yt_target)
                 # We want to at least guess toolchain type by target's name sufix
                 mbed_toolchain = 'UNKNOWN'
                 for toolchain_sufix in TARGET_TOOLCAHINS:

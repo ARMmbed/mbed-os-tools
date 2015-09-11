@@ -24,6 +24,11 @@ from Queue import Queue, Empty
 from threading import Thread
 from subprocess import call, Popen, PIPE
 
+from mbed_greentea_log import gt_log
+from mbed_greentea_log import gt_log_tab
+from mbed_greentea_log import gt_log_err
+from mbed_greentea_log import gt_bright
+
 
 # Return codes for test script
 TEST_RESULT_OK = "OK"
@@ -66,10 +71,19 @@ TEST_RESULT_MAPPING = {"success" : TEST_RESULT_OK,
 
 RE_DETECT_TESTCASE_RESULT = re.compile("\\{(" + "|".join(TEST_RESULT_MAPPING.keys()) + ")\\}")
 
-def run_host_test(image_path, disk, port, duration=10,
-                  micro=None, reset=None, reset_tout=None,
-                  verbose=False, copy_method=None, program_cycle_s=None,
-                  digest_source=None, json_test_cfg=None, run_app=None):
+def run_host_test(image_path,
+                  disk,
+                  port,
+                  duration=10,
+                  micro=None,
+                  reset=None,
+                  reset_tout=None,
+                  verbose=False,
+                  copy_method=None,
+                  program_cycle_s=None,
+                  digest_source=None,
+                  json_test_cfg=None,
+                  run_app=None):
     """! This function runs host test supervisor (executes mbedhtrun) and checks output from host test process.
 
     @return Tuple with test results, test output and test duration times
@@ -86,7 +100,7 @@ def run_host_test(image_path, disk, port, duration=10,
     @param program_cycle_s Wait after flashing delay (sec)
     @param json_test_cfg Additional test configuration file path passed to host tests in JSON format
     @param run_app Run application mode flag (we run application and grab serial port data)
-    @param digest_source Ff None mbedhtrun will be executed. If 'stdin',
+    @param digest_source if None mbedhtrun will be executed. If 'stdin',
                            stdin will be used via StdInObserver or file (if
                            file name was given as switch option)
     """
@@ -110,7 +124,7 @@ def run_host_test(image_path, disk, port, duration=10,
             self.active = False
             try:
                 self.proc.terminate()
-            except Exception, _:
+            except Exception:
                 pass
 
     class FileObserver(Thread):
@@ -134,7 +148,7 @@ def run_host_test(image_path, disk, port, duration=10,
             self.active = False
             try:
                 self.proc.terminate()
-            except Exception, _:
+            except Exception:
                 pass
 
     class ProcessObserver(Thread):
@@ -157,7 +171,7 @@ def run_host_test(image_path, disk, port, duration=10,
             self.active = False
             try:
                 self.proc.terminate()
-            except Exception, _:
+            except Exception:
                 pass
 
     def get_char_from_queue(obs):
@@ -211,6 +225,13 @@ def run_host_test(image_path, disk, port, duration=10,
 
     # Detect from where input should be taken, if no --digest switch is specified
     # normal test execution can be performed
+
+    if verbose:
+        gt_log("selecting test case observer...")
+        if digest_source:
+            gt_log_tab("selected digest source: %s"% digest_source)
+
+    # Select who will digest test case serial port data
     if digest_source == 'stdin':
         # When we want to scan stdin for test results
         obs = StdInObserver()
@@ -222,7 +243,7 @@ def run_host_test(image_path, disk, port, duration=10,
         cmd = ["mbedhtrun",
                 '-d', disk,
                 '-p', port,
-                '-f', '"%s"' % image_path,
+                '-f', '"%s"'% image_path,
                 ]
 
         # Add extra parameters to host_test
@@ -242,8 +263,8 @@ def run_host_test(image_path, disk, port, duration=10,
             cmd += ["--run"]    # -f stores binary name!
 
         if verbose:
-            print "mbed-host-test-runner: %s" % (" ".join(cmd))
-
+            gt_log_tab("calling mbedhtrun: %s"% " ".join(cmd))
+            gt_log("mbed-host-test-runner: started")
         proc = Popen(cmd, stdout=PIPE)
         obs = ProcessObserver(proc)
 
@@ -302,7 +323,7 @@ def run_host_test(image_path, disk, port, duration=10,
     # Stop test process
     obs.stop()
     if verbose:
-        print "mbed-host-test-runner: Stopped"
+        gt_log("mbed-host-test-runner: stopped")
     result = get_test_result(output)
     return (result, "".join(output), testcase_duration, duration)
 

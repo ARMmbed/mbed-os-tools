@@ -36,6 +36,7 @@ from mbed_target_info import get_mbed_clasic_target_info
 from mbed_target_info import get_mbed_supported_test
 from mbed_target_info import get_mbed_target_from_current_dir
 from mbed_greentea_log import gt_log
+from mbed_greentea_log import gt_log_tab
 from mbed_greentea_log import gt_log_err
 from mbed_greentea_log import gt_bright
 
@@ -178,9 +179,12 @@ def main():
 
     # Capture alternative test console inputs, used e.g. in 'yotta test command'
     if opts.digest_source:
-        host_test_result = run_host_test(image_path=None, disk=None, port=None,
-                                    digest_source=opts.digest_source,
-                                    verbose=opts.verbose_test_result_only)
+        host_test_result = run_host_test(image_path=None,
+                                         disk=None,
+                                         port=None,
+                                         digest_source=opts.digest_source,
+                                         verbose=opts.verbose_test_result_only)
+
         single_test_result, single_test_output, single_testduration, single_timeout = host_test_result
         status = TEST_RESULTS.index(single_test_result) if single_test_result in TEST_RESULTS else -1
         sys.exit(status)
@@ -190,8 +194,11 @@ def main():
     mbeds_list = mbeds.list_mbeds()
 
     current_target = get_mbed_target_from_current_dir()
-    current_target_text = current_target if current_target is not None else 'not set'
-    gt_log("yotta target in current directory is set to '%s'"% gt_bright(current_target_text))
+
+    if current_target:
+        gt_log("yotta target in current directory is set to '%s'"% gt_bright(current_target))
+    else:
+        gt_log("yotta target in current directory is not set")
 
     if opts.list_of_targets is None:
         if current_target is not None:
@@ -212,7 +219,7 @@ def main():
 
     if opts.list_of_targets is None:
         gt_log("assuming default target as '%s'"% gt_bright(current_target))
-        print "\treason: no --target switch set"
+        gt_log_tab("reason: no --target switch set")
         list_of_targets = [current_target]
 
     test_exec_retcode = 0       # Decrement this value each time test case result is not 'OK'
@@ -220,9 +227,10 @@ def main():
     target_platforms_match = 0  # Count how many platforms were actually tested with current settings
 
     for mut in mbeds_list:
-        print "\tdetected '%s', console at '%s', mounted at '%s'"% (gt_bright(mut['platform_name']),
-            gt_bright(mut['serial_port']),
-            gt_bright(mut['mount_point']))
+        platform_text = gt_bright(mut['platform_name'])
+        serial_text = gt_bright(mut['serial_port'])
+        mount_text = gt_bright(mut['mount_point'])
+        gt_log_tab("detected '%s', console at '%s', mounted at '%s'"% (platform_text, serial_text, mount_text))
 
         # Check if mbed classic target name can be translated to yotta target name
         gt_log("scan available targets for '%s' platform..."% gt_bright(mut['platform_name']))
@@ -251,14 +259,17 @@ def main():
                     verbose = opts.verbose_test_result_only
 
                     test_platforms_match += 1
-                    host_test_result = run_host_test(opts.run_app, disk, port,
-                                                micro=micro,
-                                                copy_method=copy_method,
-                                                program_cycle_s=program_cycle_s,
-                                                digest_source=opts.digest_source,
-                                                json_test_cfg=opts.json_test_configuration,
-                                                run_app=opts.run_app,
-                                                verbose=True)
+                    host_test_result = run_host_test(opts.run_app,
+                                                     disk,
+                                                     port,
+                                                     micro=micro,
+                                                     copy_method=copy_method,
+                                                     program_cycle_s=program_cycle_s,
+                                                     digest_source=opts.digest_source,
+                                                     json_test_cfg=opts.json_test_configuration,
+                                                     run_app=opts.run_app,
+                                                     verbose=True)
+
                     single_test_result, single_test_output, single_testduration, single_timeout = host_test_result
                     status = TEST_RESULTS.index(single_test_result) if single_test_result in TEST_RESULTS else -1
                     if single_test_result != TEST_RESULT_OK:
@@ -278,7 +289,8 @@ def main():
                     elif opts.build_to_debug:
                         cmd.append('-d')
 
-                    gt_log("calling yotta to build your sources and tests: %s"% ' '.join(cmd))
+                    gt_log("building your sources and tests with yotta...")
+                    gt_log_tab("calling yotta: %s"% " ".join(cmd))
                     yotta_result, yotta_ret = run_cli_command(cmd, shell=False, verbose=opts.verbose)
 
                     if yotta_result:
@@ -291,7 +303,6 @@ def main():
                         ctest_test_list = load_ctest_testsuite(os.path.join('.', 'build', yotta_target_name),
                             binary_type=binary_type)
 
-                        gt_log("running tests for target '%s'" % gt_bright(yotta_target_name))
                         test_list = None
                         if opts.test_by_names:
                             test_list = opts.test_by_names.lower().split(',')
@@ -299,8 +310,9 @@ def main():
 
                             for test_n in test_list:
                                 if test_n not in ctest_test_list:
-                                    print "\ttest name '%s' not found (specified with -n option)"% gt_bright(test_n)
+                                    gt_log_tab("test name '%s' not found (specified with -n option)"% gt_bright(test_n))
 
+                        gt_log("running tests for target '%s'" % gt_bright(yotta_target_name))
                         for test_bin, image_path in ctest_test_list.iteritems():
                             test_result = 'SKIPPED'
                             # Skip test not mentioned in -n option
@@ -317,14 +329,17 @@ def main():
                                 verbose = opts.verbose_test_result_only
 
                                 test_platforms_match += 1
-                                print "\trunning host test..."
-                                host_test_result = run_host_test(image_path, disk, port,
-                                    micro=micro,
-                                    copy_method=copy_method,
-                                    program_cycle_s=program_cycle_s,
-                                    digest_source=opts.digest_source,
-                                    json_test_cfg=opts.json_test_configuration,
-                                    verbose=verbose)
+                                gt_log_tab("running host test...")
+                                host_test_result = run_host_test(image_path,
+                                                                 disk,
+                                                                 port,
+                                                                 micro=micro,
+                                                                 copy_method=copy_method,
+                                                                 program_cycle_s=program_cycle_s,
+                                                                 digest_source=opts.digest_source,
+                                                                 json_test_cfg=opts.json_test_configuration,
+                                                                 verbose=verbose)
+
                                 single_test_result, single_test_output, single_testduration, single_timeout = host_test_result
                                 test_result = single_test_result
                                 if single_test_result != TEST_RESULT_OK:
@@ -346,12 +361,11 @@ def main():
                                 if single_test_result != 'OK' and not verbose and opts.report_fails:
                                     # In some cases we want to print console to see why test failed
                                     # even if we are not in verbose mode
-                                    print "\ttest failed, reporting console output (specified with --report-fails option)"
+                                    gt_log_tab("test failed, reporting console output (specified with --report-fails option)")
                                     print
                                     print single_test_output
 
-                                print "\ttest '%s' %s"% (test_bin, '.' * (80 - len(test_bin))),
-                                print " %s in %.2f sec"% (test_result, single_testduration)
+                                gt_log_tab("test '%s' %s %s in %.2f sec"% (test_bin, '.' * (80 - len(test_bin)), test_result, single_testduration))
                     # We need to stop executing if yotta build fails
                     if not yotta_result:
                         gt_log_err("yotta returned %d"% yotta_ret)
@@ -391,7 +405,7 @@ def main():
             text_report, text_results = exporter_text(test_report)
             print text_report
             print
-            print text_results
+            print "Result: " + text_results
 
         # This flag guards 'build only' so we expect only yotta errors
         if test_platforms_match == 0:

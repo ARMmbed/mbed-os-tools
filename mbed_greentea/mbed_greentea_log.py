@@ -46,7 +46,7 @@ else:
 
 
 def gt_log(text, print_text=True):
-    """! Prints standard log messgae (in color if colorama is installed)
+    """! Prints standard log message (in color if colorama is installed)
     @param print_text Forces log function to print on screen (not only return message)
     @return Returns string with message
     """
@@ -55,8 +55,16 @@ def gt_log(text, print_text=True):
         print result
     return result
 
+def gt_log_tab(text):
+    """! Prints standard log message with one (1) tab margin on the left
+    @return Returns string with message
+    """
+    result = "\t" + text
+    print result
+    return result
+
 def gt_log_err(text, print_text=True):
-    """! Prints error log messgae (in color if colorama is installed)
+    """! Prints error log message (in color if colorama is installed)
     @param print_text Forces log function to print on screen (not only return message)
     @return Returns string with message
     """
