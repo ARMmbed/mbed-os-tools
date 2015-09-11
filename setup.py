@@ -55,4 +55,5 @@ setup(name='mbed-greentea',
         "PySerial>=2.7",
         "mbed-host-tests>=0.1.9",
         "mbed-ls>=0.1.17", 
-        "junit-xml>=1.4"])
+        "junit-xml>=1.4",
+        "colorama>=0.3,<0.4"])

@@ -21,12 +21,12 @@ import re
 import os
 import os.path
 
+from mbed_greentea_log import gt_log
+
 
 def load_ctest_testsuite(link_target, binary_type='.bin', verbose=False):
     """! Loads CMake.CTest formatted data about tests from test directory
-
     @return Dictionary of { test_case : test_case_path } pairs
-
     @details Example path with CTestTestFile.cmake:
              c:/temp/xxx/mbed-sdk-private/build/frdm-k64f-gcc/test/
 
@@ -65,12 +65,11 @@ def load_ctest_testsuite(link_target, binary_type='.bin', verbose=False):
 
 def list_binaries_for_targets(build_dir='./build'):
     """! Prints tests in target directories, only if tests exist.
-    
     @details Skips empty / no tests for target directories.
     """
     dir = build_dir
     sub_dirs = [os.path.join(dir, o) for o in os.listdir(dir) if os.path.isdir(os.path.join(dir, o))]
-    print "mbedgt: available tests for built targets"
+    gt_log("available tests for built targets")
     print "\tlocation: '%s'"% (os.path.abspath(build_dir))
     for sub_dir in sub_dirs:
         test_list = load_ctest_testsuite(sub_dir, binary_type='')

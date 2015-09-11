@@ -20,9 +20,7 @@ Author: Przemyslaw Wirkus <Przemyslaw.wirkus@arm.com>
 
 def exporter_junit(test_result_ext, test_suite_properties=None):
     """! Export test results in JUnit XML compliant format
-
     @details This function will import junit_xml library to perform report conversion
-
     @return String containing Junit XML formatted test result output
     """
     from junit_xml import TestSuite, TestCase
@@ -58,7 +56,6 @@ def exporter_junit(test_result_ext, test_suite_properties=None):
 
 def exporter_json(test_result_ext, test_suite_properties=None):
     """! Exports test results to indented JSON format
-
     @details This is a machine friendly format
     """
     import json
@@ -67,7 +64,6 @@ def exporter_json(test_result_ext, test_suite_properties=None):
 
 def exporter_text(test_result_ext, test_suite_properties=None):
     """! Exports test results to text formatted output
-
     @details This is a human friendly format
     """
     from prettytable import PrettyTable

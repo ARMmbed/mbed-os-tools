@@ -19,6 +19,8 @@ Author: Przemyslaw Wirkus <Przemyslaw.Wirkus@arm.com>
 
 import re
 from mbed_test_api import run_cli_process
+from mbed_greentea_log import gt_log
+from mbed_greentea_log import gt_bright
 
 
 TARGET_INFO_MAPPING = {
@@ -78,7 +80,7 @@ def get_mbed_target_from_current_dir():
     """
     result = None
     cmd = ['yotta', 'target']
-    print "mbedgt: yotta search for existing mbed-target"
+    gt_log("yotta search for existing mbed-target")
     _stdout, _stderr, _ret = run_cli_process(cmd)
     if not _ret:
         for line in _stdout.splitlines():
@@ -90,9 +92,7 @@ def get_mbed_target_from_current_dir():
 
 def get_mbed_targets_from_yotta(mbed_classic_name):
     """! Function is using 'yotta search' command to fetch matching mbed device target's name
-
     @return Function returns list of possible targets or empty list if value not found
-
     @details Example:
              $ yt search -k mbed-target:k64f target
              frdm-k64f-gcc 0.0.16: Official mbed build target for the mbed frdm-k64f development board.
@@ -101,8 +101,8 @@ def get_mbed_targets_from_yotta(mbed_classic_name):
              Note: Function prints on console
     """
     result = []
-    cmd = ['yotta', 'search', '-k', 'mbed-target:%s' % mbed_classic_name.lower().strip(), 'target']
-    print "mbedgt: yotta search for mbed-target:%s" % mbed_classic_name.lower().strip()
+    cmd = ['yotta', 'search', '-k', 'mbed-target:%s'% mbed_classic_name.lower().strip(), 'target']
+    gt_log("yotta search for mbed-target '%s'"% gt_bright(mbed_classic_name.lower().strip()))
     _stdout, _stderr, _ret = run_cli_process(cmd)
     if not _ret:
         for line in _stdout.splitlines():
@@ -110,14 +110,12 @@ def get_mbed_targets_from_yotta(mbed_classic_name):
             if m and len(m.groups()):
                 yotta_target_name = m.groups()[0]
                 result.append(yotta_target_name)
-                print "\tfound target '%s'" % yotta_target_name
+                print "\tfound target '%s'" % gt_bright(yotta_target_name)
     return result
 
 def add_target_info_mapping(mbed_classic_name):
     """! Adds more target information to TARGET_INFO_MAPPING by searching in yotta registry
-
     @return Returns TARGET_INFO_MAPPING updated with new targets
-
     @details Note: function mutates TARGET_INFO_MAPPING
     """
     yotta_target_search = get_mbed_targets_from_yotta(mbed_classic_name)
@@ -158,11 +156,8 @@ def add_target_info_mapping(mbed_classic_name):
 
 def get_mbed_clasic_target_info(mbed_classic_name):
     """! Function resolves meta-data information about target given as mbed classic name.
-
     @param mbed_classic_name Mbed classic (mbed 2.0) name e.g. K64F, LPC1768 etc.
-
     @details Function first updated TARGET_INFO_MAPPING structure and later checks if mbed classic name is available in mapping structure
-
     @return Returns information about yotta target for specific toolchain
     """
     TARGET_INFO_MAPPING = add_target_info_mapping(mbed_classic_name)
@@ -170,9 +165,7 @@ def get_mbed_clasic_target_info(mbed_classic_name):
 
 def get_mbed_supported_test(mbed_test_case_name):
     """! Checks if given test case name is supported / automated
-
     @param mbed_test_case_name Name of the test case
-
     @return Returns true if test case name from mbed SDK can be automated with mbed-greentea
     """
     return mbed_test_case_name not in NOT_SUPPORTED_TESTS
