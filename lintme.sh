@@ -1,2 +1,2 @@
 #!/bin/sh
-pylint --rcfile pylintrc mbed_greentea -r n
+pylint --rcfile pylintrc -r n mbed_greentea
