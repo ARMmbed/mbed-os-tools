@@ -26,24 +26,24 @@ except:
 
 COLORAMA = 'colorama' in sys.modules
 
-DIM    = ''
+DIM = ''
 BRIGHT = ''
-GREEN  = ''
-RED    = ''
-BLUE   = ''
-RESET  = ''
+GREEN = ''
+RED = ''
+BLUE = ''
+RESET = ''
 
 if not COLORAMA:
     print "mbedgt: colorful console output is disabled"
 else:
     colorama.init()
-    DIM    = colorama.Style.DIM
+    DIM = colorama.Style.DIM
     BRIGHT = colorama.Style.BRIGHT
-    GREEN  = colorama.Fore.GREEN
-    RED    = colorama.Fore.RED
-    BLUE   = colorama.Fore.BLUE
+    GREEN = colorama.Fore.GREEN
+    RED = colorama.Fore.RED
+    BLUE = colorama.Fore.BLUE
     YELLOW = colorama.Fore.YELLOW
-    RESET  = colorama.Style.RESET_ALL
+    RESET = colorama.Style.RESET_ALL
 
 
 def gt_log(text, print_text=True):
