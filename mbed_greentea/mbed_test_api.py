@@ -202,7 +202,7 @@ def run_host_test(image_path,
         result = TEST_RESULT_TIMEOUT
         for line in "".join(output).splitlines():
             search_result = RE_DETECT_TESTCASE_RESULT.search(line)
-            if search_result and len(search_result.groups()):
+            if search_result and search_result.groups():
                 result = TEST_RESULT_MAPPING[search_result.groups(0)[0]]
                 break
         return result
@@ -264,6 +264,7 @@ def run_host_test(image_path,
         proc = Popen(cmd, stdout=PIPE)
         obs = ProcessObserver(proc)
 
+    result = None
     update_once_flag = {}   # Stores flags checking if some auto-parameter was already set
     unknown_property_count = 0
     total_duration = 20     # This for flashing, reset and other serial port operations
@@ -316,6 +317,8 @@ def run_host_test(image_path,
                 line = ''
             else:
                 line += c
+    else:
+        result = TEST_RESULT_TIMEOUT
 
     if not '{end}' in line:
         output.append('{{end}}')
@@ -336,7 +339,10 @@ def run_host_test(image_path,
 
     if verbose:
         gt_log("mbed-host-test-runner: stopped")
-    result = get_test_result(output)
+    if not result:
+        result = get_test_result(output)
+    if verbose:
+        gt_log("mbed-host-test-runner: returned '%s'"% result)
     return (result, "".join(output), testcase_duration, duration)
 
 def run_cli_command(cmd, shell=True, verbose=False):
