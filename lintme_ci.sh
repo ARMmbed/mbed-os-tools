@@ -1,2 +1,2 @@
 #!/bin/sh
-pylint --rcfile pylintrc mbed_greentea -f parseable heroku -r n > pylint.log || exit 0
+pylint --rcfile pylintrc -f parseable -r n mbed_greentea > pylint.log || exit 0
