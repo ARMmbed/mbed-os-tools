@@ -1,4 +1,5 @@
 # Introduction
+[![Circle CI](https://circleci.com/gh/ARMmbed/greentea.svg?style=svg)](https://circleci.com/gh/ARMmbed/greentea)
 
 Hello and welcome to the mbed SDK test suite, codename *Greentea*. The test suite is a collection of tools that enable automated testing on mbed platforms.
 
