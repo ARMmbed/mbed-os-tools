@@ -47,22 +47,31 @@ def load_ctest_testsuite(link_target, binary_type='.bin', verbose=False):
              add_test(mbed-test-hello "mbed-test-hello")
     """
     result = {}
-    add_test_pattern = '[adtesADTES_]{8}\([\w\d_-]+ \"([\w\d_-]+)\"'
-    re_ptrn = re.compile(add_test_pattern)
     if link_target is not None:
         ctest_path = os.path.join(link_target, 'test', 'CTestTestfile.cmake')
         try:
             with open(ctest_path) as ctest_file:
                 for line in ctest_file:
-                    if line.lower().startswith('add_test'):
-                        m = re_ptrn.search(line)
-                        if m and len(m.groups()) > 0:
-                            if verbose:
-                                print m.group(1) + binary_type
-                            result[m.group(1)] = os.path.join(link_target, 'test', m.group(1) + binary_type)
+                    line_parse = parse_ctesttestfile_line(link_target, binary_type, line, verbose=verbose)
+                    if line_parse:
+                        test_case, test_case_path = line_parse
+                        result[test_case] = test_case_path
         except:
             pass    # Return empty list if path is not found
     return result
+
+def parse_ctesttestfile_line(link_target, binary_type, line, verbose=False):
+    add_test_pattern = '[adtesADTES_]{8}\([\w\d_-]+ \"([\w\d_-]+)\"'
+    re_ptrn = re.compile(add_test_pattern)
+    if line.lower().startswith('add_test'):
+        m = re_ptrn.search(line)
+        if m and len(m.groups()) > 0:
+            if verbose:
+                print m.group(1) + binary_type
+            test_case = m.group(1)
+            test_case_path = os.path.join(link_target, 'test', m.group(1) + binary_type)
+            return test_case, test_case_path
+    return None
 
 def list_binaries_for_targets(build_dir='./build', verbose_footer=True):
     """! Prints tests in target directories, only if tests exist.
