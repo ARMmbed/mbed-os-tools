@@ -28,23 +28,6 @@ from mbed_greentea_log import gt_log_tab
 def load_ctest_testsuite(link_target, binary_type='.bin', verbose=False):
     """! Loads CMake.CTest formatted data about tests from test directory
     @return Dictionary of { test_case : test_case_path } pairs
-    @details Example path with CTestTestFile.cmake:
-             c:/temp/xxx/mbed-sdk-private/build/frdm-k64f-gcc/test/
-
-             Example format of CTestTestFile.cmake:
-             # CMake generated Testfile for
-             # Source directory: c:/temp/xxx/mbed-sdk-private/build/frdm-k64f-gcc/test
-             # Build directory: c:/temp/xxx/mbed-sdk-private/build/frdm-k64f-gcc/test
-             #
-             # This file includes the relevant testing commands required for
-             # testing this directory and lists subdirectories to be tested as well.
-             add_test(mbed-test-stdio "mbed-test-stdio")
-             add_test(mbed-test-call_before_main "mbed-test-call_before_main")
-             add_test(mbed-test-dev_null "mbed-test-dev_null")
-             add_test(mbed-test-div "mbed-test-div")
-             add_test(mbed-test-echo "mbed-test-echo")
-             add_test(mbed-test-ticker "mbed-test-ticker")
-             add_test(mbed-test-hello "mbed-test-hello")
     """
     result = {}
     if link_target is not None:
@@ -61,6 +44,26 @@ def load_ctest_testsuite(link_target, binary_type='.bin', verbose=False):
     return result
 
 def parse_ctesttestfile_line(link_target, binary_type, line, verbose=False):
+    """! Parse lines of CTestTestFile.cmake file and searches for 'add_test'
+    @return Dictionary of { test_case : test_case_path } pairs or None if failed to parse 'add_test' line
+    @details Example path with CTestTestFile.cmake:
+    c:/temp/xxx/mbed-sdk-private/build/frdm-k64f-gcc/test/
+
+    Example format of CTestTestFile.cmake:
+    # CMake generated Testfile for
+    # Source directory: c:/temp/xxx/mbed-sdk-private/build/frdm-k64f-gcc/test
+    # Build directory: c:/temp/xxx/mbed-sdk-private/build/frdm-k64f-gcc/test
+    #
+    # This file includes the relevant testing commands required for
+    # testing this directory and lists subdirectories to be tested as well.
+    add_test(mbed-test-stdio "mbed-test-stdio")
+    add_test(mbed-test-call_before_main "mbed-test-call_before_main")
+    add_test(mbed-test-dev_null "mbed-test-dev_null")
+    add_test(mbed-test-div "mbed-test-div")
+    add_test(mbed-test-echo "mbed-test-echo")
+    add_test(mbed-test-ticker "mbed-test-ticker")
+    add_test(mbed-test-hello "mbed-test-hello")
+    """
     add_test_pattern = '[adtesADTES_]{8}\([\w\d_-]+ \"([\w\d_-]+)\"'
     re_ptrn = re.compile(add_test_pattern)
     if line.lower().startswith('add_test'):
