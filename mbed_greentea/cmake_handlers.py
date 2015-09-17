@@ -64,19 +64,19 @@ def load_ctest_testsuite(link_target, binary_type='.bin', verbose=False):
             pass    # Return empty list if path is not found
     return result
 
-def list_binaries_for_targets(build_dir='./build'):
+def list_binaries_for_targets(build_dir='./build', verbose_footer=True):
     """! Prints tests in target directories, only if tests exist.
     @details Skips empty / no tests for target directories.
     """
     dir = build_dir
     sub_dirs = [os.path.join(dir, o) for o in os.listdir(dir) if os.path.isdir(os.path.join(dir, o))]
-    gt_log("available tests for built targets")
-    gt_log_tab("location '%s'"% os.path.abspath(build_dir))
+    gt_log("available tests for built targets, location '%s'"% os.path.abspath(build_dir))
     for sub_dir in sub_dirs:
         test_list = load_ctest_testsuite(sub_dir, binary_type='')
         if len(test_list):
-            print "target '%s':" % sub_dir.split(os.sep)[-1]
+            gt_log_tab("target '%s':" % sub_dir.split(os.sep)[-1])
             for test in test_list:
                 gt_log_tab("test '%s'"% test)
-    print
-    print "Example: execute 'mbedgt -t TARGET_NAME -n TEST_NAME' to run test TEST_NAME for target TARGET_NAME"
+    if verbose_footer:
+        print
+        print "Example: execute 'mbedgt -t TARGET_NAME -n TEST_NAME' to run test TEST_NAME for target TARGET_NAME"

@@ -382,19 +382,26 @@ def main_cli(opts, args, gt_instance_uuid=None):
 
                         test_list = None
                         if opts.test_by_names:
-                            test_list = opts.test_by_names.lower().split(',')
+                            test_list = opts.test_by_names.split(',')
                             gt_log("test case filter: %s (specified with -n option)"% ', '.join(["'%s'"% gt_bright(t) for t in test_list]))
 
+                            invalid_test_names = False
                             for test_n in test_list:
                                 if test_n not in ctest_test_list:
-                                    gt_log_tab("test name '%s' not found (specified with -n option)"% gt_bright(test_n))
+                                    gt_log_tab("test name '%s' not found in CTestTestFile.cmake (specified with -n option)"% gt_bright(test_n))
+                                    invalid_test_names = True
+                            if invalid_test_names:
+                                gt_log("invalid test case names (specified with -n option)")
+                                gt_log_tab("note: test case names are case sensitive")
+                                gt_log_tab("note: see list of available test cases below")
+                                list_binaries_for_targets(verbose_footer=False)
 
                         gt_log("running tests for target '%s'" % gt_bright(yotta_target_name))
                         for test_bin, image_path in ctest_test_list.iteritems():
                             test_result = 'SKIPPED'
                             # Skip test not mentioned in -n option
                             if opts.test_by_names:
-                                if test_bin.lower() not in test_list:
+                                if test_bin not in test_list:
                                     continue
 
                             if get_mbed_supported_test(test_bin):
