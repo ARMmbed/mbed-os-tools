@@ -42,13 +42,13 @@ add_test(mbed-client-test-helloworld-mbedclient "mbed-client-test-helloworld-mbe
         self.assertNotEqual(True, False)
 
     def test_parse_ctesttestfile_line(self):
-        link_target = '/dir/to/target'
-        binary_type = '.bin'
+        LINK_TARGET = '/dir/to/target'
+        BINARY_TYPE = '.bin'
 
         result = {}
         no_skipped_lines = 0
         for line in self.ctesttestfile.splitlines():
-            line_parse = cmake_handlers.parse_ctesttestfile_line(link_target, binary_type, line, verbose=False)
+            line_parse = cmake_handlers.parse_ctesttestfile_line(LINK_TARGET, BINARY_TYPE, line, verbose=False)
             if line_parse:
                 test_case, test_case_path = line_parse
                 result[test_case] = test_case_path
@@ -57,6 +57,11 @@ add_test(mbed-client-test-helloworld-mbedclient "mbed-client-test-helloworld-mbe
 
         self.assertIn('mbed-client-test-mbedclient-smokeTest', result)
         self.assertIn('mbed-client-test-helloworld-mbedclient', result)
+
+        for test_case, test_case_path in result.iteritems():
+            self.assertEqual(test_case_path.startswith(LINK_TARGET), True)
+            self.assertEqual(test_case_path.endswith(BINARY_TYPE), True)
+
         self.assertEqual(len(result), 2)        # We parse two entries
         self.assertEqual(no_skipped_lines, 6)   # We skip six lines in this file
 
