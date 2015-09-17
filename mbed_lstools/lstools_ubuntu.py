@@ -134,6 +134,7 @@ class MbedLsToolsUbuntu(MbedLsToolsBase):
 
         p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         for line in p.stdout.readlines():
+            line = line.rstrip()
             result.append(line)
             if self.DEBUG_FLAG:
                 self.debug(self.get_dev_by_id.__name__, line)
@@ -154,6 +155,7 @@ class MbedLsToolsUbuntu(MbedLsToolsBase):
 
         p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         for line in p.stdout.readlines():
+            line = line.rstrip()
             result.append(line)
             if self.DEBUG_FLAG:
                 self.debug(self.get_mounts.__name__, line)
