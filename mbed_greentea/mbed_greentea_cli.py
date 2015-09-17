@@ -55,6 +55,15 @@ except:
 MBED_LMTOOLS = 'mbed_lstools' in sys.modules
 MBED_HOST_TESTS = 'mbed_host_tests' in sys.modules
 
+def print_version(verbose=True):
+    """! Print current package version
+    """
+    import pkg_resources  # part of setuptools
+    version = pkg_resources.require("mbed-greentea")[0].version
+    if verbose:
+        print version
+    return version
+
 
 def main():
     """ Closure for main_cli() function """
@@ -207,8 +216,8 @@ def main():
             gt_log_tab(sys.exc_info()[0])
             raise
 
-
-    print "Completed in %.2f sec"% (time() - start)
+    if not any([opts.list_binaries, opts.version]):
+        print "Completed in %.2f sec"% (time() - start)
     exit(cli_ret)
 
 def main_cli(opts, args, gt_instance_uuid=None):
@@ -232,9 +241,7 @@ def main_cli(opts, args, gt_instance_uuid=None):
 
     # Prints version and exits
     if opts.version:
-        import pkg_resources  # part of setuptools
-        version = pkg_resources.require("mbed-greentea")[0].version
-        print version
+        print_version()
         return (0)
 
     # Capture alternative test console inputs, used e.g. in 'yotta test command'
