@@ -19,7 +19,7 @@ limitations under the License.
 import unittest
 from mbed_greentea import mbed_greentea_cli
 
-class CliFunctionality(unittest.TestCase):
+class GreenteaCliFunctionality(unittest.TestCase):
 
     def setUp(self):
         pass

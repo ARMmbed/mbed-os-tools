@@ -19,7 +19,7 @@ limitations under the License.
 import unittest
 from mbed_greentea import cmake_handlers
 
-class CmakeHandlers(unittest.TestCase):
+class GreenteaCmakeHandlers(unittest.TestCase):
     """ Basic true asserts to see that testing is executed
     """
 

@@ -71,6 +71,20 @@ TEST_RESULT_MAPPING = {"success" : TEST_RESULT_OK,
 
 RE_DETECT_TESTCASE_RESULT = re.compile("\\{(" + "|".join(TEST_RESULT_MAPPING.keys()) + ")\\}")
 
+def get_test_result(output):
+    """! Parse test 'output' data
+    @details If test result not found returns by default TEST_RESULT_TIMEOUT value
+    @return Returns found test result
+    """
+    result = TEST_RESULT_TIMEOUT
+    for line in "".join(output).splitlines():
+        search_result = RE_DETECT_TESTCASE_RESULT.search(line)
+        if search_result and search_result.groups():
+            result = TEST_RESULT_MAPPING[search_result.groups(0)[0]]
+            break
+    return result
+
+
 def run_host_test(image_path,
                   disk,
                   port,
@@ -193,19 +207,6 @@ def run_host_test(image_path,
         if ord(c) not in range(128):
             c = ' '
         return c
-
-    def get_test_result(output):
-        """! Parse test 'output' data
-        @details If test result not found returns by default TEST_RESULT_TIMEOUT value
-        @return Returns found test result
-        """
-        result = TEST_RESULT_TIMEOUT
-        for line in "".join(output).splitlines():
-            search_result = RE_DETECT_TESTCASE_RESULT.search(line)
-            if search_result and search_result.groups():
-                result = TEST_RESULT_MAPPING[search_result.groups(0)[0]]
-                break
-        return result
 
     def get_auto_property_value(property_name, line):
         """! Scans auto detection line from MUT and returns scanned parameter 'property_name'
