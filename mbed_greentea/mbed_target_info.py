@@ -85,11 +85,18 @@ def get_mbed_target_from_current_dir():
     _stdout, _stderr, _ret = run_cli_process(cmd)
     if not _ret:
         for line in _stdout.splitlines():
-            m = re.search(' \d+\.\d+\.\d+$', line)
-            if m and len(m.group()):
-                result = line.split()[0]
+            target = parse_yotta_target_cmd_output(line)
+            if target:
+                result = target
                 break
     return result
+
+def parse_yotta_target_cmd_output(line):
+    m = re.search(' \d+\.\d+\.\d+$', line)
+    if m and len(m.group()):
+        result = line.split()[0]
+        return result
+    return None
 
 def get_mbed_targets_from_yotta(mbed_classic_name):
     """! Function is using 'yotta search' command to fetch matching mbed device target's name
@@ -108,12 +115,20 @@ def get_mbed_targets_from_yotta(mbed_classic_name):
     _stdout, _stderr, _ret = run_cli_process(cmd)
     if not _ret:
         for line in _stdout.splitlines():
-            m = re.search('([\w\d-]+) \d+\.\d+\.\d+:', line)
-            if m and len(m.groups()):
-                yotta_target_name = m.groups()[0]
+            yotta_target_name = parse_yotta_search_cmd_output(line)
+            if yotta_target_name:
                 result.append(yotta_target_name)
                 gt_log_tab("found target '%s'" % gt_bright(yotta_target_name))
     return result
+
+def parse_yotta_search_cmd_output(line):
+    m = re.search('([\w\d-]+) \d+\.\d+\.\d+:', line)
+    if m and len(m.groups()):
+        yotta_target_name = m.groups()[0]
+        return yotta_target_name
+        result.append(yotta_target_name)
+        gt_log_tab("found target '%s'" % gt_bright(yotta_target_name))
+    return None
 
 def add_target_info_mapping(mbed_classic_name):
     """! Adds more target information to TARGET_INFO_MAPPING by searching in yotta registry
