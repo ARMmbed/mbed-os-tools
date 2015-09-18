@@ -21,6 +21,7 @@ import re
 from mbed_test_api import run_cli_process
 from mbed_greentea_log import gt_log
 from mbed_greentea_log import gt_bright
+from mbed_greentea_log import gt_log_err
 from mbed_greentea_log import gt_log_tab
 
 
@@ -119,6 +120,8 @@ def get_mbed_targets_from_yotta(mbed_classic_name):
             if yotta_target_name:
                 result.append(yotta_target_name)
                 gt_log_tab("found target '%s'" % gt_bright(yotta_target_name))
+    else:
+        gt_log_err("calling yotta search failed!")
     return result
 
 def parse_yotta_search_cmd_output(line):
