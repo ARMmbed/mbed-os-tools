@@ -26,6 +26,7 @@ Write your own programs (import this package) or use 'mbedhtrun' command line to
 """
 
 import sys
+import json
 from optparse import OptionParser
 
 import host_tests_plugins
@@ -117,9 +118,16 @@ class DefaultTestSelector(DefaultTestSelectorBase):
                 sys.exit(0)
 
             if options.version:         # --version
-                import pkg_resources  # part of setuptools
+                import pkg_resources    # part of setuptools
                 version = pkg_resources.require("mbed-host-tests")[0].version
                 print version
+                sys.exit(0)
+
+            if options.send_break_cmd:  # -b with -p PORT (and optional -r RESET_TYPE)
+                self.handle_send_bread_cmd(port=options.port,
+                    disk=options.disk,
+                    reset_type=options.forced_reset_type,
+                    verbose=options.verbose)
                 sys.exit(0)
 
         DefaultTestSelectorBase.__init__(self, options)
@@ -133,6 +141,73 @@ class DefaultTestSelector(DefaultTestSelectorBase):
             if len(ht) > str_len: str_len = len(ht)
         for ht in sorted(HOSTREGISTRY.HOST_TESTS.keys()):
             print "'%s'%s : %s()" % (ht, ' '*(str_len - len(ht)), HOSTREGISTRY.HOST_TESTS[ht].__class__)
+
+    def handle_send_bread_cmd(self, port, disk, reset_type=None, baudrate=9600, timeout=1, verbose=False):
+        """! Resets platforms and prints serial port output
+            @detail Mix with switch -r RESET_TYPE and -p PORT for versatility
+        """
+        from serial import Serial
+
+        if not reset_type:
+            reset_type = 'default'
+
+        port_config = port.split(':')
+        if len(port_config) == 2:
+            # -p COM4:115200
+            port = port_config[0]
+            baudrate = int(port_config[1])
+        elif len(port_config) == 3:
+            # -p COM4:115200:0.5
+            port = port_config[0]
+            baudrate = int(port_config[1])
+            timeout = float(port_config[2])
+
+        if verbose:
+            print "mbedhtrun: serial port configuration: %s:%s:%s"% (port, str(baudrate), str(timeout))
+
+        try:
+            serial_port = Serial(port, baudrate=baudrate, timeout=timeout)
+        except Exception as e:
+            print "mbedhtrun: %s" % (str(e))
+            print json.dumps({
+                "port" : port,
+                "disk" : disk,
+                "baudrate" : baudrate,
+                "timeout" : timeout,
+                "reset_type" : reset_type,
+                }, indent=4)
+            return False
+
+        serial_port.flush()
+        # Reset using one of the plugins
+        result = host_tests_plugins.call_plugin('ResetMethod', reset_type, serial=serial_port, disk=disk)
+        if not result:
+            print "mbedhtrun: reset plugin failed"
+            print json.dumps({
+                "port" : port,
+                "disk" : disk,
+                "baudrate" : baudrate,
+                "timeout" : timeout,
+                "reset_type" : reset_type
+                }, indent=4)
+            return False
+
+        print "mbedhtrun: serial dump started (use ctrl+c to break)"
+        try:
+            while True:
+                test_output = serial_port.read(512)
+                if test_output:
+                    sys.stdout.write('%s'% test_output)
+                if "{end}" in test_output:
+                    if verbose:
+                        print
+                        print "mbedhtrun: stopped (found '{end}' terminator)"
+                    break
+        except KeyboardInterrupt:
+            print "ctrl+c break"
+
+        serial_port.close()
+        return True
 
     def print_plugin_list(self):
         """! Prints current plugin status
@@ -365,6 +440,18 @@ def init_host_test_cli_params():
                       default=False,
                       action="store_true",
                       help='Skips use of reset plugin. Note: target will not be reset')
+
+    parser.add_option('-b', '--send-break',
+                      dest='send_break_cmd',
+                      default=False,
+                      action="store_true",
+                      help='Send reset signal to board on specified port (-p PORT) and print serial output. You can combine this with (-r RESET_TYPE) switch')
+
+    parser.add_option('-v', '--verbose',
+                      dest='verbose',
+                      default=False,
+                      action="store_true",
+                      help='More verbose mode')
 
     parser.add_option('', '--version',
                       dest='version',
