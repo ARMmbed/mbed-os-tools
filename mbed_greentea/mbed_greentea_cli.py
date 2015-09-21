@@ -211,9 +211,9 @@ def main():
         except KeyboardInterrupt:
             gt_log_err("ctrl+c keyboard interrupt!")
             exit(-2)    # Keyboard interrupt
-        except:
+        except Exception as e:
             gt_log_err("Unexpected error:")
-            gt_log_tab(sys.exc_info()[0])
+            gt_log_tab(str(e))
             raise
 
     if not any([opts.list_binaries, opts.version]):
@@ -261,24 +261,25 @@ def main_cli(opts, args, gt_instance_uuid=None):
     mbeds_list = mbeds.list_mbeds()
     platform_list = mbeds.list_platforms_ext()
 
-    current_target = get_mbed_target_from_current_dir()
-
-    if current_target:
-        gt_log("yotta target in current directory is set to '%s'"% gt_bright(current_target))
-    else:
-        gt_log("yotta target in current directory is not set")
-
+    # Option -t <opts.list_of_targets> supersedes yotta target set in current directory
     if opts.list_of_targets is None:
-        if current_target is not None:
-            opts.list_of_targets = current_target.split(',')[0]
+        if opts.verbose:
+            gt_log("yotta target not set from command line (specified with -t option)")
+        # Trying to use locally set yotta target
+        current_target = get_mbed_target_from_current_dir()
 
-    if current_target is None:
-        gt_log_err("yotta target is not specified. Use '%s' or '%s' command to set target"%
-        (
-            gt_bright('mbedgt -t <target>'),
-            gt_bright('yotta target')
-        ))
-        return (-1)
+        if current_target:
+            gt_log("yotta target in current directory is set to '%s'"% gt_bright(current_target))
+            # Assuming first target printed by 'yotta search' will be used
+            opts.list_of_targets = current_target.split(',')[0]
+        else:
+            gt_log("yotta target in current directory is not set")
+            gt_log_err("yotta target is not specified. Use '%s' or '%s' command to set target"%
+            (
+                gt_bright('mbedgt -t <target>'),
+                gt_bright('yotta target <target>')
+            ))
+            return (-1)
 
     gt_log("detecting connected mbed-enabled devices... %s"% ("no devices detected" if not len(mbeds_list) else ""))
     if mbeds_list:
