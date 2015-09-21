@@ -134,7 +134,7 @@ def flash_dev(disk=None,
 
 def reset_dev(port=None,
               disk=None,
-              reset_type=None,
+              reset_type='default',
               reset_timeout=1,
               serial_port=None,
               baudrate=9600,
