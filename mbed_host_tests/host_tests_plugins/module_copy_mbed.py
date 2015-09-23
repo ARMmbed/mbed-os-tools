@@ -17,6 +17,7 @@ limitations under the License.
 Author: Przemyslaw Wirkus <Przemyslaw.Wirkus@arm.com>
 """
 
+import os
 from shutil import copy
 from host_test_plugins import HostTestPluginBase
 
@@ -69,8 +70,8 @@ class HostTestPluginCopyMethod_Mbed(HostTestPluginBase):
         if self.check_parameters(capability, *args, **kwargs) is True:
             # Capability 'default' is a dummy capability
             if capability == 'shutil':
-                image_path = kwargs['image_path']
-                destination_disk = kwargs['destination_disk']
+                image_path = os.path.normpath(kwargs['image_path'])
+                destination_disk = os.path.normpath(kwargs['destination_disk'])
                 # Wait for mount point to be ready
                 self.check_mount_point_ready(destination_disk)  # Blocking
                 result = self.generic_mbed_copy(image_path, destination_disk)

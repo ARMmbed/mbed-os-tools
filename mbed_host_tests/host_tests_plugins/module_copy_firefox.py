@@ -17,6 +17,7 @@ limitations under the License.
 Author: Przemyslaw Wirkus <Przemyslaw.Wirkus@arm.com>
 """
 
+import os
 from os.path import join, basename
 from host_test_plugins import HostTestPluginBase
 
@@ -67,8 +68,8 @@ class HostTestPluginCopyMethod_Firefox(HostTestPluginBase):
         """
         result = False
         if self.check_parameters(capability, *args, **kwargs) is True:
-            image_path = kwargs['image_path']
-            destination_disk = kwargs['destination_disk']
+            image_path = os.path.normpath(kwargs['image_path'])
+            destination_disk = os.path.normpath(kwargs['destination_disk'])
             # Prepare correct command line parameter values
             image_base_name = basename(image_path)
             destination_path = join(destination_disk, image_base_name)

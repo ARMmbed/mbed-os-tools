@@ -17,6 +17,7 @@ limitations under the License.
 Author: Przemyslaw Wirkus <Przemyslaw.Wirkus@arm.com>
 """
 
+import os
 from host_test_plugins import HostTestPluginBase
 
 
@@ -48,8 +49,8 @@ class HostTestPluginCopyMethod_Silabs(HostTestPluginBase):
         """
         result = False
         if self.check_parameters(capability, *args, **kwargs) is True:
-            image_path = kwargs['image_path']
-            destination_disk = kwargs['destination_disk']
+            image_path = os.path.normpath(kwargs['image_path'])
+            destination_disk = os.path.normpath(kwargs['destination_disk'])
             if capability == 'eACommander':
                 cmd = [self.EACOMMANDER_CMD,
                        '--serialno', destination_disk,

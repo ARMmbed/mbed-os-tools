@@ -17,6 +17,7 @@ limitations under the License.
 Author: Przemyslaw Wirkus <Przemyslaw.Wirkus@arm.com>
 """
 
+import os
 from host_test_plugins import HostTestPluginBase
 
 
@@ -47,7 +48,7 @@ class HostTestPluginCopyMethod_Stlink(HostTestPluginBase):
         """
         result = False
         if self.check_parameters(capability, *args, **kwargs) is True:
-            image_path = kwargs['image_path']
+            image_path = os.path.normpath(kwargs['image_path'])
             if capability == 'stlink':
                 # Example:
                 # ST-LINK_CLI.exe -p "C:\Work\mbed\build\test\DISCO_F429ZI\GCC_ARM\MBED_A1\basic.bin"
