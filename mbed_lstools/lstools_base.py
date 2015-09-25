@@ -18,6 +18,7 @@ limitations under the License.
 import re
 import os
 import json
+import os.path
 
 class MbedLsToolsBase:
     """ Base class for mbed-lstools, defines mbed-ls tools interface for mbed-enabled devices detection for various hosts
@@ -28,6 +29,12 @@ class MbedLsToolsBase:
         #extra flags
         self.DEBUG_FLAG = False     # Used to enable debug code / prints
         self.ERRORLEVEL_FLAG = 0    # Used to return success code to environment
+
+        # If there is a local mocking data use it and add / override manufacture_ids
+        mock_ids = self.mock_read()
+        if mock_ids:
+            for mid in mock_ids:
+                self.manufacture_ids[mid] = mock_ids[mid]
 
     # Which OSs are supported by this module
     # Note: more than one OS can be supported by mbed-lstools_* module
@@ -155,7 +162,42 @@ class MbedLsToolsBase:
         "RIOT": "RIOT",
     }
 
-    #
+    MOCK_FILE_NAME = '.mbedls-mock'
+
+    def mock_read(self):
+        """! Load mocking data from local file
+        @return Curent mocking configuration (dictionary)
+        """
+        if os.path.isfile(self.MOCK_FILE_NAME):
+            with open(self.MOCK_FILE_NAME, "r") as f:
+                return json.load(f)
+        return {}
+
+    def mock_write(self, mock_ids):
+        # Write current mocking structure
+        with open(self.MOCK_FILE_NAME, "w") as f:
+            f.write(json.dumps(mock_ids, indent=4))
+
+    def mock_manufacture_ids(self, mid, platform_name, oper='+'):
+        """! Replace (or add if manufacture id doesn't exist) entry in self.manufacture_ids
+            @param oper '+' add new mock / override existing entry
+                        '-' remove mid from mocking entry
+            @return Mocked structure (json format)
+        """
+        mock_ids = self.mock_read()
+
+        # Operations on mocked structure
+        if oper == '+':
+            mock_ids[mid] = platform_name
+        elif oper in ['-', '!']:
+            if mid in mock_ids:
+                mock_ids.pop(mid)
+            elif mid == '*':
+                mock_ids = {}   # Zero mocking set
+
+        self.mock_write(mock_ids)
+        return mock_ids
+
     # Note: 'Ven_SEGGER' - This is used to detect devices from EFM family, they use Segger J-LInk to wrap MSD and CDC
     usb_vendor_list = ['Ven_MBED', 'Ven_SEGGER']
 
