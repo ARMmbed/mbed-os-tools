@@ -19,6 +19,7 @@ Author: Przemyslaw Wirkus <Przemyslaw.wirkus@arm.com>
 
 import re
 import sys
+from time import sleep
 from time import time
 from Queue import Queue, Empty
 from threading import Thread
@@ -26,8 +27,6 @@ from subprocess import call, Popen, PIPE
 
 from mbed_greentea_log import gt_log
 from mbed_greentea_log import gt_log_tab
-from mbed_greentea_log import gt_log_err
-from mbed_greentea_log import gt_bright
 
 
 # Return codes for test script
@@ -136,10 +135,6 @@ def run_host_test(image_path,
 
         def stop(self):
             self.active = False
-            try:
-                self.proc.terminate()
-            except Exception:
-                pass
 
     class FileObserver(Thread):
         """ process used to read file content as console input from MUT
@@ -160,10 +155,6 @@ def run_host_test(image_path,
 
         def stop(self):
             self.active = False
-            try:
-                self.proc.terminate()
-            except Exception:
-                pass
 
     class ProcessObserver(Thread):
         """ Default process used to observe stdout of another process as console input from MUT
@@ -185,7 +176,8 @@ def run_host_test(image_path,
             self.active = False
             try:
                 self.proc.terminate()
-            except Exception:
+            except Exception as e:
+                print "ProcessObserver.stop(): %s" % str(e)
                 pass
 
     def get_char_from_queue(obs):
@@ -275,7 +267,8 @@ def run_host_test(image_path,
     while (time() - start_time) < (total_duration):
         try:
             c = get_char_from_queue(obs)
-        except:
+        except Exception as e:
+            output.append('get_char_from_queue(obs): %s'% str(e))
             break
         if c:
             if verbose:
