@@ -35,11 +35,18 @@ class MbedLsToolsDarwin(MbedLsToolsBase):
 
         # {volume_id: {serial:, vendor_id:, product_id:, tty:}}
         volumes = self.get_mbed_volumes()
-        #print 'volumes:', volumes
 
         # {volume_id: mount_point}
         mounts = self.get_mount_points()
-        #print "mounts:", mounts
+
+        volumes_keys = set(volumes.keys())
+        mounts_keys = set(mounts.keys())
+        intersection = volumes_keys & mounts_keys
+
+        valid_volumes = {}
+
+        for key in intersection:
+            valid_volumes[key] = volumes[key]
 
         # put together all of that info into the expected format:
         result =  [
@@ -48,7 +55,7 @@ class MbedLsToolsDarwin(MbedLsToolsBase):
                 'serial_port': volumes[v]['tty'],
                   'target_id': self.target_id(volumes[v]),
               'platform_name': self.platform_name(self.target_id(volumes[v]))
-            } for v in volumes
+            } for v in valid_volumes
         ]
 
         self.ERRORLEVEL_FLAG = 0
