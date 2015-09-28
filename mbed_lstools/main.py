@@ -87,6 +87,10 @@ def cmd_parser_setup():
                       action="store_true",
                       help='Parser friendly verbose mode')
 
+    parser.add_option('-m', '--mock',
+                      dest='mock_platform',
+                      help='Add locally manufacturers id and platform name. Example --mock=12B4:NEW_PLATFORM')
+
     parser.add_option('-j', '--json',
                       dest='json',
                       default=False,
@@ -143,7 +147,28 @@ def mbedls_main():
 
     mbeds.DEBUG_FLAG = opts.debug
 
-    if opts.json:
+    if opts.mock_platform:
+        if opts.mock_platform == '*':
+            if opts.json:
+                print json.dumps(mbeds.mock_read(), indent=4)
+
+        for token in opts.mock_platform.split(','):
+            if ':' in token:
+                oper = '+' # Default
+                mid, platform_name = token.split(':')
+                if mid and mid[0] in ['+', '-']:
+                    oper = mid[0]   # Operation (character)
+                    mid = mid[1:]   # We remove operation character
+                mbeds.mock_manufacture_ids(mid, platform_name, oper=oper)
+            elif token and token[0] in ['-', '!']:
+                # Operations where do not specify data after colon: --mock=-1234,-7678
+                oper = token[0]
+                mid = token[1:]
+                mbeds.mock_manufacture_ids(mid, 'dummy', oper=oper)
+        if opts.json:
+            print json.dumps(mbeds.mock_read(), indent=4)
+
+    elif opts.json:
         print json.dumps(mbeds.list_mbeds_ext(), indent=4, sort_keys=True)
 
     elif opts.json_by_target_id:

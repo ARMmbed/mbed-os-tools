@@ -2,6 +2,9 @@
 __pycache__/
 *.py[cod]
 
+# mbed-ls related files
+.mbedls-mock
+
 # C extensions
 *.so
 
