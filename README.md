@@ -27,12 +27,19 @@ mbedls provides these points of information for all connected boards at once in 
 
 mbed-ls module is redistributed via PyPI. We recommend you use the [application pip](https://pip.pypa.io/en/latest/installing.html#install-pip).
 
+**Note:** Python 2.7.9 and later (on the Python 2 series), and Python 3.4 and later include pip by default, so you may have pip already.
+
 To install mbed-ls from Python Package Index use command:
 ```
 $ pip install mbed-ls
 ```
 
 **Note:** Python 2.7.9 and later (on the Python 2 series), and Python 3.4 and later include pip by default, so you may have pip already.
+
+To install latest version use command:
+```
+$ pip install mbed-ls --upgrade
+```
 
 ## Installation from Python sources 
 
@@ -103,12 +110,6 @@ Extended mbedls API example:
 >>> m.list_platforms_ext()
 {'K64F': 1, 'LPC1768': 2}
 ```
-
-## Installation from PyPI (Python Package Index)
-
-In the near future the mbed-ls module will be redistributed via PyPI. We recommend you use the [```pip``` application](here: https://pip.pypa.io/en/latest/installing.html#install-pip).
-
-**Note:** Python 2.7.9 and later (on the Python 2 series), and Python 3.4 and later include pip by default, so you may have pip already.
 
 ## mbedls command line tool
 
