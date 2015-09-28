@@ -169,12 +169,16 @@ class MbedLsToolsBase:
         @return Curent mocking configuration (dictionary)
         """
         if os.path.isfile(self.MOCK_FILE_NAME):
+            if self.DEBUG_FLAG:
+                self.debug(self.mock_read.__name__, "reading %s"% self.MOCK_FILE_NAME)
             with open(self.MOCK_FILE_NAME, "r") as f:
                 return json.load(f)
         return {}
 
     def mock_write(self, mock_ids):
         # Write current mocking structure
+        if self.DEBUG_FLAG:
+            self.debug(self.mock_write.__name__, "writing %s"% self.MOCK_FILE_NAME)
         with open(self.MOCK_FILE_NAME, "w") as f:
             f.write(json.dumps(mock_ids, indent=4))
 
@@ -189,11 +193,17 @@ class MbedLsToolsBase:
         # Operations on mocked structure
         if oper == '+':
             mock_ids[mid] = platform_name
+            if self.DEBUG_FLAG:
+                self.debug(self.mock_manufacture_ids.__name__, "mock_ids['%s'] = '%s'"% (mid, platform_name))
         elif oper in ['-', '!']:
             if mid in mock_ids:
                 mock_ids.pop(mid)
+                if self.DEBUG_FLAG:
+                    self.debug(self.mock_manufacture_ids.__name__, "removing '%s' mock"% mid)
             elif mid == '*':
                 mock_ids = {}   # Zero mocking set
+                if self.DEBUG_FLAG:
+                    self.debug(self.mock_manufacture_ids.__name__, "zero mocking set")
 
         self.mock_write(mock_ids)
         return mock_ids
@@ -247,7 +257,7 @@ class MbedLsToolsBase:
         result = []
         mbeds = self.list_mbeds()
         for i, val in enumerate(mbeds):
-            platform_name = val['platform_name']
+            platform_name = str(val['platform_name'])
             if platform_name not in result:
                 result.append(platform_name)
         return result
@@ -259,7 +269,7 @@ class MbedLsToolsBase:
         result = {}
         mbeds = self.list_mbeds()
         for i, val in enumerate(mbeds):
-            platform_name = val['platform_name']
+            platform_name = str(val['platform_name'])
             if platform_name not in result:
                 result[platform_name] = 1
             else:
