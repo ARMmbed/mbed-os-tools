@@ -34,8 +34,6 @@ To install mbed-ls from Python Package Index use command:
 $ pip install mbed-ls
 ```
 
-**Note:** Python 2.7.9 and later (on the Python 2 series), and Python 3.4 and later include pip by default, so you may have pip already.
-
 To install latest version use command:
 ```
 $ pip install mbed-ls --upgrade
@@ -276,6 +274,90 @@ $ mbedls
 You can help us improve the mbed-ls tools by - for example - committing a new OS port. You can see the list of currently supported OSs in the [Description](#description) section; if your OS isn't there, you can port it.
 
 For further study please check how Mac OS X (Darwin) was ported in [this pull request](https://github.com/ARMmbed/mbed-ls/pull/1).
+
+# Mocking new or existing target to custom platform name
+Command line switch ```--mock``` provide simple manufacturers ID masking with new platform name.
+Users should be able to add locally new ```MID``` -> ```platform_name``` mapping when e.g. prototyping.
+
+Mock configuration will be stored in directory where ```mbedls --mock``` command was issues, in local file ```.mbedls-mock```.
+
+**Note***: ```MID```: "manufacturers ID", first 4 characters of ```target_id```. Example: If ```target_id``` is ```02400221A0811E505D5FE3E8```, corresponding manufacturers ID is ```0240```.
+
+## Mock command line examples
+* Add new command line parameter ```--mock``` (switch -m)
+* Add new / mask existing mapping ```MID``` -> ```platform_name``` and assign MID
+    * ```$mbedls --mock MID:PLATFORM_NAME``` or
+    * ```$mbedls --mock MID1:PLATFORM_NAME1,MID2:PLATFORM_NAME2```
+* Mask existing manufacturers ID with new platform name
+* Remove masking with '!' prefix
+    * ```$ mbedls --mock !MID```
+* Remove all maskings using !* notation
+    * ```$ mbedls --mock !*```
+* Combine above using comma (```,```) separator:
+    * ```$mbedls --mock MID1:PLATFORM_NAME1,!MID2```
+
+## Mocking example with Freescale K64F platform
+Initial setup with 1 x Freescale ```K64F``` board:
+```
+$ mbedls
++--------------+---------------------+------------+------------+-------------------------+
+|platform_name |platform_name_unique |mount_point |serial_port |target_id                |
++--------------+---------------------+------------+------------+-------------------------+
+|K64F          |K64F[0]              |F:          |COM146      |02400221A0811E505D5FE3E8 |
++--------------+---------------------+------------+------------+-------------------------+
+```
+
+* We can mask current mapping ```0240``` -> ```K64F``` to something else. For example we can replace ```K64F``` name with maybe more suitable for us in current setup ```FRDM-K64F```:
+```
+$  mbedls --mock 0240:FRDM_K64F
+```
+Current mocking mapping is stored in local file ```.mbedls-mock```:
+```
+$  cat .mbedls-mock
+{
+    "1234": "NEW_PLATFORM_1",
+    "0240": "FRDM_K64F"
+}
+```
+We can observe changes immediately. Please note this change only works in the same directory because we save ```.mbedls-mock``` file locally:
+```
+$  mbedls
++--------------+---------------------+------------+------------+-------------------------+
+|platform_name |platform_name_unique |mount_point |serial_port |target_id                |
++--------------+---------------------+------------+------------+-------------------------+
+|FRDM_K64F     |FRDM_K64F[0]         |F:          |COM146      |02400221A0811E505D5FE3E8 |
++--------------+---------------------+------------+------------+-------------------------+
+```
+
+* We can remove mapping ```1234``` -> Anythying using ```!``` wildcard.
+Note: We are using flag ```-json``` to get JSON format output of the ```--mock``` operation.
+```
+$ mbedls --mock !1234 --json
+{
+    "0240": "FRDM_K64F"
+}
+```
+
+* We can add multiple mappings at the same time:
+```
+$ --mock 0000:DUMMY,1111:DUMMY_2 --json
+{
+    "1111": "DUMMY_2",
+    "0240": "FRDM_K64F",
+    "0000": "DUMMY"
+}
+```
+
+* We can remove (```!```) all mappings using ```*``` wildcard:
+```
+$ mbedls --mock !*
+```
+
+We can verify our mapping is reset:
+```
+$ cat .mbedls-mock
+{}
+```
 
 # mbed-ls unit testing
 * ```mbed-ls``` package contains basic unit tests.
