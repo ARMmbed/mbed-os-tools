@@ -17,8 +17,6 @@ limitations under the License.
 Author: Przemyslaw Wirkus <Przemyslaw.Wirkus@arm.com>
 """
 
-# Check if 'serial' module is installed
-# TODO: check in sys.modules if pySerial is installed
 import re
 from sys import stdout
 
