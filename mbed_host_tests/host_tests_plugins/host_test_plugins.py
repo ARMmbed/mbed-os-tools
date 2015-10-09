@@ -17,6 +17,10 @@ limitations under the License.
 Author: Przemyslaw Wirkus <Przemyslaw.Wirkus@arm.com>
 """
 
+import os
+import sys
+import platform
+
 from os import access, F_OK
 from sys import stdout
 from time import sleep
@@ -151,4 +155,31 @@ class HostTestPluginBase:
             result = False
             self.print_plugin_error("[ret=%d] Command: %s"% (int(ret), cmd))
             self.print_plugin_error(str(e))
+        return result
+
+    def mbed_os_info(self):
+        """! Returns information about host OS
+
+        @return Returns tuple with information about OS and host platform
+        """
+        result = (os.name,
+                  platform.system(),
+                  platform.release(),
+                  platform.version(),
+                  sys.platform)
+        return result
+
+    def mbed_os_support(self):
+        """! Function used to determine host OS
+        @return Returns None if host OS is unknown, else string with name
+        @details This function should be ported for new OS support
+        """
+        result = None
+        os_info = self.mbed_os_info()
+        if (os_info[0] == 'nt' and os_info[1] == 'Windows'):
+            result = 'Windows7'
+        elif (os_info[0] == 'posix' and os_info[1] == 'Linux' and ('Ubuntu' in os_info[3])):
+            result = 'Ubuntu'
+        elif (os_info[0] == 'posix' and os_info[1] == 'Darwin'):
+            result = 'Darwin'
         return result
