@@ -124,7 +124,7 @@ class DefaultTestSelector(DefaultTestSelectorBase):
                 sys.exit(0)
 
             if options.send_break_cmd:  # -b with -p PORT (and optional -r RESET_TYPE)
-                self.handle_send_bread_cmd(port=options.port,
+                self.handle_send_break_cmd(port=options.port,
                     disk=options.disk,
                     reset_type=options.forced_reset_type,
                     verbose=options.verbose)
@@ -142,7 +142,7 @@ class DefaultTestSelector(DefaultTestSelectorBase):
         for ht in sorted(HOSTREGISTRY.HOST_TESTS.keys()):
             print "'%s'%s : %s()" % (ht, ' '*(str_len - len(ht)), HOSTREGISTRY.HOST_TESTS[ht].__class__)
 
-    def handle_send_bread_cmd(self, port, disk, reset_type=None, baudrate=9600, timeout=1, verbose=False):
+    def handle_send_break_cmd(self, port, disk, reset_type=None, baudrate=9600, timeout=1, verbose=False):
         """! Resets platforms and prints serial port output
             @detail Mix with switch -r RESET_TYPE and -p PORT for versatility
         """
