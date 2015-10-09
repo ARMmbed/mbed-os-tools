@@ -93,7 +93,11 @@ def get_mbed_target_from_current_dir():
     return result
 
 def parse_yotta_target_cmd_output(line):
-    m = re.search(' \d+\.\d+\.\d+$', line)
+    # Example targets:
+    # $ yt target
+    # frdm-k64f-gcc 0.1.3
+    # mbed-gcc 0.1.1
+    m = re.search(r'[\w\d_-]+ \d+\.\d+\.\d+', line)
     if m and len(m.group()):
         result = line.split()[0]
         return result

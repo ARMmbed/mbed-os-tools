@@ -279,7 +279,7 @@ def run_host_test(image_path,
             if c in ['\n', '\r']:
 
                 # Check for unknown property prints
-                # If there are too many we will stop test exeuction and assume test is not ported
+                # If there are too many we will stop test execution and assume test is not ported
                 if "HOST: Unknown property" in line:
                     unknown_property_count += 1
                     if unknown_property_count >= max_failed_properties:
