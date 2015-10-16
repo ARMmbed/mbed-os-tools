@@ -31,6 +31,7 @@ BRIGHT = ''
 GREEN = ''
 RED = ''
 BLUE = ''
+YELLOW = ''
 RESET = ''
 
 if not COLORAMA:
