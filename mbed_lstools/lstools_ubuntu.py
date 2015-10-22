@@ -88,7 +88,7 @@ class MbedLsToolsUbuntu(MbedLsToolsBase):
         self.ERRORLEVEL_FLAG = 0
 
         result = []
-        tidhex = re.compile(r'_([0-9a-fA-F]+)')
+        tidhex = re.compile(r'_([0-9a-fA-F]+)-\d+:\d+')
         for device in all_devices:
             tid = None
             m = tidhex.search(device[4])
@@ -235,7 +235,7 @@ class MbedLsToolsUbuntu(MbedLsToolsBase):
                     mbed_dev_serial = self.get_mbed_serial(serial_list, dhi)
                     # Print detected device
                     mbed_mount_point = self.get_mount_point(mbed_dev_disk, mount_list)
-                    if mbed_mount_point and  mbed_dev_serial:
+                    if mbed_mount_point:
                         result.append([mbed_name, mbed_dev_disk, mbed_mount_point, mbed_dev_serial, disk_hex_ids[dhi]])
         return result
 
