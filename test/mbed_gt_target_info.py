@@ -96,6 +96,7 @@ frdm-k64f-armcc 0.0.16: Official mbed build target for the mbed frdm-k64f develo
         self.assertEqual(None, mbed_target_info.parse_yotta_search_cmd_output("additional results from https://yotta-private.herokuapp.com:"))
 
     def test_parse_yotta_search_cmd_output_text(self):
+        # Old style with new switch --short : 'yotta search ... --short'
         text = """frdm-k64f-gcc 0.1.4: Official mbed build target for the mbed frdm-k64f development board.
 frdm-k64f-armcc 0.1.3: Official mbed build target for the mbed frdm-k64f development board, using the armcc toolchain.
 
@@ -116,6 +117,7 @@ additional results from https://yotta-private.herokuapp.com:
         pass
 
     def test_parse_yotta_search_cmd_output_new_style_text(self):
+        # New style of 'yotta search ...'
         text = """frdm-k64f-gcc 0.1.4
     Official mbed build target for the mbed frdm-k64f development board.
     mbed-target:k64f, mbed-official, k64f, frdm-k64f, gcc
