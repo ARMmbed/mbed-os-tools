@@ -114,7 +114,7 @@ def get_mbed_targets_from_yotta(mbed_classic_name):
              Note: Function prints on console
     """
     result = []
-    cmd = ['yotta', 'search', '-k', 'mbed-target:%s'% mbed_classic_name.lower().strip(), 'target']
+    cmd = ['yotta', 'search', '-k', 'mbed-target:%s'% mbed_classic_name.lower().strip(), 'target', ' --short']
     gt_log("yotta search for mbed-target '%s'"% gt_bright(mbed_classic_name.lower().strip()))
     gt_log_tab("calling yotta: %s"% " ".join(cmd))
     _stdout, _stderr, _ret = run_cli_process(cmd)
@@ -129,7 +129,7 @@ def get_mbed_targets_from_yotta(mbed_classic_name):
     return result
 
 def parse_yotta_search_cmd_output(line):
-    m = re.search('([\w\d-]+) \d+\.\d+\.\d+:', line)
+    m = re.search('([\w\d-]+) \d+\.\d+\.\d+[$:]?', line)
     if m and len(m.groups()):
         yotta_target_name = m.groups()[0]
         return yotta_target_name

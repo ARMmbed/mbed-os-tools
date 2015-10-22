@@ -95,6 +95,44 @@ frdm-k64f-armcc 0.0.16: Official mbed build target for the mbed frdm-k64f develo
         self.assertEqual(None, mbed_target_info.parse_yotta_search_cmd_output(""))
         self.assertEqual(None, mbed_target_info.parse_yotta_search_cmd_output("additional results from https://yotta-private.herokuapp.com:"))
 
+    def test_parse_yotta_search_cmd_output_text(self):
+        text = """frdm-k64f-gcc 0.1.4: Official mbed build target for the mbed frdm-k64f development board.
+frdm-k64f-armcc 0.1.3: Official mbed build target for the mbed frdm-k64f development board, using the armcc toolchain.
+
+additional results from https://yotta-private.herokuapp.com:
+"""
+        targets = []
+        for line in text.splitlines():
+            yotta_target_name = mbed_target_info.parse_yotta_search_cmd_output(line)
+            if yotta_target_name:
+                targets.append(yotta_target_name)
+        self.assertIn("frdm-k64f-gcc", targets)
+        self.assertIn("frdm-k64f-armcc", targets)
+        self.assertEqual(2, len(targets))
+
+    def test_parse_yotta_search_cmd_output_new_style(self):
+        self.assertIn("frdm-k64f-gcc", mbed_target_info.parse_yotta_search_cmd_output("frdm-k64f-gcc 0.1.4"))
+        self.assertIn("frdm-k64f-armcc", mbed_target_info.parse_yotta_search_cmd_output("frdm-k64f-armcc 0.1.4"))
+        pass
+
+    def test_parse_yotta_search_cmd_output_new_style_text(self):
+        text = """frdm-k64f-gcc 0.1.4
+    Official mbed build target for the mbed frdm-k64f development board.
+    mbed-target:k64f, mbed-official, k64f, frdm-k64f, gcc
+frdm-k64f-armcc 0.1.4
+    Official mbed build target for the mbed frdm-k64f development board, using the armcc toolchain.
+    mbed-target:k64f, mbed-official, k64f, frdm-k64f, armcc
+
+additional results from https://yotta-private.herokuapp.com:"""
+        targets = []
+        for line in text.splitlines():
+            yotta_target_name = mbed_target_info.parse_yotta_search_cmd_output(line)
+            if yotta_target_name:
+                targets.append(yotta_target_name)
+        self.assertIn("frdm-k64f-gcc", targets)
+        self.assertIn("frdm-k64f-armcc", targets)
+        self.assertEqual(2, len(targets))
+
     def test_parse_yotta_search_cmd_output_with_ssl_errors(self):
         result = []
         for line in self.YOTTA_SEARCH_SSL_ISSUE.splitlines():
