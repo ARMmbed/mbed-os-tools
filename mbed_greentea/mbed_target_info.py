@@ -80,7 +80,7 @@ def get_mbed_target_from_current_dir():
     @return Returns current target or None if target not found (e.g. not yotta package)
     """
     result = None
-    cmd = ['yotta', 'target']
+    cmd = ['yotta', '--plain', 'target']
     gt_log("checking yotta target in current directory")
     gt_log_tab("calling yotta: %s"% " ".join(cmd))
     _stdout, _stderr, _ret = run_cli_process(cmd)
