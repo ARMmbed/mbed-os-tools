@@ -45,13 +45,13 @@ Please install the following:
 
 * The ``cp`` shell command must be available to flash certain boards. It is sometimes available by default, for example on Linux, or you can install the [Git command line tools](https://github.com/github/hub).
 
-* [Grep](http://gnuwin32.sourceforge.net/packages/grep.htm).
+* [Grep](http://gnuwin32.sourceforge.net/packages/grep.htm) and [cat](http://gnuwin32.sourceforge.net/packages/coreutils.htm).
 
 * [yotta](https://github.com/ARMmbed/yotta): used to build tests from the mbed SDK. Please note that **yotta has its own set of dependencies**, listed in the [installation instructions](http://armmbed.github.io/yotta/#installing-on-windows).
 
 * If your OS is Windows, please follow the installation instructions [for the serial port driver](https://developer.mbed.org/handbook/Windows-serial-configuration).
 
-* The mbed SDK sources. These are provided in the release sources under the **libraries/mbed-sdk** directory.
+* The mbed-drivers SDK source. This is provided [here](https://github.com/ARMmbed/mbed-drivers).
 
 * mbed-ls: installation instructions can be found [in the repository](https://github.com/ARMmbed/mbed-ls#installation-from-python-sources).
 
@@ -276,7 +276,7 @@ Run:
 **Note:**  You may need to change "E" to the correct mount point and "COM61" to the correct serial port mapping for your system. Run the ``mbedls`` command to see the correct values.
 
 ```
-$ mbedhtrun -d E: -f ".\build\frdm-k64f-gcc\test\mbed-test-hello.bin" -p COM61 -C 4 -c default -m K64F | mbedgt --digest=stdin -V
+$ mbedhtrun -d E: -f ".\build\frdm-k64f-gcc\test\mbed-drivers-test-hello.bin" -p COM61 -C 4 -c default -m K64F | mbedgt --digest=stdin -V
 ```
 
 And you'll get:
@@ -307,12 +307,7 @@ Note: the test suite detected strings ```{{success}}``` and ```{{end}}``` and co
 
 ## Example 2 - digest directly from file
 
-File ```test.txt``` content:. Run:
-
-```
-$ cat test.txt
-```
-And you'll get:
+Create file ```test.txt``` with the below contents.  Make sure the file ends with a newline.
 ```
 MBED: Instrumentation: "COM61" and disk: "E:"
 HOST: Copy image onto target...
@@ -329,6 +324,12 @@ Hello World
 {{ioerr_disk}}
 {{end}}
 ```
+
+Run the ```cat``` command and verify the contents contents above are printed:
+```
+$ cat test.txt
+```
+
 
 And scan for error codes inside the file:
 
