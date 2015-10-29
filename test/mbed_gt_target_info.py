@@ -135,6 +135,30 @@ additional results from https://yotta-private.herokuapp.com:"""
         self.assertIn("frdm-k64f-armcc", targets)
         self.assertEqual(2, len(targets))
 
+    def test_parse_yotta_search_cmd_output_new_style_text_2(self):
+        # New style of 'yotta search ...'
+        text = """nrf51dk-gcc 0.0.3:
+    Official mbed build target for the nRF51-DK 32KB platform.
+    mbed-official, mbed-target:nrf51_dk, gcc
+
+additional results from https://yotta-private.herokuapp.com:
+  nrf51dk-gcc 0.0.3:
+      Official mbed build target for the nRF51-DK 32KB platform.
+      mbed-official, mbed-target:nrf51_dk, gcc
+  nrf51dk-armcc 0.0.3:
+      Official mbed build target for the nRF51-DK 32KB platform.
+      mbed-official, mbed-target:nrf51_dk, armcc
+"""
+        targets = []
+        for line in text.splitlines():
+            yotta_target_name = mbed_target_info.parse_yotta_search_cmd_output(line)
+            if yotta_target_name and yotta_target_name not in targets:
+                targets.append(yotta_target_name)
+
+        self.assertIn("nrf51dk-gcc", targets)
+        self.assertIn("nrf51dk-armcc", targets)
+        self.assertEqual(2, len(targets))
+
     def test_parse_yotta_search_cmd_output_with_ssl_errors(self):
         result = []
         for line in self.YOTTA_SEARCH_SSL_ISSUE.splitlines():

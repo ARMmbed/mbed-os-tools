@@ -122,8 +122,9 @@ def get_mbed_targets_from_yotta(mbed_classic_name):
         for line in _stdout.splitlines():
             yotta_target_name = parse_yotta_search_cmd_output(line)
             if yotta_target_name:
-                result.append(yotta_target_name)
-                gt_log_tab("found target '%s'" % gt_bright(yotta_target_name))
+                if yotta_target_name and yotta_target_name not in result:
+                    result.append(yotta_target_name)
+                    gt_log_tab("found target '%s'" % gt_bright(yotta_target_name))
     else:
         gt_log_err("calling yotta search failed!")
     return result
@@ -164,7 +165,7 @@ def add_target_info_mapping(mbed_classic_name):
         # Check if any of yotta targets is new to TARGET_INFO_MAPPING
         for new_yt_target in yotta_target_search:
             if new_yt_target not in mbeds_yt_targets:
-                gt_log_tab("discovered extra target '%s'"% new_yt_target)
+                # gt_log_tab("discovered extra target '%s'"% new_yt_target)
                 # We want to at least guess toolchain type by target's name sufix
                 mbed_toolchain = 'UNKNOWN'
                 for toolchain_sufix in TARGET_TOOLCAHINS:
