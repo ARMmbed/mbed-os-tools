@@ -370,22 +370,29 @@ Here two targets are opfficialy compatible with ```K64F``` target: ``` frdm-k64f
 ## Prototyping support
 Greentea by default will only allow tests for platforms officially supported by given yotta target. This contradicts prototyping / porting workflow. Your workflow may include use of [```yotta link```](http://yottadocs.mbed.com/reference/commands.html#yotta-link) command and [```yotta link-target```](http://yottadocs.mbed.com/reference/commands.html#yotta-link-target)
 This is why command line switch ```--map-target``` was added. It adds an extra mapping between mbed platform names and supported yotta targets.
-Example where local yotta target support for ```K64F``` platform is added:
+
+Example where local yotta target ```frdm-k64f-iar``` (yotta target for ```K64F``` using ``IAR``` compiler) support for ```K64F``` platform is added:
 ```
 $ mbedgt --map-target K64F:frdm-k64f-iar
 ```
-Note: Above command will only work locally, when releasing your yotta targets please add correct yotta search bindings in ```target.json```'s ```keywords``` section.
-See example of official [target.json]( https://github.com/ARMmbed/target-frdm-k64f-gcc/blob/master/target.json) with suppor:
-```json
-"keywords": [
-"mbed-target:k64f",
-"mbed-official",
-"k64f",
-"frdm-k64f",
-"gcc"
-],
+Note:
+* Above command will only work locally. Use it while you are porting / protoyping.
+* When officially releasing your yotta targets please add correct yotta search bindings in ```target.json```'s ```keywords``` section.
 
+See example of official yotta target's [target.json]( https://github.com/ARMmbed/target-frdm-k64f-gcc/blob/master/target.json):
+```json
+...
+"keywords": [
+    "mbed-target:k64f",
+    "mbed-official",
+    "k64f",
+    "frdm-k64f",
+    "gcc"
+],
+...
 ```
+Note that value ```"mbed-target:k64f"``` is added to mark that this yotta target supports ```K64F``` platform.
+
 ### How to add compatible with Greentea platform - target bindings
 In your yotta target ```target.json``` file add to ```keywords``` section value: ```mbed-target:<PLATFORM>``` where ```<PLATFORM>``` is a lowercase name of platform.
 You can check platform name using ```mbedls``` command:
@@ -398,7 +405,21 @@ $ mbedls
 |LPC1768       | ...
 +--------------+ ...
 ```
+### Example mbed prototyping / porting steps may include
+In this example we are creating new mbed yotta target and we want to run tests for ```mbed-drivers``` repository to confirm our target and port are working.
 
+* Clone locally [```mbed-drivers```](https://github.com/ARMmbed/mbed-drivers) repository
+* Create your new target locally (have a look at [```frdm-k64f-gcc```](https://github.com/ARMmbed/target-frdm-k64f-gcc) as an example, [target docs here](http://yottadocs.mbed.com/tutorial/targets.html))
+* Use [yotta link-target](http://yottadocs.mbed.com/reference/commands.html#yotta-link-target) to link your target into mbed-drivers
+* Create your hal and cmsis port module (s)
+* Use [```yotta link```](http://yottadocs.mbed.com/reference/commands.html#yotta-link) to link these into mbed-drivers
+* Download the git version of mbed hal, add your new hal and cmsis module(s) as target-dependencies,
+* Use yotta link to link mbed-hal into mbed-drivers
+* In mbed-drivers: set your target, compile and test!
+* Edit your hal modules until things work, committing and pushing to your source control as you go
+* When your modules and targets are ready for public consumption, open a Pull request on mbed-hal with your dependency addition, and `yotta publish` your target and module(s)
+ 
+Note that we're now using config [config.html](http://yottadocs.mbed.com/reference/config.html) for pin definitions. mbed-hal has a script that processes config definitions into pin definitions, see frdm-k64f targets for an example of how to define these: [target.json](https://github.com/ARMmbed/target-frdm-k64f-gcc/blob/master/target.json#L38))
 
 # Filtering out unwanted devices
 You and tell Greentea which devices it can use for test. To do so prepare list of allowed Target IDs and specify this list using ```--use-tids``` command line switch. Use comma separated list of Target IDs  ```--use-tids <list_of_target_ids>```:
