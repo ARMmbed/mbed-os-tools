@@ -1,5 +1,30 @@
 [![Circle CI](https://circleci.com/gh/ARMmbed/greentea.svg?style=svg)](https://circleci.com/gh/ARMmbed/greentea)
 
+* [Introduction](#introduction)
+* [Supported operating systems](#supported-operating-systems)
+* [Getting started](#getting-started)
+  * [End to end example](#end-to-end-example)
+  * [Dependencies](#dependencies)
+  * [Installing Greentea](#installing-greentea)
+    * [Installation from PyPI (Python Package Index)](#installation-from-pypi-python-package-index)
+    * [Installation from Python sources](#installation-from-python-sources)
+  * [Environment check](#environment-check)
+  * [Building the mbed-drivers for the target](#building-the-mbed-drivers-for-the-target)
+* [Testing](#testing)
+* [Using Greentea with new targets](#using-greentea-with-new-targets)
+  * [Greentea and yotta targets](#greentea-and-yotta-targets)
+  * [Prototyping support](#prototyping-support)
+    * [How to add board-target bindings for Greentea](#how-to-add-board-target-bindings-for-greentea)
+    * [Prototyping or porting sample workflow](#prototyping-or-porting-sample-workflow)
+* [Selecting boards for test running](#selecting-boards-for-test-running)
+  * [Switch --use-tids example](#switch---use-tids-example)
+* [Digesting test output](#digesting-test-output)
+  * [Example 1 - digest the default mbed host test runner](#example-1---digest-the-default-mbed-host-test-runner)
+  * [Example 2 - digest directly from file](#example-2---digest-directly-from-file)
+  * [Example 3 - pipe test.txt file content (as in example 2)](#example-3---pipe-testtxt-file-content-as-in-example-2)
+* [Common Issues](#common-issues)
+  * [Uninstalling Greentea](#uninstalling-greentea)
+
 # Introduction
 
 Hello and welcome to the mbed SDK test suite, codename *Greentea*. The test suite is a collection of tools that enable automated testing on mbed boards.
