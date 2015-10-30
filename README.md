@@ -409,7 +409,7 @@ $ mbedls
 In this example we are creating new mbed yotta target and we want to run tests for ```mbed-drivers``` repository to confirm our target and port are working.
 
 * Clone locally [```mbed-drivers```](https://github.com/ARMmbed/mbed-drivers) repository
-* Create your new target locally (have a look at [```frdm-k64f-gcc```](https://github.com/ARMmbed/target-frdm-k64f-gcc) as an example, [target docs here](http://yottadocs.mbed.com/tutorial/targets.html))
+* Create your new target locally (have a look at [```frdm-k64f-gcc```](https://github.com/ARMmbed/target-frdm-k64f-gcc) as an example, [```target docs here```](http://yottadocs.mbed.com/tutorial/targets.html))
 * Use [yotta link-target](http://yottadocs.mbed.com/reference/commands.html#yotta-link-target) to link your target into mbed-drivers
 * Create your hal and cmsis port module (s)
 * Use [```yotta link```](http://yottadocs.mbed.com/reference/commands.html#yotta-link) to link these into mbed-drivers
