@@ -1,34 +1,10 @@
 [![Circle CI](https://circleci.com/gh/ARMmbed/greentea.svg?style=svg)](https://circleci.com/gh/ARMmbed/greentea)
 
-  * [Introduction](#introduction)
-  * [Supported operating systems](#supported-operating-systems)
-  * [Getting Started](#getting-started)
-    * [End to end example](#end-to-end-example)
-    * [Dependencies](#dependencies)
-    * [Installing Greentea](#installing-greentea)
-      * [Installation from PyPI (Python Package Index)](#installation-from-pypi-python-package-index)
-      * [Installation from Python sources](#installation-from-python-sources)
-    * [Environment Pre-Check](#environment-pre-check)
-    * [Building the SDK for the Target](#building-the-sdk-for-the-target)
-  * [Testing](#testing)
-  * [Adding extra yotta target to platform mapping](#adding-extra-yotta-target-to-platform-mapping)
-    * [Prototyping support](#prototyping-support)
-      * [How to add compatible with Greentea platform - target bindings](#how-to-add-compatible-with-greentea-platform---target-bindings)
-      * [Example mbed prototyping / porting steps may include](#example-mbed-prototyping--porting-steps-may-include)
-  * [Filtering out unwanted devices](#filtering-out-unwanted-devices)
-    * [Switch --use-tids example](#switch---use-tids-example)
-  * [Digesting Test Output](#digesting-test-output)
-    * [Example 1 - digest the default mbed host test runner](#example-1---digest-the-default-mbed-host-test-runner)
-    * [Example 2 - digest directly from file](#example-2---digest-directly-from-file)
-    * [Example 3 - pipe test.txt file content (as in example 2)](#example-3---pipe-testtxt-file-content-as-in-example-2)
-  * [Common Issues](#common-issues)
-    * [Uninstalling Greentea](#uninstalling-greentea)
-
 # Introduction
 
-Hello and welcome to the mbed SDK test suite, codename *Greentea*. The test suite is a collection of tools that enable automated testing on mbed platforms.
+Hello and welcome to the mbed SDK test suite, codename *Greentea*. The test suite is a collection of tools that enable automated testing on mbed boards.
 
-In its current configuration, the mbed test suite can automatically detect most of the popular mbed-enabled platforms connected to the host via the USB interface. The test suite uses the ```mbed-ls``` module to check for connected devices. A separate module called ```mbed-host-tests``` is used to flash and supervise each platform's test. This decoupling allows us to make better software and maintain each of the functionalities as a separate domain.
+In its current configuration, the mbed test suite can automatically detect most of the popular mbed-enabled boards connected to the host over USB. The test suite uses the ```mbed-ls``` module to check for connected devices. A separate module called ```mbed-host-tests``` is used to flash and supervise each board's test. This decoupling allows us to make better software and maintain each of the functionalities as a separate domain.
 
 # Supported operating systems
 
@@ -36,18 +12,18 @@ In its current configuration, the mbed test suite can automatically detect most 
 * Linux (experimental)
 * OS X 10.10 (experimental)
 
-# Getting Started
+# Getting started
 
 To use the mbed test suite you must:
 
 * Install the dependencies.
 * Download and install the mbed test suite.
-* Build the mbed SDK sources.
+* Build the mbed project sources.
 
 ## End to end example
-This end to end example shows how to install and use Greentea with example mbed repository.
+This end to end example shows how to install and use Greentea with an example mbed repository.
 Example will assume that you:
-* Have connected our USB to your host PC one mbed device. In our case it will be one Freescale [```K64F```](https://developer.mbed.org/platforms/FRDM-K64F/) platform.
+* Have one mbed board connected to your PC over USB. In our case it will be one Freescale [```K64F```](https://developer.mbed.org/platforms/FRDM-K64F/) board.
 * Installed [GNU toolchain for ARM Cortex-M](https://launchpad.net/gcc-arm-embedded).
 * Installed [Git](https://git-scm.com/downloads)
 * Installed [Python 2.7](https://www.python.org/download/releases/2.7/).
@@ -60,13 +36,13 @@ Installing Greentea tools:
 ```
 $ pip install mbed-greentea --upgrade```
 ```
-Cloning locally [```mbed-drivers```](https://github.com/ARMmbed/mbed-drivers) repository.
+Create a local clone of the [```mbed-drivers```](https://github.com/ARMmbed/mbed-drivers) repository.
 ```
 $ cd some_dir
 $ git clone https://github.com/ARMmbed/mbed-drivers.git
 $ cd mbed-drivers
 ```
-Checking compatible with ```K64F``` targets:
+Make sure your board is compatible with ```K64F``` yotta targets:
 ```
 $ yotta --plain search -k mbed-target:k64f target --short
 frdm-k64f-gcc 0.2.0: Official mbed build target for the mbed frdm-k64f development board.
@@ -74,15 +50,15 @@ frdm-k64f-armcc 0.1.4: Official mbed build target for the mbed frdm-k64f develop
 
 additional results from https://yotta-private.herokuapp.com:
 ```
-Setting ```K64F``` compatible yotta target to ```frdm-k64f-gcc```:
+Set the yotta build target to ```frdm-k64f-gcc```:
 ```
 $ yotta target frdm-k64f-gcc
 ```
-Building ```mbed-drivers``` module with yotta (Note that Greentea can do this for you also automatically):
+Build the ```mbed-drivers``` module with yotta (note that Greentea can do this for you also automatically):
 ```
 $ yotta build
 ```
-List built test cases:
+List the built test cases:
 ```
 $ mbedgt --list
 mbedgt: available tests for built targets, location '/home/some_dir/'
@@ -95,7 +71,7 @@ mbedgt: available tests for built targets, location '/home/some_dir/'
         test 'mbed-drivers-test-ticker_3'
         test 'mbed-drivers-test-detect'
 ```
-Perform testing (```-V``` is used to activate test case verbose mode):
+And finally - test (```-V``` is used to activate test case verbose mode):
 ```
 $ mbedgt -V
 
@@ -178,7 +154,7 @@ Please install the following:
 
 * If your OS is Windows, please follow the installation instructions [for the serial port driver](https://developer.mbed.org/handbook/Windows-serial-configuration).
 
-* The mbed-drivers SDK source. This is provided [here](https://github.com/ARMmbed/mbed-drivers).
+* The mbed OS module ```mbed-drivers```. It is available [on GitHub](https://github.com/ARMmbed/mbed-drivers) but you can use yotta to grab it - we’ll see how later.
 
 * mbed-ls: installation instructions can be found [in the repository](https://github.com/ARMmbed/mbed-ls#installation-from-python-sources).
 
@@ -195,9 +171,8 @@ mbed-ls==0.1.5
 ## Installing Greentea
 ### Installation from PyPI (Python Package Index)
 
-mbed-greentea module is redistributed via PyPI. We recommend you use the [application pip](https://pip.pypa.io/en/latest/installing.html#install-pip).
+The ```mbed-greentea``` module is redistributed via PyPI. We recommend you use install it with [application pip](https://pip.pypa.io/en/latest/installing.html#install-pip).
 
-To install mbed-greentea from Python Package Index use command:
 ```
 $ pip install mbed-greentea
 ```
@@ -244,9 +219,9 @@ Options:
 .
 ```
 
-## Environment Pre-Check
+## Environment check
 
-At this point you should have all the dependencies and be ready to build the mbed SDK and perform automated testing.
+At this point you should have all the dependencies and be ready to build the ```mbed-drivers``` and perform automated testing.
 
 Make sure you have installed all of the tools. For example you can list all mbed devices connected to your host computer. Tun ``$ mbedls`` and you'll get:
 
@@ -258,9 +233,9 @@ Make sure you have installed all of the tools. For example you can list all mbed
 +---------------------+-------------------+-------------------+--------------------------------+
 ```
 
-## Building the SDK for the Target
+## Building the mbed-drivers for the target
 
-You need to build the SDK for the target you're testing. We'll use the **Freescale FRDM-K64F** as an example.
+You need to build the ```mbed-drivers``` for the target you're testing. We'll use the **Freescale FRDM-K64F** as an example.
 
 Change directories to the mbed sources included in your release files:
 
@@ -272,7 +247,7 @@ Set your target, for example:
 
 ```yotta target frdm-k64f-gcc```
 
-Then build the SDK:
+Then build the ```mbed-drivers``` (you don’t need to specify what you’re building; yotta builds the code in the current directory):
 
 ```yotta build```
 
@@ -376,10 +351,13 @@ mbedgt: running tests...
         test 'mbed-test-hello' ....................................................... OK
 ```
 
-# Adding extra yotta target to platform mapping
+# Using Greentea with new targets
 When prototyping or developing new port you will find yourself in a situation where your yotta modules are not published (especially targets) and you still want to use Greentea. 
-Greentea uses ```yotta search``` command to check platform ```<->``` yotta target compatibility before calling tests.
-For example you can check compatible targets in yotta registry by calling:
+
+## Greentea and yotta targets
+
+Greentea uses the ```yotta search``` command to check that it has proper support for your board before calling tests.
+For example you can check compatible the yotta registry by calling:
 ```
 $ yotta --plain search -k mbed-target:k64f target
 frdm-k64f-gcc 0.2.0:
@@ -391,18 +369,22 @@ frdm-k64f-armcc 0.1.4:
 
 additional results from https://yotta-private.herokuapp.com:
 ```
-Here two targets are opfficialy compatible with ```K64F``` target: ``` frdm-k64f-gcc ```` and ``` frdm-k64f-armcc ```.
-## Prototyping support
-Greentea by default will only allow tests for platforms officially supported by given yotta target. This contradicts prototyping / porting workflow. Your workflow may include use of [```yotta link```](http://yottadocs.mbed.com/reference/commands.html#yotta-link) command and [```yotta link-target```](http://yottadocs.mbed.com/reference/commands.html#yotta-link-target)
-This is why command line switch ```--map-target``` was added. It adds an extra mapping between mbed platform names and supported yotta targets.
+Here two targets are officially compatible with the ```K64F``` target: ``` frdm-k64f-gcc ```` and ``` frdm-k64f-armcc ```. They are both the same board, but each target uses a different toolchain: gcc and armcc.
 
-Example where local yotta target ```frdm-k64f-iar``` (yotta target for ```K64F``` using ``IAR``` compiler) support for ```K64F``` platform is added:
+If you’re working with a target that isn’t officially supported, you’ll have to follow the steps below.
+
+## Prototyping support
+Greentea by default will only allow tests for boards officially supported by a yotta target. This contradicts prototyping and porting workflow. Your workflow may include use of [```yotta link```](http://yottadocs.mbed.com/reference/commands.html#yotta-link) and [```yotta link-target```](http://yottadocs.mbed.com/reference/commands.html#yotta-link-target) commands.
+
+To support these workflows, we’ve created a command line switch ```--map-target``` was added. It adds an extra mapping between mbed board names and supported yotta targets.
+
+For example we can add a local yotta target ```frdm-k64f-iar```. This is a ```K64F``` using the compiler ``IAR```:
 ```
 $ mbedgt --map-target K64F:frdm-k64f-iar
 ```
 Note:
-* Above command will only work locally. Use it while you are porting / protoyping.
-* When officially releasing your yotta targets please add correct yotta search bindings in ```target.json```'s ```keywords``` section.
+* This command will only work locally. Use it while you are porting / protoyping.
+* When officially releasing your yotta targets please add correct yotta search bindings the ```keywords``` section of ```target.json```'.
 
 See example of official yotta target's [target.json]( https://github.com/ARMmbed/target-frdm-k64f-gcc/blob/master/target.json):
 ```json
@@ -416,11 +398,12 @@ See example of official yotta target's [target.json]( https://github.com/ARMmbed
 ],
 ...
 ```
-Note that value ```"mbed-target:k64f"``` is added to mark that this yotta target supports ```K64F``` platform.
+Note that the value ```"mbed-target:k64f"``` is added to mark that this yotta target supports the ```K64F``` board.
 
-### How to add compatible with Greentea platform - target bindings
-In your yotta target ```target.json``` file add to ```keywords``` section value: ```mbed-target:<PLATFORM>``` where ```<PLATFORM>``` is a lowercase name of platform.
-You can check platform name using ```mbedls``` command:
+### How to add board-target bindings for Greentea
+In your yotta target ```target.json``` file, in the section ```keywords```, add the value: ```mbed-target:<PLATFORM>``` where ```<PLATFORM>``` is the platform’s name in lowercase.
+
+You can check the platform’s name using the ```mbedls``` command:
 ```
 $ mbedls
 +--------------+ ...
@@ -430,24 +413,28 @@ $ mbedls
 |LPC1768       | ...
 +--------------+ ...
 ```
-### Example mbed prototyping / porting steps may include
-In this example we are creating new mbed yotta target and we want to run tests for ```mbed-drivers``` repository to confirm our target and port are working.
+### Prototyping or porting sample workflow
 
-* Clone locally [```mbed-drivers```](https://github.com/ARMmbed/mbed-drivers) repository
-* Create your new target locally (have a look at [```frdm-k64f-gcc```](https://github.com/ARMmbed/target-frdm-k64f-gcc) as an example, [```target docs here```](http://yottadocs.mbed.com/tutorial/targets.html))
+**Note:** This is an example workflow; you may need to add or remove steps for your own workflow.
+
+This example creates a new mbed yotta target, then runs ```mbed-drivers``` tests on it to check that it was ported correctly. 
+
+
+* Clone the [```mbed-drivers```](https://github.com/ARMmbed/mbed-drivers) repository
+* Create your new target locally (have a look at [```frdm-k64f-gcc```](https://github.com/ARMmbed/target-frdm-k64f-gcc) as an example, or read the [```target docs here```](http://yottadocs.mbed.com/tutorial/targets.html))
 * Use [yotta link-target](http://yottadocs.mbed.com/reference/commands.html#yotta-link-target) to link your target into mbed-drivers
-* Create your hal and cmsis port module (s)
-* Use [```yotta link```](http://yottadocs.mbed.com/reference/commands.html#yotta-link) to link these into mbed-drivers
-* Download the git version of mbed hal, add your new hal and cmsis module(s) as target-dependencies,
-* Use yotta link to link mbed-hal into mbed-drivers
-* In mbed-drivers: set your target, compile and test!
-* Edit your hal modules until things work, committing and pushing to your source control as you go
+* Create your HAL and CMSIS port modules
+* Use [```yotta link```](http://yottadocs.mbed.com/reference/commands.html#yotta-link) to link these to ```mbed-drivers```
+* Download the git version of mbed HAL, add your new hal and CMSIS modules as target-dependencies
+* Use yotta link to link ```mbed-hal``` to ```mbed-drivers```
+* In ```mbed-drivers```: set your target, compile and test!
+* Edit your HAL modules until things work, committing and pushing to your source control as you go
 * When your modules and targets are ready for public consumption, open a Pull request on mbed-hal with your dependency addition, and `yotta publish` your target and module(s)
  
-Note that we're now using config [config.html](http://yottadocs.mbed.com/reference/config.html) for pin definitions. mbed-hal has a script that processes config definitions into pin definitions, see frdm-k64f targets for an example of how to define these: [target.json](https://github.com/ARMmbed/target-frdm-k64f-gcc/blob/master/target.json#L38))
+Note that we're now using [config.html](http://yottadocs.mbed.com/reference/config.html) for pin definitions. mbed-hal has a script that processes config definitions into pin definitions, see frdm-k64f targets for an example of how to define these: [target.json](https://github.com/ARMmbed/target-frdm-k64f-gcc/blob/master/target.json#L38))
 
-# Filtering out unwanted devices
-You and tell Greentea which devices it can use for test. To do so prepare list of allowed Target IDs and specify this list using ```--use-tids``` command line switch. Use comma separated list of Target IDs  ```--use-tids <list_of_target_ids>```:
+# Selecting boards for test running
+You and tell Greentea which board it can use for test. To do so prepare list of allowed Target IDs and specify this list using ```--use-tids``` command line switch.  The list should be comma separated.
 ```
 $ mbedgt --use-tids 02400203C3423E603EBEC3D8,024002031E031E6AE3FFE3D2
 ```
@@ -463,10 +450,11 @@ $ mbedls
 |LPC1768       |LPC1768[0]           |G:          |COM5        |1010ac87cfc4f23c4c57438d |
 +--------------+---------------------+------------+------------+-------------------------+
 ```
+In this case, one target - the LPC1768 - won’t be tested.
 
 ## Switch --use-tids example
-As a user I want to run two instances of Greentea and perform two not interfered by each other test sessions using two ```K64F``` platforms:
-My resources (2 x ```K64F``` platforms):
+We want to run two instances of Greentea and perform test sessions that won’t interfere with each other using two ```K64F``` boards:
+My resources (2 x ```K64F``` boards):
 ```
 $ mbedls
 +--------------+---------------------+------------+------------+-------------------------+
@@ -476,6 +464,8 @@ $ mbedls
 |K64F          |K64F[1]              |F:          |COM162      |02400203C3423E603EBEC3D8 |
 +--------------+---------------------+------------+------------+-------------------------+
 ```
+
+We can use two consoles to call ```mbedgt```. Each one will specify one target ID, and will therefore run tests only on that target:
 
 Console 1:
 ```
@@ -487,9 +477,9 @@ Console 2:
 $ cd <yotta module Y>
 $ mbedgt –use-tids 02400203C3423E603EBEC3D8
 ```
-Note: In this example when two instances of Greentea are called at the same time and user provides two mutually exclusive subsets of allowed Target IDs with switch ```--use-tids```. This assures that both Greentea instances will not collide and will not try to access the same ```K64F``` platform when testing.
+The two instances of Greentea are called at the same time, but since we provide two mutually exclusive subsets of allowed target IDs with switch ```--use-tids``` the two instances will not collide and will not try to access the same ```K64F``` board when testing.
 
-# Digesting Test Output
+# Digesting test output
 
 We've added a feature for digesting input, which is activated with the ```--digest``` command line switch. Now you can pipe your proprietary test runner’s console output to the test suite or just ```cat``` a file with the test runner’s console output. You can also specify a file name that will be digested as the test runner's console input.
 
@@ -596,13 +586,12 @@ error level is 5
 
 * Issue: In this release there are known issues related to Virtual Machine support.
   * Note: We are not planning to support VMs soon. If you are using our testing tools on VM and experiencing e.g. ``` IOERR_SERIAL``` errors you should probably switch to native OS.
-* Issue: In this release there are known issues related to Linux serial port handling during test.
-  * Solution: Please use latest interface chip firmware for your mbed-enabled boards.
-  * Example for Freescale's FRDM-K64F platform: Please use firmware ver. ```0226_k20dx128_k64f_0x5000.bin``` or greater.
+* Issue: In this release there are known issues related to Linux and MacOS serial port handling during test.
+  * Solution: Please use latest interface chip firmware for your mbed boards.
 * Issue: Some boards show up as 'unknown'.
   * Solution: We will add them in coming releases.
-* Issue: Not all mbed platforms have targets mapped to them.
-  * Solution: More mbed platforms will be added in coming releases.
+* Issue: Not all mbed boards have targets mapped to them.
+  * Solution: More mbed boards will be added in coming releases.
 
 ## Uninstalling Greentea
 
