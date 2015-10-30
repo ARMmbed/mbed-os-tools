@@ -57,7 +57,7 @@ Building ```mbed-drivers``` module with yotta (Note that Greentea can do this fo
 ```
 $ yotta build
 ```
-List buint test cases:
+List built test cases:
 ```
 $ mbedgt --list
 mbedgt: available tests for built targets, location '/home/some_dir/'
@@ -350,6 +350,55 @@ mbedgt: running tests...
         test 'mbed-test-echo' ........................................................ OK
         test 'mbed-test-hello' ....................................................... OK
 ```
+
+# Adding extra yotta target to platform mapping
+When prototyping or developing new port you will find yourself in a situation where your yotta modules are not published (especially targets) and you still want to use Greentea. 
+Greentea uses ```yotta search``` command to check platform ```<->``` yotta target compatibility before calling tests.
+For example you can check compatible targets in yotta registry by calling:
+```
+$ yotta --plain search -k mbed-target:k64f target
+frdm-k64f-gcc 0.2.0:
+    Official mbed build target for the mbed frdm-k64f development board.
+    mbed-target:k64f, mbed-official, k64f, frdm-k64f, gcc
+frdm-k64f-armcc 0.1.4:
+    Official mbed build target for the mbed frdm-k64f development board, using the armcc toolchain.
+    mbed-target:k64f, mbed-official, k64f, frdm-k64f, armcc
+
+additional results from https://yotta-private.herokuapp.com:
+```
+Here two targets are opfficialy compatible with ```K64F``` target: ``` frdm-k64f-gcc ```` and ``` frdm-k64f-armcc ```.
+## Prototyping support
+Greentea by default will only allow tests for platforms officially supported by given yotta target. This contradicts prototyping / porting workflow. Your workflow may include use of [```yotta link```](http://yottadocs.mbed.com/reference/commands.html#yotta-link) command and [```yotta link-target```](http://yottadocs.mbed.com/reference/commands.html#yotta-link-target)
+This is why command line switch ```--map-target``` was added. It adds an extra mapping between mbed platform names and supported yotta targets.
+Example where local yotta target support for ```K64F``` platform is added:
+```
+$ mbedgt --map-target K64F:frdm-k64f-iar
+```
+Note: Above command will only work locally, when releasing your yotta targets please add correct yotta search bindings in ```target.json```'s ```keywords``` section.
+See example of official [target.json]( https://github.com/ARMmbed/target-frdm-k64f-gcc/blob/master/target.json) with suppor:
+```json
+"keywords": [
+"mbed-target:k64f",
+"mbed-official",
+"k64f",
+"frdm-k64f",
+"gcc"
+],
+
+```
+### How to add compatible with Greentea platform - target bindings
+In your yotta target ```target.json``` file add to ```keywords``` section value: ```mbed-target:<PLATFORM>``` where ```<PLATFORM>``` is a lowercase name of platform.
+You can check platform name using ```mbedls``` command:
+```
+$ mbedls
++--------------+ ...
+|platform_name | ...
++--------------+ ...
+|K64F          | ...
+|LPC1768       | ...
++--------------+ ...
+```
+
 
 # Filtering out unwanted devices
 You and tell Greentea which devices it can use for test. To do so prepare list of allowed Target IDs and specify this list using ```--use-tids``` command line switch. Use comma separated list of Target IDs  ```--use-tids <list_of_target_ids>```:
