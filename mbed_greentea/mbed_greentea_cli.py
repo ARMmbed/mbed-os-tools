@@ -125,6 +125,10 @@ def main():
                     dest='map_platform_to_yt_target',
                     help='List of custom mapping between platform name and yotta target. Comma separated list of PLATFORM:TARGET tuples')
 
+    parser.add_option('', '--use-tids',
+                    dest='use_target_ids',
+                    help='Specify explicitly which devices can be used by Greentea for testing by creating list of allowed Target IDs (use comma separated list)')
+
     parser.add_option('', '--lock',
                     dest='lock_by_target',
                     default=False,
@@ -359,6 +363,14 @@ def main_cli(opts, args, gt_instance_uuid=None):
                     yt_target_platform_map[yt_target].append(platform_name)
     #print "yt_target_platform_map", json.dumps(yt_target_platform_map, indent=2)
 
+    ### We can filter in only specific target ids
+    accepted_target_ids = None
+    if opts.use_target_ids:
+        gt_log("filtering out target ids not on below list (specified with --use-tids switch)")
+        accepted_target_ids = opts.use_target_ids.split(',')
+        for tid in accepted_target_ids:
+            gt_log_tab("accepting target id '%s'"% gt_bright(tid))
+
     test_exec_retcode = 0
 
     test_exec_retcode = 0       # Decrement this value each time test case result is not 'OK'
@@ -377,6 +389,9 @@ def main_cli(opts, args, gt_instance_uuid=None):
             ### Select one MUT from list of available MUTS to start testing
             mut = None
             for mbed_dev in ready_mbed_devices:
+                if accepted_target_ids and mbed_dev['target_id'] not in accepted_target_ids:
+                    continue
+
                 if mbed_dev['platform_name'] == platform_name:
                     mut = mbed_dev
                     gt_log("using platform '%s' for test:"% gt_bright(platform_name))
