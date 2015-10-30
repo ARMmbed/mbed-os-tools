@@ -19,6 +19,94 @@ To use the mbed test suite you must:
 * Download and install the mbed test suite.
 * Build the mbed SDK sources.
 
+## End to end example
+This end to end example shows how to install and use Greentea with example mbed repository.
+Example will assume that you:
+* Have connected our USB to your host PC one mbed device. In our case it will be one Freescale [```K64F```](https://developer.mbed.org/platforms/FRDM-K64F/) platform.
+* Installed [GNU toolchain for ARM Cortex-M](https://launchpad.net/gcc-arm-embedded).
+* Installed [Git](https://git-scm.com/downloads)
+
+Install [```yotta```](https://github.com/ARMmbed/yotta):
+```
+$ pip install yotta --upgrade
+```
+Installing Greentea tools:
+```
+$ pip install mbed-greentea --upgrade```
+```
+Cloning locally [```mbed-drivers```](https://github.com/ARMmbed/mbed-drivers) repository.
+```
+$ cd some_dir
+$ git clone https://github.com/ARMmbed/mbed-drivers.git
+$ cd mbed-drivers
+```
+Checking compatible with ```K64F``` targets:
+```
+$ yotta --plain search -k mbed-target:k64f target --short
+frdm-k64f-gcc 0.2.0: Official mbed build target for the mbed frdm-k64f development board.
+frdm-k64f-armcc 0.1.4: Official mbed build target for the mbed frdm-k64f development board, using the armcc toolchain.
+
+additional results from https://yotta-private.herokuapp.com:
+```
+Setting ```K64F``` compatible yotta target to ```frdm-k64f-gcc```:
+```
+$ yotta target frdm-k64f-gcc
+```
+Building ```mbed-drivers``` module with yotta (Note that Greentea can do this for you also automatically):
+```
+$ yotta build
+```
+Perform testing (```-V``` is used to activate test case verbose mode):
+```
+$ mbedgt -V
+
+mbedgt: checking for yotta target in current directory
+        reason: no --target switch set
+mbedgt: checking yotta target in current directory
+        calling yotta: yotta --plain target
+mbedgt: assuming default target as 'frdm-k64f-gcc'
+mbedgt: detecting connected mbed-enabled devices...
+mbedgt: detected 3 devices
+        detected 'K64F' -> 'K64F[0]', console at 'COM160', mounted at 'E:', target id '024002031E031E6AE3FFE3D2'
+...
+mbedgt: running 20 tests for target 'frdm-k64f-gcc' and platform 'K64F'
+        running host test...
+        test 'mbed-drivers-test-serial_interrupt' .............................................. OK in 6.16 sec
+        running host test...
+        test 'mbed-drivers-test-blinky' ........................................................ OK in 4.42 sec
+        running host test...
+        test 'mbed-drivers-test-div' ........................................................... OK in 1.41 sec
+...
+mbedgt: test report:
++---------------+---------------+------------------------------------+--------+--------------------+-------------+
+| target        | platform_name | test                               | result | elapsed_time (sec) | copy_method |
++---------------+---------------+------------------------------------+--------+--------------------+-------------+
+| frdm-k64f-gcc | K64F          | mbed-drivers-test-serial_interrupt | OK     | 6.16               | shell       |
+| frdm-k64f-gcc | K64F          | mbed-drivers-test-blinky           | OK     | 4.42               | shell       |
+| frdm-k64f-gcc | K64F          | mbed-drivers-test-div              | OK     | 1.41               | shell       |
+| frdm-k64f-gcc | K64F          | mbed-drivers-test-dev_null         | OK     | 3.5                | shell       |
+| frdm-k64f-gcc | K64F          | mbed-drivers-test-stdio            | OK     | 0.74               | shell       |
+| frdm-k64f-gcc | K64F          | mbed-drivers-test-sleep_timeout    | OK     | 3.38               | shell       |
+| frdm-k64f-gcc | K64F          | mbed-drivers-test-ticker           | OK     | 11.38              | shell       |
+| frdm-k64f-gcc | K64F          | mbed-drivers-test-rtc              | OK     | 4.55               | shell       |
+| frdm-k64f-gcc | K64F          | mbed-drivers-test-cstring          | FAIL   | 1.39               | shell       |
+| frdm-k64f-gcc | K64F          | mbed-drivers-test-cpp              | OK     | 1.34               | shell       |
+| frdm-k64f-gcc | K64F          | mbed-drivers-test-timeout          | OK     | 11.55              | shell       |
+| frdm-k64f-gcc | K64F          | mbed-drivers-test-basic            | OK     | 1.37               | shell       |
+| frdm-k64f-gcc | K64F          | mbed-drivers-test-ticker_3         | OK     | 11.38              | shell       |
+| frdm-k64f-gcc | K64F          | mbed-drivers-test-ticker_2         | OK     | 11.38              | shell       |
+| frdm-k64f-gcc | K64F          | mbed-drivers-test-heap_and_stack   | OK     | 1.39               | shell       |
+| frdm-k64f-gcc | K64F          | mbed-drivers-test-hello            | OK     | 0.37               | shell       |
+| frdm-k64f-gcc | K64F          | mbed-drivers-test-time_us          | OK     | 11.37              | shell       |
+| frdm-k64f-gcc | K64F          | mbed-drivers-test-stl              | OK     | 1.36               | shell       |
+| frdm-k64f-gcc | K64F          | mbed-drivers-test-echo             | OK     | 6.33               | shell       |
+| frdm-k64f-gcc | K64F          | mbed-drivers-test-detect           | OK     | 0.47               | shell       |
++---------------+---------------+------------------------------------+--------+--------------------+-------------+
+
+Result: 1 FAIL / 19 OK
+Completed in 269.49 sec
+```
+
 ## Dependencies
 
 Please install the following:
