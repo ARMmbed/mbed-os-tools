@@ -404,6 +404,8 @@ def main_cli(opts, args, gt_instance_uuid=None):
                 continue
 
             if mut:
+                target_platforms_match += 1
+
                 # Demo mode: --run implementation (already added --run to mbedhtrun)
                 # We want to pass file name to mbedhtrun (--run NAME  =>  -f NAME_ and run only one binary
                 if opts.run_app:
@@ -573,7 +575,7 @@ def main_cli(opts, args, gt_instance_uuid=None):
         # This flag guards 'build only' so we expect only yotta errors
         if test_platforms_match == 0:
             # No tests were executed
-            gt_log("no target matching tests were found!")
+            gt_log("no platform/target matching tests were found!")
             test_exec_retcode += -10
         if target_platforms_match == 0:
             # No platforms were tested
