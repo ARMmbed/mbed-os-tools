@@ -121,6 +121,10 @@ def main():
                     action="store_true",
                     help='List available binaries')
 
+    parser.add_option('-m', '--map-target',
+                    dest='map_platform_to_yt_target',
+                    help='List of custom mapping between platform name and yotta target. Comma separated list of PLATFORM:TARGET tuples')
+
     parser.add_option('', '--lock',
                     dest='lock_by_target',
                     default=False,
@@ -309,6 +313,24 @@ def main_cli(opts, args, gt_instance_uuid=None):
         return (RET_NO_DEVICES)
 
     ### Use yotta to search mapping between platform names and available platforms
+    # Convert platform:target, ... mapping to data structure
+    map_platform_to_yt_target = {}
+    if opts.map_platform_to_yt_target:
+        gt_log("user defined platform -> target supported mapping definition (specified with --map-target switch)")
+        p_to_t_mappings = opts.map_platform_to_yt_target.split(',')
+        for mapping in p_to_t_mappings:
+            if len(mapping.split(':')) == 2:
+                platform, yt_target = mapping.split(':')
+                if platform not in map_platform_to_yt_target:
+                    map_platform_to_yt_target[platform] = []
+                map_platform_to_yt_target[platform].append(yt_target)
+                gt_log_tab("mapped platform '%s' to be compatible with '%s'"% (
+                    gt_bright(platform),
+                    gt_bright(yt_target)
+                ))
+            else:
+                gt_log_tab("unknown format '%s', use 'platform:target' format"% mapping)
+
     # Check if mbed classic target name can be translated to yotta target name
 
     mut_info_map = {}   # platform_name : mut_info_dict, extract yt_targets with e.g. [k["yotta_target"] for k in d['K64F']["yotta_targets"]]
@@ -316,7 +338,7 @@ def main_cli(opts, args, gt_instance_uuid=None):
     for mut in ready_mbed_devices:
         platfrom_name = mut['platform_name']
         if platfrom_name not in mut_info_map:
-            mut_info = get_mbed_clasic_target_info(platfrom_name)
+            mut_info = get_mbed_clasic_target_info(platfrom_name, map_platform_to_yt_target)
             if mut_info:
                 mut_info_map[platfrom_name] = mut_info
     #print "mut_info_map:", json.dumps(mut_info_map, indent=2)
@@ -357,7 +379,7 @@ def main_cli(opts, args, gt_instance_uuid=None):
             for mbed_dev in ready_mbed_devices:
                 if mbed_dev['platform_name'] == platform_name:
                     mut = mbed_dev
-                    gt_log("using specific '%s' platform:"% gt_bright(platform_name))
+                    gt_log("using platform '%s' for test:"% gt_bright(platform_name))
                     for k in mbed_dev:
                         gt_log_tab("%s = '%s'"% (k, mbed_dev[k]))
                     break

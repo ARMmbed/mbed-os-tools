@@ -138,12 +138,17 @@ def parse_yotta_search_cmd_output(line):
         gt_log_tab("found target '%s'" % gt_bright(yotta_target_name))
     return None
 
-def add_target_info_mapping(mbed_classic_name):
+def add_target_info_mapping(mbed_classic_name, map_platform_to_yt_target=None):
     """! Adds more target information to TARGET_INFO_MAPPING by searching in yotta registry
     @return Returns TARGET_INFO_MAPPING updated with new targets
     @details Note: function mutates TARGET_INFO_MAPPING
     """
     yotta_target_search = get_mbed_targets_from_yotta(mbed_classic_name)
+
+    # Add extra targets to already existing and detected in the system platforms
+    if mbed_classic_name in map_platform_to_yt_target:
+        yotta_target_search = list(set(yotta_target_search + map_platform_to_yt_target[mbed_classic_name]))
+
     # Check if this targets are already there
     if mbed_classic_name not in TARGET_INFO_MAPPING:
         TARGET_INFO_MAPPING[mbed_classic_name] = {
@@ -179,13 +184,14 @@ def add_target_info_mapping(mbed_classic_name):
                     })
     return TARGET_INFO_MAPPING
 
-def get_mbed_clasic_target_info(mbed_classic_name):
+def get_mbed_clasic_target_info(mbed_classic_name, map_platform_to_yt_target=None):
     """! Function resolves meta-data information about target given as mbed classic name.
     @param mbed_classic_name Mbed classic (mbed 2.0) name e.g. K64F, LPC1768 etc.
+    @param map_platform_to_yt_target User defined mapping platfrom:supported target
     @details Function first updated TARGET_INFO_MAPPING structure and later checks if mbed classic name is available in mapping structure
     @return Returns information about yotta target for specific toolchain
     """
-    TARGET_INFO_MAPPING = add_target_info_mapping(mbed_classic_name)
+    TARGET_INFO_MAPPING = add_target_info_mapping(mbed_classic_name, map_platform_to_yt_target)
     return TARGET_INFO_MAPPING[mbed_classic_name] if mbed_classic_name in TARGET_INFO_MAPPING else None
 
 def get_mbed_supported_test(mbed_test_case_name):
