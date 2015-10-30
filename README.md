@@ -57,6 +57,19 @@ Building ```mbed-drivers``` module with yotta (Note that Greentea can do this fo
 ```
 $ yotta build
 ```
+List buint test cases:
+```
+$ mbedgt --list
+mbedgt: available tests for built targets, location '/home/some_dir/'
+        target 'frdm-k64f-gcc':
+        test 'mbed-drivers-test-serial_interrupt'
+        test 'mbed-drivers-test-blinky'
+        test 'mbed-drivers-test-div'
+...
+        test 'mbed-drivers-test-sleep_timeout'
+        test 'mbed-drivers-test-ticker_3'
+        test 'mbed-drivers-test-detect'
+```
 Perform testing (```-V``` is used to activate test case verbose mode):
 ```
 $ mbedgt -V
