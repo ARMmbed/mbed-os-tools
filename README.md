@@ -249,6 +249,49 @@ mbedgt: running tests...
         test 'mbed-test-hello' ....................................................... OK
 ```
 
+# Filtering out unwanted devices
+You and tell Greentea which devices it can use for test. To do so prepare list of allowed Target IDs and specify this list using ```--use-tids``` command line switch. Use comma separated list of Target IDs  ```--use-tids <list_of_target_ids>```:
+```
+$ mbedgt --use-tids 02400203C3423E603EBEC3D8,024002031E031E6AE3FFE3D2
+```
+Where ```02400203C3423E603EBEC3D8``` and ```024002031E031E6AE3FFE3D2``` might be target IDs of devices available in your system.
+Note: You can check target IDs of the connected devices using ```mbedls``` command:
+```
+$ mbedls
++--------------+---------------------+------------+------------+-------------------------+
+|platform_name |platform_name_unique |mount_point |serial_port |target_id                |
++--------------+---------------------+------------+------------+-------------------------+
+|K64F          |K64F[0]              |E:          |COM160      |024002031E031E6AE3FFE3D2 |
+|K64F          |K64F[1]              |F:          |COM162      |02400203C3423E603EBEC3D8 |
+|LPC1768       |LPC1768[0]           |G:          |COM5        |1010ac87cfc4f23c4c57438d |
++--------------+---------------------+------------+------------+-------------------------+
+```
+
+## Switch --use-tids example
+As a user I want to run two instances of Greentea and perform two not interfered by each other test sessions using two ```K64F``` platforms:
+My resources (2 x ```K64F``` platforms):
+```
+$ mbedls
++--------------+---------------------+------------+------------+-------------------------+
+|platform_name |platform_name_unique |mount_point |serial_port |target_id                |
++--------------+---------------------+------------+------------+-------------------------+
+|K64F          |K64F[0]              |E:          |COM160      |024002031E031E6AE3FFE3D2 |
+|K64F          |K64F[1]              |F:          |COM162      |02400203C3423E603EBEC3D8 |
++--------------+---------------------+------------+------------+-------------------------+
+```
+
+Console 1:
+```
+$ cd <yotta module X>
+$ mbedgt –use-tids 024002031E031E6AE3FFE3D2
+```
+Console 2:
+```
+$ cd <yotta module Y>
+$ mbedgt –use-tids 02400203C3423E603EBEC3D8
+```
+Note: In this example when two instances of Greentea are called at the same time and user provides two mutually exclusive subsets of allowed Target IDs with switch ```--use-tids```. This assures that both Greentea instances will not collide and will not try to access the same ```K64F``` platform when testing.
+
 # Digesting Test Output
 
 We've added a feature for digesting input, which is activated with the ```--digest``` command line switch. Now you can pipe your proprietary test runner’s console output to the test suite or just ```cat``` a file with the test runner’s console output. You can also specify a file name that will be digested as the test runner's console input.
