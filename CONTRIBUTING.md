@@ -1,5 +1,5 @@
 # Hello!
-We are an open source project of ARM mbed. Contributions via [pull request](https://github.com/armmbed/yotta/pulls), and [bug reports](https://github.com/armmbed/yotta/issues) are welcome!
+We are an open source project of [ARM mbed](www.mbed.com). Contributions via [pull request](https://github.com/armmbed/yotta/pulls), and [bug reports](https://github.com/armmbed/yotta/issues) are welcome!
 
 For more details please see our general [CONTRIBUTING.md](https://github.com/ARMmbed/greentea/blob/master/docs/CONTRIBUTING.md) document.
 
