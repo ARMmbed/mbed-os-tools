@@ -25,6 +25,7 @@ Example will assume that you:
 * Have connected our USB to your host PC one mbed device. In our case it will be one Freescale [```K64F```](https://developer.mbed.org/platforms/FRDM-K64F/) platform.
 * Installed [GNU toolchain for ARM Cortex-M](https://launchpad.net/gcc-arm-embedded).
 * Installed [Git](https://git-scm.com/downloads)
+* Installed [Python 2.7](https://www.python.org/download/releases/2.7/).
 
 Install [```yotta```](https://github.com/ARMmbed/yotta):
 ```
