@@ -19,7 +19,7 @@ import os
 import sys
 import optparse
 import threading
-from time import time
+from time import time, sleep
 
 from mbed_greentea.mbed_test_api import run_host_test
 from mbed_greentea.mbed_test_api import TEST_RESULTS
@@ -55,7 +55,7 @@ MBED_HOST_TESTS = 'mbed_host_tests' in sys.modules
 
 RET_NO_DEVICES = 1001
 RET_YOTTA_BUILD_FAIL = -1
-
+    
 def print_version(verbose=True):
     """! Print current package version
     """
@@ -68,7 +68,6 @@ def print_version(verbose=True):
 
 def main():
     """ Closure for main_cli() function """
-
     parser = optparse.OptionParser()
 
     parser.add_option('-t', '--target',
@@ -196,7 +195,7 @@ def main():
     (opts, args) = parser.parse_args()
 
     cli_ret = 0
-
+    
     start = time()
     if opts.lock_by_target:
         # We are using Greentea proprietary locking mechanism to lock between platforms and targets
@@ -210,10 +209,10 @@ def main():
             except KeyboardInterrupt:
                 greentea_clean_kettle(gt_instance_uuid)
                 gt_log_err("ctrl+c keyboard interrupt!")
-                exit(-2)    # Keyboard interrupt
+                return(-2)    # Keyboard interrupt
             except:
                 greentea_clean_kettle(gt_instance_uuid)
-                gt_log_err("Unexpected error:")
+                gt_log_err("unexpected error:")
                 gt_log_tab(sys.exc_info()[0])
                 raise
             greentea_clean_kettle(gt_instance_uuid)
@@ -224,17 +223,18 @@ def main():
             cli_ret = main_cli(opts, args)
         except KeyboardInterrupt:
             gt_log_err("ctrl+c keyboard interrupt!")
-            exit(-2)    # Keyboard interrupt
+            return(-2)    # Keyboard interrupt
         except Exception as e:
-            gt_log_err("Unexpected error:")
+            gt_log_err("unexpected error:")
             gt_log_tab(str(e))
             raise
 
     if not any([opts.list_binaries, opts.version]):
-        print "Completed in %.2f sec"% (time() - start)
-    exit(cli_ret)
+        print "completed in %.2f sec"% (time() - start)
+    return(cli_ret)
 
 def run_test_thread(q, test_queue, opts, mut, mut_info, yotta_target_name):
+    global catch_ctrlC_flag
     test_exec_retcode = 0
     test_platforms_match = 0
     test_report = {}
@@ -281,7 +281,7 @@ def run_test_thread(q, test_queue, opts, mut, mut_info, yotta_target_name):
         test_report[yotta_target_name][test_name]['platform_name'] = micro
         test_report[yotta_target_name][test_name]['copy_method'] = copy_method
 
-        gt_log("Test on Hardware with Target ID: %s \n\tTest '%s' %s %s in %.2f sec"% (mut['target_id'], test['test_bin'], '.' * (80 - len(test['test_bin'])), test_result, single_testduration))
+        gt_log("test on hardware with target id: %s \n\ttest '%s' %s %s in %.2f sec"% (mut['target_id'], test['test_bin'], '.' * (80 - len(test['test_bin'])), test_result, single_testduration))
         
         if single_test_result != 'OK' and not verbose and opts.report_fails:
             # In some cases we want to print console to see why test failed
@@ -289,7 +289,7 @@ def run_test_thread(q, test_queue, opts, mut, mut_info, yotta_target_name):
             gt_log_tab("test failed, reporting console output (specified with --report-fails option)")
             print
             print single_test_output  
-    
+        
     #greentea_release_target_id(mut['target_id'], gt_instance_uuid)
     q.put({'test_platforms_match': test_platforms_match, 'test_exec_retcode': test_exec_retcode, 'test_report': test_report})
     return
@@ -454,12 +454,14 @@ def main_cli(opts, args, gt_instance_uuid=None):
             gt_log("processing '%s' platform..."% gt_bright(platform_name))
 
             ### Select MUTS to test from list of available MUTS to start testing
+            mut = None
             number_of_parallel_instances = 1
             for mbed_dev in ready_mbed_devices:
                 if accepted_target_ids and mbed_dev['target_id'] not in accepted_target_ids:
                     continue
 
                 if mbed_dev['platform_name'] == platform_name:
+                    mut = mbed_dev
                     muts_to_test.append(mbed_dev)
                     gt_log("using platform '%s' for test:"% gt_bright(platform_name))
                     for k in mbed_dev:
@@ -473,8 +475,7 @@ def main_cli(opts, args, gt_instance_uuid=None):
             if opts.verbose_test_configuration_only:
                 continue
 
-            number_of_threads = 0
-            for mut in muts_to_test:
+            if mut:
                 target_platforms_match += 1
 
                 # Demo mode: --run implementation (already added --run to mbedhtrun)
@@ -552,32 +553,34 @@ def main_cli(opts, args, gt_instance_uuid=None):
                         gt_log_tab("note: see list of available test cases below")
                         list_binaries_for_targets(verbose_footer=False)
                 
-                if test_queue.empty():
-                    gt_log("running %d test%s for target '%s' and platform '%s'"% (
-                        len(filtered_ctest_test_list),
-                        "s" if len(filtered_ctest_test_list) != 1 else "",
-                        gt_bright(yotta_target_name),
-                        gt_bright(platform_name)
-                    ))
-                    for test_bin, image_path in filtered_ctest_test_list.iteritems():
-                        test = {"test_bin":test_bin, "image_path":image_path}
-                        test_queue.put(test)
+                gt_log("running %d test%s for target '%s' and platform '%s'"% (
+                    len(filtered_ctest_test_list),
+                    "s" if len(filtered_ctest_test_list) != 1 else "",
+                    gt_bright(yotta_target_name),
+                    gt_bright(platform_name)
+                ))
                 
-                if opts.parallel_test_exec > 1:
-                    #################################################################
-                    # Experimental, parallel test execution
-                    #################################################################
-                    if number_of_threads < opts.parallel_test_exec:
-                        t = threading.Thread(target=run_test_thread, args = (q, test_queue, opts, mut, mut_info, yotta_target_name))
-                        execute_threads.append(t)
-                        number_of_threads += 1 
-                else:                
-                    # Serialized (not parallel) test execution
-                    run_test_thread(q, test_queue, opts, mut, mut_info, yotta_target_name)
-                    test_return_data = q.get()
-                    test_platforms_match += test_return_data['test_platforms_match']
-                    test_exec_retcode += test_return_data['test_exec_retcode']
-                    test_report = test_return_data['test_report']
+                for test_bin, image_path in filtered_ctest_test_list.iteritems():
+                    test = {"test_bin":test_bin, "image_path":image_path}
+                    test_queue.put(test)
+                
+                number_of_threads = 0
+                for mut in muts_to_test:
+                    if opts.parallel_test_exec > 1:
+                        #################################################################
+                        # Experimental, parallel test execution
+                        #################################################################
+                        if number_of_threads < opts.parallel_test_exec:
+                            t = threading.Thread(target=run_test_thread, args = (q, test_queue, opts, mut, mut_info, yotta_target_name))
+                            execute_threads.append(t)
+                            number_of_threads += 1 
+                    else:                
+                        # Serialized (not parallel) test execution
+                        run_test_thread(q, test_queue, opts, mut, mut_info, yotta_target_name)
+                        test_return_data = q.get()
+                        test_platforms_match += test_return_data['test_platforms_match']
+                        test_exec_retcode += test_return_data['test_exec_retcode']
+                        test_report = test_return_data['test_report']
                            
             # We need to stop executing if yotta build fails
             if not yotta_result:
@@ -591,6 +594,9 @@ def main_cli(opts, args, gt_instance_uuid=None):
             t.daemon = True
             t.start()
         for t in execute_threads:
+            # to catch ctrl c
+            while t.is_alive():
+                sleep(1)
             test_return_data = q.get()
             test_platforms_match += test_return_data['test_platforms_match']
             test_exec_retcode += test_return_data['test_exec_retcode']
@@ -600,7 +606,7 @@ def main_cli(opts, args, gt_instance_uuid=None):
                 test_report.update(temp_test_report)
             else:
                 test_report[test_report.keys()[0]].update(temp_test_report[temp_test_report.keys()[0]])
-    
+            
     if opts.verbose_test_configuration_only:
         print
         print "Example: execute 'mbedgt --target=TARGET_NAME' to start testing for TARGET_NAME target"
