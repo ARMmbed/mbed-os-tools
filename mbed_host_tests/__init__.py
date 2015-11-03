@@ -459,5 +459,8 @@ def init_host_test_cli_params():
                       action="store_true",
                       help='Prints package version and exits')
 
+    parser.description = """Flash, reset and perform host supervised tests on mbed platforms"""
+    parser.epilog = """Example: mbedhtrun -d E: -p COM5 -f "test.bin" -C 4 -c shell -m K64F"""
+
     (options, _) = parser.parse_args()
     return options
