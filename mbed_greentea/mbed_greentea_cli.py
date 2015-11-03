@@ -3,25 +3,22 @@
 """
 mbed SDK
 Copyright (c) 2011-2014 ARM Limited
-
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
-
     http://www.apache.org/licenses/LICENSE-2.0
-
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-
 Author: Przemyslaw Wirkus <Przemyslaw.Wirkus@arm.com>
 """
 
 import os
 import sys
 import optparse
+import threading
 from time import time
 
 from mbed_greentea.mbed_test_api import run_host_test
@@ -43,6 +40,9 @@ from mbed_greentea.mbed_greentea_dlm import greentea_get_app_sem
 from mbed_greentea.mbed_greentea_dlm import greentea_update_kettle
 from mbed_greentea.mbed_greentea_dlm import greentea_clean_kettle
 from mbed_greentea.mbed_yotta_api import build_with_yotta
+
+from Queue import Queue
+from threading import Thread
 
 try:
     import mbed_lstools
@@ -97,6 +97,11 @@ def main():
                     help="Copy (flash the target) method selector. " + copy_methods_str,
                     metavar="COPY_METHOD")
 
+    parser.add_option('', '--parallel',
+                    dest='parallel_test_exec',
+                    default=0,
+                    help='Experimental, you execute test runners for connected to your host MUTs in parallel (speeds up test result collection)')   
+                    
     parser.add_option('', '--config',
                     dest='verbose_test_configuration_only',
                     default=False,
@@ -229,6 +234,66 @@ def main():
         print "Completed in %.2f sec"% (time() - start)
     exit(cli_ret)
 
+def run_test_thread(q, test_queue, opts, mut, mut_info, yotta_target_name):
+    test_exec_retcode = 0
+    test_platforms_match = 0
+    test_report = {}
+    #greentea_acquire_target_id(mut['target_id'], gt_instance_uuid)
+    
+    while not test_queue.empty():
+        test = test_queue.get()
+        test_result = 'SKIPPED'
+
+        disk = mut['mount_point']
+        port = mut['serial_port']
+        micro = mut['platform_name']
+        program_cycle_s = mut_info['properties']['program_cycle_s']
+        copy_method = opts.copy_method if opts.copy_method else 'shell'
+        verbose = opts.verbose_test_result_only
+
+        test_platforms_match += 1
+        #gt_log_tab("running host test...")
+        host_test_result = run_host_test(test['image_path'],
+                                         disk,
+                                         port,
+                                         micro=micro,
+                                         copy_method=copy_method,
+                                         program_cycle_s=program_cycle_s,
+                                         digest_source=opts.digest_source,
+                                         json_test_cfg=opts.json_test_configuration,
+                                         verbose=verbose)
+
+        single_test_result, single_test_output, single_testduration, single_timeout = host_test_result
+        test_result = single_test_result
+        if single_test_result != TEST_RESULT_OK:
+            test_exec_retcode += 1
+
+        # Update report for optional reporting feature
+        test_name = test['test_bin'].lower()
+        if yotta_target_name not in test_report:
+            test_report[yotta_target_name] = {}
+        if test_name not in test_report[yotta_target_name]:
+            test_report[yotta_target_name][test_name] = {}
+
+        test_report[yotta_target_name][test_name]['single_test_result'] = single_test_result
+        test_report[yotta_target_name][test_name]['single_test_output'] = single_test_output
+        test_report[yotta_target_name][test_name]['elapsed_time'] = single_testduration
+        test_report[yotta_target_name][test_name]['platform_name'] = micro
+        test_report[yotta_target_name][test_name]['copy_method'] = copy_method
+
+        gt_log("Test on Hardware with Target ID: %s \n\tTest '%s' %s %s in %.2f sec"% (mut['target_id'], test['test_bin'], '.' * (80 - len(test['test_bin'])), test_result, single_testduration))
+        
+        if single_test_result != 'OK' and not verbose and opts.report_fails:
+            # In some cases we want to print console to see why test failed
+            # even if we are not in verbose mode
+            gt_log_tab("test failed, reporting console output (specified with --report-fails option)")
+            print
+            print single_test_output  
+    
+    #greentea_release_target_id(mut['target_id'], gt_instance_uuid)
+    q.put({'test_platforms_match': test_platforms_match, 'test_exec_retcode': test_exec_retcode, 'test_report': test_report})
+    return
+    
 def main_cli(opts, args, gt_instance_uuid=None):
     """! This is main CLI function with all command line parameters
     @details This function also implements CLI workflow depending on CLI parameters inputed
@@ -371,13 +436,15 @@ def main_cli(opts, args, gt_instance_uuid=None):
         for tid in accepted_target_ids:
             gt_log_tab("accepting target id '%s'"% gt_bright(tid))
 
-    test_exec_retcode = 0
-
     test_exec_retcode = 0       # Decrement this value each time test case result is not 'OK'
     test_platforms_match = 0    # Count how many tests were actually ran with current settings
     target_platforms_match = 0  # Count how many platforms were actually tested with current settings
 
-    test_report = {}    # Test report used to export to Junit, HTML etc...
+    test_report = {}        # Test report used to export to Junit, HTML etc...
+    muts_to_test = []       # MUTs to actually be tested
+    test_queue = Queue()
+    q = Queue()
+    execute_threads = []
 
     ### Testing procedures, for each target, for each target's compatible platform
     for yotta_target_name in yt_target_platform_map:
@@ -386,24 +453,28 @@ def main_cli(opts, args, gt_instance_uuid=None):
         for platform_name in yt_target_platform_map[yotta_target_name]:
             gt_log("processing '%s' platform..."% gt_bright(platform_name))
 
-            ### Select one MUT from list of available MUTS to start testing
-            mut = None
+            ### Select MUTS to test from list of available MUTS to start testing
+            number_of_parallel_instances = 1
             for mbed_dev in ready_mbed_devices:
                 if accepted_target_ids and mbed_dev['target_id'] not in accepted_target_ids:
                     continue
 
                 if mbed_dev['platform_name'] == platform_name:
-                    mut = mbed_dev
+                    muts_to_test.append(mbed_dev)
                     gt_log("using platform '%s' for test:"% gt_bright(platform_name))
                     for k in mbed_dev:
                         gt_log_tab("%s = '%s'"% (k, mbed_dev[k]))
-                    break
+                    if number_of_parallel_instances < opts.parallel_test_exec:
+                        number_of_parallel_instances += 1
+                    else:   
+                        break
 
             # Configuration print mode:
             if opts.verbose_test_configuration_only:
                 continue
 
-            if mut:
+            number_of_threads = 0
+            for mut in muts_to_test:
                 target_platforms_match += 1
 
                 # Demo mode: --run implementation (already added --run to mbedhtrun)
@@ -480,64 +551,56 @@ def main_cli(opts, args, gt_instance_uuid=None):
                         gt_log_tab("note: test case names are case sensitive")
                         gt_log_tab("note: see list of available test cases below")
                         list_binaries_for_targets(verbose_footer=False)
-
-                gt_log("running %d test%s for target '%s' and platform '%s'"% (
-                    len(filtered_ctest_test_list),
-                    "s" if len(filtered_ctest_test_list) != 1 else "",
-                    gt_bright(yotta_target_name),
-                    gt_bright(platform_name)
-                ))
-
-                for test_bin, image_path in filtered_ctest_test_list.iteritems():
-                    test_result = 'SKIPPED'
-
-                    disk = mut['mount_point']
-                    port = mut['serial_port']
-                    micro = mut['platform_name']
-                    program_cycle_s = mut_info['properties']['program_cycle_s']
-                    copy_method = opts.copy_method if opts.copy_method else 'shell'
-                    verbose = opts.verbose_test_result_only
-
-                    test_platforms_match += 1
-                    gt_log_tab("running host test...")
-                    host_test_result = run_host_test(image_path,
-                                                     disk,
-                                                     port,
-                                                     micro=micro,
-                                                     copy_method=copy_method,
-                                                     program_cycle_s=program_cycle_s,
-                                                     digest_source=opts.digest_source,
-                                                     json_test_cfg=opts.json_test_configuration,
-                                                     verbose=verbose)
-
-                    single_test_result, single_test_output, single_testduration, single_timeout = host_test_result
-                    test_result = single_test_result
-                    if single_test_result != TEST_RESULT_OK:
-                        test_exec_retcode += 1
-
-                    # Update report for optional reporting feature
-                    test_name = test_bin.lower()
-                    if yotta_target_name not in test_report:
-                        test_report[yotta_target_name] = {}
-                    if test_name not in test_report[yotta_target_name]:
-                        test_report[yotta_target_name][test_name] = {}
-
-                    test_report[yotta_target_name][test_name]['single_test_result'] = single_test_result
-                    test_report[yotta_target_name][test_name]['single_test_output'] = single_test_output
-                    test_report[yotta_target_name][test_name]['elapsed_time'] = single_testduration
-                    test_report[yotta_target_name][test_name]['platform_name'] = micro
-                    test_report[yotta_target_name][test_name]['copy_method'] = copy_method
-
-                    if single_test_result != 'OK' and not verbose and opts.report_fails:
-                        # In some cases we want to print console to see why test failed
-                        # even if we are not in verbose mode
-                        gt_log_tab("test failed, reporting console output (specified with --report-fails option)")
-                        print
-                        print single_test_output
-
-                    gt_log_tab("test '%s' %s %s in %.2f sec"% (test_bin, '.' * (80 - len(test_bin)), test_result, single_testduration))
-
-
+                
+                if test_queue.empty():
+                    gt_log("running %d test%s for target '%s' and platform '%s'"% (
+                        len(filtered_ctest_test_list),
+                        "s" if len(filtered_ctest_test_list) != 1 else "",
+                        gt_bright(yotta_target_name),
+                        gt_bright(platform_name)
+                    ))
+                    for test_bin, image_path in filtered_ctest_test_list.iteritems():
+                        test = {"test_bin":test_bin, "image_path":image_path}
+                        test_queue.put(test)
+                
+                if opts.parallel_test_exec > 1:
+                    #################################################################
+                    # Experimental, parallel test execution
+                    #################################################################
+                    if number_of_threads < opts.parallel_test_exec:
+                        t = threading.Thread(target=run_test_thread, args = (q, test_queue, opts, mut, mut_info, yotta_target_name))
+                        execute_threads.append(t)
+                        number_of_threads += 1 
+                else:                
+                    # Serialized (not parallel) test execution
+                    run_test_thread(q, test_queue, opts, mut, mut_info, yotta_target_name)
+                    test_return_data = q.get()
+                    test_platforms_match += test_return_data['test_platforms_match']
+                    test_exec_retcode += test_return_data['test_exec_retcode']
+                    test_report = test_return_data['test_report']
+                           
+            # We need to stop executing if yotta build fails
+            if not yotta_result:
+                gt_log_err("yotta returned %d"% yotta_ret)
+                test_exec_retcode = -1
+                return (test_exec_retcode)     
+    
+    if opts.parallel_test_exec > 1:
+        gt_log_tab("use %s instances for parallel testing" % number_of_threads)
+        for t in execute_threads:
+            t.daemon = True
+            t.start()
+        for t in execute_threads:
+            test_return_data = q.get()
+            test_platforms_match += test_return_data['test_platforms_match']
+            test_exec_retcode += test_return_data['test_exec_retcode']
+            temp_test_report = test_return_data['test_report']
+            if temp_test_report.keys()[0] not in test_report:
+                test_report[temp_test_report.keys()[0]] = {}
+                test_report.update(temp_test_report)
+            else:
+                test_report[test_report.keys()[0]].update(temp_test_report[temp_test_report.keys()[0]])
+    
     if opts.verbose_test_configuration_only:
         print
         print "Example: execute 'mbedgt --target=TARGET_NAME' to start testing for TARGET_NAME target"
@@ -558,6 +621,7 @@ def main_cli(opts, args, gt_instance_uuid=None):
             text_report, text_results = exporter_text(test_report)
             with open(opts.report_text_file_name, 'w') as f:
                 f.write(text_report)
+
         # Reports (to console)
         if opts.report_json:
             # We will not print summary and json report together
