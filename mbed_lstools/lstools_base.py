@@ -86,7 +86,7 @@ class MbedLsToolsBase:
         "0780": "ST_PLACEHOLDER",
         "0785": "ST_PLACEHOLDER",
         "0790": "ST_PLACEHOLDER",
-        "0795": "ST_PLACEHOLDER",
+        "0795": "DISCOVERY-F429ZI",
         "0799": "ST_PLACEHOLDER",
         "0805": "DISCO_L053C8",
         "0810": "DISCO_F334C8",
