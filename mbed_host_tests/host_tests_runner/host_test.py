@@ -19,6 +19,7 @@ Author: Przemyslaw Wirkus <Przemyslaw.Wirkus@arm.com>
 
 import re
 from sys import stdout
+from time import time
 
 from threading import Lock
 from threading import Thread
@@ -51,7 +52,7 @@ class Test(HostTestResults):
         self.print_thread = None
         self.print_thread_flag = False  # True, serial dump, False - serial dump stop (thread ends)
 
-    def detect_test_config(self, verbose=False):
+    def detect_test_config(self, verbose=False, timeout=3.0):
         """! Detects test case configuration
 
         @param verbose Verbose mode on/off
@@ -62,47 +63,57 @@ class Test(HostTestResults):
                  running on hardware (on on other end of communication channel.
                  In mbed case it is a serial port).
         """
+        start = time()
         self.notify("HOST: Detecting test case properties...")
         result = {}
-        while True:
-            line = self.mbed.serial_readline()
-            if line is None:
-                self.print_result(self.RESULT_IO_SERIAL)
-                break
-            if "{start}" in line:
-                self.notify("HOST: Start test...")
-                break
-            elif line.startswith('+'):
-                # This is probably preamble with test case warning
-                self.notify(line.strip())
-            else:
-                # Detect if this is property from TEST_ENV print
-                m = re.search('{([\w_]+);(.+)}}', line, flags=re.DOTALL)
-                if m and len(m.groups()) == 2:
-                    key = m.group(1)
+        line_read_buffer = ""   # Line to read during test execution
+        while (time() - start) < timeout:
+            c = self.mbed.serial_read()
+            if c:
+                line_read_buffer += c
+            #else:
+            #    self.print_result(self.RESULT_IO_SERIAL)
+            #    break
 
-                    # clean up quote characters and concatenate
-                    # multiple quoted strings.
-                    g = re.findall('[\"\'](.*?)[\"\']',m.group(2))
-                    if len(g)>0:
-                        val = "".join(g)
-                    else:
-                        val = m.group(2)
+            if '\n' in line_read_buffer:    # We got full line of text
+                idx = line_read_buffer.index('\n')
+                line = line_read_buffer[:idx]   # line to parse
+                line_read_buffer = line_read_buffer[idx+1:]
 
-                    # This is most likely auto-detection property
-                    result[key] = val
-                    if verbose:
-                        self.notify("HOST: Property '%s' = '%s'"% (key, val))
+                if "{start}" in line:
+                    self.notify("HOST: Start test...")
+                    break
+                elif line.startswith('+'):
+                    # This is probably preamble with test case warning
+                    self.notify(line.strip())
                 else:
-                    # We can check if this is Target Id in mbed specific format
-                    m2 = re.search('^([\$]+)([a-fA-F0-9]+)', line[:-1])
-                    if m2 and len(m2.groups()) == 2:
+                    # Detect if this is property from TEST_ENV print
+                    m = re.search('{([\w_]+);(.+)}}', line, flags=re.DOTALL)
+                    if m and len(m.groups()) == 2:
+                        key = m.group(1)
+
+                        # clean up quote characters and concatenate
+                        # multiple quoted strings.
+                        g = re.findall('[\"\'](.*?)[\"\']',m.group(2))
+                        if len(g):
+                            val = "".join(g)
+                        else:
+                            val = m.group(2)
+
+                        # This is most likely auto-detection property
+                        result[key] = val
                         if verbose:
-                            target_id = m2.group(1) + m2.group(2)
-                            self.notify("HOST: TargetID '%s'"% target_id)
-                            self.notify(line[len(target_id):-1])
+                            self.notify("HOST: Property '%s' = '%s'"% (key, val))
                     else:
-                        self.notify("HOST: Unknown property: %s"% line.strip())
+                        # We can check if this is Target Id in mbed specific format
+                        m2 = re.search('^([\$]+)([a-fA-F0-9]+)', line[:-1])
+                        if m2 and len(m2.groups()) == 2:
+                            if verbose:
+                                target_id = m2.group(1) + m2.group(2)
+                                self.notify("HOST: TargetID '%s'"% target_id)
+                                self.notify(line[len(target_id):-1])
+                        else:
+                            self.notify("HOST: Unknown test property print format: %s"% line.strip())
         return result
 
     def run(self):
