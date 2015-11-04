@@ -446,6 +446,14 @@ def main_cli(opts, args, gt_instance_uuid=None):
     q = Queue()
     execute_threads = []
 
+    ### check if argument of --parallel mode is a integer
+    try:
+        parallel_test_exec = int(opts.parallel_test_exec)
+    except ValueError:
+        gt_log_err("argument of mode --parallel is not a int, disable parallel mode")
+        parallel_test_exec = 0
+    
+    
     ### Testing procedures, for each target, for each target's compatible platform
     for yotta_target_name in yt_target_platform_map:
         gt_log("processing '%s' yotta target compatible platforms..."% gt_bright(yotta_target_name))
@@ -466,9 +474,9 @@ def main_cli(opts, args, gt_instance_uuid=None):
                     gt_log("using platform '%s' for test:"% gt_bright(platform_name))
                     for k in mbed_dev:
                         gt_log_tab("%s = '%s'"% (k, mbed_dev[k]))
-                    if number_of_parallel_instances < opts.parallel_test_exec:
+                    if number_of_parallel_instances < parallel_test_exec:
                         number_of_parallel_instances += 1
-                    else:   
+                    else: 
                         break
 
             # Configuration print mode:
@@ -564,31 +572,25 @@ def main_cli(opts, args, gt_instance_uuid=None):
                     test = {"test_bin":test_bin, "image_path":image_path}
                     test_queue.put(test)
                 
-                number_of_threads = 0
-                for mut in muts_to_test:
-                    if opts.parallel_test_exec > 1:
+                if parallel_test_exec > 1:
+                    number_of_threads = 0
+                    for mut in muts_to_test:
                         #################################################################
                         # Experimental, parallel test execution
                         #################################################################
-                        if number_of_threads < opts.parallel_test_exec:
+                        if number_of_threads < parallel_test_exec:
                             t = threading.Thread(target=run_test_thread, args = (q, test_queue, opts, mut, mut_info, yotta_target_name))
                             execute_threads.append(t)
                             number_of_threads += 1 
-                    else:                
-                        # Serialized (not parallel) test execution
-                        run_test_thread(q, test_queue, opts, mut, mut_info, yotta_target_name)
-                        test_return_data = q.get()
-                        test_platforms_match += test_return_data['test_platforms_match']
-                        test_exec_retcode += test_return_data['test_exec_retcode']
-                        test_report = test_return_data['test_report']
-                           
-            # We need to stop executing if yotta build fails
-            if not yotta_result:
-                gt_log_err("yotta returned %d"% yotta_ret)
-                test_exec_retcode = -1
-                return (test_exec_retcode)     
+                else:                
+                    # Serialized (not parallel) test execution
+                    run_test_thread(q, test_queue, opts, mut, mut_info, yotta_target_name)
+                    test_return_data = q.get()
+                    test_platforms_match += test_return_data['test_platforms_match']
+                    test_exec_retcode += test_return_data['test_exec_retcode']
+                    test_report = test_return_data['test_report']                     
     
-    if opts.parallel_test_exec > 1:
+    if parallel_test_exec > 1:
         gt_log_tab("use %s instances for parallel testing" % number_of_threads)
         for t in execute_threads:
             t.daemon = True
@@ -601,11 +603,14 @@ def main_cli(opts, args, gt_instance_uuid=None):
             test_platforms_match += test_return_data['test_platforms_match']
             test_exec_retcode += test_return_data['test_exec_retcode']
             temp_test_report = test_return_data['test_report']
-            if temp_test_report.keys()[0] not in test_report:
-                test_report[temp_test_report.keys()[0]] = {}
-                test_report.update(temp_test_report)
-            else:
-                test_report[test_report.keys()[0]].update(temp_test_report[temp_test_report.keys()[0]])
+            try:
+                if temp_test_report.keys()[0] not in test_report:
+                    test_report[temp_test_report.keys()[0]] = {}
+                    test_report.update(temp_test_report)
+                else:
+                    test_report[test_report.keys()[0]].update(temp_test_report[temp_test_report.keys()[0]])
+            except:
+                test_report = test_report
             
     if opts.verbose_test_configuration_only:
         print
