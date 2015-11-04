@@ -98,7 +98,7 @@ def main():
 
     parser.add_option('', '--parallel',
                     dest='parallel_test_exec',
-                    default=0,
+                    default=1,
                     help='Experimental, you execute test runners for connected to your host MUTs in parallel (speeds up test result collection)')   
                     
     parser.add_option('', '--config',
@@ -453,12 +453,14 @@ def main_cli(opts, args, gt_instance_uuid=None):
     test_result_queue = Queue() # used to store results of each thread
     execute_threads = []        # list of threads to run test cases 
 
-    ### check if argument of --parallel mode is a integer
+    ### check if argument of --parallel mode is a integer and greater or equal 1
     try:
         parallel_test_exec = int(opts.parallel_test_exec)
+        if parallel_test_exec < 1:
+            parallel_test_exec = 1
     except ValueError:
         gt_log_err("argument of mode --parallel is not a int, disable parallel mode")
-        parallel_test_exec = 0
+        parallel_test_exec = 1
     
     
     ### Testing procedures, for each target, for each target's compatible platform
@@ -579,47 +581,37 @@ def main_cli(opts, args, gt_instance_uuid=None):
                     test = {"test_bin":test_bin, "image_path":image_path}
                     test_queue.put(test)
                 
-                # todo: serial and parallel in one workflow 
-                if parallel_test_exec > 1:
-                    number_of_threads = 0
-                    for mut in muts_to_test:
-                        #################################################################
-                        # Experimental, parallel test execution
-                        #################################################################
-                        if number_of_threads < parallel_test_exec:
-                            t = threading.Thread(target=run_test_thread, args = (test_result_queue, test_queue, opts, mut, mut_info, yotta_target_name))
-                            execute_threads.append(t)
-                            number_of_threads += 1 
-                else:                
-                    # Serialized (not parallel) test execution
-                    run_test_thread(test_result_queue, test_queue, opts, mut, mut_info, yotta_target_name)
-                    test_return_data = test_result_queue.get()
-                    test_platforms_match += test_return_data['test_platforms_match']
-                    test_exec_retcode += test_return_data['test_exec_retcode']
-                    test_report = test_return_data['test_report']                     
-    
-    if parallel_test_exec > 1:
-        gt_log_tab("use %s instances for parallel testing" % number_of_threads)
-        for t in execute_threads:
-            t.daemon = True
-            t.start()
-        for t in execute_threads: #todo: while len(test_result_queue) != len(execute_threads): sleep()
-            # to catch ctrl c
-            while t.is_alive():
-                sleep(1) # todo: check if get has a timeout and replace while sleep
-            test_return_data = test_result_queue.get()
-            test_platforms_match += test_return_data['test_platforms_match']
-            test_exec_retcode += test_return_data['test_exec_retcode']
-            temp_test_report = test_return_data['test_report'] #todo: rename temp_ to thread_
-            # todo: find better solution, maybe use extend
-            try:
-                if temp_test_report.keys()[0] not in test_report:
-                    test_report[temp_test_report.keys()[0]] = {}
-                    test_report.update(temp_test_report)
-                else:
-                    test_report[test_report.keys()[0]].update(temp_test_report[temp_test_report.keys()[0]])
-            except:
-                pass
+                number_of_threads = 0
+                for mut in muts_to_test:
+                    #################################################################
+                    # Experimental, parallel test execution
+                    #################################################################
+                    if number_of_threads < parallel_test_exec:
+                        t = threading.Thread(target=run_test_thread, args = (test_result_queue, test_queue, opts, mut, mut_info, yotta_target_name))
+                        execute_threads.append(t)
+                        number_of_threads += 1 
+
+    gt_log_tab("use %s instance%s for testing" % (len(execute_threads), 's' if len(execute_threads) != 1 else ''))
+    for t in execute_threads:
+        t.daemon = True
+        t.start()
+    for t in execute_threads: #todo: while len(test_result_queue) != len(execute_threads): sleep()
+        # to catch ctrl c
+        while t.is_alive():
+            sleep(1) # todo: check if get has a timeout and replace while sleep
+        test_return_data = test_result_queue.get()
+        test_platforms_match += test_return_data['test_platforms_match']
+        test_exec_retcode += test_return_data['test_exec_retcode']
+        temp_test_report = test_return_data['test_report'] #todo: rename temp_ to thread_
+        # todo: find better solution, maybe use extend
+        try:
+            if temp_test_report.keys()[0] not in test_report:
+                test_report[temp_test_report.keys()[0]] = {}
+                test_report.update(temp_test_report)
+            else:
+                test_report[test_report.keys()[0]].update(temp_test_report[temp_test_report.keys()[0]])
+        except:
+            pass
             
     if opts.verbose_test_configuration_only:
         print
