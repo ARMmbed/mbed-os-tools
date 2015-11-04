@@ -597,21 +597,19 @@ def main_cli(opts, args, gt_instance_uuid=None):
         t.start()
     while test_result_queue.qsize() != len(execute_threads): 
         sleep(1)
-         
+    # merge partial test reports from diffrent threads to final test report     
     for t in execute_threads:
         test_return_data = test_result_queue.get()
         test_platforms_match += test_return_data['test_platforms_match']
         test_exec_retcode += test_return_data['test_exec_retcode']
-        temp_test_report = test_return_data['test_report'] #todo: rename temp_ to thread_
+        partial_test_report = test_return_data['test_report']
         # todo: find better solution, maybe use extend
-        try:
-            if temp_test_report.keys()[0] not in test_report:
-                test_report[temp_test_report.keys()[0]] = {}
-                test_report.update(temp_test_report)
+        for report_key in partial_test_report.keys():
+            if report_key not in test_report:
+                test_report[report_key] = {}
+                test_report.update(partial_test_report)
             else:
-                test_report[test_report.keys()[0]].update(temp_test_report[temp_test_report.keys()[0]])
-        except:
-            pass
+                test_report[report_key].update(partial_test_report[report_key])
             
     if opts.verbose_test_configuration_only:
         print
