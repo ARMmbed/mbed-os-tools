@@ -233,7 +233,7 @@ def main():
         print "completed in %.2f sec"% (time() - start)
     return(cli_ret)
 
-def run_test_thread(q, test_queue, opts, mut, mut_info, yotta_target_name):
+def run_test_thread(test_result_queue, test_queue, opts, mut, mut_info, yotta_target_name):
     global catch_ctrlC_flag
     test_exec_retcode = 0
     test_platforms_match = 0
@@ -241,7 +241,12 @@ def run_test_thread(q, test_queue, opts, mut, mut_info, yotta_target_name):
     #greentea_acquire_target_id(mut['target_id'], gt_instance_uuid)
     
     while not test_queue.empty():
-        test = test_queue.get()
+        try:
+            test = test_queue.get(False)
+        except Exception as e:
+            print(str(e))
+            break
+            
         test_result = 'SKIPPED'
 
         disk = mut['mount_point']
@@ -291,7 +296,9 @@ def run_test_thread(q, test_queue, opts, mut, mut_info, yotta_target_name):
             print single_test_output  
         
     #greentea_release_target_id(mut['target_id'], gt_instance_uuid)
-    q.put({'test_platforms_match': test_platforms_match, 'test_exec_retcode': test_exec_retcode, 'test_report': test_report})
+    test_result_queue.put({'test_platforms_match': test_platforms_match, 
+                           'test_exec_retcode': test_exec_retcode, 
+                           'test_report': test_report})
     return
     
 def main_cli(opts, args, gt_instance_uuid=None):
@@ -440,11 +447,11 @@ def main_cli(opts, args, gt_instance_uuid=None):
     test_platforms_match = 0    # Count how many tests were actually ran with current settings
     target_platforms_match = 0  # Count how many platforms were actually tested with current settings
 
-    test_report = {}        # Test report used to export to Junit, HTML etc...
-    muts_to_test = []       # MUTs to actually be tested
-    test_queue = Queue()
-    q = Queue()
-    execute_threads = []
+    test_report = {}            # Test report used to export to Junit, HTML etc...
+    muts_to_test = []           # MUTs to actually be tested
+    test_queue = Queue()        # contains information about test_bin and image_path for each test case
+    test_result_queue = Queue() # used to store results of each thread
+    execute_threads = []        # list of threads to run test cases 
 
     ### check if argument of --parallel mode is a integer
     try:
@@ -572,6 +579,7 @@ def main_cli(opts, args, gt_instance_uuid=None):
                     test = {"test_bin":test_bin, "image_path":image_path}
                     test_queue.put(test)
                 
+                # todo: serial and parallel in one workflow 
                 if parallel_test_exec > 1:
                     number_of_threads = 0
                     for mut in muts_to_test:
@@ -579,13 +587,13 @@ def main_cli(opts, args, gt_instance_uuid=None):
                         # Experimental, parallel test execution
                         #################################################################
                         if number_of_threads < parallel_test_exec:
-                            t = threading.Thread(target=run_test_thread, args = (q, test_queue, opts, mut, mut_info, yotta_target_name))
+                            t = threading.Thread(target=run_test_thread, args = (test_result_queue, test_queue, opts, mut, mut_info, yotta_target_name))
                             execute_threads.append(t)
                             number_of_threads += 1 
                 else:                
                     # Serialized (not parallel) test execution
-                    run_test_thread(q, test_queue, opts, mut, mut_info, yotta_target_name)
-                    test_return_data = q.get()
+                    run_test_thread(test_result_queue, test_queue, opts, mut, mut_info, yotta_target_name)
+                    test_return_data = test_result_queue.get()
                     test_platforms_match += test_return_data['test_platforms_match']
                     test_exec_retcode += test_return_data['test_exec_retcode']
                     test_report = test_return_data['test_report']                     
@@ -595,14 +603,15 @@ def main_cli(opts, args, gt_instance_uuid=None):
         for t in execute_threads:
             t.daemon = True
             t.start()
-        for t in execute_threads:
+        for t in execute_threads: #todo: while len(test_result_queue) != len(execute_threads): sleep()
             # to catch ctrl c
             while t.is_alive():
-                sleep(1)
-            test_return_data = q.get()
+                sleep(1) # todo: check if get has a timeout and replace while sleep
+            test_return_data = test_result_queue.get()
             test_platforms_match += test_return_data['test_platforms_match']
             test_exec_retcode += test_return_data['test_exec_retcode']
-            temp_test_report = test_return_data['test_report']
+            temp_test_report = test_return_data['test_report'] #todo: rename temp_ to thread_
+            # todo: find better solution, maybe use extend
             try:
                 if temp_test_report.keys()[0] not in test_report:
                     test_report[temp_test_report.keys()[0]] = {}
@@ -610,7 +619,7 @@ def main_cli(opts, args, gt_instance_uuid=None):
                 else:
                     test_report[test_report.keys()[0]].update(temp_test_report[temp_test_report.keys()[0]])
             except:
-                test_report = test_report
+                pass
             
     if opts.verbose_test_configuration_only:
         print
