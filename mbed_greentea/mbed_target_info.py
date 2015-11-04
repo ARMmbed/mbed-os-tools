@@ -60,6 +60,8 @@ TARGET_INFO_MAPPING = {
         }
 }
 
+
+
 TARGET_TOOLCAHINS = {
     '-armcc': 'ARM',
     '-gcc': 'GCC_ARM',
@@ -157,7 +159,7 @@ def add_target_info_mapping(mbed_classic_name, map_platform_to_yt_target=None):
                 "binary_type": ".bin",
                 "copy_method": "shell",
                 "reset_method": "default",
-                "program_cycle_s": 4
+                "program_cycle_s": 6
             }
         }
 
