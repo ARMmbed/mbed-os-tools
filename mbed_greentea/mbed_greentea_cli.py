@@ -595,10 +595,10 @@ def main_cli(opts, args, gt_instance_uuid=None):
     for t in execute_threads:
         t.daemon = True
         t.start()
-    for t in execute_threads: #todo: while len(test_result_queue) != len(execute_threads): sleep()
-        # to catch ctrl c
-        while t.is_alive():
-            sleep(1) # todo: check if get has a timeout and replace while sleep
+    while test_result_queue.qsize() != len(execute_threads): 
+        sleep(1)
+         
+    for t in execute_threads:
         test_return_data = test_result_queue.get()
         test_platforms_match += test_return_data['test_platforms_match']
         test_exec_retcode += test_return_data['test_exec_retcode']
