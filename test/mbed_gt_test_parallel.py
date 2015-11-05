@@ -41,22 +41,19 @@ class TestmbedGt(unittest.TestCase):
     @patch('mbed_greentea.mbed_greentea_cli.load_ctest_testsuite')
     @patch('mbed_greentea.mbed_greentea_cli.mbed_lstools.create')
     @patch('mbed_greentea.mbed_test_api.Popen')
-    def test_basic(self, popen_mock, mbedLstools_mock, loadCtestTestsuite_mock, optionParser_mock):
-        
+    def test_basic(self, popen_mock, mbedLstools_mock, loadCtestTestsuite_mock, optionParser_mock): 
         #runHostTest_mock.side_effect = run_host_test_mock
         popen_mock.side_effect = PopenMock
-        
         mbedLstools_mock.side_effect = MbedsMock
-        
         loadCtestTestsuite_mock.return_value = load_ctest_testsuite_mock()
         
-        my_gt_opts = GtOptions(list_of_targets="frdm-k64f-gcc", parallel_test_exec=2, report_junit_file_name="junitTestReport", verbose_test_result_only=False)
+        my_gt_opts = GtOptions(list_of_targets="frdm-k64f-gcc", parallel_test_exec=3, test_by_names="mbed-drivers-test-stdio", 
+                               use_target_ids="02400203A0811E505D7DE3D9", report_junit_file_name="junitTestReport")
         OptionParserMock.static_options = my_gt_opts
         optionParser_mock.side_effect = OptionParserMock
         
         mbed_greentea_cli.main()
 
- 
 class PopenMock:
     def __init__(self, *args, **kwargs):
         self.stdout = StdOutMock()
