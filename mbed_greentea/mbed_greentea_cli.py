@@ -452,6 +452,9 @@ def main_cli(opts, args, gt_instance_uuid=None):
                     gt_log_err("yotta returned %d"% yotta_ret)
                     return (RET_YOTTA_BUILD_FAIL)
 
+                if opts.only_build_tests:
+                    continue
+
                 # Build phase will be followed by test execution for each target
                 if yotta_result and not opts.only_build_tests:
                     binary_type = mut_info_map[platform_name]['properties']['binary_type']
