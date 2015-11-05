@@ -248,7 +248,12 @@ Options:
 
 At this point you should have all the dependencies and be ready to build the ```mbed-drivers``` and perform automated testing.
 
-Make sure you have installed all of the tools. For example you can list all mbed devices connected to your host computer. Tun ``$ mbedls`` and you'll get:
+Make sure you have installed all of the tools. For example you can list all mbed devices connected to your host computer.
+Run command
+```
+$ mbedls
+```
+and you'll get:
 
 ```
 +---------------------+-------------------+-------------------+--------------------------------+
