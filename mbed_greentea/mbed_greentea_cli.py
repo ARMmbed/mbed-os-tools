@@ -234,7 +234,6 @@ def main():
     return(cli_ret)
 
 def run_test_thread(test_result_queue, test_queue, opts, mut, mut_info, yotta_target_name):
-    global catch_ctrlC_flag
     test_exec_retcode = 0
     test_platforms_match = 0
     test_report = {}
