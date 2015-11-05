@@ -59,7 +59,7 @@ $ pip install yotta --upgrade
 ```
 Installing Greentea tools:
 ```
-$ pip install mbed-greentea --upgrade```
+$ pip install mbed-greentea --upgrade
 ```
 Create a local clone of the [```mbed-drivers```](https://github.com/ARMmbed/mbed-drivers) repository.
 ```
