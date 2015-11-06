@@ -57,8 +57,24 @@ TARGET_INFO_MAPPING = {
                 "reset_method": "default",
                 "program_cycle_s": 4
             }
+        },
+    "NRF51_DK" : {
+        "yotta_targets": [
+                {
+                    "yotta_target": "nrf51dk-gcc",
+                    "mbed_toolchain": "GCC_ARM"
+                }
+             ],
+        "properties" : {
+                "binary_type": "-combined.hex",
+                "copy_method": "shell",
+                "reset_method": "default",
+                "program_cycle_s": 4
+            }
         }
 }
+
+
 
 
 
