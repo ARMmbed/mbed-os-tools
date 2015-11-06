@@ -29,8 +29,8 @@ from setuptools import find_packages
 
 LICENSE = open('LICENSE').read()
 DESCRIPTION = "mbed 3.0 test suite, codename Greentea. The test suite is a collection of tools that enable automated testing on mbed-enabled platforms"
-OWNER_NAMES = 'Przemyslaw Wirkus'
-OWNER_EMAILS = 'Przemyslaw.Wirkus@arm.com'
+OWNER_NAMES = 'Przemyslaw Wirkus, Stefan Gutmann'
+OWNER_EMAILS = 'Przemyslaw.Wirkus@arm.com, Stefan.Gutmann@arm.com'
 
 # Utility function to cat in a file (used for the README)
 def read(fname):
