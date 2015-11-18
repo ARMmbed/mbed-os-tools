@@ -103,7 +103,39 @@ Extended mbedls API example:
 >>> import mbed_lstools
 >>> m = mbed_lstools.create()
 >>> dir(m)
-['DEBUG_FLAG', 'ERRORLEVEL_FLAG', '__doc__', '__init__', '__module__', '__str__', 'debug', 'discover_connected_mbeds', 'err', 'get_connected_mbeds', 'get_dos_devices', 'get_json_data_from_file', 'get_mbed_com_port', 'get_mbed_devices', 'get_mbed_htm_target_id', 'get_mbeds', 'get_mounted_devices', 'get_string', 'iter_keys', 'iter_keys_as_str', 'iter_vals', 'list_mbeds', 'list_mbeds_by_targetid', 'list_mbeds_ext', 'list_platforms', 'list_platforms_ext', 'load_mbed_description', 'manufacture_ids', 'os_supported', 'regbin2str', 'scan_html_line_for_target_id', 'usb_vendor_list', 'winreg'] >>> m.list_platforms()
+['DEBUG_FLAG', 
+ 'ERRORLEVEL_FLAG', 
+ '__doc__', 
+ '__init__', 
+ '__module__', 
+ '__str__', 
+ 'debug', 
+ 'discover_connected_mbeds', 
+ 'err', 
+ 'get_connected_mbeds', 
+ 'get_dos_devices', 
+ 'get_json_data_from_file', 
+ 'get_mbed_com_port', 
+ 'get_mbed_devices', 
+ 'get_mbed_htm_target_id', 
+ 'get_mbeds', 
+ 'get_mounted_devices', 
+ 'get_string', 
+ 'iter_keys', 
+ 'iter_keys_as_str', 
+ 'iter_vals', 'list_mbeds', 
+ 'list_mbeds_by_targetid', 
+ 'list_mbeds_ext', 
+ 'list_platforms', 
+ 'list_platforms_ext', 
+ 'load_mbed_description', 
+ 'manufacture_ids', 
+ 'os_supported', 
+ 'regbin2str', 
+ 'scan_html_line_for_target_id', 
+ 'usb_vendor_list', 
+ 'winreg']
+>>> m.list_platforms()
 ['LPC1768', 'K64F']
 >>> m.list_platforms_ext()
 {'K64F': 1, 'LPC1768': 2}
