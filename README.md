@@ -318,15 +318,15 @@ Mock configuration will be stored in directory where ```mbedls --mock``` command
 ## Mock command line examples
 * Add new command line parameter ```--mock``` (switch -m)
 * Add new / mask existing mapping ```MID``` -> ```platform_name``` and assign MID
-    * ```$mbedls --mock MID:PLATFORM_NAME``` or
-    * ```$mbedls --mock MID1:PLATFORM_NAME1,MID2:PLATFORM_NAME2```
+    * ```$ mbedls --mock MID:PLATFORM_NAME``` or
+    * ```$ mbedls --mock MID1:PLATFORM_NAME1,MID2:PLATFORM_NAME2```
 * Mask existing manufacturers ID with new platform name
 * Remove masking with '!' prefix
     * ```$ mbedls --mock !MID```
 * Remove all maskings using !* notation
     * ```$ mbedls --mock !*```
 * Combine above using comma (```,```) separator:
-    * ```$mbedls --mock MID1:PLATFORM_NAME1,!MID2```
+    * ```$ mbedls --mock MID1:PLATFORM_NAME1,!MID2```
 
 ## Mocking example with Freescale K64F platform
 Initial setup with 1 x Freescale ```K64F``` board:
@@ -341,11 +341,11 @@ $ mbedls
 
 * We can mask current mapping ```0240``` -> ```K64F``` to something else. For example we can replace ```K64F``` name with maybe more suitable for us in current setup ```FRDM-K64F```:
 ```
-$  mbedls --mock 0240:FRDM_K64F
+$ mbedls --mock 0240:FRDM_K64F
 ```
 Current mocking mapping is stored in local file ```.mbedls-mock```:
 ```
-$  cat .mbedls-mock
+$ cat .mbedls-mock
 {
     "1234": "NEW_PLATFORM_1",
     "0240": "FRDM_K64F"
@@ -353,7 +353,7 @@ $  cat .mbedls-mock
 ```
 We can observe changes immediately. Please note this change only works in the same directory because we save ```.mbedls-mock``` file locally:
 ```
-$  mbedls
+$ mbedls
 +--------------+---------------------+------------+------------+-------------------------+
 |platform_name |platform_name_unique |mount_point |serial_port |target_id                |
 +--------------+---------------------+------------+------------+-------------------------+
@@ -372,7 +372,7 @@ $ mbedls --mock !1234 --json
 
 * We can add multiple mappings at the same time:
 ```
-$ --mock 0000:DUMMY,1111:DUMMY_2 --json
+$ mbedls --mock 0000:DUMMY,1111:DUMMY_2 --json
 {
     "1111": "DUMMY_2",
     "0240": "FRDM_K64F",
