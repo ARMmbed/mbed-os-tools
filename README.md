@@ -262,6 +262,32 @@ True
 ```
 Note: ```c:\Work\mbed-drivers\build\frdm-k64f-gcc\test\mbed-drivers-test-basic.bin``` is valid path to ```K64F``` device's compatible binary.
 
+Example Python API fetch for available plugin capabilities. Note that ```json``` module was used here to pretty print of ```get_plugin_caps``` function.
+```
+$ python
+>>> import mbed_host_tests as htrun
+>>> import json
+>>> print json.dumps(htrun.get_plugin_caps(), indent=4)
+{
+    "ResetMethod": [
+        "default",
+        "eACommander",
+        "eACommander-usb",
+        "stlink"
+    ],
+    "CopyMethod": [
+        "copy",
+        "cp",
+        "default",
+        "eACommander",
+        "eACommander-usb",
+        "shell",
+        "shutil",
+        "stlink",
+        "xcopy"
+    ]
+}
+```
 You can also check whether ```mbedhtrun``` is correctly installed in your system:
 ```
 mbedhtrun --help
