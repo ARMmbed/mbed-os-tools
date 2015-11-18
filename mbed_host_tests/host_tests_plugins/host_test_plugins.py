@@ -180,6 +180,8 @@ class HostTestPluginBase:
             result = 'Windows7'
         elif (os_info[0] == 'posix' and os_info[1] == 'Linux' and ('Ubuntu' in os_info[3])):
             result = 'Ubuntu'
+        elif (os_info[0] == 'posix' and os_info[1] == 'Linux'):
+            result = 'LinuxGeneric'
         elif (os_info[0] == 'posix' and os_info[1] == 'Darwin'):
             result = 'Darwin'
         return result
