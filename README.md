@@ -226,20 +226,41 @@ $ python setup.py install
 $ sudo python setup.py install
 ```
 To test if your installation succeeded you can use the Python interpreter and import ```mbed_host_tests```:
-
 ```
 $ python
-Python 2.7.8 (default, Jun 30 2014, 16:03:49) [MSC v.1500 32 bit (Intel)] on win32
-Type "help", "copyright", "credits" or "license" for more information.
 >>> import mbed_host_tests
 >>> dir(mbed_host_tests)
-['DefaultAuto', 'DefaultTestSelector', 'DefaultTestSelectorBase', 'DetectPlatformTest', 'DevNullTest', 
-'EchoTest', 'HOSTREGISTRY', 'HelloTest', 'HostRegistry', 'OptionParser', 'RTCTest', 'StdioTest', 
-'TCPEchoClientTest', 'TCPEchoServerTest', 'UDPEchoClientTest', 'UDPEchoServerTest', 'WaitusTest', 
-'__builtins__', '__doc__', '__file__', '__name__', '__package__', '__path__', 'get_host_test', 
-'host_tests', 'host_tests_plugins', 'host_tests_registry', 'host_tests_runner', 'init_host_test_cli_params', 
-'is_host_test']
+['DefaultAuto', 'DefaultTestSelector', 'DefaultTestSelectorBase', 'DetectPlatformTest',
+'DevNullTest', 'EchoTest', 'HOSTREGISTRY', 'HelloTest', 'HostRegistry', 'LWM2MClientAutoTest',
+'OptionParser', 'RTCTest', 'RunBinaryOnlyAuto', 'StdioTest', 'TCPEchoClientTest',
+'TCPEchoServerTest', 'TCPSocketServerEchoExtTest', 'UDPEchoClientTest', 'UDPEchoServerTest',
+'UDPSocketServerEchoExtTest', 'WaitusTest', '__builtins__', '__doc__', '__file__', '__name__',
+'__package__', '__path__', 'flash_dev', 'get_host_test', 'get_host_test_list', 'get_plugin_caps',
+'host_tests', 'host_tests_plugins', 'host_tests_registry', 'host_tests_runner',
+'init_host_test_cli_params', 'is_host_test', 'json', 'reset_dev', 'sleep', 'sys']
 ```
+To start working with ```mbedhtrun``` Python APIs you can experiment with ```flash_dev()``` and ```reset_dev()``` functions.
+We can list available mbed devices with ```mbedls``` command:
+```
+$ mbedls
++--------------+---------------------+------------+------------+---------------------------+
+|platform_name |platform_name_unique |mount_point |serial_port |target_id                  |
++--------------+---------------------+------------+------------+---------------------------+
+|K64F          |K64F[0]              |F:          |COM4        |0240022648cb1e7700b512e3cf |
++--------------+---------------------+------------+------------+---------------------------+
+```
+And use Python APIs to flash and reset this device accordingly.
+```
+$ python
+import mbed_host_tests as htrun
+>>> htrun.flash_dev(disk='F:',
+                    image_path=r'c:\Work\mbed-drivers\build\frdm-k64f-gcc\test\mbed-drivers-test-basic.bin')
+        1 file(s) copied.
+True
+>>> htrun.reset_dev(port='COM4')
+True
+```
+Note: ```c:\Work\mbed-drivers\build\frdm-k64f-gcc\test\mbed-drivers-test-basic.bin``` is valid path to ```K64F``` device's compatible binary.
 
 You can also check whether ```mbedhtrun``` is correctly installed in your system:
 ```
