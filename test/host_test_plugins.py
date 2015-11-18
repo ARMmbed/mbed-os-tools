@@ -27,7 +27,7 @@ class HostOSDetectionTestCase(unittest.TestCase):
 
     def setUp(self):
         self.plugin_base = HostTestPluginBase()
-        
+
         pass
 
     def tearDown(self):
@@ -40,7 +40,7 @@ class HostOSDetectionTestCase(unittest.TestCase):
         self.assertNotEqual(None, self.plugin_base.mbed_os_support())
 
     def test_supported_os_name(self):
-        os_names = ['Windows7', 'Ubuntu', 'Darwin']
+        os_names = ['Windows7', 'Ubuntu', 'LinuxGeneric', 'Darwin']
         self.assertIn(self.plugin_base.mbed_os_support(), os_names)
 
     def test_detect_os_support_ext(self):
