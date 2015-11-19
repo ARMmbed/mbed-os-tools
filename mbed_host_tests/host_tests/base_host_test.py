@@ -20,6 +20,8 @@ class BaseHostTest():
         rampUp, test and rampDown set of functions
     """
 
+    name = ''   # name of the host test (used for local registration)
+
     def rumpUp(self):
         """ Ramp up function, initialize your test case dynamic resources in this function
         """
