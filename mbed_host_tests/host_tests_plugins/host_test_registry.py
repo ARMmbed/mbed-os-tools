@@ -57,12 +57,10 @@ class HostTestRegistry:
 
     def call_plugin(self, type, capability, *args, **kwargs):
         """! Execute plugin functionality respectively to its purpose
-
         @param type Plugin type
         @param capability Plugin capability name
         @param args Additional plugin parameters
         @param kwargs Additional plugin parameters
-
         @return Returns result from plugin's execute() method
         """
         for plugin_name in self.PLUGINS:
@@ -73,9 +71,7 @@ class HostTestRegistry:
 
     def get_plugin_caps(self, type):
         """! Returns list of all capabilities for plugin family with the same type
-
         @param type Plugin type
-
         @return Returns list of capabilities for plugin. If there are no capabilities empty list is returned
         """
         result = []
@@ -87,29 +83,45 @@ class HostTestRegistry:
 
     def load_plugin(self, name):
         """! Used to load module from system (by import)
-
         @param name name of the module to import
-
         @return Returns result of __import__ operation
         """
         mod = __import__("module_%s"% name)
         return mod
 
-    def __str__(self):
+    def get_string(self):
         """! User friendly printing method to show hooked plugins
-
         @return Returns string formatted with PrettyTable
         """
         from prettytable import PrettyTable
         column_names = ['name', 'type', 'capabilities', 'stable']
         pt = PrettyTable(column_names)
         for column in column_names:
-            pt.align[column] =  'l'
+            pt.align[column] = 'l'
         for plugin_name in sorted(self.PLUGINS.keys()):
-            name  = self.PLUGINS[plugin_name].name
-            type  = self.PLUGINS[plugin_name].type
+            name = self.PLUGINS[plugin_name].name
+            type = self.PLUGINS[plugin_name].type
             stable = self.PLUGINS[plugin_name].stable
             capabilities  = ', '.join(self.PLUGINS[plugin_name].capabilities)
             row = [name, type, capabilities, stable]
             pt.add_row(row)
         return pt.get_string()
+
+    def get_dict(self):
+        column_names = ['name', 'type', 'capabilities', 'stable']
+        result = {}
+        for plugin_name in sorted(self.PLUGINS.keys()):
+            name = self.PLUGINS[plugin_name].name
+            type = self.PLUGINS[plugin_name].type
+            stable = self.PLUGINS[plugin_name].stable
+            capabilities = self.PLUGINS[plugin_name].capabilities
+            result[plugin_name] = {
+                "name" : name,
+                "type" : type,
+                "stable" : stable,
+                "capabilities" : capabilities
+            }
+        return result
+
+    def __str__(self):
+        return self.get_string()

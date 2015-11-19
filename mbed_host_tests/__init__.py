@@ -27,6 +27,7 @@ Write your own programs (import this package) or use 'mbedhtrun' command line to
 
 import sys
 import json
+from time import sleep
 from optparse import OptionParser
 
 import host_tests_plugins
@@ -80,9 +81,7 @@ HOSTREGISTRY.register_host_test("test_socket_server_tcp", TCPSocketServerEchoExt
 
 def get_host_test(ht_name):
     """! Fetches host test object from HOSTREGISTRY
-
     @param ht_name Host test name
-
     @return Returns registered host test supervisor.
             If host test is not registered by name function returns None.
     """
@@ -90,12 +89,85 @@ def get_host_test(ht_name):
 
 def is_host_test(ht_name):
     """! Checks if host test supervisor is registered in host test registry.
-
     @param ht_name Host test name
-
     @return If host test supervisor is registered returns True otherwise False.
     """
     return HOSTREGISTRY.is_host_test(ht_name)
+
+def get_host_test_list():
+    """! Returns list of host test names and its classes
+    @return Dictionary of {host_test_name : __class__}
+    """
+    result = {}
+    for ht in sorted(HOSTREGISTRY.HOST_TESTS.keys()):
+        result[ht] = HOSTREGISTRY.HOST_TESTS[ht].__class__
+    return result
+
+def get_plugin_caps(methods=None):
+    if not methods:
+        methods = ['CopyMethod', 'ResetMethod']
+    result = {}
+    for method in methods:
+        result[method] = host_tests_plugins.get_plugin_caps(method)
+    return result
+
+def flash_dev(disk=None,
+              image_path=None,
+              copy_method='default',
+              port=None,
+              program_cycle_s=0):
+    """! Flash device using pythonic interface
+    @param disk Switch -d <disk>
+    @param image_path Switch -f <image_path>
+    @param copy_method Switch -c <copy_method> (default: shell)
+    @param port Switch -p <port>
+    """
+    if copy_method == 'default':
+        copy_method = 'shell'
+    result = False
+    result = host_tests_plugins.call_plugin('CopyMethod',
+                                            copy_method,
+                                            image_path=image_path,
+                                            destination_disk=disk)
+    sleep(program_cycle_s)
+    return result
+
+def reset_dev(port=None,
+              disk=None,
+              reset_type='default',
+              reset_timeout=1,
+              serial_port=None,
+              baudrate=9600,
+              timeout=1,
+              verbose=False):
+    """! Reset device using pythonic interface
+    @param port Switch -p <port>
+    @param disk Switch -d <disk>
+    @param reset_type Switch -r <reset_type>
+    @param reset_timeout Switch -R <reset_timeout>
+    @param serial_port Serial port handler, set to None if you want this function to open serial
+
+    @param baudrate Serial port baudrate
+    @param timeout Serial port timeout
+    @param verbose Verbose mode
+    """
+    from serial import Serial
+
+    result = False
+    if not serial_port:
+        try:
+            with Serial(port, baudrate=baudrate, timeout=timeout) as serial_port:
+                result = host_tests_plugins.call_plugin('ResetMethod',
+                                                        reset_type,
+                                                        serial=serial_port,
+                                                        disk=disk)
+            sleep(reset_timeout)
+        except Exception as e:
+            if verbose:
+                print "%s" % (str(e))
+            result = False
+    return result
+
 
 class DefaultTestSelector(DefaultTestSelectorBase):
     """ Select default host_test supervision (replaced after auto detection)

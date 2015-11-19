@@ -63,25 +63,27 @@ HOST_TEST_PLUGIN_REGISTRY.register_plugin(module_reset_stlink.load_plugin())
 ###############################################################################
 def call_plugin(type, capability, *args, **kwargs):
     """! Interface to call plugin registry functional way
-
     @param capability Plugin capability we want to call
     @param args Additional parameters passed to plugin
     @param kwargs Additional parameters passed to plugin
-
     @return Returns return value from call_plugin call
     """
     return HOST_TEST_PLUGIN_REGISTRY.call_plugin(type, capability, *args, **kwargs)
 
 def get_plugin_caps(type):
     """! Get list of all capabilities for plugin family with the same type
-
     @param type Type of a plugin
-
     @return Returns list of all capabilities for plugin family with the same type. If there are no capabilities empty list is returned
     """
     return HOST_TEST_PLUGIN_REGISTRY.get_plugin_caps(type)
 
+def get_plugin_info():
+    """! Return plugins information
+    @return Dictionary HOST_TEST_PLUGIN_REGISTRY
+    """
+    return HOST_TEST_PLUGIN_REGISTRY.get_dict()
+
 def print_plugin_info():
-    """ Prints plugins' information in user friendly way
+    """! Prints plugins' information in user friendly way
     """
     print HOST_TEST_PLUGIN_REGISTRY
