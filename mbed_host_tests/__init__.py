@@ -32,6 +32,7 @@ from optparse import OptionParser
 
 import host_tests_plugins
 from host_tests_registry import HostRegistry
+from host_tests import BaseHostTest
 
 # Host test supervisors
 from host_tests.echo import EchoTest
