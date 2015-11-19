@@ -21,6 +21,21 @@ from . import BaseHostTest
 class UDPSocketServerEchoExtTest(BaseHostTest):
 
     def server_init(self, port=32765):
+        """
+        Note:
+        On Windows 7 call to socket.getfqdn() gives . (Fully qualified domain name)
+        In order for socket.gethostbyname() to work it expects that computer's full name is like ..
+
+        The full computer name may not be in . format. In that case socket.gethostbyname()
+        fails to resolve socket.getfqdn() (.) into the IP address.
+
+        Possible solutions:
+        By configuration: Follow the link for steps for configuring DNS suffix:
+        https://technet.microsoft.com/en-us/library/cc786695(v=ws.10).aspx
+
+        In code: If gethostbyname() fail for FQDN then try host name.
+        As hostname resolution to IP succeeds.
+        """
         self.SERVER_IP = str(socket.gethostbyname(socket.getfqdn()))
         self.SERVER_PORT = port
 
