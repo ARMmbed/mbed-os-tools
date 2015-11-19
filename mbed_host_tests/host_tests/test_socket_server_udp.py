@@ -20,9 +20,24 @@ from . import BaseHostTest
 
 class UDPSocketServerEchoExtTest(BaseHostTest):
 
-    def __init__(self):
+    def server_init(self, port=32765):
+        """
+        Note:
+        On Windows 7 call to socket.getfqdn() gives . (Fully qualified domain name)
+        In order for socket.gethostbyname() to work it expects that computer's full name is like ..
+
+        The full computer name may not be in . format. In that case socket.gethostbyname()
+        fails to resolve socket.getfqdn() (.) into the IP address.
+
+        Possible solutions:
+        By configuration: Follow the link for steps for configuring DNS suffix:
+        https://technet.microsoft.com/en-us/library/cc786695(v=ws.10).aspx
+
+        In code: If gethostbyname() fail for FQDN then try host name.
+        As hostname resolution to IP succeeds.
+        """
         self.SERVER_IP = str(socket.gethostbyname(socket.getfqdn()))
-        self.SERVER_PORT = 32765
+        self.SERVER_PORT = port
 
     def serial_handshake(self, selftest):
         print "HOST: Listening for UDP connections..."
@@ -41,6 +56,7 @@ class UDPSocketServerEchoExtTest(BaseHostTest):
         selftest.dump_serial()  # We want to dump serial port while test is ongoing
 
     def test(self, selftest):
+        self.server_init()
         self.serial_handshake(selftest)
 
         Sv4 = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
