@@ -18,8 +18,10 @@ Author: Przemyslaw Wirkus <Przemyslaw.Wirkus@arm.com>
 import os
 import sys
 import optparse
-import threading
 from time import time, sleep
+from Queue import Queue
+from threading import Thread
+
 
 from mbed_greentea.mbed_test_api import run_host_test
 from mbed_greentea.mbed_test_api import TEST_RESULTS
@@ -41,8 +43,6 @@ from mbed_greentea.mbed_greentea_dlm import greentea_update_kettle
 from mbed_greentea.mbed_greentea_dlm import greentea_clean_kettle
 from mbed_greentea.mbed_yotta_api import build_with_yotta
 
-from Queue import Queue
-from threading import Thread
 
 try:
     import mbed_lstools
@@ -523,7 +523,6 @@ def main_cli(opts, args, gt_instance_uuid=None):
                     micro = mut['platform_name']
                     program_cycle_s = mut_info_map[platfrom_name]['properties']['program_cycle_s']
                     copy_method = opts.copy_method if opts.copy_method else 'shell'
-                    verbose = opts.verbose_test_result_only
                     enum_host_tests_path = get_local_host_tests_dir(opts.enum_host_tests)
 
                     test_platforms_match += 1
@@ -611,7 +610,8 @@ def main_cli(opts, args, gt_instance_uuid=None):
                     # Experimental, parallel test execution
                     #################################################################
                     if number_of_threads < parallel_test_exec:
-                        t = threading.Thread(target=run_test_thread, args = (test_result_queue, test_queue, opts, mut, mut_info, yotta_target_name))
+                        args = (test_result_queue, test_queue, opts, mut, mut_info, yotta_target_name)
+                        t = Thread(target=run_test_thread, args=args)
                         execute_threads.append(t)
                         number_of_threads += 1
 
