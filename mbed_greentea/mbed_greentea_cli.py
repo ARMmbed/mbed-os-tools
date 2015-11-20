@@ -100,7 +100,11 @@ def main():
                     dest='parallel_test_exec',
                     default=1,
                     help='Experimental, you execute test runners for connected to your host MUTs in parallel (speeds up test result collection)')   
-                    
+
+    parser.add_option("-e", "--enum-host-tests",
+                    dest="enum_host_tests",
+                    help="Define directory with yotta module local host tests. Default: ./test/host_tests")
+
     parser.add_option('', '--config',
                     dest='verbose_test_configuration_only',
                     default=False,
