@@ -25,13 +25,20 @@ Write your own programs (import this package) or use 'mbedhtrun' command line to
 
 """
 
+import os
 import sys
+import imp
 import json
+import inspect
+from os import listdir
+from os.path import isfile, join, abspath
 from time import sleep
 from optparse import OptionParser
 
 import host_tests_plugins
 from host_tests_registry import HostRegistry
+from host_tests import BaseHostTest
+
 
 # Host test supervisors
 from host_tests.echo import EchoTest
@@ -168,6 +175,44 @@ def reset_dev(port=None,
             result = False
     return result
 
+def enum_host_tests(path, verbose=False):
+    """ Enumerates and registers locally stored host tests
+        Host test are derived from mbed_host_tests.BaseHostTest classes
+    """
+    if verbose:
+        print "HOST: Inspecting '%s' for local host tests..."% abspath(path)
+
+    if path:
+        # Normalize path and check proceed if directory 'path' exist
+        path = path.strip('"')  # Remove quotes from command line
+        if os.path.exists(path) and os.path.isdir(path):
+            # Listing Python tiles within path directory
+            host_tests_list = [f for f in listdir(path) if isfile(join(path, f))]
+            for ht in host_tests_list:
+                if ht.endswith(".py"):
+                    abs_path = abspath(join(path, ht))
+                    try:
+                        mod = imp.load_source(ht[:-3], abs_path)
+                    except Exception as e:
+                        print "HOST: Error! While loading local host test module '%s'"% abs_path
+                        print "HOST: %s"% str(e)
+                        continue
+                    if verbose:
+                        print "HOST: Loading module '%s': "% (ht), str(mod)
+
+                    for mod_name, mod_obj in inspect.getmembers(mod):
+                        if inspect.isclass(mod_obj):
+                            #if verbose:
+                            #    print 'HOST: Class found:', str(mod_obj), type(mod_obj)
+                            if issubclass(mod_obj, BaseHostTest) and str(mod_obj) != str(BaseHostTest):
+                                host_test_name = ht[:-3]
+                                if mod_obj.name:
+                                    host_test_name = mod_obj.name
+                                host_test_cls = mod_obj
+                                if verbose:
+                                    print "HOST: Found host test implementation: %s -|> %s"% (str(mod_obj), str(BaseHostTest))
+                                    print "HOST: Registering '%s' as '%s'"% (str(host_test_cls), host_test_name)
+                                HOSTREGISTRY.register_host_test(host_test_name, host_test_cls())
 
 class DefaultTestSelector(DefaultTestSelectorBase):
     """ Select default host_test supervision (replaced after auto detection)
@@ -181,6 +226,11 @@ class DefaultTestSelector(DefaultTestSelectorBase):
 
         # Handle extra command from
         if options:
+
+            if options.enum_host_tests:
+                path = self.options.enum_host_tests
+                enum_host_tests(path, verbose=options.verbose)
+
             if options.list_reg_hts:    # --list option
                 self.print_ht_list()
                 sys.exit(0)
@@ -412,6 +462,7 @@ class DefaultTestSelector(DefaultTestSelectorBase):
                     result = self.test_supervisor.test(self)    #result = self.test()
                 else:
                     self.notify("HOST: Error! Unknown host test name '%s' (use 'mbedhtrun --list' to verify)!"% CONFIG["host_test_name"])
+                    self.notify("HOST: Error! You can use switch '-e <dir>' to specify local directory with host tests to load")
                     self.print_result(self.RESULT_ERROR)
             else:
                 self.notify("HOST: Error! No host test name defined in preamble")
@@ -478,6 +529,10 @@ def init_host_test_cli_params():
                       metavar="NUMBER",
                       type="int",
                       help="When forcing a reset using option -r you can set up after reset idle delay in seconds")
+
+    parser.add_option("-e", "--enum-host-tests",
+                      dest="enum_host_tests",
+                      help="Define directory with local host tests")
 
     parser.add_option('', '--test-cfg',
                       dest='json_test_configuration',
