@@ -55,7 +55,19 @@ MBED_HOST_TESTS = 'mbed_host_tests' in sys.modules
 
 RET_NO_DEVICES = 1001
 RET_YOTTA_BUILD_FAIL = -1
-    
+LOCAL_HOST_TESTS_DIR = './test/host_tests'  # Used by mbedhtrun -e <dir>
+
+def get_local_host_tests_dir(path):
+    """! Forms path to local host tests. Performs additional basic checks if directory exists etc.
+    """
+    # If specified path exist return path
+    if path and os.path.exists(path) and os.path.isdir(path):
+        return path
+    # If specified path is not set or doesn't exist returns default path
+    if not path and os.path.exists(LOCAL_HOST_TESTS_DIR) and os.path.isdir(LOCAL_HOST_TESTS_DIR):
+        return LOCAL_HOST_TESTS_DIR
+    return None
+
 def print_version(verbose=True):
     """! Print current package version
     """
@@ -99,7 +111,7 @@ def main():
     parser.add_option('', '--parallel',
                     dest='parallel_test_exec',
                     default=1,
-                    help='Experimental, you execute test runners for connected to your host MUTs in parallel (speeds up test result collection)')   
+                    help='Experimental, you execute test runners for connected to your host MUTs in parallel (speeds up test result collection)')
 
     parser.add_option("-e", "--enum-host-tests",
                     dest="enum_host_tests",
@@ -199,7 +211,7 @@ def main():
     (opts, args) = parser.parse_args()
 
     cli_ret = 0
-    
+
     start = time()
     if opts.lock_by_target:
         # We are using Greentea proprietary locking mechanism to lock between platforms and targets
@@ -242,14 +254,14 @@ def run_test_thread(test_result_queue, test_queue, opts, mut, mut_info, yotta_ta
     test_platforms_match = 0
     test_report = {}
     #greentea_acquire_target_id(mut['target_id'], gt_instance_uuid)
-    
+
     while not test_queue.empty():
         try:
             test = test_queue.get(False)
         except Exception as e:
             print(str(e))
             break
-            
+
         test_result = 'SKIPPED'
 
         disk = mut['mount_point']
@@ -258,6 +270,7 @@ def run_test_thread(test_result_queue, test_queue, opts, mut, mut_info, yotta_ta
         program_cycle_s = mut_info['properties']['program_cycle_s']
         copy_method = opts.copy_method if opts.copy_method else 'shell'
         verbose = opts.verbose_test_result_only
+        enum_host_tests_path = get_local_host_tests_dir(opts.enum_host_tests)
 
         test_platforms_match += 1
         #gt_log_tab("running host test...")
@@ -269,6 +282,7 @@ def run_test_thread(test_result_queue, test_queue, opts, mut, mut_info, yotta_ta
                                          program_cycle_s=program_cycle_s,
                                          digest_source=opts.digest_source,
                                          json_test_cfg=opts.json_test_configuration,
+                                         enum_host_tests_path=enum_host_tests_path,
                                          verbose=verbose)
 
         single_test_result, single_test_output, single_testduration, single_timeout = host_test_result
@@ -290,20 +304,20 @@ def run_test_thread(test_result_queue, test_queue, opts, mut, mut_info, yotta_ta
         test_report[yotta_target_name][test_name]['copy_method'] = copy_method
 
         gt_log("test on hardware with target id: %s \n\ttest '%s' %s %s in %.2f sec"% (mut['target_id'], test['test_bin'], '.' * (80 - len(test['test_bin'])), test_result, single_testduration))
-        
+
         if single_test_result != 'OK' and not verbose and opts.report_fails:
             # In some cases we want to print console to see why test failed
             # even if we are not in verbose mode
             gt_log_tab("test failed, reporting console output (specified with --report-fails option)")
             print
-            print single_test_output  
-        
+            print single_test_output
+
     #greentea_release_target_id(mut['target_id'], gt_instance_uuid)
-    test_result_queue.put({'test_platforms_match': test_platforms_match, 
-                           'test_exec_retcode': test_exec_retcode, 
+    test_result_queue.put({'test_platforms_match': test_platforms_match,
+                           'test_exec_retcode': test_exec_retcode,
                            'test_report': test_report})
     return
-    
+
 def main_cli(opts, args, gt_instance_uuid=None):
     """! This is main CLI function with all command line parameters
     @details This function also implements CLI workflow depending on CLI parameters inputed
@@ -330,10 +344,12 @@ def main_cli(opts, args, gt_instance_uuid=None):
 
     # Capture alternative test console inputs, used e.g. in 'yotta test command'
     if opts.digest_source:
+        enum_host_tests_path = get_local_host_tests_dir(opts.enum_host_tests)
         host_test_result = run_host_test(image_path=None,
                                          disk=None,
                                          port=None,
                                          digest_source=opts.digest_source,
+                                         enum_host_tests_path=enum_host_tests_path,
                                          verbose=opts.verbose_test_result_only)
 
         single_test_result, single_test_output, single_testduration, single_timeout = host_test_result
@@ -454,7 +470,7 @@ def main_cli(opts, args, gt_instance_uuid=None):
     muts_to_test = []           # MUTs to actually be tested
     test_queue = Queue()        # contains information about test_bin and image_path for each test case
     test_result_queue = Queue() # used to store results of each thread
-    execute_threads = []        # list of threads to run test cases 
+    execute_threads = []        # list of threads to run test cases
 
     ### check if argument of --parallel mode is a integer and greater or equal 1
     try:
@@ -464,8 +480,8 @@ def main_cli(opts, args, gt_instance_uuid=None):
     except ValueError:
         gt_log_err("argument of mode --parallel is not a int, disable parallel mode")
         parallel_test_exec = 1
-    
-    
+
+
     ### Testing procedures, for each target, for each target's compatible platform
     for yotta_target_name in yt_target_platform_map:
         gt_log("processing '%s' yotta target compatible platforms..."% gt_bright(yotta_target_name))
@@ -488,7 +504,7 @@ def main_cli(opts, args, gt_instance_uuid=None):
                         gt_log_tab("%s = '%s'"% (k, mbed_dev[k]))
                     if number_of_parallel_instances < parallel_test_exec:
                         number_of_parallel_instances += 1
-                    else: 
+                    else:
                         break
 
             # Configuration print mode:
@@ -508,6 +524,7 @@ def main_cli(opts, args, gt_instance_uuid=None):
                     program_cycle_s = mut_info_map[platfrom_name]['properties']['program_cycle_s']
                     copy_method = opts.copy_method if opts.copy_method else 'shell'
                     verbose = opts.verbose_test_result_only
+                    enum_host_tests_path = get_local_host_tests_dir(opts.enum_host_tests)
 
                     test_platforms_match += 1
                     host_test_result = run_host_test(opts.run_app,
@@ -519,6 +536,7 @@ def main_cli(opts, args, gt_instance_uuid=None):
                                                      digest_source=opts.digest_source,
                                                      json_test_cfg=opts.json_test_configuration,
                                                      run_app=opts.run_app,
+                                                     enum_host_tests_path=enum_host_tests_path,
                                                      verbose=True)
 
                     single_test_result, single_test_output, single_testduration, single_timeout = host_test_result
@@ -575,18 +593,18 @@ def main_cli(opts, args, gt_instance_uuid=None):
                         gt_log_tab("note: test case names are case sensitive")
                         gt_log_tab("note: see list of available test cases below")
                         list_binaries_for_targets(verbose_footer=False)
-                
+
                 gt_log("running %d test%s for target '%s' and platform '%s'"% (
                     len(filtered_ctest_test_list),
                     "s" if len(filtered_ctest_test_list) != 1 else "",
                     gt_bright(yotta_target_name),
                     gt_bright(platform_name)
                 ))
-                
+
                 for test_bin, image_path in filtered_ctest_test_list.iteritems():
                     test = {"test_bin":test_bin, "image_path":image_path}
                     test_queue.put(test)
-                
+
                 number_of_threads = 0
                 for mut in muts_to_test:
                     #################################################################
@@ -595,16 +613,16 @@ def main_cli(opts, args, gt_instance_uuid=None):
                     if number_of_threads < parallel_test_exec:
                         t = threading.Thread(target=run_test_thread, args = (test_result_queue, test_queue, opts, mut, mut_info, yotta_target_name))
                         execute_threads.append(t)
-                        number_of_threads += 1 
+                        number_of_threads += 1
 
     gt_log_tab("use %s instance%s for testing" % (len(execute_threads), 's' if len(execute_threads) != 1 else ''))
     for t in execute_threads:
         t.daemon = True
         t.start()
-    while test_result_queue.qsize() != len(execute_threads): 
-        sleep(1)   
-        
-    # merge partial test reports from diffrent threads to final test report  
+    while test_result_queue.qsize() != len(execute_threads):
+        sleep(1)
+
+    # merge partial test reports from diffrent threads to final test report
     for t in execute_threads:
         t.join()
         test_return_data = test_result_queue.get(False)
@@ -618,7 +636,7 @@ def main_cli(opts, args, gt_instance_uuid=None):
                 test_report.update(partial_test_report)
             else:
                 test_report[report_key].update(partial_test_report[report_key])
-            
+
     if opts.verbose_test_configuration_only:
         print
         print "Example: execute 'mbedgt --target=TARGET_NAME' to start testing for TARGET_NAME target"

@@ -97,6 +97,7 @@ def run_host_test(image_path,
                   digest_source=None,
                   json_test_cfg=None,
                   max_failed_properties=5,
+                  enum_host_tests_path=None,
                   run_app=None):
     """! This function runs host test supervisor (executes mbedhtrun) and checks output from host test process.
     @return Tuple with test results, test output and test duration times
@@ -112,6 +113,7 @@ def run_host_test(image_path,
     @param program_cycle_s Wait after flashing delay (sec)
     @param json_test_cfg Additional test configuration file path passed to host tests in JSON format
     @param max_failed_properties After how many unknown properties we will assume test is not ported
+    @param enum_host_tests_path Directory where locally defined host tests may reside
     @param run_app Run application mode flag (we run application and grab serial port data)
     @param digest_source if None mbedhtrun will be executed. If 'stdin',
                            stdin will be used via StdInObserver or file (if
@@ -250,6 +252,8 @@ def run_host_test(image_path,
             cmd += ["--test-cfg", '"%s"' % str(json_test_cfg)]
         if run_app is not None:
             cmd += ["--run"]    # -f stores binary name!
+        if enum_host_tests_path:
+            cmd += ["-e", '"%s"'% enum_host_tests_path]
 
         if verbose:
             gt_log_tab("calling mbedhtrun: %s"% " ".join(cmd))
