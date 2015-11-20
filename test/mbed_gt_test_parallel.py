@@ -19,10 +19,9 @@ from random import uniform
 from mock import patch
 from mbed_greentea import mbed_greentea_cli
 
-"""
-Mbed greentea parallelisation tests
-"""
 class TestmbedGt(unittest.TestCase):
+    """! Mbed greentea parallelisation tests
+    """
     def setUp(self):
         """
         Called before test function
@@ -72,12 +71,27 @@ class PopenMock:
 
 class StdOutMock:
     def __init__(self):
-        self.str =  "MBED: Instrumentation: 'COM11' and disk: 'E:'\nHOST: Copy image onto target...\n\t1 file(s) copied.\nHOST: Initialize serial port...\n...port ready!\nHOST: Reset target...\nHOST: Detecting test case properties...\nHOST: Property 'timeout' = '20'\nHOST: Property 'host_test_name' = 'echo'\nHOST: Property 'description' = 'serial interrupt test'\nHOST: Property 'test_id' = 'MBED_14'\nHOST: Start test...\n...port ready!\nHOST: Starting the ECHO test\n..................................................\n{{success}}\n{{end}}"
+        self.str = """MBED: Instrumentation: 'COM11' and disk: 'E:'\nHOST: Copy image onto target...
+\t1 file(s) copied.
+HOST: Initialize serial port...
+...port ready!
+HOST: Reset target...
+HOST: Detecting test case properties...
+HOST: Property 'timeout' = '20'
+HOST: Property 'host_test_name' = 'echo'
+HOST: Property 'description' = 'serial interrupt test'
+HOST: Property 'test_id' = 'MBED_14'
+HOST: Start test...
+...port ready!
+HOST: Starting the ECHO test
+..................................................
+{{success}}
+{{end}}"""
         self.offset = 0
 
     def read(self, size):
         if self.offset < len(self.str):
-            ret = [self.str[i] for i in range (self.offset, self.offset + size)]
+            ret = [self.str[i] for i in range(self.offset, self.offset + size)]
             self.offset += size
             return ''.join(ret)
         else:
@@ -93,17 +107,28 @@ def run_host_test_mock(*args, **kwargs):
 
 
 def load_ctest_testsuite_mock():
-    return {'mbed-drivers-test-echo': '.\\build\\frdm-k64f-gcc\\test\\mbed-drivers-test-echo.bin', 'mbed-drivers-test-time_us': '.\\build\\frdm-k64f-gcc\\test\\mbed-drivers-test-time_us.bin',
-            'mbed-drivers-test-serial_interrupt': '.\\build\\frdm-k64f-gcc\\test\\mbed-drivers-test-serial_interrupt.bin', 'mbed-drivers-test-blinky': '.\\build\\frdm-k64f-gcc\\test\\mbed-drivers-test-blinky.bin',
-            'mbed-drivers-test-functionpointer': '.\\build\\frdm-k64f-gcc\\test\\mbed-drivers-test-functionpointer.bin', 'mbed-drivers-test-stdio': '.\\build\\frdm-k64f-gcc\\test\\mbed-drivers-test-stdio.bin',
-            'mbed-drivers-test-eventhandler': '.\\build\\frdm-k64f-gcc\\test\\mbed-drivers-test-eventhandler.bin', 'mbed-drivers-test-stl': '.\\build\\frdm-k64f-gcc\\test\\mbed-drivers-test-stl.bin',
-            'mbed-drivers-test-div': '.\\build\\frdm-k64f-gcc\\test\\mbed-drivers-test-div.bin', 'mbed-drivers-test-rtc': '.\\build\\frdm-k64f-gcc\\test\\mbed-drivers-test-rtc.bin',
-            'mbed-drivers-test-cstring': '.\\build\\frdm-k64f-gcc\\test\\mbed-drivers-test-cstring.bin', 'mbed-drivers-test-cpp': '.\\build\\frdm-k64f-gcc\\test\\mbed-drivers-test-cpp.bin',
-            'mbed-drivers-test-timeout': '.\\build\\frdm-k64f-gcc\\test\\mbed-drivers-test-timeout.bin', 'mbed-drivers-test-ticker_3': '.\\build\\frdm-k64f-gcc\\test\\mbed-drivers-test-ticker_3.bin',
-            'mbed-drivers-test-ticker_2': '.\\build\\frdm-k64f-gcc\\test\\mbed-drivers-test-ticker_2.bin', 'mbed-drivers-test-heap_and_stack': '.\\build\\frdm-k64f-gcc\\test\\mbed-drivers-test-heap_and_stack.bin',
-            'mbed-drivers-test-hello': '.\\build\\frdm-k64f-gcc\\test\\mbed-drivers-test-hello.bin', 'mbed-drivers-test-ticker': '.\\build\\frdm-k64f-gcc\\test\\mbed-drivers-test-ticker.bin',
-            'mbed-drivers-test-dev_null': '.\\build\\frdm-k64f-gcc\\test\\mbed-drivers-test-dev_null.bin', 'mbed-drivers-test-basic': '.\\build\\frdm-k64f-gcc\\test\\mbed-drivers-test-basic.bin',
-            'mbed-drivers-test-asynch_spi': '.\\build\\frdm-k64f-gcc\\test\\mbed-drivers-test-asynch_spi.bin', 'mbed-drivers-test-sleep_timeout': '.\\build\\frdm-k64f-gcc\\test\\mbed-drivers-test-sleep_timeout.bin',
+    return {'mbed-drivers-test-echo': '.\\build\\frdm-k64f-gcc\\test\\mbed-drivers-test-echo.bin',
+            'mbed-drivers-test-time_us': '.\\build\\frdm-k64f-gcc\\test\\mbed-drivers-test-time_us.bin',
+            'mbed-drivers-test-serial_interrupt': '.\\build\\frdm-k64f-gcc\\test\\mbed-drivers-test-serial_interrupt.bin',
+            'mbed-drivers-test-blinky': '.\\build\\frdm-k64f-gcc\\test\\mbed-drivers-test-blinky.bin',
+            'mbed-drivers-test-functionpointer': '.\\build\\frdm-k64f-gcc\\test\\mbed-drivers-test-functionpointer.bin',
+            'mbed-drivers-test-stdio': '.\\build\\frdm-k64f-gcc\\test\\mbed-drivers-test-stdio.bin',
+            'mbed-drivers-test-eventhandler': '.\\build\\frdm-k64f-gcc\\test\\mbed-drivers-test-eventhandler.bin',
+            'mbed-drivers-test-stl': '.\\build\\frdm-k64f-gcc\\test\\mbed-drivers-test-stl.bin',
+            'mbed-drivers-test-div': '.\\build\\frdm-k64f-gcc\\test\\mbed-drivers-test-div.bin',
+            'mbed-drivers-test-rtc': '.\\build\\frdm-k64f-gcc\\test\\mbed-drivers-test-rtc.bin',
+            'mbed-drivers-test-cstring': '.\\build\\frdm-k64f-gcc\\test\\mbed-drivers-test-cstring.bin',
+            'mbed-drivers-test-cpp': '.\\build\\frdm-k64f-gcc\\test\\mbed-drivers-test-cpp.bin',
+            'mbed-drivers-test-timeout': '.\\build\\frdm-k64f-gcc\\test\\mbed-drivers-test-timeout.bin',
+            'mbed-drivers-test-ticker_3': '.\\build\\frdm-k64f-gcc\\test\\mbed-drivers-test-ticker_3.bin',
+            'mbed-drivers-test-ticker_2': '.\\build\\frdm-k64f-gcc\\test\\mbed-drivers-test-ticker_2.bin',
+            'mbed-drivers-test-heap_and_stack': '.\\build\\frdm-k64f-gcc\\test\\mbed-drivers-test-heap_and_stack.bin',
+            'mbed-drivers-test-hello': '.\\build\\frdm-k64f-gcc\\test\\mbed-drivers-test-hello.bin',
+            'mbed-drivers-test-ticker': '.\\build\\frdm-k64f-gcc\\test\\mbed-drivers-test-ticker.bin',
+            'mbed-drivers-test-dev_null': '.\\build\\frdm-k64f-gcc\\test\\mbed-drivers-test-dev_null.bin',
+            'mbed-drivers-test-basic': '.\\build\\frdm-k64f-gcc\\test\\mbed-drivers-test-basic.bin',
+            'mbed-drivers-test-asynch_spi': '.\\build\\frdm-k64f-gcc\\test\\mbed-drivers-test-asynch_spi.bin',
+            'mbed-drivers-test-sleep_timeout': '.\\build\\frdm-k64f-gcc\\test\\mbed-drivers-test-sleep_timeout.bin',
             'mbed-drivers-test-detect': '.\\build\\frdm-k64f-gcc\\test\\mbed-drivers-test-detect.bin'}
 
 
