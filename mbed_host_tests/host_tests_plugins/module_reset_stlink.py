@@ -29,8 +29,20 @@ class HostTestPluginResetMethod_Stlink(HostTestPluginBase):
     required_parameters = []
     stable = False
 
+    def is_os_supported(self, os_name=None):
+        """! In this implementation this plugin only is supporeted under Windows machines
+        """
+        # If no OS name provided use host OS name
+        if not os_name:
+            os_name = self.mbed_os_support()
+
+        # This plugin only works on Windows
+        if os_name and os_name.startswith('Windows'):
+            return True
+        return False
+
     def setup(self, *args, **kwargs):
-        """ Configure plugin, this function should be called before plugin execute() method is used.
+        """! Configure plugin, this function should be called before plugin execute() method is used.
         """
         # Note you need to have eACommander.exe on your system path!
         self.ST_LINK_CLI = 'ST-LINK_CLI.exe'
