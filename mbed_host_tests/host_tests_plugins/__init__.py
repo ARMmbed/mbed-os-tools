@@ -36,6 +36,8 @@ import module_copy_silabs
 import module_reset_silabs
 import module_copy_stlink
 import module_reset_stlink
+import module_copy_jn51xx
+import module_reset_jn51xx
 
 
 # Plugin registry instance
@@ -55,6 +57,8 @@ HOST_TEST_PLUGIN_REGISTRY.register_plugin(module_copy_silabs.load_plugin())
 HOST_TEST_PLUGIN_REGISTRY.register_plugin(module_reset_silabs.load_plugin())
 HOST_TEST_PLUGIN_REGISTRY.register_plugin(module_copy_stlink.load_plugin())
 HOST_TEST_PLUGIN_REGISTRY.register_plugin(module_reset_stlink.load_plugin())
+HOST_TEST_PLUGIN_REGISTRY.register_plugin(module_copy_jn51xx.load_plugin())
+HOST_TEST_PLUGIN_REGISTRY.register_plugin(module_reset_jn51xx.load_plugin())
 
 # TODO: extend plugin loading to files with name module_*.py loaded ad-hoc
 
