@@ -94,7 +94,7 @@ class HostTestRegistry:
         @return Returns string formatted with PrettyTable
         """
         from prettytable import PrettyTable
-        column_names = ['name', 'type', 'capabilities', 'stable']
+        column_names = ['name', 'type', 'capabilities', 'stable', 'os_support']
         pt = PrettyTable(column_names)
         for column in column_names:
             pt.align[column] = 'l'
@@ -103,7 +103,8 @@ class HostTestRegistry:
             type = self.PLUGINS[plugin_name].type
             stable = self.PLUGINS[plugin_name].stable
             capabilities  = ', '.join(self.PLUGINS[plugin_name].capabilities)
-            row = [name, type, capabilities, stable]
+            is_os_supported  = self.PLUGINS[plugin_name].is_os_supported()
+            row = [name, type, capabilities, stable, is_os_supported]
             pt.add_row(row)
         return pt.get_string()
 
@@ -115,11 +116,13 @@ class HostTestRegistry:
             type = self.PLUGINS[plugin_name].type
             stable = self.PLUGINS[plugin_name].stable
             capabilities = self.PLUGINS[plugin_name].capabilities
+            is_os_supported = self.PLUGINS[plugin_name].is_os_supported()
             result[plugin_name] = {
                 "name" : name,
                 "type" : type,
                 "stable" : stable,
-                "capabilities" : capabilities
+                "capabilities" : capabilities,
+                "os_support" : is_os_supported
             }
         return result
 
