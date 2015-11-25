@@ -41,6 +41,7 @@ class HostTestPluginBase:
     type = "BasePlugin"         # Plugin type: ResetMethod, Copymethod etc.
     capabilities = []           # Capabilities names: what plugin can achieve
                                 # (e.g. reset using some external command line tool)
+    required_parameters = []    # Parameters required for 'kwargs' in plugin APIs: e.g. self.execute()
     stable = False              # Determine if plugin is stable and can be used
 
     ###########################################################################
