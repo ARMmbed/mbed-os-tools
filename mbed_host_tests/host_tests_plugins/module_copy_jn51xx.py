@@ -27,7 +27,7 @@ class HostTestPluginCopyMethod_JN51xx(HostTestPluginBase):
     name = 'HostTestPluginCopyMethod_JN51xx'
     type = 'CopyMethod'
     capabilities = ['jn51xx']
-    required_parameters = ['image_path']
+    required_parameters = ['image_path', 'serial']
 
     def is_os_supported(self, os_name=None):
         """! In this implementation this plugin only is supporeted under Windows machines
@@ -61,12 +61,14 @@ class HostTestPluginCopyMethod_JN51xx(HostTestPluginBase):
         result = False
         if self.check_parameters(capability, *args, **kwargs) is True:
             image_path = os.path.normpath(kwargs['image_path'])
+            serial_port = kwargs['serial']
             if capability == 'jn51xx':
                 # Example:
-                # JN51xxProgrammer.exe ...
+                # JN51xxProgrammer.exe -s COM15 -f <file> -V0
                 cmd = [self.JN51XX_PROGRAMMER,
-                       '',
-                       ''
+                       '-s', serial_port,
+                       '-f', '"%s"'% image_path,
+                       '-V0'
                       ]
                 result = self.run_command(cmd)
         return result
