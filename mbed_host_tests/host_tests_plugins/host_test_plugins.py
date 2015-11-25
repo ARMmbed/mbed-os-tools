@@ -64,11 +64,11 @@ class HostTestPluginBase:
         """
         return False
 
-    def is_os_supported(self, os_name):
+    def is_os_supported(self, os_name=None):
         """!
         @return Returns true if plugin works (supportes) under certain OS
         @os_name String describing OS.
-                 See mbed_host_tests.mbed_os_support() and mbed_host_tests.mbed_os_info()
+                 See self.mbed_os_support() and self.mbed_os_info()
         @details In some cases a plugin will not work under particular OS
                  mainly because command / software used to implement plugin
                  functionality is not available e.g. on MacOS or Linux.
