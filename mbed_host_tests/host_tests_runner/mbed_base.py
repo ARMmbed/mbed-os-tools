@@ -248,7 +248,7 @@ class Mbed:
         self.reset_timeout(reset_tout_s)
         return result
 
-    def copy_image(self, image_path=None, disk=None, copy_method=None):
+    def copy_image(self, image_path=None, disk=None, copy_method=None, serial_port=None):
         """! Closure for copy_image_raw() method.
 
         @return Returns result from copy plugin
@@ -258,11 +258,11 @@ class Mbed:
         disk = disk if disk is not None else self.disk
         copy_method = copy_method if copy_method is not None else self.copy_method
         # Call proper copy method
-        result = self.copy_image_raw(image_path, disk, copy_method)
+        result = self.copy_image_raw(image_path, disk, copy_method, serial_port)
         sleep(self.program_cycle_s)
         return result
 
-    def copy_image_raw(self, image_path=None, disk=None, copy_method=None):
+    def copy_image_raw(self, image_path=None, disk=None, copy_method=None, serial_port=None):
         """! Copy file depending on method you want to use. Handles exception
             and return code from shell copy commands.
 
@@ -277,7 +277,11 @@ class Mbed:
                 copy_method = 'shell'
         else:
             copy_method = 'shell'
-        result = ht_plugins.call_plugin('CopyMethod', copy_method, image_path=image_path, destination_disk=disk)
+        result = ht_plugins.call_plugin('CopyMethod', 
+                                        copy_method,
+                                        image_path=image_path,
+                                        serial=serial_port,
+                                        destination_disk=disk)
         return result;
 
     def flush(self):

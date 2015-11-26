@@ -135,6 +135,7 @@ def flash_dev(disk=None,
     result = host_tests_plugins.call_plugin('CopyMethod',
                                             copy_method,
                                             image_path=image_path,
+                                            serial=port,
                                             destination_disk=disk)
     sleep(program_cycle_s)
     return result
