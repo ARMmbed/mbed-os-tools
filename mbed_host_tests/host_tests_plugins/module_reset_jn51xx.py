@@ -26,7 +26,7 @@ class HostTestPluginResetMethod_JN51xx(HostTestPluginBase):
     name = 'HostTestPluginResetMethod_JN51xx'
     type = 'ResetMethod'
     capabilities = ['jn51xx']
-    required_parameters = []
+    required_parameters = ['serial']
     stable = False
 
     def is_os_supported(self, os_name=None):
@@ -68,6 +68,7 @@ class HostTestPluginResetMethod_JN51xx(HostTestPluginBase):
                 # programming mode and then reset it. E.g.
                 # $ JN51xxProgrammer.exe -s COM5 -V0
                 # COM5: Detected JN5179 with MAC address 00:15:8D:00:01:24:E0:37
+                serial_port = kwargs['serial']
                 cmd = [self.JN51XX_PROGRAMMER,
                        '-s', serial_port,
                        '-V0'
