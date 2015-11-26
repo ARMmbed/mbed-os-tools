@@ -119,6 +119,7 @@ class MbedLsToolsBase:
         "1168": "LPC11U68",
         "1234": "UBLOX_C027",
         "1235": "UBLOX_C027",
+        "1300": "NUC472-NUTINY",
         "1549": "LPC1549",
         "1600": "LPC4330_M4",
         "1605": "LPC4330_M4",
