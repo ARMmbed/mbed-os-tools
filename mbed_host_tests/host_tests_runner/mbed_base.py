@@ -53,9 +53,23 @@ class Mbed:
         self.copy_method = self.options.copy_method
         self.program_cycle_s = float(self.options.program_cycle_s if self.options.program_cycle_s is not None else 2.0)
 
+        # Serial port settings
         self.serial = None
         self.serial_baud = 9600
         self.serial_timeout = 1
+
+        # Users can use command to pass port speeds together with port name. E.g. COM4:9600:1
+        # Format if PORT:SPEED:TIMEOUT
+        port_config = self.port.split(':')
+        if len(self.port) == 2:
+            # -p COM4:115200
+            self.port = port_config[0]
+            self.serial_baud = int(port_config[1])
+        elif len(port_config) == 3:
+            # -p COM4:115200:0.5
+            self.port = port_config[0]
+            self.serial_baud = int(port_config[1])
+            self.serial_timeout = float(port_config[2])
 
         # Test configuration in JSON format
         self.test_cfg = None
