@@ -67,7 +67,7 @@ class HostTestPluginCopyMethod_JN51xx(HostTestPluginBase):
                 # JN51xxProgrammer.exe -s COM15 -f <file> -V0
                 cmd = [self.JN51XX_PROGRAMMER,
                        '-s', serial_port,
-                       '-f', '"%s"'% image_path,
+                       '-f', image_path,
                        '-V0'
                       ]
                 result = self.run_command(cmd)
