@@ -61,7 +61,7 @@ class Mbed:
         # Users can use command to pass port speeds together with port name. E.g. COM4:9600:1
         # Format if PORT:SPEED:TIMEOUT
         port_config = self.port.split(':')
-        if len(self.port) == 2:
+        if len(port_config) == 2:
             # -p COM4:115200
             self.port = port_config[0]
             self.serial_baud = int(port_config[1])
