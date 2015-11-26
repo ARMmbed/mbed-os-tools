@@ -142,8 +142,8 @@ class HostTestPluginBase:
         for parameter in self.required_parameters:
             if parameter not in kwargs:
                 missing_parameters.append(parameter)
-        if len(missing_parameters) > 0:
-            self.print_plugin_error("execute parameter(s) '%s' missing!"% (', '.join(parameter)))
+        if len(missing_parameters):
+            self.print_plugin_error("execute parameter(s) '%s' missing!"% (', '.join(missing_parameters)))
             return False
         return True
 
