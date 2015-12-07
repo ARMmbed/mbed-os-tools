@@ -145,7 +145,7 @@ def reset_dev(port=None,
               reset_type='default',
               reset_timeout=1,
               serial_port=None,
-              baudrate=9600,
+              baudrate=115200,
               timeout=1,
               verbose=False):
     """! Reset device using pythonic interface
@@ -265,7 +265,7 @@ class DefaultTestSelector(DefaultTestSelectorBase):
         for ht in sorted(HOSTREGISTRY.HOST_TESTS.keys()):
             print "'%s'%s : %s()" % (ht, ' '*(str_len - len(ht)), HOSTREGISTRY.HOST_TESTS[ht].__class__)
 
-    def handle_send_break_cmd(self, port, disk, reset_type=None, baudrate=9600, timeout=1, verbose=False):
+    def handle_send_break_cmd(self, port, disk, reset_type=None, baudrate=115200, timeout=1, verbose=False):
         """! Resets platforms and prints serial port output
             @detail Mix with switch -r RESET_TYPE and -p PORT for versatility
         """
