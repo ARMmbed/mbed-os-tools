@@ -21,13 +21,13 @@ import os
 from host_test_plugins import HostTestPluginBase
 
 
-class HostTestPluginCopyMethod_Stlink(HostTestPluginBase):
+class HostTestPluginCopyMethod_JN51xx(HostTestPluginBase):
 
     # Plugin interface
-    name = 'HostTestPluginCopyMethod_Stlink'
+    name = 'HostTestPluginCopyMethod_JN51xx'
     type = 'CopyMethod'
-    capabilities = ['stlink']
-    required_parameters = ['image_path']
+    capabilities = ['jn51xx']
+    required_parameters = ['image_path', 'serial']
 
     def is_os_supported(self, os_name=None):
         """! In this implementation this plugin only is supporeted under Windows machines
@@ -44,7 +44,7 @@ class HostTestPluginCopyMethod_Stlink(HostTestPluginBase):
     def setup(self, *args, **kwargs):
         """! Configure plugin, this function should be called before plugin execute() method is used.
         """
-        self.ST_LINK_CLI = 'ST-LINK_CLI.exe'
+        self.JN51XX_PROGRAMMER = 'JN51xxProgrammer.exe'
         return True
 
     def execute(self, capability, *args, **kwargs):
@@ -61,13 +61,15 @@ class HostTestPluginCopyMethod_Stlink(HostTestPluginBase):
         result = False
         if self.check_parameters(capability, *args, **kwargs) is True:
             image_path = os.path.normpath(kwargs['image_path'])
-            if capability == 'stlink':
+            serial_port = kwargs['serial']
+            if capability == 'jn51xx':
                 # Example:
-                # ST-LINK_CLI.exe -p "C:\Work\mbed\build\test\DISCO_F429ZI\GCC_ARM\MBED_A1\basic.bin"
-                cmd = [self.ST_LINK_CLI,
-                       '-p', image_path, '0x08000000',
-                       '-V'
-                       ]
+                # JN51xxProgrammer.exe -s COM15 -f <file> -V0
+                cmd = [self.JN51XX_PROGRAMMER,
+                       '-s', serial_port,
+                       '-f', image_path,
+                       '-V0'
+                      ]
                 result = self.run_command(cmd)
         return result
 
@@ -75,4 +77,4 @@ class HostTestPluginCopyMethod_Stlink(HostTestPluginBase):
 def load_plugin():
     """ Returns plugin available in this module
     """
-    return HostTestPluginCopyMethod_Stlink()
+    return HostTestPluginCopyMethod_JN51xx()

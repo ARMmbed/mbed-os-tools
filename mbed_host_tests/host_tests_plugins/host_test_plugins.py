@@ -41,6 +41,7 @@ class HostTestPluginBase:
     type = "BasePlugin"         # Plugin type: ResetMethod, Copymethod etc.
     capabilities = []           # Capabilities names: what plugin can achieve
                                 # (e.g. reset using some external command line tool)
+    required_parameters = []    # Parameters required for 'kwargs' in plugin APIs: e.g. self.execute()
     stable = False              # Determine if plugin is stable and can be used
 
     ###########################################################################
@@ -63,6 +64,17 @@ class HostTestPluginBase:
         @return Capability call return value
         """
         return False
+
+    def is_os_supported(self, os_name=None):
+        """!
+        @return Returns true if plugin works (supportes) under certain OS
+        @os_name String describing OS.
+                 See self.mbed_os_support() and self.mbed_os_info()
+        @details In some cases a plugin will not work under particular OS
+                 mainly because command / software used to implement plugin
+                 functionality is not available e.g. on MacOS or Linux.
+        """
+        return True
 
     ###########################################################################
     # Interface helper methods - overload only if you need to have custom behaviour
@@ -130,8 +142,8 @@ class HostTestPluginBase:
         for parameter in self.required_parameters:
             if parameter not in kwargs:
                 missing_parameters.append(parameter)
-        if len(missing_parameters) > 0:
-            self.print_plugin_error("execute parameter(s) '%s' missing!"% (', '.join(parameter)))
+        if len(missing_parameters):
+            self.print_plugin_error("execute parameter(s) '%s' missing!"% (', '.join(missing_parameters)))
             return False
         return True
 

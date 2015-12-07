@@ -53,9 +53,23 @@ class Mbed:
         self.copy_method = self.options.copy_method
         self.program_cycle_s = float(self.options.program_cycle_s if self.options.program_cycle_s is not None else 2.0)
 
+        # Serial port settings
         self.serial = None
         self.serial_baud = 9600
         self.serial_timeout = 1
+
+        # Users can use command to pass port speeds together with port name. E.g. COM4:9600:1
+        # Format if PORT:SPEED:TIMEOUT
+        port_config = self.port.split(':')
+        if len(port_config) == 2:
+            # -p COM4:115200
+            self.port = port_config[0]
+            self.serial_baud = int(port_config[1])
+        elif len(port_config) == 3:
+            # -p COM4:115200:0.5
+            self.port = port_config[0]
+            self.serial_baud = int(port_config[1])
+            self.serial_timeout = float(port_config[2])
 
         # Test configuration in JSON format
         self.test_cfg = None
@@ -240,7 +254,7 @@ class Mbed:
         # Flush serials to get only input after reset
         self.flush()
         if self.options.forced_reset_type:
-            result = ht_plugins.call_plugin('ResetMethod', self.options.forced_reset_type, disk=self.disk)
+            result = ht_plugins.call_plugin('ResetMethod', self.options.forced_reset_type, disk=self.disk, serial=self.port)
         else:
             result = ht_plugins.call_plugin('ResetMethod', 'default', serial=self.serial)
         # Give time to wait for the image loading
@@ -248,21 +262,27 @@ class Mbed:
         self.reset_timeout(reset_tout_s)
         return result
 
-    def copy_image(self, image_path=None, disk=None, copy_method=None):
+    def copy_image(self, image_path=None, disk=None, copy_method=None, port=None):
         """! Closure for copy_image_raw() method.
 
         @return Returns result from copy plugin
         """
-        # Set closure environment
-        image_path = image_path if image_path is not None else self.image_path
-        disk = disk if disk is not None else self.disk
-        copy_method = copy_method if copy_method is not None else self.copy_method
+        # Set-up closure environment
+        if not image_path:
+            image_path = self.image_path
+        if not disk:
+            disk = self.disk
+        if not copy_method:
+            copy_method = self.copy_method
+        if not port:
+            port = self.port
+
         # Call proper copy method
-        result = self.copy_image_raw(image_path, disk, copy_method)
+        result = self.copy_image_raw(image_path, disk, copy_method, port)
         sleep(self.program_cycle_s)
         return result
 
-    def copy_image_raw(self, image_path=None, disk=None, copy_method=None):
+    def copy_image_raw(self, image_path=None, disk=None, copy_method=None, port=None):
         """! Copy file depending on method you want to use. Handles exception
             and return code from shell copy commands.
 
@@ -277,7 +297,11 @@ class Mbed:
                 copy_method = 'shell'
         else:
             copy_method = 'shell'
-        result = ht_plugins.call_plugin('CopyMethod', copy_method, image_path=image_path, destination_disk=disk)
+        result = ht_plugins.call_plugin('CopyMethod', 
+                                        copy_method,
+                                        image_path=image_path,
+                                        serial=port,
+                                        destination_disk=disk)
         return result;
 
     def flush(self):

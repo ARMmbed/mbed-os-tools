@@ -17,17 +17,17 @@ limitations under the License.
 Author: Przemyslaw Wirkus <Przemyslaw.Wirkus@arm.com>
 """
 
-import os
 from host_test_plugins import HostTestPluginBase
 
 
-class HostTestPluginCopyMethod_Stlink(HostTestPluginBase):
+class HostTestPluginResetMethod_JN51xx(HostTestPluginBase):
 
     # Plugin interface
-    name = 'HostTestPluginCopyMethod_Stlink'
-    type = 'CopyMethod'
-    capabilities = ['stlink']
-    required_parameters = ['image_path']
+    name = 'HostTestPluginResetMethod_JN51xx'
+    type = 'ResetMethod'
+    capabilities = ['jn51xx']
+    required_parameters = ['serial']
+    stable = False
 
     def is_os_supported(self, os_name=None):
         """! In this implementation this plugin only is supporeted under Windows machines
@@ -44,7 +44,8 @@ class HostTestPluginCopyMethod_Stlink(HostTestPluginBase):
     def setup(self, *args, **kwargs):
         """! Configure plugin, this function should be called before plugin execute() method is used.
         """
-        self.ST_LINK_CLI = 'ST-LINK_CLI.exe'
+        # Note you need to have eACommander.exe on your system path!
+        self.JN51XX_PROGRAMMER = 'JN51xxProgrammer.exe'
         return True
 
     def execute(self, capability, *args, **kwargs):
@@ -60,14 +61,18 @@ class HostTestPluginCopyMethod_Stlink(HostTestPluginBase):
         """
         result = False
         if self.check_parameters(capability, *args, **kwargs) is True:
-            image_path = os.path.normpath(kwargs['image_path'])
-            if capability == 'stlink':
+            if capability == 'jn51xx':
                 # Example:
-                # ST-LINK_CLI.exe -p "C:\Work\mbed\build\test\DISCO_F429ZI\GCC_ARM\MBED_A1\basic.bin"
-                cmd = [self.ST_LINK_CLI,
-                       '-p', image_path, '0x08000000',
-                       '-V'
-                       ]
+                # The device should be automatically reset before the programmer disconnects.
+                # Issuing a command with no file to program or read will put the device into 
+                # programming mode and then reset it. E.g.
+                # $ JN51xxProgrammer.exe -s COM5 -V0
+                # COM5: Detected JN5179 with MAC address 00:15:8D:00:01:24:E0:37
+                serial_port = kwargs['serial']
+                cmd = [self.JN51XX_PROGRAMMER,
+                       '-s', serial_port,
+                       '-V0'
+                      ]
                 result = self.run_command(cmd)
         return result
 
@@ -75,4 +80,4 @@ class HostTestPluginCopyMethod_Stlink(HostTestPluginBase):
 def load_plugin():
     """ Returns plugin available in this module
     """
-    return HostTestPluginCopyMethod_Stlink()
+    return HostTestPluginResetMethod_JN51xx()
