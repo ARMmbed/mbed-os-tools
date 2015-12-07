@@ -28,6 +28,7 @@ class YottaConfig():
     def __init__(self):
         self.BUILD_DIR = 'build'
         self.YOTTA_CONFIG_NAME = 'yotta_config.json'
+        self.DEFAULT_BAUDRATE = 115200
 
     def init(self, target_name):
         """! Loads yotta_config.json as an object from local yotta build directory
@@ -43,7 +44,7 @@ class YottaConfig():
 
     def get_baudrate(self):
         """! Returns default baudrate for stdio serial
-        @return None if baudrate not found, else boudrate
+        @return Configuration baudrate of default on (115200)
         Example yotta_config.json
         {
           "minar": {
@@ -66,7 +67,7 @@ class YottaConfig():
             if 'stdio' in self.yotta_config['mbed-os']:
                 if 'default-baud' in self.yotta_config['mbed-os']['stdio']:
                     return int(self.yotta_config['mbed-os']['stdio']['default-baud'])
-        return None
+        return self.DEFAULT_BAUDRATE
 
     def get_test_pins(self):
         if 'hardware' in self.yotta_config:
