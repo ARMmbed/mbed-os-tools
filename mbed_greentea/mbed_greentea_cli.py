@@ -42,7 +42,7 @@ from mbed_greentea.mbed_greentea_dlm import greentea_get_app_sem
 from mbed_greentea.mbed_greentea_dlm import greentea_update_kettle
 from mbed_greentea.mbed_greentea_dlm import greentea_clean_kettle
 from mbed_greentea.mbed_yotta_api import build_with_yotta
-
+from mbed_yotta_target_parse import YottaConfig
 
 try:
     import mbed_lstools
@@ -253,7 +253,12 @@ def run_test_thread(test_result_queue, test_queue, opts, mut, mut_info, yotta_ta
     test_exec_retcode = 0
     test_platforms_match = 0
     test_report = {}
-    #greentea_acquire_target_id(mut['target_id'], gt_instance_uuid)
+    yotta_config_baudrate = None    # Default serial port baudrate forced by configuration
+
+    yotta_config = YottaConfig()
+    yotta_config.init(yotta_target_name)
+
+    yotta_config_baudrate = yotta_config.get_baudrate()
 
     while not test_queue.empty():
         try:
@@ -271,6 +276,10 @@ def run_test_thread(test_result_queue, test_queue, opts, mut, mut_info, yotta_ta
         copy_method = opts.copy_method if opts.copy_method else 'shell'
         verbose = opts.verbose_test_result_only
         enum_host_tests_path = get_local_host_tests_dir(opts.enum_host_tests)
+
+        # We will force configuration specific baudrate
+        if port:
+            port = "%s:%d"% (port, yotta_config_baudrate)
 
         test_platforms_match += 1
         #gt_log_tab("running host test...")
@@ -524,6 +533,15 @@ def main_cli(opts, args, gt_instance_uuid=None):
                     program_cycle_s = mut_info_map[platfrom_name]['properties']['program_cycle_s']
                     copy_method = opts.copy_method if opts.copy_method else 'shell'
                     enum_host_tests_path = get_local_host_tests_dir(opts.enum_host_tests)
+
+                    yotta_config = YottaConfig()
+                    yotta_config.init(yotta_target_name)
+
+                    yotta_config_baudrate = yotta_config.get_baudrate()
+
+                    # We will force configuration specific baudrate
+                    if port:
+                        port = "%s:%d"% (port, yotta_config_baudrate)
 
                     test_platforms_match += 1
                     host_test_result = run_host_test(opts.run_app,
