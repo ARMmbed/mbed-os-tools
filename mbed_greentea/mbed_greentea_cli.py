@@ -187,7 +187,7 @@ def main():
                     action="store_true",
                     help='Prints console outputs for failed tests')
 
-    parser.add_option('', '--yotta-search',
+    parser.add_option('', '--yotta-registry',
                     dest='yotta_search_for_mbed_target',
                     default=False,
                     action="store_true",
