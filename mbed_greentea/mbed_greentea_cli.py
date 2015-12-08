@@ -42,7 +42,7 @@ from mbed_greentea.mbed_greentea_dlm import greentea_get_app_sem
 from mbed_greentea.mbed_greentea_dlm import greentea_update_kettle
 from mbed_greentea.mbed_greentea_dlm import greentea_clean_kettle
 from mbed_greentea.mbed_yotta_api import build_with_yotta
-from mbed_yotta_target_parse import YottaConfig
+from mbed_greentea.mbed_yotta_target_parse import YottaConfig
 
 try:
     import mbed_lstools
