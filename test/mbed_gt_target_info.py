@@ -169,5 +169,55 @@ additional results from https://yotta-private.herokuapp.com:
         self.assertIn("frdm-k64f-armcc", result)
         self.assertEqual(2, len(result))
 
+    def test_parse_mbed_target_from_target_json(self):
+        target_json_data = {
+          "name": "frdm-k64f-armcc",
+          "version": "0.1.4",
+          "keywords": [
+            "mbed-target:k64f",
+            "mbed-official",
+            "k64f",
+            "frdm-k64f",
+            "armcc"
+          ],
+        }
+
+        # Positive tests
+        self.assertEqual('frdm-k64f-armcc', mbed_target_info.parse_mbed_target_from_target_json('k64f', target_json_data))
+        self.assertEqual('frdm-k64f-armcc', mbed_target_info.parse_mbed_target_from_target_json('K64F', target_json_data))
+
+        # Except cases
+        self.assertNotEqual('frdm-k64f-gcc', mbed_target_info.parse_mbed_target_from_target_json('k64f', target_json_data))
+        self.assertNotEqual('frdm-k64f-gcc', mbed_target_info.parse_mbed_target_from_target_json('K64F', target_json_data))
+        self.assertEqual(None, mbed_target_info.parse_mbed_target_from_target_json('_k64f_', target_json_data))
+        self.assertEqual(None, mbed_target_info.parse_mbed_target_from_target_json('', target_json_data))
+        self.assertEqual(None, mbed_target_info.parse_mbed_target_from_target_json('Some board name', target_json_data))
+
+    def test_parse_mbed_target_from_target_json_multiple(self):
+        target_json_data = {
+          "name": "frdm-k64f-armcc",
+          "version": "0.1.4",
+          "keywords": [
+            "mbed-target:k64f",
+            "mbed-target:frdm-k64f",
+            "mbed-official",
+            "k64f",
+            "frdm-k64f",
+            "armcc"
+          ],
+        }
+
+        # Positive tests
+        self.assertEqual('frdm-k64f-armcc', mbed_target_info.parse_mbed_target_from_target_json('k64f', target_json_data))
+        self.assertEqual('frdm-k64f-armcc', mbed_target_info.parse_mbed_target_from_target_json('frdm-k64f', target_json_data))
+        self.assertEqual('frdm-k64f-armcc', mbed_target_info.parse_mbed_target_from_target_json('K64F', target_json_data))
+        self.assertEqual('frdm-k64f-armcc', mbed_target_info.parse_mbed_target_from_target_json('FRDM-K64F', target_json_data))
+
+        # Except cases
+        self.assertNotEqual('frdm-k64f-gcc', mbed_target_info.parse_mbed_target_from_target_json('k64f', target_json_data))
+        self.assertNotEqual('frdm-k64f-gcc', mbed_target_info.parse_mbed_target_from_target_json('frdm-k64f', target_json_data))
+        self.assertNotEqual('frdm-k64f-gcc', mbed_target_info.parse_mbed_target_from_target_json('K64F', target_json_data))
+        self.assertNotEqual('frdm-k64f-gcc', mbed_target_info.parse_mbed_target_from_target_json('FRDM-K64F', target_json_data))
+
 if __name__ == '__main__':
     unittest.main()
