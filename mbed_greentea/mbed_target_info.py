@@ -17,7 +17,9 @@ limitations under the License.
 Author: Przemyslaw Wirkus <Przemyslaw.Wirkus@arm.com>
 """
 
+import os
 import re
+import json
 from mbed_test_api import run_cli_process
 from mbed_greentea_log import gt_log
 from mbed_greentea_log import gt_bright
@@ -121,6 +123,46 @@ def parse_yotta_target_cmd_output(line):
         return result
     return None
 
+def get_mbed_targets_from_yotta_local_module(mbed_classic_name, yotta_targets_path='./yotta_targets'):
+    """! Function is parsing local yotta targets to fetch matching mbed device target's name
+    @return Function returns list of possible targets or empty list if value not found
+    """
+    result = []
+
+    if os.path.exists(yotta_targets_path):
+        # All local diorectories with yotta targets
+        target_dirs = [target_dir_name for target_dir_name in os.listdir(yotta_targets_path) if os.path.isdir(os.path.join(yotta_targets_path, target_dir_name))]
+
+        gt_log("local yotta target search in '%s' for compatible mbed-target '%s'"% (gt_bright(yotta_targets_path), gt_bright(mbed_classic_name.lower().strip())))
+
+        for target_dir in target_dirs:
+            path = os.path.join(yotta_targets_path, target_dir, 'target.json')
+            try:
+                with open(path, 'r') as data_file:
+                    target_json_data = json.load(data_file)
+                    yotta_target_name = parse_mbed_target_from_target_json(mbed_classic_name, target_json_data)
+                    if yotta_target_name:
+                        target_dir_name = os.path.join(yotta_targets_path, target_dir)
+                        gt_log_tab("inside '%s' found compatible target '%s'"% (gt_bright(target_dir_name), gt_bright(yotta_target_name)))
+                        result.append(yotta_target_name)
+            except IOError as e:
+                gt_log_err(str(e))
+    return result
+
+def parse_mbed_target_from_target_json(mbed_classic_name, target_json_data):
+    result = None
+    if target_json_data and 'keywords' in target_json_data:
+        for keyword in target_json_data['keywords']:
+            # Keywords with mbed-target data embedded in to identify target
+            if keyword.startswith('mbed-target:'):
+                mbed_target, mbed_name = keyword.split(':')
+                if mbed_name.lower() == mbed_classic_name.lower():
+                    # Check in case name of the target is not specified
+                    if 'name' in target_json_data:
+                        yotta_target_name = target_json_data['name']
+                        return yotta_target_name
+    return result
+
 def get_mbed_targets_from_yotta(mbed_classic_name):
     """! Function is using 'yotta search' command to fetch matching mbed device target's name
     @return Function returns list of possible targets or empty list if value not found
@@ -152,16 +194,20 @@ def parse_yotta_search_cmd_output(line):
     if m and len(m.groups()):
         yotta_target_name = m.groups()[0]
         return yotta_target_name
-        result.append(yotta_target_name)
-        gt_log_tab("found target '%s'" % gt_bright(yotta_target_name))
     return None
 
-def add_target_info_mapping(mbed_classic_name, map_platform_to_yt_target=None):
+def add_target_info_mapping(mbed_classic_name, map_platform_to_yt_target=None, use_yotta_registry=False):
     """! Adds more target information to TARGET_INFO_MAPPING by searching in yotta registry
     @return Returns TARGET_INFO_MAPPING updated with new targets
     @details Note: function mutates TARGET_INFO_MAPPING
     """
-    yotta_target_search = get_mbed_targets_from_yotta(mbed_classic_name)
+
+    yotta_target_search = get_mbed_targets_from_yotta_local_module(mbed_classic_name)
+    if use_yotta_registry:
+        # We can also use yotta registry to check for target compatibility (slower)
+        yotta_registry_target_search = get_mbed_targets_from_yotta(mbed_classic_name)
+        yotta_target_search.extend(yotta_registry_target_search)
+        yotta_target_search = list(set(yotta_target_search))    # Reduce repeated values
 
     # Add extra targets to already existing and detected in the system platforms
     if mbed_classic_name in map_platform_to_yt_target:
@@ -202,14 +248,14 @@ def add_target_info_mapping(mbed_classic_name, map_platform_to_yt_target=None):
                     })
     return TARGET_INFO_MAPPING
 
-def get_mbed_clasic_target_info(mbed_classic_name, map_platform_to_yt_target=None):
+def get_mbed_clasic_target_info(mbed_classic_name, map_platform_to_yt_target=None, use_yotta_registry=False):
     """! Function resolves meta-data information about target given as mbed classic name.
     @param mbed_classic_name Mbed classic (mbed 2.0) name e.g. K64F, LPC1768 etc.
     @param map_platform_to_yt_target User defined mapping platfrom:supported target
     @details Function first updated TARGET_INFO_MAPPING structure and later checks if mbed classic name is available in mapping structure
     @return Returns information about yotta target for specific toolchain
     """
-    TARGET_INFO_MAPPING = add_target_info_mapping(mbed_classic_name, map_platform_to_yt_target)
+    TARGET_INFO_MAPPING = add_target_info_mapping(mbed_classic_name, map_platform_to_yt_target, use_yotta_registry)
     return TARGET_INFO_MAPPING[mbed_classic_name] if mbed_classic_name in TARGET_INFO_MAPPING else None
 
 def get_mbed_supported_test(mbed_test_case_name):

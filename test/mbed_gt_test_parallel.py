@@ -40,7 +40,7 @@ class TestmbedGt(unittest.TestCase):
     @patch('mbed_greentea.mbed_greentea_cli.load_ctest_testsuite')
     @patch('mbed_greentea.mbed_greentea_cli.mbed_lstools.create')
     @patch('mbed_greentea.mbed_test_api.Popen')
-    def test_basic(self, popen_mock, mbedLstools_mock, loadCtestTestsuite_mock, optionParser_mock):
+    def test_basic_parallel_execution(self, popen_mock, mbedLstools_mock, loadCtestTestsuite_mock, optionParser_mock):
         #runHostTest_mock.side_effect = run_host_test_mock
         popen_mock.side_effect = PopenMock
         mbedLstools_mock.side_effect = MbedsMock
@@ -156,6 +156,7 @@ class GtOptions:
                  report_fails=False,
                  verbose_test_result_only=False,
                  enum_host_tests=None,
+                 yotta_search_for_mbed_target=False,
                  verbose=True,
                  version=False):
 
@@ -181,6 +182,7 @@ class GtOptions:
         self.report_fails = report_fails
         self.verbose_test_result_only = verbose_test_result_only
         self.enum_host_tests = enum_host_tests
+        self.yotta_search_for_mbed_target = yotta_search_for_mbed_target
         self.verbose = verbose
         self.version = version
 

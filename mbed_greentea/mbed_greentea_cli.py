@@ -187,6 +187,12 @@ def main():
                     action="store_true",
                     help='Prints console outputs for failed tests')
 
+    parser.add_option('', '--yotta-registry',
+                    dest='yotta_search_for_mbed_target',
+                    default=False,
+                    action="store_true",
+                    help='Use on-line yotta registry to search for compatible with connected mbed devices yotta targets. Default: search is done in yotta_targets directory')
+
     parser.add_option('-V', '--verbose-test-result',
                     dest='verbose_test_result_only',
                     default=False,
@@ -442,7 +448,9 @@ def main_cli(opts, args, gt_instance_uuid=None):
     for mut in ready_mbed_devices:
         platfrom_name = mut['platform_name']
         if platfrom_name not in mut_info_map:
-            mut_info = get_mbed_clasic_target_info(platfrom_name, map_platform_to_yt_target)
+            mut_info = get_mbed_clasic_target_info(platfrom_name,
+                                                   map_platform_to_yt_target,
+                                                   use_yotta_registry=opts.yotta_search_for_mbed_target)
             if mut_info:
                 mut_info_map[platfrom_name] = mut_info
     #print "mut_info_map:", json.dumps(mut_info_map, indent=2)
