@@ -42,6 +42,9 @@ class YottaConfig():
             self.yotta_config = {}
         return bool(len(self.yotta_config))
 
+    def set_yotta_config(self, yotta_config):
+        self.yotta_config = yotta_config
+
     def get_baudrate(self):
         """! Returns default baudrate for stdio serial
         @return Configuration baudrate of default on (115200)
@@ -63,14 +66,14 @@ class YottaConfig():
           },
         """
         # Get default baudrate for this target
-        if 'mbed-os' in self.yotta_config:
+        if self.yotta_config and 'mbed-os' in self.yotta_config:
             if 'stdio' in self.yotta_config['mbed-os']:
                 if 'default-baud' in self.yotta_config['mbed-os']['stdio']:
                     return int(self.yotta_config['mbed-os']['stdio']['default-baud'])
         return self.DEFAULT_BAUDRATE
 
     def get_test_pins(self):
-        if 'hardware' in self.yotta_config:
+        if self.yotta_config and 'hardware' in self.yotta_config:
             if 'test-pins' in self.yotta_config['hardware']:
                 return self.yotta_config['hardware']['test-pins']
         return None
