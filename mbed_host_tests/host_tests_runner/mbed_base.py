@@ -258,7 +258,8 @@ class Mbed:
         else:
             reset_method = 'default'
         result = ht_plugins.call_plugin('ResetMethod', reset_method,
-                                        serial=self.serial, disk=self.disk)
+                                        serial=self.serial, disk=self.disk,
+                                        image_path=self.image_path)
         # Give time to wait for the image loading
         reset_tout_s = self.options.forced_reset_timeout if self.options.forced_reset_timeout is not None else self.DEFAULT_RESET_TOUT
         self.reset_timeout(reset_tout_s)
