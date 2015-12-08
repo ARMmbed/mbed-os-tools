@@ -216,3 +216,5 @@ class MbedsMock:
         return {'K64F': 2}
 
 
+if __name__ == '__main__':
+    unittest.main()
