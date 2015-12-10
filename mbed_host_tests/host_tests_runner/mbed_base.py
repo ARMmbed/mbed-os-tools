@@ -254,9 +254,11 @@ class Mbed:
         # Flush serials to get only input after reset
         self.flush()
         if self.options.forced_reset_type:
-            result = ht_plugins.call_plugin('ResetMethod', self.options.forced_reset_type, disk=self.disk, serial=self.port)
+            reset_method = self.options.forced_reset_type
         else:
-            result = ht_plugins.call_plugin('ResetMethod', 'default', serial=self.serial)
+            reset_method = 'default'
+        result = ht_plugins.call_plugin('ResetMethod', reset_method,
+                                        serial=self.serial, disk=self.disk)
         # Give time to wait for the image loading
         reset_tout_s = self.options.forced_reset_timeout if self.options.forced_reset_timeout is not None else self.DEFAULT_RESET_TOUT
         self.reset_timeout(reset_tout_s)
