@@ -22,7 +22,7 @@ class BaseHostTest():
 
     name = ''   # name of the host test (used for local registration)
 
-    def rumpUp(self):
+    def rampUp(self):
         """ Ramp up function, initialize your test case dynamic resources in this function
         """
         pass
