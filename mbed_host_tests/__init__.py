@@ -220,7 +220,7 @@ class DefaultTestSelector(DefaultTestSelectorBase):
     """
     test_supervisor = get_host_test("default")
 
-    def __init__(self, options=None):
+    def __init__(self, options):
         """! ctor
         """
         self.options = options

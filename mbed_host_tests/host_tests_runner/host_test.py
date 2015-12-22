@@ -44,7 +44,7 @@ class HostTestResults:
 class Test(HostTestResults):
     """ Base class for host test's test runner
     """
-    def __init__(self, options=None):
+    def __init__(self, options):
         """ ctor
         """
         self.mbed = Mbed(options)
@@ -211,6 +211,6 @@ class DefaultTestSelectorBase(Test):
 
     @details This is a base for other test selectors, initializes
     """
-    def __init__(self, options=None):
+    def __init__(self, options):
         HostTestResults.__init__(self)
         Test.__init__(self, options=options)
