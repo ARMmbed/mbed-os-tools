@@ -73,7 +73,7 @@ class HostTestPluginCopyMethod_Mbed(HostTestPluginBase):
             return False
 
         result = False
-        if self.check_parameters(capability, *args, **kwargs) is True:
+        if self.check_parameters(capability, *args, **kwargs):
             # Capability 'default' is a dummy capability
             if kwargs['image_path'] and kwargs['destination_disk']:
                 if capability == 'shutil':
