@@ -53,24 +53,31 @@ class HostTestPluginCopyMethod_JN51xx(HostTestPluginBase):
         @param capability Capability name
         @param args Additional arguments
         @param kwargs Additional arguments
-
         @details Each capability e.g. may directly just call some command line program or execute building pythonic function
-
         @return Capability call return value
         """
+        if not kwargs['image_path']:
+            self.print_plugin_error("Error: image path not specified")
+            return False
+
+        if not kwargs['serial']:
+            self.print_plugin_error("Error: serial port not set (not opened?)")
+            return False
+
         result = False
-        if self.check_parameters(capability, *args, **kwargs) is True:
-            image_path = os.path.normpath(kwargs['image_path'])
-            serial_port = kwargs['serial']
-            if capability == 'jn51xx':
-                # Example:
-                # JN51xxProgrammer.exe -s COM15 -f <file> -V0
-                cmd = [self.JN51XX_PROGRAMMER,
-                       '-s', serial_port,
-                       '-f', image_path,
-                       '-V0'
-                      ]
-                result = self.run_command(cmd)
+        if self.check_parameters(capability, *args, **kwargs):
+            if kwargs['image_path'] and kwargs['serial']:
+                image_path = os.path.normpath(kwargs['image_path'])
+                serial_port = kwargs['serial']
+                if capability == 'jn51xx':
+                    # Example:
+                    # JN51xxProgrammer.exe -s COM15 -f <file> -V0
+                    cmd = [self.JN51XX_PROGRAMMER,
+                           '-s', serial_port,
+                           '-f', image_path,
+                           '-V0'
+                          ]
+                    result = self.run_command(cmd)
         return result
 
 
