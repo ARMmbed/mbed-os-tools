@@ -25,7 +25,7 @@ class MbedLsToolsLinuxGeneric(MbedLsToolsBase):
     """ MbedLsToolsLinuxGeneric supports mbed-enabled platforms detection across Linux family
     """
     def __init__(self):
-        """ ctor
+        """！ ctor
         """
         MbedLsToolsBase.__init__(self)
         self.os_supported.append('LinuxGeneric')
@@ -35,11 +35,8 @@ class MbedLsToolsLinuxGeneric(MbedLsToolsBase):
 
     def list_mbeds(self):
         """! Returns detailed list of connected mbeds
-
         @return Returns list of structures with detailed info about each mbed
-
         @details Function returns list of dictionaries with mbed attributes such as mount point, TargetID name etc.
-
         Function returns mbed list with platform names if possible
         all_devices =
         [
@@ -122,9 +119,7 @@ class MbedLsToolsLinuxGeneric(MbedLsToolsBase):
 
     def get_dev_by_id(self, subdir):
         """! Lists disk devices by id
-
         @return List of strings from 'ls' command executed in shell
-
         @details Uses Linux shell command: 'ls -oA /dev/disk/by-id/'
         """
         result = []
@@ -143,9 +138,7 @@ class MbedLsToolsLinuxGeneric(MbedLsToolsBase):
 
     def get_mounts(self):
         """! Lists mounted devices with vfat file system (potential mbeds)
-
         @result Returns list of all mounted vfat devices
-
         @details Uses Linux shell command: 'mount | grep vfat'
         """
         result = []
@@ -164,11 +157,8 @@ class MbedLsToolsLinuxGeneric(MbedLsToolsBase):
 
     def get_disk_hex_ids(self, disk_list):
         """! Get only hexadecimal IDs for mbed disks
-
         @param disk_list List of disks in a system with USBID decoration
-
         @return Returns map of disks and corresponding disks' Hex ids
-
         @details Uses regular expressions to get Hex strings (TargeTIDs) from list of disks
         """
         nlp = re.compile(self.name_link_pattern)
@@ -185,12 +175,9 @@ class MbedLsToolsLinuxGeneric(MbedLsToolsBase):
 
     def get_mbed_serial(self, serial_list, dhi):
         """! Get mbed serial by unique hex id (dhi) in disk name
-
-        @return Returns None if corresponding serial device is not found, else returns serial device path
-
         @param serial_list List of all serial ports
         @param dhi Unique Hex id of possible mbed device
-
+        @return Returns None if corresponding serial device is not found, else returns serial device path
         @details Devices are located in Linux '/dev/' directory structure
         """
         nlp = re.compile(self.name_link_pattern)
@@ -205,14 +192,11 @@ class MbedLsToolsLinuxGeneric(MbedLsToolsBase):
 
     def get_detected(self, tids, disk_list, serial_list, mount_list):
         """! Find all known mbed devices and assign name by targetID
-
-        @return list of lists [mbed_name, mbed_dev_disk, mbed_mount_point, mbed_dev_serial, disk_hex_id]
-
         @param tids TargetID comprehensive list for detection (manufacturers_ids)
         @param disk_list List of disks (mount points in /dev/disk)
         @param serial_list List of serial devices (serial ports in /dev/serial)
         @param mount_list List of lines from 'mount' command
-
+        @return list of lists [mbed_name, mbed_dev_disk, mbed_mount_point, mbed_dev_serial, disk_hex_id]
         @details Find for all disk connected all MBED ones we know about from TID list
         """
         # Find for all disk connected all MBED ones we know about from TID list
@@ -241,14 +225,11 @@ class MbedLsToolsLinuxGeneric(MbedLsToolsBase):
 
     def get_not_detected(self, tids, disk_list, serial_list, mount_list):
         """! Find all unknown mbed-enabled devices (may have 'mbed' string in USBID name)
-
-        @return list of lists [mbed_name, mbed_dev_disk, mbed_mount_point, mbed_dev_serial, disk_hex_id]
-
         @param tids TargetID comprehensive list for detection (manufacturers_ids)
         @param disk_list List of disks (mount points in /dev/disk)
         @param serial_list List of serial devices (serial ports in /dev/serial)
         @param mount_list List of lines from 'mount' command
-
+        @return list of lists [mbed_name, mbed_dev_disk, mbed_mount_point, mbed_dev_serial, disk_hex_id]
         @details Find for all disk connected all MBED ones we know about from TID list
         """
         map_tid_to_mbed = self.get_tid_mbed_name_remap(tids)
@@ -279,12 +260,12 @@ class MbedLsToolsLinuxGeneric(MbedLsToolsBase):
         return result
 
     def get_tid_mbed_name_remap(self, tids):
-        """ Remap to get mapping:  ID -> mbed name
+        """！ Remap to get mapping:  ID -> mbed name
         """
         return tids
 
     def get_dev_name(self, link):
-        """ Get device name from symbolic link list
+        """！ Get device name from symbolic link list
         """
         device_sufix_pattern = ".*/([a-zA-Z0-9]*)$"
         dsp = re.compile(device_sufix_pattern)
@@ -293,13 +274,10 @@ class MbedLsToolsLinuxGeneric(MbedLsToolsBase):
         return mbed_dev
 
     def get_mount_point(self, dev_name, mount_list):
-        """ Find mount points for MBED devices using mount command output
-
-        @return Returns None if mount point not found. Else returns device mount path
-
+        """！ Find mount points for MBED devices using mount command output
         @param dev_name Device name (e.g 'sda')
         @param mount_list List of all mounted devices (strings from Linux mount shell command)
-
+        @return Returns None if mount point not found. Else returns device mount path
         @details We want to scan names of mount points like this:
         /media/MBED_xxx
         /media/MBED__xxx
