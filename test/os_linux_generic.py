@@ -30,7 +30,7 @@ class BasicTestCase(unittest.TestCase):
 
     def setUp(self):
         self.linux_generic = MbedLsToolsLinuxGeneric()
-        
+
         self.vfat_devices = [
             "/dev/sdb on /media/usb0 type vfat (rw,noexec,nodev,sync,noatime,nodiratime,gid=1000,uid=1000,dmask=000,fmask=000)",
             "/dev/sdd on /media/usb2 type vfat (rw,noexec,nodev,sync,noatime,nodiratime,gid=1000,uid=1000,dmask=000,fmask=000)",
@@ -57,12 +57,22 @@ class BasicTestCase(unittest.TestCase):
         self.assertEqual('/media/usb2', self.linux_generic.get_mount_point('sdd', self.vfat_devices))
         self.assertEqual('/media/usb3', self.linux_generic.get_mount_point('sde', self.vfat_devices))
         self.assertEqual('/media/usb1', self.linux_generic.get_mount_point('sdc', self.vfat_devices))
-        
+
     def test_get_mount_point_ext(self):
         self.assertEqual('/media/MBED_xxx', self.linux_generic.get_mount_point('sdb', self.vfat_devices_ext))
         self.assertEqual('/media/MBED___x', self.linux_generic.get_mount_point('sdd', self.vfat_devices_ext))
         self.assertEqual('/media/MBED-xxx', self.linux_generic.get_mount_point('sde', self.vfat_devices_ext))
         self.assertEqual('/media/MBED_x-x', self.linux_generic.get_mount_point('sdc', self.vfat_devices_ext))
-        
+
+    def test_get_dev_name(self):
+        self.assertEqual('ttyACM0', self.linux_generic.get_dev_name('usb-MBED_MBED_CMSIS-DAP_02400201489A1E6CB564E3D4-if01 -> ../../ttyACM0'))
+        self.assertEqual('ttyACM2', self.linux_generic.get_dev_name('usb-STMicroelectronics_STM32_STLink_0672FF485649785087171742-if02 -> ../../ttyACM2'))
+        self.assertEqual('ttyACM3', self.linux_generic.get_dev_name('usb-MBED_MBED_CMSIS-DAP_0240020152986E5EAF6693E6-if01 -> ../../ttyACM3'))
+        self.assertEqual('ttyACM2', self.linux_generic.get_dev_name('/dev/ttyACM2'))
+        self.assertEqual('sdb', self.linux_generic.get_dev_name('usb-MBED_microcontroller_02400201489A1E6CB564E3D4-0:0 -> ../../sdb'))
+        self.assertEqual('sde', self.linux_generic.get_dev_name('usb-MBED_microcontroller_0240020152986E5EAF6693E6-0:0 -> ../../sde'))
+        self.assertEqual('sdd', self.linux_generic.get_dev_name('usb-MBED_microcontroller_0672FF485649785087171742-0:0 -> ../../sdd'))
+
+
 if __name__ == '__main__':
     unittest.main()
