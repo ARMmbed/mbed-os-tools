@@ -260,12 +260,12 @@ class MbedLsToolsLinuxGeneric(MbedLsToolsBase):
         return result
 
     def get_tid_mbed_name_remap(self, tids):
-        """！ Remap to get mapping:  ID -> mbed name
+        """! Remap to get mapping:  ID -> mbed name
         """
         return tids
 
     def get_dev_name(self, link):
-        """！ Get device name from symbolic link list
+        """! Get device name from symbolic link list
         """
         device_sufix_pattern = ".*/([a-zA-Z0-9]*)$"
         dsp = re.compile(device_sufix_pattern)
@@ -274,7 +274,7 @@ class MbedLsToolsLinuxGeneric(MbedLsToolsBase):
         return mbed_dev
 
     def get_mount_point(self, dev_name, mount_list):
-        """！ Find mount points for MBED devices using mount command output
+        """! Find mount points for MBED devices using mount command output
         @param dev_name Device name (e.g 'sda')
         @param mount_list List of all mounted devices (strings from Linux mount shell command)
         @return Returns None if mount point not found. Else returns device mount path
