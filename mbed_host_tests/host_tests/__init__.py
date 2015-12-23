@@ -17,18 +17,3 @@ limitations under the License.
 
 # base host test class
 from base_host_test import BaseHostTest
-
-
-# Host test supervisors
-from echo import EchoTest
-from rtc_auto import RTCTest
-from stdio_auto import StdioTest
-from hello_auto import HelloTest
-from detect_auto import DetectPlatformTest
-from default_auto import DefaultAuto
-from dev_null_auto import DevNullTest
-from wait_us_auto import WaitusTest
-from tcpecho_server_auto import TCPEchoServerTest
-from udpecho_server_auto import UDPEchoServerTest
-from tcpecho_client_auto import TCPEchoClientTest
-from udpecho_client_auto import UDPEchoClientTest
