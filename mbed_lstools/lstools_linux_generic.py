@@ -25,7 +25,7 @@ class MbedLsToolsLinuxGeneric(MbedLsToolsBase):
     """ MbedLsToolsLinuxGeneric supports mbed-enabled platforms detection across Linux family
     """
     def __init__(self):
-        """！ ctor
+        """! ctor
         """
         MbedLsToolsBase.__init__(self)
         self.os_supported.append('LinuxGeneric')
