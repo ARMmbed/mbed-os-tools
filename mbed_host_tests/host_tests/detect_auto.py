@@ -16,7 +16,7 @@ limitations under the License.
 """
 
 import re
-from . import BaseHostTest
+from mbed_host_tests import BaseHostTest
 
 class DetectPlatformTest(BaseHostTest):
     PATTERN_MICRO_NAME = "Target '(\w+)'"

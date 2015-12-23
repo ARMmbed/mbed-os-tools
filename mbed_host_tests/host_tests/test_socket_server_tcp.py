@@ -16,7 +16,7 @@ limitations under the License.
 """
 
 import socket
-from . import BaseHostTest
+from mbed_host_tests import BaseHostTest
 
 class TCPSocketServerEchoExtTest(BaseHostTest):
     """ This echo server opens and closes connections.
