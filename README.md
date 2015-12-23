@@ -7,6 +7,7 @@ Currently supported operating system:
 
 * Windows 7.
 * Ubuntu.
+* Linux (generic).
 * Mac OS X (Darwin).
 
 The stand-alone mbed-lstools Python package is still under development, but it's already delivered as part of the mbed SDK's test suite and a command line tool (see below).

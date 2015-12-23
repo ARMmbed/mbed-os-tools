@@ -48,7 +48,7 @@ class DetectOSTestCase(unittest.TestCase):
         self.assertNotEqual(None, create())
 
     def test_supported_os_name(self):
-        os_names = ['Windows7', 'Ubuntu', 'Darwin']
+        os_names = ['Windows7', 'Ubuntu', 'LinuxGeneric', 'Darwin']
         self.assertIn(mbed_os_support(), os_names)
 
     def test_detect_os_support_ext(self):
