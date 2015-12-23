@@ -300,9 +300,12 @@ class MbedLsToolsLinuxGeneric(MbedLsToolsBase):
         @param dev_name Device name (e.g 'sda')
         @param mount_list List of all mounted devices (strings from Linux mount shell command)
 
-        @details
+        @details We want to scan names of mount points like this:
+        /media/MBED_xxx
+        /media/MBED__xxx
+        /media/MBED-xxx
         """
-        mount_media_pattern = "^/[a-zA-Z0-9/]*/" + dev_name  + " on (/[a-zA-Z0-9/]*) "
+        mount_media_pattern = "^/[a-zA-Z0-9/]*/" + dev_name  + " on (/[a-zA-Z0-9_\-/]*) "
         mmp = re.compile(mount_media_pattern)
         for mount in mount_list:
             m = mmp.search(mount)
