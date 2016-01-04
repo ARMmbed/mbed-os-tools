@@ -214,6 +214,12 @@ def main():
                     action="store_true",
                     help='Verbose mode (prints some extra information)')
 
+    parser.add_option('', '--plain',
+                    dest='plain',
+                    default=False,
+                    action="store_true",
+                    help='Do not use colours while logging')
+
     parser.add_option('', '--version',
                     dest='version',
                     default=False,
@@ -354,6 +360,9 @@ def main_cli(opts, args, gt_instance_uuid=None):
     if not MBED_HOST_TESTS:
         gt_logger.gt_log_err("error: mbed-host-tests proprietary module not installed")
         return (-1)
+
+    # This is how you magically control colours in this piece of art software
+    gt_logger.colorful(not opts.plain)
 
     # List available test binaries (names, no extension)
     if opts.list_binaries:
