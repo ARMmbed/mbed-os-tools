@@ -34,16 +34,16 @@ class GreenTeaSimpleLockLogger:
     @details We are using parallel testing
     """
     # Colors used by colorama terminal component
-    DIM = ''
-    BRIGHT = ''
-    GREEN = ''
-    RED = ''
-    BLUE = ''
-    YELLOW = ''
-    RESET = ''
+    DIM = str()
+    BRIGHT = str()
+    GREEN = str()
+    RED = str()
+    BLUE = str()
+    YELLOW = str()
+    RESET = str()
 
     def __init__(self, colors=True):
-        self.colors = colors    # Use colours for formatting
+        self.colorful(colors)    # Set and use colours for formatting
 
         # Mutext used to protect logger prints
         # Usage:
@@ -51,22 +51,38 @@ class GreenTeaSimpleLockLogger:
         # GREENTEA_LOG_MUTEX.release()
         self.GREENTEA_LOG_MUTEX = Lock()
 
-        if not COLORAMA:
-            self.gt_log("Colorful console output is disabled")
-        else:
-            colorama.init()
-            self.DIM = colorama.Style.DIM
-            self.BRIGHT = colorama.Style.BRIGHT
-            self.GREEN = colorama.Fore.GREEN
-            self.RED = colorama.Fore.RED
-            self.BLUE = colorama.Fore.BLUE
-            self.YELLOW = colorama.Fore.YELLOW
-            self.RESET = colorama.Style.RESET_ALL
+        if self.colors:
+            if not COLORAMA:
+                self.gt_log("Colorful console output is disabled")
+            else:
+                colorama.init()
 
     def colorful(self, colors):
         """! Enable/Disable colourful printing
         """
         self.colors = colors
+        if self.colors:
+            self.__set_colors()
+        else:
+            self.__clear_colors()
+
+    def __set_colors(self):
+        self.DIM = colorama.Style.DIM
+        self.BRIGHT = colorama.Style.BRIGHT
+        self.GREEN = colorama.Fore.GREEN
+        self.RED = colorama.Fore.RED
+        self.BLUE = colorama.Fore.BLUE
+        self.YELLOW = colorama.Fore.YELLOW
+        self.RESET = colorama.Style.RESET_ALL
+
+    def __clear_colors(self):
+        self.DIM = str()
+        self.BRIGHT = str()
+        self.GREEN = str()
+        self.RED = str()
+        self.BLUE = str()
+        self.YELLOW = str()
+        self.RESET =  str()
 
     def __print(self, text):
         self.GREENTEA_LOG_MUTEX.acquire(1)
