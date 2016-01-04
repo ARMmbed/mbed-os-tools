@@ -22,39 +22,51 @@ from threading import Lock
 
 try:
     import colorama
-except:
+except ImportError:
     pass
 
+# We will check if import actually was successful
 COLORAMA = 'colorama' in sys.modules
-
-DIM = ''
-BRIGHT = ''
-GREEN = ''
-RED = ''
-BLUE = ''
-YELLOW = ''
-RESET = ''
-
-if not COLORAMA:
-    print "mbedgt: colorful console output is disabled"
-else:
-    colorama.init()
-    DIM = colorama.Style.DIM
-    BRIGHT = colorama.Style.BRIGHT
-    GREEN = colorama.Fore.GREEN
-    RED = colorama.Fore.RED
-    BLUE = colorama.Fore.BLUE
-    YELLOW = colorama.Fore.YELLOW
-    RESET = colorama.Style.RESET_ALL
 
 
 class GreenTeaSimpleLockLogger:
     """! Simple locking printing mechanism
+    @details We are using parallel testing
     """
-    def __init__(self):
-        self.GREENTEA_LOG_MUTEX = Lock()
+    # Colors used by colorama terminal component
+    DIM = ''
+    BRIGHT = ''
+    GREEN = ''
+    RED = ''
+    BLUE = ''
+    YELLOW = ''
+    RESET = ''
+
+    def __init__(self, colors=True):
+        self.colors = colors    # Use colours for formatting
+
+        # Mutext used to protect logger prints
+        # Usage:
         # GREENTEA_LOG_MUTEX.acquire(1)
         # GREENTEA_LOG_MUTEX.release()
+        self.GREENTEA_LOG_MUTEX = Lock()
+
+        if not COLORAMA:
+            self.gt_log("Colorful console output is disabled")
+        else:
+            colorama.init()
+            self.DIM = colorama.Style.DIM
+            self.BRIGHT = colorama.Style.BRIGHT
+            self.GREEN = colorama.Fore.GREEN
+            self.RED = colorama.Fore.RED
+            self.BLUE = colorama.Fore.BLUE
+            self.YELLOW = colorama.Fore.YELLOW
+            self.RESET = colorama.Style.RESET_ALL
+
+    def colorful(self, colors):
+        """! Enable/Disable colourful printing
+        """
+        self.colors = colors
 
     def __print(self, text):
         self.GREENTEA_LOG_MUTEX.acquire(1)
@@ -62,11 +74,11 @@ class GreenTeaSimpleLockLogger:
         self.GREENTEA_LOG_MUTEX.release()
 
     def gt_log(self, text, print_text=True):
-        """! Prints standard log message (in color if colorama is installed)
+        """! Prints standard log message (in colour if colorama is installed)
         @param print_text Forces log function to print on screen (not only return message)
         @return Returns string with message
         """
-        result = GREEN + BRIGHT + "mbedgt: " + RESET + text
+        result = self.GREEN + self.BRIGHT + "mbedgt: " + self.RESET + text
         if print_text:
             self.__print(result)
         return result
@@ -84,7 +96,7 @@ class GreenTeaSimpleLockLogger:
         @param print_text Forces log function to print on screen (not only return message)
         @return Returns string with message
         """
-        result = RED + BRIGHT + "mbedgt: " + RESET + text
+        result = self.RED + self.BRIGHT + "mbedgt: " + self.RESET + text
         if print_text:
             self.__print(result)
         return result
@@ -94,7 +106,7 @@ class GreenTeaSimpleLockLogger:
         @param print_text Forces log function to print on screen (not only return message)
         @return Returns string with message
         """
-        result = YELLOW + "mbedgt: " + RESET + text
+        result = self.YELLOW + "mbedgt: " + self.RESET + text
         if print_text:
             self.__print(result)
         return result
@@ -105,6 +117,6 @@ class GreenTeaSimpleLockLogger:
         """
         if not text:
             text = ''
-        return BLUE + BRIGHT + text + RESET
+        return self.BLUE + self.BRIGHT + text + self.RESET
 
 gt_logger = GreenTeaSimpleLockLogger()
