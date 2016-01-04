@@ -65,6 +65,10 @@ TARGET_INFO_MAPPING = {
                 {
                     "yotta_target": "nrf51dk-gcc",
                     "mbed_toolchain": "GCC_ARM"
+                },
+                {
+                    "yotta_target": "nrf51dk-armcc",
+                    "mbed_toolchain": "ARM"
                 }
              ],
         "properties" : {
@@ -79,6 +83,10 @@ TARGET_INFO_MAPPING = {
                 {
                     "yotta_target": "mkit-gcc",
                     "mbed_toolchain": "GCC_ARM"
+                },
+                {
+                    "yotta_target": "mkit-armcc",
+                    "mbed_toolchain": "ARM"
                 }
              ],
         "properties" : {
@@ -89,10 +97,6 @@ TARGET_INFO_MAPPING = {
             }
         }
 }
-
-
-
-
 
 TARGET_TOOLCAHINS = {
     '-armcc': 'ARM',
