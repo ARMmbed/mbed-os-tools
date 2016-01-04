@@ -20,6 +20,8 @@ import unittest
 
 from mbed_host_tests import is_host_test
 from mbed_host_tests import get_host_test
+from mbed_host_tests import get_plugin_caps
+from mbed_host_tests import get_host_test_list
 
 class BasicHostTestsTestCase(unittest.TestCase):
 
@@ -32,13 +34,23 @@ class BasicHostTestsTestCase(unittest.TestCase):
     def test_basic_get_host_test(self):
         self.assertNotEqual(None, get_host_test('default'))
         self.assertNotEqual(None, get_host_test('default_auto'))
-        
-    def test_basic_is_host_test(self):
-        self.assertEqual(False, is_host_test(''))
-        self.assertEqual(False, is_host_test(None))
 
-        self.assertEqual(True, is_host_test('default'))
-        self.assertEqual(True, is_host_test('default_auto'))
+    def test_basic_is_host_test(self):
+        self.assertFalse(is_host_test(''))
+        self.assertFalse(is_host_test(None))
+
+        self.assertTrue(is_host_test('default'))
+        self.assertTrue(is_host_test('default_auto'))
+
+    def test_get_host_test_list(self):
+        d = get_host_test_list()
+        self.assertIs(type(d), dict)
+        self.assertIn('default', d)
+        self.assertIn('default_auto', d)
+
+    def test_get_plugin_caps(self):
+        d = get_plugin_caps()
+        self.assertIs(type(d), dict)
 
 
 if __name__ == '__main__':
