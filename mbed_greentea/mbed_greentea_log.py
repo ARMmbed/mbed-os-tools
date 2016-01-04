@@ -18,6 +18,7 @@ Author: Przemyslaw Wirkus <Przemyslaw.Wirkus@arm.com>
 """
 
 import sys
+from threading import Lock
 
 try:
     import colorama
@@ -47,48 +48,63 @@ else:
     RESET = colorama.Style.RESET_ALL
 
 
-def gt_log(text, print_text=True):
-    """! Prints standard log message (in color if colorama is installed)
-    @param print_text Forces log function to print on screen (not only return message)
-    @return Returns string with message
+class GreenTeaSimpleLockLogger:
+    """! Simple locking printing mechanism
     """
-    result = GREEN + BRIGHT + "mbedgt: " + RESET + text
-    if print_text:
-        print result
-    return result
+    def __init__(self):
+        self.GREENTEA_LOG_MUTEX = Lock()
+        # GREENTEA_LOG_MUTEX.acquire(1)
+        # GREENTEA_LOG_MUTEX.release()
 
-def gt_log_tab(text, tab_count=1):
-    """! Prints standard log message with one (1) tab margin on the left
-    @return Returns string with message
-    """
-    result = "\t"*tab_count + text
-    print result
-    return result
+    def __print(self, text):
+        self.GREENTEA_LOG_MUTEX.acquire(1)
+        print text
+        self.GREENTEA_LOG_MUTEX.release()
 
-def gt_log_err(text, print_text=True):
-    """! Prints error log message (in color if colorama is installed)
-    @param print_text Forces log function to print on screen (not only return message)
-    @return Returns string with message
-    """
-    result = RED + BRIGHT + "mbedgt: " + RESET + text
-    if print_text:
-        print result
-    return result
+    def gt_log(self, text, print_text=True):
+        """! Prints standard log message (in color if colorama is installed)
+        @param print_text Forces log function to print on screen (not only return message)
+        @return Returns string with message
+        """
+        result = GREEN + BRIGHT + "mbedgt: " + RESET + text
+        if print_text:
+            self.__print(result)
+        return result
 
-def gt_log_warn(text, print_text=True):
-    """! Prints error log message (in color if colorama is installed)
-    @param print_text Forces log function to print on screen (not only return message)
-    @return Returns string with message
-    """
-    result = YELLOW + "mbedgt: " + RESET + text
-    if print_text:
-        print result
-    return result
+    def gt_log_tab(self, text, tab_count=1):
+        """! Prints standard log message with one (1) tab margin on the left
+        @return Returns string with message
+        """
+        result = "\t"*tab_count + text
+        self.__print(result)
+        return result
 
-def gt_bright(text):
-    """! Created bright text using colorama
-    @return Returns string with additional BRIGHT color codes
-    """
-    if not text:
-        text = ''
-    return BLUE + BRIGHT + text + RESET
+    def gt_log_err(self, text, print_text=True):
+        """! Prints error log message (in color if colorama is installed)
+        @param print_text Forces log function to print on screen (not only return message)
+        @return Returns string with message
+        """
+        result = RED + BRIGHT + "mbedgt: " + RESET + text
+        if print_text:
+            self.__print(result)
+        return result
+
+    def gt_log_warn(self, text, print_text=True):
+        """! Prints error log message (in color if colorama is installed)
+        @param print_text Forces log function to print on screen (not only return message)
+        @return Returns string with message
+        """
+        result = YELLOW + "mbedgt: " + RESET + text
+        if print_text:
+            self.__print(result)
+        return result
+
+    def gt_bright(self, text):
+        """! Created bright text using colorama
+        @return Returns string with additional BRIGHT color codes
+        """
+        if not text:
+            text = ''
+        return BLUE + BRIGHT + text + RESET
+
+gt_logger = GreenTeaSimpleLockLogger()

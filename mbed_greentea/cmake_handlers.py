@@ -21,9 +21,7 @@ import re
 import os
 import os.path
 
-from mbed_greentea_log import gt_log
-from mbed_greentea_log import gt_log_tab
-
+from mbed_greentea.mbed_greentea_log import gt_logger
 
 def load_ctest_testsuite(link_target, binary_type='.bin', verbose=False):
     """! Loads CMake.CTest formatted data about tests from test directory
@@ -82,13 +80,13 @@ def list_binaries_for_targets(build_dir='./build', verbose_footer=True):
     """
     dir = build_dir
     sub_dirs = [os.path.join(dir, o) for o in os.listdir(dir) if os.path.isdir(os.path.join(dir, o))]
-    gt_log("available tests for built targets, location '%s'"% os.path.abspath(build_dir))
+    gt_logger.gt_log("available tests for built targets, location '%s'"% os.path.abspath(build_dir))
     for sub_dir in sub_dirs:
         test_list = load_ctest_testsuite(sub_dir, binary_type='')
         if len(test_list):
-            gt_log_tab("target '%s':" % sub_dir.split(os.sep)[-1])
+            gt_logger.gt_log_tab("target '%s':" % sub_dir.split(os.sep)[-1])
             for test in test_list:
-                gt_log_tab("test '%s'"% test)
+                gt_logger.gt_log_tab("test '%s'"% test)
     if verbose_footer:
         print
         print "Example: execute 'mbedgt -t TARGET_NAME -n TEST_NAME' to run test TEST_NAME for target TARGET_NAME"

@@ -17,11 +17,8 @@ limitations under the License.
 Author: Przemyslaw Wirkus <Przemyslaw.wirkus@arm.com>
 """
 
-from mbed_greentea.mbed_greentea_log import gt_log
-from mbed_greentea.mbed_greentea_log import gt_bright
-from mbed_greentea.mbed_greentea_log import gt_log_tab
-from mbed_greentea.mbed_greentea_log import gt_log_err
 from mbed_greentea.mbed_test_api import run_cli_command
+from mbed_greentea.mbed_greentea_log import gt_logger
 
 
 def build_with_yotta(yotta_target_name, verbose = False, build_to_release = False, build_to_debug = False):
@@ -35,11 +32,11 @@ def build_with_yotta(yotta_target_name, verbose = False, build_to_release = Fals
     elif build_to_debug:
         cmd.append("-d")
 
-    gt_log("building your sources and tests with yotta...")
-    gt_log_tab("calling yotta: %s"% (" ".join(cmd)))
+    gt_logger.gt_log("building your sources and tests with yotta...")
+    gt_logger.gt_log_tab("calling yotta: %s"% (" ".join(cmd)))
     yotta_result, yotta_ret = run_cli_command(cmd, shell=False, verbose=verbose)
     if yotta_result:
-        gt_log("yotta build for target '%s' was successful"% gt_bright(yotta_target_name))
+        gt_logger.gt_log("yotta build for target '%s' was successful"% gt_logger.gt_bright(yotta_target_name))
     else:
-        gt_log_err("yotta build failed!")
+        gt_logger.gt_log_err("yotta build failed!")
     return yotta_result, yotta_ret
