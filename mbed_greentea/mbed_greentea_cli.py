@@ -269,6 +269,13 @@ def main():
     if not any([opts.list_binaries, opts.version]):
         delta = time() - start  # Test execution time delta
         gt_logger.gt_log("completed in %.2f sec"% delta)
+
+    test_exec_retcode_str = "exited with code %d"% cli_ret
+    if cli_ret:
+        gt_logger.gt_log_err(test_exec_retcode_str)
+    else:
+        gt_logger.gt_log(test_exec_retcode_str)
+
     return(cli_ret)
 
 def run_test_thread(test_result_queue, test_queue, opts, mut, mut_info, yotta_target_name):
@@ -720,11 +727,5 @@ def main_cli(opts, args, gt_instance_uuid=None):
             # No platforms were tested
             gt_logger.gt_log("no target matching platforms were found!")
             test_exec_retcode += -100
-
-        test_exec_retcode_str = "exited with code %d"% test_exec_retcode
-        if test_exec_retcode:
-            gt_logger.gt_log_err(test_exec_retcode_str)
-        else:
-            gt_logger.gt_log(test_exec_retcode_str)
 
     return (test_exec_retcode)
