@@ -270,11 +270,8 @@ def main():
         delta = time() - start  # Test execution time delta
         gt_logger.gt_log("completed in %.2f sec"% delta)
 
-    test_exec_retcode_str = "exited with code %d"% cli_ret
     if cli_ret:
-        gt_logger.gt_log_err(test_exec_retcode_str)
-    else:
-        gt_logger.gt_log(test_exec_retcode_str)
+        gt_logger.gt_log_err("exited with code %d"% cli_ret)
 
     return(cli_ret)
 
