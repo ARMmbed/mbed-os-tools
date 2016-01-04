@@ -2,17 +2,21 @@
 
 """
 mbed SDK
-Copyright (c) 2011-2014 ARM Limited
+Copyright (c) 2011-2015 ARM Limited
+
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
+
     http://www.apache.org/licenses/LICENSE-2.0
+
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-Author: Przemyslaw Wirkus <Przemyslaw.Wirkus@arm.com>
+
+Author: Przemyslaw Wirkus <Przemyslaw.wirkus@arm.com>
 """
 
 import os
@@ -33,10 +37,7 @@ from mbed_greentea.mbed_report_api import exporter_json
 from mbed_greentea.mbed_report_api import exporter_junit
 from mbed_greentea.mbed_target_info import get_mbed_clasic_target_info
 from mbed_greentea.mbed_target_info import get_mbed_target_from_current_dir
-from mbed_greentea.mbed_greentea_log import gt_log
-from mbed_greentea.mbed_greentea_log import gt_bright
-from mbed_greentea.mbed_greentea_log import gt_log_tab
-from mbed_greentea.mbed_greentea_log import gt_log_err
+from mbed_greentea.mbed_greentea_log import gt_logger
 from mbed_greentea.mbed_greentea_dlm import GREENTEA_KETTLE_PATH
 from mbed_greentea.mbed_greentea_dlm import greentea_get_app_sem
 from mbed_greentea.mbed_greentea_dlm import greentea_update_kettle
@@ -48,14 +49,14 @@ try:
     import mbed_lstools
     import mbed_host_tests
 except ImportError as e:
-    gt_log_err("Not all required Python modules were imported!")
-    gt_log_err(str(e))
-    gt_log("Check if:")
-    gt_log_tab("1. You've correctly installed dependency module using setup tools or pip:")
-    gt_log_tab("* python setup.py install", tab_count=2)
-    gt_log_tab("* pip install <module-name>", tab_count=2)
-    gt_log_tab("2. There are no errors preventing import in dependency modules")
-    gt_log_tab("See: https://github.com/ARMmbed/greentea#installing-greentea")
+    gt_logger.gt_log_err("Not all required Python modules were imported!")
+    gt_logger.gt_log_err(str(e))
+    gt_logger.gt_log("Check if:")
+    gt_logger.gt_log_tab("1. You've correctly installed dependency module using setup tools or pip:")
+    gt_logger.gt_log_tab("* python setup.py install", tab_count=2)
+    gt_logger.gt_log_tab("* pip install <module-name>", tab_count=2)
+    gt_logger.gt_log_tab("2. There are no errors preventing import in dependency modules")
+    gt_logger.gt_log_tab("See: https://github.com/ARMmbed/greentea#installing-greentea")
     exit(-2342)
 
 MBED_LMTOOLS = 'mbed_lstools' in sys.modules
@@ -213,6 +214,12 @@ def main():
                     action="store_true",
                     help='Verbose mode (prints some extra information)')
 
+    parser.add_option('', '--plain',
+                    dest='plain',
+                    default=False,
+                    action="store_true",
+                    help='Do not use colours while logging')
+
     parser.add_option('', '--version',
                     dest='version',
                     default=False,
@@ -229,8 +236,8 @@ def main():
     start = time()
     if opts.lock_by_target:
         # We are using Greentea proprietary locking mechanism to lock between platforms and targets
-        gt_log("using (experimental) simple locking mechanism")
-        gt_log_tab("kettle: %s"% GREENTEA_KETTLE_PATH)
+        gt_logger.gt_log("using (experimental) simple locking mechanism")
+        gt_logger.gt_log_tab("kettle: %s"% GREENTEA_KETTLE_PATH)
         gt_file_sem, gt_file_sem_name, gt_instance_uuid = greentea_get_app_sem()
         with gt_file_sem:
             greentea_update_kettle(gt_instance_uuid)
@@ -238,12 +245,12 @@ def main():
                 cli_ret = main_cli(opts, args, gt_instance_uuid)
             except KeyboardInterrupt:
                 greentea_clean_kettle(gt_instance_uuid)
-                gt_log_err("ctrl+c keyboard interrupt!")
+                gt_logger.gt_log_err("ctrl+c keyboard interrupt!")
                 return(-2)    # Keyboard interrupt
             except:
                 greentea_clean_kettle(gt_instance_uuid)
-                gt_log_err("unexpected error:")
-                gt_log_tab(sys.exc_info()[0])
+                gt_logger.gt_log_err("unexpected error:")
+                gt_logger.gt_log_tab(sys.exc_info()[0])
                 raise
             greentea_clean_kettle(gt_instance_uuid)
     else:
@@ -252,11 +259,11 @@ def main():
         try:
             cli_ret = main_cli(opts, args)
         except KeyboardInterrupt:
-            gt_log_err("ctrl+c keyboard interrupt!")
+            gt_logger.gt_log_err("ctrl+c keyboard interrupt!")
             return(-2)    # Keyboard interrupt
         except Exception as e:
-            gt_log_err("unexpected error:")
-            gt_log_tab(str(e))
+            gt_logger.gt_log_err("unexpected error:")
+            gt_logger.gt_log_tab(str(e))
             raise
 
     if not any([opts.list_binaries, opts.version]):
@@ -296,7 +303,6 @@ def run_test_thread(test_result_queue, test_queue, opts, mut, mut_info, yotta_ta
             port = "%s:%d"% (port, yotta_config_baudrate)
 
         test_platforms_match += 1
-        #gt_log_tab("running host test...")
         host_test_result = run_host_test(test['image_path'],
                                          disk,
                                          port,
@@ -326,12 +332,12 @@ def run_test_thread(test_result_queue, test_queue, opts, mut, mut_info, yotta_ta
         test_report[yotta_target_name][test_name]['platform_name'] = micro
         test_report[yotta_target_name][test_name]['copy_method'] = copy_method
 
-        gt_log("test on hardware with target id: %s \n\ttest '%s' %s %s in %.2f sec"% (mut['target_id'], test['test_bin'], '.' * (80 - len(test['test_bin'])), test_result, single_testduration))
+        gt_logger.gt_log("test on hardware with target id: %s \n\ttest '%s' %s %s in %.2f sec"% (mut['target_id'], test['test_bin'], '.' * (80 - len(test['test_bin'])), test_result, single_testduration))
 
         if single_test_result != 'OK' and not verbose and opts.report_fails:
             # In some cases we want to print console to see why test failed
             # even if we are not in verbose mode
-            gt_log_tab("test failed, reporting console output (specified with --report-fails option)")
+            gt_logger.gt_log_tab("test failed, reporting console output (specified with --report-fails option)")
             print
             print single_test_output
 
@@ -348,12 +354,15 @@ def main_cli(opts, args, gt_instance_uuid=None):
     """
 
     if not MBED_LMTOOLS:
-        gt_log_err("error: mbed-ls proprietary module not installed")
+        gt_logger.gt_log_err("error: mbed-ls proprietary module not installed")
         return (-1)
 
     if not MBED_HOST_TESTS:
-        gt_log_err("error: mbed-host-tests proprietary module not installed")
+        gt_logger.gt_log_err("error: mbed-host-tests proprietary module not installed")
         return (-1)
+
+    # This is how you magically control colours in this piece of art software
+    gt_logger.colorful(not opts.plain)
 
     # List available test binaries (names, no extension)
     if opts.list_binaries:
@@ -385,26 +394,26 @@ def main_cli(opts, args, gt_instance_uuid=None):
         yt_targets = opts.list_of_targets.split(',')
     else:
         # Trying to use locally set yotta target
-        gt_log("checking for yotta target in current directory")
-        gt_log_tab("reason: no --target switch set")
+        gt_logger.gt_log("checking for yotta target in current directory")
+        gt_logger.gt_log_tab("reason: no --target switch set")
         current_target = get_mbed_target_from_current_dir()
         if current_target:
-            gt_log("assuming default target as '%s'"% gt_bright(current_target))
+            gt_logger.gt_log("assuming default target as '%s'"% gt_logger.gt_bright(current_target))
             # Assuming first target printed by 'yotta search' will be used
             yt_targets = [current_target]
         else:
-            gt_log_tab("yotta target in current directory is not set")
-            gt_log_err("yotta target is not specified. Use '%s' or '%s' command to set target"%
+            gt_logger.gt_log_tab("yotta target in current directory is not set")
+            gt_logger.gt_log_err("yotta target is not specified. Use '%s' or '%s' command to set target"%
             (
-                gt_bright('mbedgt -t <yotta_target>'),
-                gt_bright('yotta target <yotta_target>')
+                gt_logger.gt_bright('mbedgt -t <yotta_target>'),
+                gt_logger.gt_bright('yotta target <yotta_target>')
             ))
             return (-1)
 
     #print "yt_targets:", yt_targets
 
     ### Query with mbedls for available mbed-enabled devices
-    gt_log("detecting connected mbed-enabled devices...")
+    gt_logger.gt_log("detecting connected mbed-enabled devices...")
 
     # Detect devices connected to system
     mbeds = mbed_lstools.create()
@@ -413,28 +422,28 @@ def main_cli(opts, args, gt_instance_uuid=None):
     ready_mbed_devices = [] # Devices which can be used (are fully detected)
 
     if mbeds_list:
-        gt_log("detected %d device%s"% (len(mbeds_list), 's' if len(mbeds_list) != 1 else ''))
+        gt_logger.gt_log("detected %d device%s"% (len(mbeds_list), 's' if len(mbeds_list) != 1 else ''))
         for mut in mbeds_list:
             if not all(mut.values()):
-                gt_log_err("can't detect all properties of the device!")
+                gt_logger.gt_log_err("can't detect all properties of the device!")
             else:
                 ready_mbed_devices.append(mut)
-                gt_log_tab("detected '%s' -> '%s', console at '%s', mounted at '%s', target id '%s'"% (
-                    gt_bright(mut['platform_name']),
-                    gt_bright(mut['platform_name_unique']),
-                    gt_bright(mut['serial_port']),
-                    gt_bright(mut['mount_point']),
-                    gt_bright(mut['target_id'])
+                gt_logger.gt_log_tab("detected '%s' -> '%s', console at '%s', mounted at '%s', target id '%s'"% (
+                    gt_logger.gt_bright(mut['platform_name']),
+                    gt_logger.gt_bright(mut['platform_name_unique']),
+                    gt_logger.gt_bright(mut['serial_port']),
+                    gt_logger.gt_bright(mut['mount_point']),
+                    gt_logger.gt_bright(mut['target_id'])
                 ))
     else:
-        gt_log("no devices detected")
+        gt_logger.gt_log("no devices detected")
         return (RET_NO_DEVICES)
 
     ### Use yotta to search mapping between platform names and available platforms
     # Convert platform:target, ... mapping to data structure
     map_platform_to_yt_target = {}
     if opts.map_platform_to_yt_target:
-        gt_log("user defined platform -> target supported mapping definition (specified with --map-target switch)")
+        gt_logger.gt_log("user defined platform -> target supported mapping definition (specified with --map-target switch)")
         p_to_t_mappings = opts.map_platform_to_yt_target.split(',')
         for mapping in p_to_t_mappings:
             if len(mapping.split(':')) == 2:
@@ -442,12 +451,12 @@ def main_cli(opts, args, gt_instance_uuid=None):
                 if platform not in map_platform_to_yt_target:
                     map_platform_to_yt_target[platform] = []
                 map_platform_to_yt_target[platform].append(yt_target)
-                gt_log_tab("mapped platform '%s' to be compatible with '%s'"% (
-                    gt_bright(platform),
-                    gt_bright(yt_target)
+                gt_logger.gt_log_tab("mapped platform '%s' to be compatible with '%s'"% (
+                    gt_logger.gt_bright(platform),
+                    gt_logger.gt_bright(yt_target)
                 ))
             else:
-                gt_log_tab("unknown format '%s', use 'platform:target' format"% mapping)
+                gt_logger.gt_log_tab("unknown format '%s', use 'platform:target' format"% mapping)
 
     # Check if mbed classic target name can be translated to yotta target name
 
@@ -482,10 +491,10 @@ def main_cli(opts, args, gt_instance_uuid=None):
     ### We can filter in only specific target ids
     accepted_target_ids = None
     if opts.use_target_ids:
-        gt_log("filtering out target ids not on below list (specified with --use-tids switch)")
+        gt_logger.gt_log("filtering out target ids not on below list (specified with --use-tids switch)")
         accepted_target_ids = opts.use_target_ids.split(',')
         for tid in accepted_target_ids:
-            gt_log_tab("accepting target id '%s'"% gt_bright(tid))
+            gt_logger.gt_log_tab("accepting target id '%s'"% gt_logger.gt_bright(tid))
 
     test_exec_retcode = 0       # Decrement this value each time test case result is not 'OK'
     test_platforms_match = 0    # Count how many tests were actually ran with current settings
@@ -503,16 +512,16 @@ def main_cli(opts, args, gt_instance_uuid=None):
         if parallel_test_exec < 1:
             parallel_test_exec = 1
     except ValueError:
-        gt_log_err("argument of mode --parallel is not a int, disable parallel mode")
+        gt_logger.gt_log_err("argument of mode --parallel is not a int, disable parallel mode")
         parallel_test_exec = 1
 
 
     ### Testing procedures, for each target, for each target's compatible platform
     for yotta_target_name in yt_target_platform_map:
-        gt_log("processing '%s' yotta target compatible platforms..."% gt_bright(yotta_target_name))
+        gt_logger.gt_log("processing '%s' yotta target compatible platforms..."% gt_logger.gt_bright(yotta_target_name))
 
         for platform_name in yt_target_platform_map[yotta_target_name]:
-            gt_log("processing '%s' platform..."% gt_bright(platform_name))
+            gt_logger.gt_log("processing '%s' platform..."% gt_logger.gt_bright(platform_name))
 
             ### Select MUTS to test from list of available MUTS to start testing
             mut = None
@@ -524,9 +533,9 @@ def main_cli(opts, args, gt_instance_uuid=None):
                 if mbed_dev['platform_name'] == platform_name:
                     mut = mbed_dev
                     muts_to_test.append(mbed_dev)
-                    gt_log("using platform '%s' for test:"% gt_bright(platform_name))
+                    gt_logger.gt_log("using platform '%s' for test:"% gt_logger.gt_bright(platform_name))
                     for k in mbed_dev:
-                        gt_log_tab("%s = '%s'"% (k, mbed_dev[k]))
+                        gt_logger.gt_log_tab("%s = '%s'"% (k, mbed_dev[k]))
                     if number_of_parallel_instances < parallel_test_exec:
                         number_of_parallel_instances += 1
                     else:
@@ -542,7 +551,7 @@ def main_cli(opts, args, gt_instance_uuid=None):
                 # Demo mode: --run implementation (already added --run to mbedhtrun)
                 # We want to pass file name to mbedhtrun (--run NAME  =>  -f NAME_ and run only one binary
                 if opts.run_app:
-                    gt_log("running '%s' for '%s'"% (gt_bright(opts.run_app), gt_bright(yotta_target_name)))
+                    gt_logger.gt_log("running '%s' for '%s'"% (gt_logger.gt_bright(opts.run_app), gt_logger.gt_bright(yotta_target_name)))
                     disk = mut['mount_point']
                     port = mut['serial_port']
                     micro = mut['platform_name']
@@ -583,7 +592,7 @@ def main_cli(opts, args, gt_instance_uuid=None):
 
                 yotta_result, yotta_ret = True, 0   # Skip build and assume 'yotta build' was successful
                 if opts.skip_yotta_build:
-                    gt_log("skipping calling yotta (specified with --skip-build option)")
+                    gt_logger.gt_log("skipping calling yotta (specified with --skip-build option)")
                 else:
                     yotta_result, yotta_ret = build_with_yotta(yotta_target_name,
                         verbose=opts.verbose,
@@ -592,7 +601,7 @@ def main_cli(opts, args, gt_instance_uuid=None):
 
                 # We need to stop executing if yotta build fails
                 if not yotta_result:
-                    gt_log_err("yotta returned %d"% yotta_ret)
+                    gt_logger.gt_log_err("yotta returned %d"% yotta_ret)
                     return (RET_YOTTA_BUILD_FAIL)
 
                 if opts.only_build_tests:
@@ -611,27 +620,27 @@ def main_cli(opts, args, gt_instance_uuid=None):
                 if opts.test_by_names:
                     filtered_ctest_test_list = {}   # Subset of 'ctest_test_list'
                     test_list = opts.test_by_names.split(',')
-                    gt_log("test case filter (specified with -n option)")
+                    gt_logger.gt_log("test case filter (specified with -n option)")
 
                     invalid_test_names = False
                     for test_name in test_list:
                         if test_name not in ctest_test_list:
-                            gt_log_tab("test name '%s' not found in CTestTestFile.cmake (specified with -n option)"% gt_bright(test_name))
+                            gt_logger.gt_log_tab("test name '%s' not found in CTestTestFile.cmake (specified with -n option)"% gt_logger.gt_bright(test_name))
                             invalid_test_names = True
                         else:
-                            gt_log_tab("test filtered in '%s'"% gt_bright(test_name))
+                            gt_logger.gt_log_tab("test filtered in '%s'"% gt_logger.gt_bright(test_name))
                             filtered_ctest_test_list[test_name] = ctest_test_list[test_name]
                     if invalid_test_names:
-                        gt_log("invalid test case names (specified with -n option)")
-                        gt_log_tab("note: test case names are case sensitive")
-                        gt_log_tab("note: see list of available test cases below")
+                        gt_logger.gt_log("invalid test case names (specified with -n option)")
+                        gt_logger.gt_log_tab("note: test case names are case sensitive")
+                        gt_logger.gt_log_tab("note: see list of available test cases below")
                         list_binaries_for_targets(verbose_footer=False)
 
-                gt_log("running %d test%s for target '%s' and platform '%s'"% (
+                gt_logger.gt_log("running %d test%s for target '%s' and platform '%s'"% (
                     len(filtered_ctest_test_list),
                     "s" if len(filtered_ctest_test_list) != 1 else "",
-                    gt_bright(yotta_target_name),
-                    gt_bright(platform_name)
+                    gt_logger.gt_bright(yotta_target_name),
+                    gt_logger.gt_bright(platform_name)
                 ))
 
                 for test_bin, image_path in filtered_ctest_test_list.iteritems():
@@ -649,7 +658,7 @@ def main_cli(opts, args, gt_instance_uuid=None):
                         execute_threads.append(t)
                         number_of_threads += 1
 
-    gt_log_tab("use %s instance%s for testing" % (len(execute_threads), 's' if len(execute_threads) != 1 else ''))
+    gt_logger.gt_log_tab("use %s instance%s for testing" % (len(execute_threads), 's' if len(execute_threads) != 1 else ''))
     for t in execute_threads:
         t.daemon = True
         t.start()
@@ -687,7 +696,7 @@ def main_cli(opts, args, gt_instance_uuid=None):
             with open(opts.report_junit_file_name, 'w') as f:
                 f.write(junit_report)
         if opts.report_text_file_name:
-            gt_log("exporting to junit '%s'..."% gt_bright(opts.report_text_file_name))
+            gt_logger.gt_log("exporting to junit '%s'..."% gt_logger.gt_bright(opts.report_text_file_name))
             text_report, text_results = exporter_text(test_report)
             with open(opts.report_text_file_name, 'w') as f:
                 f.write(text_report)
@@ -695,12 +704,12 @@ def main_cli(opts, args, gt_instance_uuid=None):
         # Reports (to console)
         if opts.report_json:
             # We will not print summary and json report together
-            gt_log("json test report:")
+            gt_logger.gt_log("json test report:")
             print exporter_json(test_report)
         else:
             # Final summary
             if test_report:
-                gt_log("test report:")
+                gt_logger.gt_log("test report:")
                 text_report, text_results = exporter_text(test_report)
                 print text_report
                 print
@@ -709,11 +718,11 @@ def main_cli(opts, args, gt_instance_uuid=None):
         # This flag guards 'build only' so we expect only yotta errors
         if test_platforms_match == 0:
             # No tests were executed
-            gt_log("no platform/target matching tests were found!")
+            gt_logger.gt_log("no platform/target matching tests were found!")
             test_exec_retcode += -10
         if target_platforms_match == 0:
             # No platforms were tested
-            gt_log("no target matching platforms were found!")
+            gt_logger.gt_log("no target matching platforms were found!")
             test_exec_retcode += -100
 
     return (test_exec_retcode)

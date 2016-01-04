@@ -1,6 +1,6 @@
 """
 mbed SDK
-Copyright (c) 2011-2014 ARM Limited
+Copyright (c) 2011-2015 ARM Limited
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -18,77 +18,129 @@ Author: Przemyslaw Wirkus <Przemyslaw.Wirkus@arm.com>
 """
 
 import sys
+from threading import Lock
 
 try:
     import colorama
-except:
+except ImportError:
     pass
 
+# We will check if import actually was successful
 COLORAMA = 'colorama' in sys.modules
 
-DIM = ''
-BRIGHT = ''
-GREEN = ''
-RED = ''
-BLUE = ''
-YELLOW = ''
-RESET = ''
 
-if not COLORAMA:
-    print "mbedgt: colorful console output is disabled"
-else:
-    colorama.init()
-    DIM = colorama.Style.DIM
-    BRIGHT = colorama.Style.BRIGHT
-    GREEN = colorama.Fore.GREEN
-    RED = colorama.Fore.RED
-    BLUE = colorama.Fore.BLUE
-    YELLOW = colorama.Fore.YELLOW
-    RESET = colorama.Style.RESET_ALL
-
-
-def gt_log(text, print_text=True):
-    """! Prints standard log message (in color if colorama is installed)
-    @param print_text Forces log function to print on screen (not only return message)
-    @return Returns string with message
+class GreenTeaSimpleLockLogger:
+    """! Simple locking printing mechanism
+    @details We are using parallel testing
     """
-    result = GREEN + BRIGHT + "mbedgt: " + RESET + text
-    if print_text:
-        print result
-    return result
+    # Colors used by color(ama) terminal component
+    DIM = str()
+    BRIGHT = str()
+    GREEN = str()
+    RED = str()
+    BLUE = str()
+    YELLOW = str()
+    RESET = str()
 
-def gt_log_tab(text, tab_count=1):
-    """! Prints standard log message with one (1) tab margin on the left
-    @return Returns string with message
-    """
-    result = "\t"*tab_count + text
-    print result
-    return result
+    def __init__(self, colors=True, use_colorama=False):
+        self.use_colorama = colorama    # Should we try to use colorama
+        self.colorful(colors)           # Set and use colours for formatting
 
-def gt_log_err(text, print_text=True):
-    """! Prints error log message (in color if colorama is installed)
-    @param print_text Forces log function to print on screen (not only return message)
-    @return Returns string with message
-    """
-    result = RED + BRIGHT + "mbedgt: " + RESET + text
-    if print_text:
-        print result
-    return result
+        # Mutext used to protect logger prints
+        # Usage:
+        # GREENTEA_LOG_MUTEX.acquire(1)
+        # GREENTEA_LOG_MUTEX.release()
+        self.GREENTEA_LOG_MUTEX = Lock()
 
-def gt_log_warn(text, print_text=True):
-    """! Prints error log message (in color if colorama is installed)
-    @param print_text Forces log function to print on screen (not only return message)
-    @return Returns string with message
-    """
-    result = YELLOW + "mbedgt: " + RESET + text
-    if print_text:
-        print result
-    return result
+        if self.colors:
+            if not self.use_colorama:
+                self.gt_log("Colorful console output is disabled")
+            else:
+                colorama.init()
 
-def gt_bright(text):
-    """! Created bright text using colorama
-    @return Returns string with additional BRIGHT color codes
-    """
-    if not text:
-        text = ''
-    return BLUE + BRIGHT + text + RESET
+    def colorful(self, colors):
+        """! Enable/Disable colourful printing
+        """
+        self.colors = colors
+        if self.colors:
+            self.__set_colors()
+        else:
+            self.__clear_colors()
+
+    def __set_colors(self):
+        """! Zeroes colours used for formatting
+        """
+        if self.use_colorama:
+            self.DIM = colorama.Style.DIM
+            self.BRIGHT = colorama.Style.BRIGHT
+            self.GREEN = colorama.Fore.GREEN
+            self.RED = colorama.Fore.RED
+            self.BLUE = colorama.Fore.BLUE
+            self.YELLOW = colorama.Fore.YELLOW
+            self.RESET = colorama.Style.RESET_ALL
+
+    def __clear_colors(self):
+        """! Zeroes colours used for formatting
+        """
+        self.DIM = str()
+        self.BRIGHT = str()
+        self.GREEN = str()
+        self.RED = str()
+        self.BLUE = str()
+        self.YELLOW = str()
+        self.RESET =  str()
+
+    def __print(self, text):
+        """! Mutex protected print
+        """
+        self.GREENTEA_LOG_MUTEX.acquire(1)
+        print text
+        self.GREENTEA_LOG_MUTEX.release()
+
+    def gt_log(self, text, print_text=True):
+        """! Prints standard log message (in colour if colorama is installed)
+        @param print_text Forces log function to print on screen (not only return message)
+        @return Returns string with message
+        """
+        result = self.GREEN + self.BRIGHT + "mbedgt: " + self.RESET + text
+        if print_text:
+            self.__print(result)
+        return result
+
+    def gt_log_tab(self, text, tab_count=1):
+        """! Prints standard log message with one (1) tab margin on the left
+        @return Returns string with message
+        """
+        result = "\t"*tab_count + text
+        self.__print(result)
+        return result
+
+    def gt_log_err(self, text, print_text=True):
+        """! Prints error log message (in color if colorama is installed)
+        @param print_text Forces log function to print on screen (not only return message)
+        @return Returns string with message
+        """
+        result = self.RED + self.BRIGHT + "mbedgt: " + self.RESET + text
+        if print_text:
+            self.__print(result)
+        return result
+
+    def gt_log_warn(self, text, print_text=True):
+        """! Prints error log message (in color if colorama is installed)
+        @param print_text Forces log function to print on screen (not only return message)
+        @return Returns string with message
+        """
+        result = self.YELLOW + "mbedgt: " + self.RESET + text
+        if print_text:
+            self.__print(result)
+        return result
+
+    def gt_bright(self, text):
+        """! Created bright text using colorama
+        @return Returns string with additional BRIGHT color codes
+        """
+        if not text:
+            text = ''
+        return self.BLUE + self.BRIGHT + text + self.RESET
+
+gt_logger = GreenTeaSimpleLockLogger(use_colorama=COLORAMA)
