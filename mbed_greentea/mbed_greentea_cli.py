@@ -47,8 +47,16 @@ from mbed_greentea.mbed_yotta_target_parse import YottaConfig
 try:
     import mbed_lstools
     import mbed_host_tests
-except:
-    pass
+except ImportError as e:
+    gt_log_err("Not all required Python modules were imported!")
+    gt_log_err(str(e))
+    gt_log("Check if:")
+    gt_log_tab("1. You've correctly installed dependency module using setup tools or pip:")
+    gt_log_tab("* python setup.py install", tab_count=2)
+    gt_log_tab("* pip install <module-name>", tab_count=2)
+    gt_log_tab("2. There are no errors preventing import in dependency modules")
+    gt_log_tab("See: https://github.com/ARMmbed/greentea#installing-greentea")
+    exit(-2342)
 
 MBED_LMTOOLS = 'mbed_lstools' in sys.modules
 MBED_HOST_TESTS = 'mbed_host_tests' in sys.modules

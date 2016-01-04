@@ -57,11 +57,11 @@ def gt_log(text, print_text=True):
         print result
     return result
 
-def gt_log_tab(text):
+def gt_log_tab(text, tab_count=1):
     """! Prints standard log message with one (1) tab margin on the left
     @return Returns string with message
     """
-    result = "\t" + text
+    result = "\t"*tab_count + text
     print result
     return result
 
