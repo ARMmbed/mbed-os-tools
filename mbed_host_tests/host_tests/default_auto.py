@@ -16,7 +16,7 @@ limitations under the License.
 """
 
 from sys import stdout
-from . import BaseHostTest
+from mbed_host_tests import BaseHostTest
 
 class DefaultAuto(BaseHostTest):
     """ Simple, basic host test's test runner waiting for serial port

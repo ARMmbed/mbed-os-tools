@@ -19,7 +19,7 @@ import sys
 import socket
 from sys import stdout
 from SocketServer import BaseRequestHandler, TCPServer
-from . import BaseHostTest
+from mbed_host_tests import BaseHostTest
 
 class TCPEchoClient_Handler(BaseRequestHandler):
     def handle(self):

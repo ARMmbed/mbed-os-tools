@@ -20,7 +20,7 @@ import sys
 import uuid
 import socket
 from sys import stdout
-from . import BaseHostTest
+from mbed_host_tests import BaseHostTest
 
 class TCPEchoServerTest(BaseHostTest):
     ECHO_SERVER_ADDRESS = ""

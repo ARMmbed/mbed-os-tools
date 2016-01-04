@@ -18,7 +18,7 @@ limitations under the License.
 import re
 import random
 from time import time
-from . import BaseHostTest
+from mbed_host_tests import BaseHostTest
 
 class StdioTest(BaseHostTest):
     PATTERN_INT_VALUE = "Your value was: (-?\d+)"

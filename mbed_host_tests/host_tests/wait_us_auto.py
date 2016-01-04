@@ -16,7 +16,7 @@ limitations under the License.
 """
 
 from time import time
-from . import BaseHostTest
+from mbed_host_tests import BaseHostTest
 
 class WaitusTest(BaseHostTest):
     """ This test is reading single characters from stdio

@@ -53,7 +53,7 @@ class HostTestPluginResetMethod_Mbed(HostTestPluginBase):
     required_parameters = ['serial']
 
     def setup(self, *args, **kwargs):
-        """ Configure plugin, this function should be called before plugin execute() method is used.
+        """! Configure plugin, this function should be called before plugin execute() method is used.
         """
         return True
 
@@ -63,20 +63,23 @@ class HostTestPluginResetMethod_Mbed(HostTestPluginBase):
         @param capability Capability name
         @param args Additional arguments
         @param kwargs Additional arguments
-
         @details Each capability e.g. may directly just call some command line program or execute building pythonic function
-
         @return Capability call return value
         """
+        if not kwargs['serial']:
+            self.print_plugin_error("Error: serial port not set (not opened?)")
+            return False
+
         result = False
         if self.check_parameters(capability, *args, **kwargs) is True:
-            if capability == 'default':
-                serial = kwargs['serial']
-                result = self.safe_sendBreak(serial)
+            if kwargs['serial']:
+                if capability == 'default':
+                    serial = kwargs['serial']
+                    result = self.safe_sendBreak(serial)
         return result
 
 
 def load_plugin():
-    """ Returns plugin available in this module
+    """! Returns plugin available in this module
     """
     return HostTestPluginResetMethod_Mbed()

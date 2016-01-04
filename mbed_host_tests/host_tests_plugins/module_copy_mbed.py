@@ -61,20 +61,27 @@ class HostTestPluginCopyMethod_Mbed(HostTestPluginBase):
 
     def execute(self, capability, *args, **kwargs):
         """! Executes capability by name.
-
         @details Each capability may directly just call some command line program or execute building pythonic function
-
         @return Returns True if 'capability' operation was successful
         """
+        if not kwargs['image_path']:
+            self.print_plugin_error("Error: image path not specified")
+            return False
+
+        if not kwargs['destination_disk']:
+            self.print_plugin_error("Error: destination disk not specified")
+            return False
+
         result = False
-        if self.check_parameters(capability, *args, **kwargs) is True:
+        if self.check_parameters(capability, *args, **kwargs):
             # Capability 'default' is a dummy capability
-            if capability == 'shutil':
-                image_path = os.path.normpath(kwargs['image_path'])
-                destination_disk = os.path.normpath(kwargs['destination_disk'])
-                # Wait for mount point to be ready
-                self.check_mount_point_ready(destination_disk)  # Blocking
-                result = self.generic_mbed_copy(image_path, destination_disk)
+            if kwargs['image_path'] and kwargs['destination_disk']:
+                if capability == 'shutil':
+                    image_path = os.path.normpath(kwargs['image_path'])
+                    destination_disk = os.path.normpath(kwargs['destination_disk'])
+                    # Wait for mount point to be ready
+                    self.check_mount_point_ready(destination_disk)  # Blocking
+                    result = self.generic_mbed_copy(image_path, destination_disk)
         return result
 
 

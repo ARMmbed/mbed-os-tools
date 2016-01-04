@@ -32,7 +32,7 @@ class Mbed:
     @details This class stores information about things like disk, port, serial speed etc.
              Class is also responsible for manipulation of serial port between host and mbed device
     """
-    def __init__(self, options=None):
+    def __init__(self, options):
         """ ctor
         """
         # For compatibility with old mbed. We can use command line options for Mbed object
@@ -42,9 +42,6 @@ class Mbed:
         self.mutex = Lock() # Used to sync access to serial port
 
         self.DEFAULT_RESET_TOUT = 0
-
-        if self.options and self.options.port is None:
-            raise Exception("The serial port (see: -p PORT) of the target mbed have to be provided as command line arguments")
 
         # Options related to copy / reset mbed device
         self.port = self.options.port

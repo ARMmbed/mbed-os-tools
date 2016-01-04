@@ -20,7 +20,7 @@ import sys
 import uuid
 from sys import stdout
 from socket import socket, AF_INET, SOCK_DGRAM
-from . import BaseHostTest
+from mbed_host_tests import BaseHostTest
 
 class UDPEchoServerTest(BaseHostTest):
     ECHO_SERVER_ADDRESS = ""

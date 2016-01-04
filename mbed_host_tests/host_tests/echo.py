@@ -18,7 +18,7 @@ limitations under the License.
 import sys
 import uuid
 from sys import stdout
-from . import BaseHostTest
+from mbed_host_tests import BaseHostTest
 
 class EchoTest(BaseHostTest):
 

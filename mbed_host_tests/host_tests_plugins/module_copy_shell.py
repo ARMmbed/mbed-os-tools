@@ -42,31 +42,38 @@ class HostTestPluginCopyMethod_Shell(HostTestPluginBase):
         @param capability Capability name
         @param args Additional arguments
         @param kwargs Additional arguments
-
         @details Each capability e.g. may directly just call some command line program or execute building pythonic function
-
         @return Capability call return value
         """
+        if not kwargs['image_path']:
+            self.print_plugin_error("Error: image path not specified")
+            return False
+
+        if not kwargs['destination_disk']:
+            self.print_plugin_error("Error: destination disk not specified")
+            return False
+
         result = False
-        if self.check_parameters(capability, *args, **kwargs) is True:
-            image_path = os.path.normpath(kwargs['image_path'])
-            destination_disk = os.path.normpath(kwargs['destination_disk'])
-            # Wait for mount point to be ready
-            self.check_mount_point_ready(destination_disk)  # Blocking
-            # Prepare correct command line parameter values
-            image_base_name = basename(image_path)
-            destination_path = join(destination_disk, image_base_name)
-            if capability == 'shell':
-                if os.name == 'nt': capability = 'copy'
-                elif os.name == 'posix': capability = 'cp'
-            if capability == 'cp' or capability == 'copy' or capability == 'copy':
-                copy_method = capability
-                cmd = [copy_method, image_path, destination_path]
-                if os.name == 'posix':
-                    result = self.run_command(cmd, shell=False)
-                    result = self.run_command(["sync"])
-                else:
-                    result = self.run_command(cmd)
+        if self.check_parameters(capability, *args, **kwargs):
+            if kwargs['image_path'] and kwargs['destination_disk']:
+                image_path = os.path.normpath(kwargs['image_path'])
+                destination_disk = os.path.normpath(kwargs['destination_disk'])
+                # Wait for mount point to be ready
+                self.check_mount_point_ready(destination_disk)  # Blocking
+                # Prepare correct command line parameter values
+                image_base_name = basename(image_path)
+                destination_path = join(destination_disk, image_base_name)
+                if capability == 'shell':
+                    if os.name == 'nt': capability = 'copy'
+                    elif os.name == 'posix': capability = 'cp'
+                if capability == 'cp' or capability == 'copy' or capability == 'copy':
+                    copy_method = capability
+                    cmd = [copy_method, image_path, destination_path]
+                    if os.name == 'posix':
+                        result = self.run_command(cmd, shell=False)
+                        result = self.run_command(["sync"])
+                    else:
+                        result = self.run_command(cmd)
         return result
 
 
