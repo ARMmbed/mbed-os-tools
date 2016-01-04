@@ -57,4 +57,5 @@ setup(name='mbed-greentea',
         "mbed-ls",
         "junit-xml",
         "lockfile",
+        "mock",
         "colorama>=0.3,<0.4"])
