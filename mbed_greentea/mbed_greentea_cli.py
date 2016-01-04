@@ -267,7 +267,8 @@ def main():
             raise
 
     if not any([opts.list_binaries, opts.version]):
-        print "completed in %.2f sec"% (time() - start)
+        delta = time() - start  # Test execution time delta
+        gt_logger.gt_log("completed in %.2f sec"% delta)
     return(cli_ret)
 
 def run_test_thread(test_result_queue, test_queue, opts, mut, mut_info, yotta_target_name):
@@ -285,7 +286,7 @@ def run_test_thread(test_result_queue, test_queue, opts, mut, mut_info, yotta_ta
         try:
             test = test_queue.get(False)
         except Exception as e:
-            print(str(e))
+            gt_logger.gt_log_err(str(e))
             break
 
         test_result = 'SKIPPED'
@@ -470,11 +471,9 @@ def main_cli(opts, args, gt_instance_uuid=None):
                                                    use_yotta_registry=opts.yotta_search_for_mbed_target)
             if mut_info:
                 mut_info_map[platfrom_name] = mut_info
-    #print "mut_info_map:", json.dumps(mut_info_map, indent=2)
 
     ### List of unique ready platform names
     unique_mbed_devices = list(set(mut_info_map.keys()))
-    #print "unique_mbed_devices", json.dumps(unique_mbed_devices, indent=2)
 
     ### Identify which targets has to be build because platforms are present
     yt_target_platform_map = {}     # yt_target_to_test : platforms to test on
@@ -486,7 +485,6 @@ def main_cli(opts, args, gt_instance_uuid=None):
                     yt_target_platform_map[yt_target] = []
                 if platform_name not in yt_target_platform_map[yt_target]:
                     yt_target_platform_map[yt_target].append(platform_name)
-    #print "yt_target_platform_map", json.dumps(yt_target_platform_map, indent=2)
 
     ### We can filter in only specific target ids
     accepted_target_ids = None
@@ -612,7 +610,6 @@ def main_cli(opts, args, gt_instance_uuid=None):
                     binary_type = mut_info_map[platform_name]['properties']['binary_type']
                     ctest_test_list = load_ctest_testsuite(os.path.join('.', 'build', yotta_target_name),
                         binary_type=binary_type)
-                    #print json.dumps(ctest_test_list, indent=2)
                     #TODO no tests to execute
 
                 filtered_ctest_test_list = ctest_test_list
@@ -712,8 +709,7 @@ def main_cli(opts, args, gt_instance_uuid=None):
                 gt_logger.gt_log("test report:")
                 text_report, text_results = exporter_text(test_report)
                 print text_report
-                print
-                print "Result: " + text_results
+                gt_logger.gt_log("results: " + text_results)
 
         # This flag guards 'build only' so we expect only yotta errors
         if test_platforms_match == 0:
@@ -724,5 +720,11 @@ def main_cli(opts, args, gt_instance_uuid=None):
             # No platforms were tested
             gt_logger.gt_log("no target matching platforms were found!")
             test_exec_retcode += -100
+
+        test_exec_retcode_str = "exited with code %d"% test_exec_retcode
+        if test_exec_retcode:
+            gt_logger.gt_log_err(test_exec_retcode_str)
+        else:
+            gt_logger.gt_log(test_exec_retcode_str)
 
     return (test_exec_retcode)
