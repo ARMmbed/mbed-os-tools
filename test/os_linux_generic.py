@@ -136,6 +136,31 @@ class LinuxPortTestCase(unittest.TestCase):
           "/dev/sdf on /media/usb4 type vfat (rw,noexec,nodev,sync,noatime,nodiratime,gid=1000,uid=1000,dmask=000,fmask=000)"
         ]
 
+        self.disk_list_3 = [
+            "total 0",
+            "lrwxrwxrwx 1 root 13 Jan  5 09:41 usb-MBED_MBED_CMSIS-DAP_0240020152986E5EAF6693E6-if01 -> ../../ttyACM0",
+            "lrwxrwxrwx 1 root 13 Jan  5 10:00 usb-MBED_MBED_CMSIS-DAP_0240020152A06E54AF5E93EC-if01 -> ../../ttyACM3",
+            "lrwxrwxrwx 1 root 13 Jan  5 10:00 usb-MBED_MBED_CMSIS-DAP_107002001FE6E019E2190F91-if01 -> ../../ttyACM1",
+            "lrwxrwxrwx 1 root 13 Jan  5 10:00 usb-STMicroelectronics_STM32_STLink_0672FF485649785087171742-if02 -> ../../ttyACM2",
+        ]
+
+        self.serial_list_3 = [
+            "total 0",
+            "lrwxrwxrwx 1 root  9 Dec 11 14:18 ata-HDS728080PLA380_40Y9028LEN_PFDB32S7S44XLM -> ../../sda",
+            "lrwxrwxrwx 1 root 10 Dec 11 14:18 ata-HDS728080PLA380_40Y9028LEN_PFDB32S7S44XLM-part1 -> ../../sda1",
+            "lrwxrwxrwx 1 root 10 Dec 11 14:18 ata-HDS728080PLA380_40Y9028LEN_PFDB32S7S44XLM-part2 -> ../../sda2",
+            "lrwxrwxrwx 1 root 10 Dec 11 14:18 ata-HDS728080PLA380_40Y9028LEN_PFDB32S7S44XLM-part5 -> ../../sda5",
+            "lrwxrwxrwx 1 root  9 Dec 11 14:18 ata-TSSTcorpDVD-ROM_TS-H352C -> ../../sr0",
+            "lrwxrwxrwx 1 root  9 Jan  5 09:41 usb-MBED_microcontroller_0240020152986E5EAF6693E6-0:0 -> ../../sdb",
+            "lrwxrwxrwx 1 root  9 Jan  5 10:00 usb-MBED_microcontroller_0240020152A06E54AF5E93EC-0:0 -> ../../sde",
+            "lrwxrwxrwx 1 root  9 Jan  5 10:00 usb-MBED_microcontroller_0672FF485649785087171742-0:0 -> ../../sdd",
+            "lrwxrwxrwx 1 root  9 Jan  5 10:00 usb-MBED_microcontroller_107002001FE6E019E2190F91-0:0 -> ../../sdc",
+            "lrwxrwxrwx 1 root  9 Dec 11 14:18 wwn-0x5000cca30ccffb77 -> ../../sda",
+            "lrwxrwxrwx 1 root 10 Dec 11 14:18 wwn-0x5000cca30ccffb77-part1 -> ../../sda1",
+            "lrwxrwxrwx 1 root 10 Dec 11 14:18 wwn-0x5000cca30ccffb77-part2 -> ../../sda2",
+            "lrwxrwxrwx 1 root 10 Dec 11 14:18 wwn-0x5000cca30ccffb77-part5 -> ../../sda5",
+        ]
+
     def tearDown(self):
         pass
 
@@ -291,6 +316,28 @@ class LinuxPortTestCase(unittest.TestCase):
         self.assertIn("usb-MBED_microcontroller_0672FF485649785087171742-0:0 -> ../../sdd", hex_values)
         self.assertIn("usb-MBED_microcontroller_02400201489A1E6CB564E3D4-0:0 -> ../../sde", hex_values)
         self.assertIn("usb-MBED_microcontroller_0240020152986E5EAF6693E6-0:0 -> ../../sdb", hex_values)
+
+    def test_get_dev_by_id_process_ret_0(self):
+        id_disks = self.linux_generic.get_dev_by_id_process(self.disk_list_3, 0)
+        id_serial = self.linux_generic.get_dev_by_id_process(self.serial_list_3, 0)
+
+        self.assertEqual(4, len(id_disks))
+        self.assertEqual(13, len(id_serial))
+        self.assertNotIn("total 0", id_disks)
+        self.assertNotIn("Total 0", id_disks)
+        self.assertNotIn("total 0", id_serial)
+        self.assertNotIn("Total 0", id_serial)
+
+    def test_get_dev_by_id_process_ret_non_zero(self):
+        id_disks = self.linux_generic.get_dev_by_id_process(self.disk_list_3, -1)
+        id_serial = self.linux_generic.get_dev_by_id_process(self.serial_list_3, -1)
+
+        self.assertEqual([], id_disks)
+        self.assertEqual([], id_serial)
+
+    def test_(self):
+        pass
+
 
 if __name__ == '__main__':
     unittest.main()
