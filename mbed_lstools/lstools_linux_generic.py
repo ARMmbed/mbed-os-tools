@@ -232,24 +232,24 @@ class MbedLsToolsLinuxGeneric(MbedLsToolsBase):
         @return list of lists [mbed_name, mbed_dev_disk, mbed_mount_point, mbed_dev_serial, disk_hex_id]
         @details Find for all disk connected all MBED ones we know about from TID list
         """
+        disk_hex_ids = self.get_disk_hex_ids(disk_list)
+
         map_tid_to_mbed = self.get_tid_mbed_name_remap(tids)
-        orphan_mbeds = []
-        for disk in disk_list:
-            if "mbed" in disk.lower():
+        orphan_mbeds = {}
+        for disk in disk_hex_ids:
+            if "mbed" in disk_hex_ids[disk].lower():
                 orphan_found = True
                 for tid in map_tid_to_mbed.keys():
-                    if tid in disk:
+                    if disk.startswith(tid):
                         orphan_found = False
                         break
                 if orphan_found:
-                    orphan_mbeds.append(disk)
+                    orphan_mbeds[disk] = disk_hex_ids[disk]
 
         # Search for corresponding MBED serial
-        disk_hex_ids = self.get_disk_hex_ids(orphan_mbeds)
-
         result = []
-        # FInd orphan serial name
-        for dhi in disk_hex_ids:
+        # Find orphan serial name
+        for dhi in orphan_mbeds:
             orphan_serial = self.get_mbed_serial(serial_list, dhi)
             if orphan_serial:
                 orphan_dev_disk = self.get_dev_name(disk_hex_ids[dhi])
