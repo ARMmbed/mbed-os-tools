@@ -88,9 +88,19 @@ class LinuxPortTestCase(unittest.TestCase):
         # |K64F          |K64F[0]              |/media/usb4 |/dev/ttyACM4 |0240020152A06E54AF5E93EC |
         # |K64F          |K64F[1]              |/media/usb3 |/dev/ttyACM3 |02400201489A1E6CB564E3D4 |
         # |K64F          |K64F[2]              |/media/usb0 |/dev/ttyACM1 |0240020152986E5EAF6693E6 |
+        # |LPC1768       |LPC1768[0]           |/media/usb1 |/dev/ttyACM0 |A000000001               |
         # |NUCLEO_F401RE |NUCLEO_F401RE[0]     |/media/usb2 |/dev/ttyACM2 |07200200076165023804F31F |
-        # |LPC1768       |LPC1768[0]           |/media/usb1 |/dev/ttyACM5 |A000000001               |
         # +--------------+---------------------+------------+-------------+-------------------------+
+        # After read from MBED.HTM:
+        # +--------------+---------------------+------------+-------------+------------------------------------------------------------------------+
+        # |platform_name |platform_name_unique |mount_point |serial_port  |target_id                                                               |
+        # +--------------+---------------------+------------+-------------+------------------------------------------------------------------------+
+        # |K64F          |K64F[0]              |/media/usb4 |/dev/ttyACM4 |0240020152A06E54AF5E93EC                                                |
+        # |K64F          |K64F[1]              |/media/usb3 |/dev/ttyACM3 |02400201489A1E6CB564E3D4                                                |
+        # |K64F          |K64F[2]              |/media/usb0 |/dev/ttyACM1 |0240020152986E5EAF6693E6                                                |
+        # |LPC1768       |LPC1768[0]           |/media/usb1 |/dev/ttyACM0 |101000000000000000000002F7F0D9F98dbdc24b9e28ac87cfc4f23c4c57438d        |
+        # |NUCLEO_F401RE |NUCLEO_F401RE[0]     |/media/usb2 |/dev/ttyACM2 |07200200076165023804F31F                                                |
+        # +--------------+---------------------+------------+-------------+------------------------------------------------------------------------+
 
         self.disk_list_2 = [
           "total 0",
