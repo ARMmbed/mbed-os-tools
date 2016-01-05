@@ -117,24 +117,36 @@ class MbedLsToolsLinuxGeneric(MbedLsToolsBase):
 
     # Private methods
 
+    def get_dev_by_id_cmd(self, subdir):
+        """! Calls command line 'ls' to get devices by their ids
+        @details Uses Linux shell command: 'ls -oA /dev/disk/by-id/'
+        @return tuple(stdout lines, retcode)
+        """
+        cmd = 'ls -oA /dev/' + subdir + '/by-id/'
+        if self.DEBUG_FLAG:
+            self.debug(self.get_dev_by_id_cmd.__name__, cmd)
+        p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        return (p.stdout.readlines(), p.wait())
+
+    def get_dev_by_id_process(self, lines, retval):
+        """! Remove unnecessary lines from command line output
+        """
+        result = []
+        if not retval:
+            for line in lines:
+                line = line.rstrip()
+                if not line.lower().startswith('total '):    # total 0
+                    result.append(line)
+                    if self.DEBUG_FLAG:
+                        self.debug(self.get_dev_by_id_process.__name__, line)
+        return result
+
     def get_dev_by_id(self, subdir):
         """! Lists disk devices by id
         @return List of strings from 'ls' command executed in shell
-        @details Uses Linux shell command: 'ls -oA /dev/disk/by-id/'
         """
-        result = []
-        cmd = 'ls -oA /dev/' + subdir + '/by-id/'
-        if self.DEBUG_FLAG:
-            self.debug(self.get_dev_by_id.__name__, cmd)
-
-        p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        for line in p.stdout.readlines():
-            line = line.rstrip()
-            result.append(line)
-            if self.DEBUG_FLAG:
-                self.debug(self.get_dev_by_id.__name__, line)
-        retval = p.wait()
-        return result
+        lines, retval = self.get_dev_by_id_cmd(subdir)
+        return self.get_dev_by_id_process(lines, retval)
 
     def get_mounts(self):
         """! Lists mounted devices with vfat file system (potential mbeds)
@@ -147,12 +159,13 @@ class MbedLsToolsLinuxGeneric(MbedLsToolsBase):
             self.debug(self.get_mounts.__name__, cmd)
 
         p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        for line in p.stdout.readlines():
-            line = line.rstrip()
-            result.append(line)
-            if self.DEBUG_FLAG:
-                self.debug(self.get_mounts.__name__, line)
         retval = p.wait()
+        if not retval:
+            for line in p.stdout.readlines():
+                line = line.rstrip()
+                result.append(line)
+                if self.DEBUG_FLAG:
+                    self.debug(self.get_mounts.__name__, line)
         return result
 
     def get_disk_hex_ids(self, disk_list):
