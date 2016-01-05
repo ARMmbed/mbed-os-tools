@@ -17,7 +17,6 @@ limitations under the License.
 """
 
 import unittest
-from mbed_lstools.lstools_ubuntu import MbedLsToolsUbuntu
 from mbed_lstools.lstools_linux_generic import MbedLsToolsLinuxGeneric
 
 
@@ -140,8 +139,8 @@ class LinuxPortTestCase(unittest.TestCase):
     def tearDown(self):
         pass
 
-    def test_ubuntu_construction(self):
-        self.linux_ubuntu = MbedLsToolsUbuntu()
+    def test_os_support(self):
+        self.assertIn("LinuxGeneric", self.linux_generic.os_supported)
 
     def test_get_mount_point_basic(self):
         self.assertEqual('/media/usb0', self.linux_generic.get_mount_point('sdb', self.vfat_devices))
