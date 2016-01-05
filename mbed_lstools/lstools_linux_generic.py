@@ -33,6 +33,9 @@ class MbedLsToolsLinuxGeneric(MbedLsToolsBase):
         self.name_link_pattern = "(usb-[0-9a-zA-Z_-]*_[0-9a-zA-Z]*-.*$)"
         self.mount_media_pattern = "^/[a-zA-Z0-9/]* on (/[a-zA-Z0-9/]*) "
 
+        self.nlp = re.compile(self.name_link_pattern)
+        self.hup = re.compile(self.hex_uuid_pattern)
+
     def list_mbeds(self):
         """! Returns detailed list of connected mbeds
         @return Returns list of structures with detailed info about each mbed
@@ -174,14 +177,12 @@ class MbedLsToolsLinuxGeneric(MbedLsToolsBase):
         @return Returns map of disks and corresponding disks' Hex ids
         @details Uses regular expressions to get Hex strings (TargeTIDs) from list of disks
         """
-        nlp = re.compile(self.name_link_pattern)
-        hup = re.compile(self.hex_uuid_pattern)
         disk_hex_ids = {}
         for dl in disk_list:
-            m = nlp.search(dl)
+            m = self.nlp.search(dl)
             if m and len(m.groups()):
                 disk_link = m.group(1)
-                m = hup.search(disk_link)
+                m = self.hup.search(disk_link)
                 if m and len(m.groups()):
                     disk_hex_ids[m.group(1)] = disk_link
         return disk_hex_ids
@@ -193,10 +194,9 @@ class MbedLsToolsLinuxGeneric(MbedLsToolsBase):
         @return Returns None if corresponding serial device is not found, else returns serial device path
         @details Devices are located in Linux '/dev/' directory structure
         """
-        nlp = re.compile(self.name_link_pattern)
         for sl in serial_list:
             if dhi in sl:
-                m = nlp.search(sl)
+                m = self.nlp.search(sl)
                 if m and len(m.groups()):
                     serial_link = m.group(1)
                     mbed_dev_serial = "/dev/" + self.get_dev_name(serial_link)
