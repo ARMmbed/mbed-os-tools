@@ -37,7 +37,7 @@ class HostRegistryTestCase(unittest.TestCase):
     def test_register_host_test(self):
         self.HOSTREGISTRY.register_host_test('host_test_mock_auto', HostTestClassMock())
         self.assertEqual(True, self.HOSTREGISTRY.is_host_test('host_test_mock_auto'))
-        
+
     def test_unregister_host_test(self):
         self.HOSTREGISTRY.register_host_test('host_test_mock_2_auto', HostTestClassMock())
         self.assertEqual(True, self.HOSTREGISTRY.is_host_test('host_test_mock_2_auto'))
@@ -59,6 +59,11 @@ class HostRegistryTestCase(unittest.TestCase):
         for ht_name in self.HOSTREGISTRY.HOST_TESTS:
             ht = self.HOSTREGISTRY.HOST_TESTS[ht_name]
             self.assertNotEqual(None, ht)
+
+    def test_host_test_has_name_attribute(self):
+        for ht_name in self.HOSTREGISTRY.HOST_TESTS:
+            ht = self.HOSTREGISTRY.HOST_TESTS[ht_name]
+            self.assertTrue(hasattr(ht, 'test'))
 
 
 if __name__ == '__main__':
