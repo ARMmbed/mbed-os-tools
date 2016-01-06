@@ -626,13 +626,15 @@ def main_cli(opts, args, gt_instance_uuid=None):
                     invalid_test_names = False
                     for test_name in test_list:
                         if test_name not in ctest_test_list:
-                            gt_logger.gt_log_tab("test name '%s' not found in CTestTestFile.cmake (specified with -n option)"% gt_logger.gt_bright(test_name))
                             invalid_test_names = True
                         else:
                             gt_logger.gt_log_tab("test filtered in '%s'"% gt_logger.gt_bright(test_name))
                             filtered_ctest_test_list[test_name] = ctest_test_list[test_name]
                     if invalid_test_names:
-                        gt_logger.gt_log("invalid test case names (specified with -n option)")
+                        gt_logger.gt_log_warn("invalid test case names (specified with -n option)")
+                        for test_name in test_list:
+                            if test_name not in ctest_test_list:
+                                gt_logger.gt_log_warn("test name '%s' not found in CTestTestFile.cmake (specified with -n option)"% gt_logger.gt_bright(test_name))
                         gt_logger.gt_log_tab("note: test case names are case sensitive")
                         gt_logger.gt_log_tab("note: see list of available test cases below")
                         list_binaries_for_targets(verbose_footer=False)
