@@ -33,6 +33,9 @@ class MbedLsToolsLinuxGeneric(MbedLsToolsBase):
         self.name_link_pattern = "(usb-[0-9a-zA-Z_-]*_[0-9a-zA-Z]*-.*$)"
         self.mount_media_pattern = "^/[a-zA-Z0-9/]* on (/[a-zA-Z0-9/]*) "
 
+        self.nlp = re.compile(self.name_link_pattern)
+        self.hup = re.compile(self.hex_uuid_pattern)
+
     def list_mbeds(self):
         """! Returns detailed list of connected mbeds
         @return Returns list of structures with detailed info about each mbed
@@ -117,24 +120,36 @@ class MbedLsToolsLinuxGeneric(MbedLsToolsBase):
 
     # Private methods
 
+    def get_dev_by_id_cmd(self, subdir):
+        """! Calls command line 'ls' to get devices by their ids
+        @details Uses Linux shell command: 'ls -oA /dev/disk/by-id/'
+        @return tuple(stdout lines, retcode)
+        """
+        cmd = 'ls -oA /dev/' + subdir + '/by-id/'
+        if self.DEBUG_FLAG:
+            self.debug(self.get_dev_by_id_cmd.__name__, cmd)
+        p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        return (p.stdout.readlines(), p.wait())
+
+    def get_dev_by_id_process(self, lines, retval):
+        """! Remove unnecessary lines from command line output
+        """
+        result = []
+        if not retval:
+            for line in lines:
+                line = line.rstrip()
+                if not line.lower().startswith('total '):    # total 0
+                    result.append(line)
+                    if self.DEBUG_FLAG:
+                        self.debug(self.get_dev_by_id_process.__name__, line)
+        return result
+
     def get_dev_by_id(self, subdir):
         """! Lists disk devices by id
         @return List of strings from 'ls' command executed in shell
-        @details Uses Linux shell command: 'ls -oA /dev/disk/by-id/'
         """
-        result = []
-        cmd = 'ls -oA /dev/' + subdir + '/by-id/'
-        if self.DEBUG_FLAG:
-            self.debug(self.get_dev_by_id.__name__, cmd)
-
-        p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        for line in p.stdout.readlines():
-            line = line.rstrip()
-            result.append(line)
-            if self.DEBUG_FLAG:
-                self.debug(self.get_dev_by_id.__name__, line)
-        retval = p.wait()
-        return result
+        lines, retval = self.get_dev_by_id_cmd(subdir)
+        return self.get_dev_by_id_process(lines, retval)
 
     def get_mounts(self):
         """! Lists mounted devices with vfat file system (potential mbeds)
@@ -147,12 +162,13 @@ class MbedLsToolsLinuxGeneric(MbedLsToolsBase):
             self.debug(self.get_mounts.__name__, cmd)
 
         p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        for line in p.stdout.readlines():
-            line = line.rstrip()
-            result.append(line)
-            if self.DEBUG_FLAG:
-                self.debug(self.get_mounts.__name__, line)
         retval = p.wait()
+        if not retval:
+            for line in p.stdout.readlines():
+                line = line.rstrip()
+                result.append(line)
+                if self.DEBUG_FLAG:
+                    self.debug(self.get_mounts.__name__, line)
         return result
 
     def get_disk_hex_ids(self, disk_list):
@@ -161,14 +177,12 @@ class MbedLsToolsLinuxGeneric(MbedLsToolsBase):
         @return Returns map of disks and corresponding disks' Hex ids
         @details Uses regular expressions to get Hex strings (TargeTIDs) from list of disks
         """
-        nlp = re.compile(self.name_link_pattern)
-        hup = re.compile(self.hex_uuid_pattern)
         disk_hex_ids = {}
         for dl in disk_list:
-            m = nlp.search(dl)
+            m = self.nlp.search(dl)
             if m and len(m.groups()):
                 disk_link = m.group(1)
-                m = hup.search(disk_link)
+                m = self.hup.search(disk_link)
                 if m and len(m.groups()):
                     disk_hex_ids[m.group(1)] = disk_link
         return disk_hex_ids
@@ -180,10 +194,9 @@ class MbedLsToolsLinuxGeneric(MbedLsToolsBase):
         @return Returns None if corresponding serial device is not found, else returns serial device path
         @details Devices are located in Linux '/dev/' directory structure
         """
-        nlp = re.compile(self.name_link_pattern)
         for sl in serial_list:
             if dhi in sl:
-                m = nlp.search(sl)
+                m = self.nlp.search(sl)
                 if m and len(m.groups()):
                     serial_link = m.group(1)
                     mbed_dev_serial = "/dev/" + self.get_dev_name(serial_link)
@@ -232,24 +245,24 @@ class MbedLsToolsLinuxGeneric(MbedLsToolsBase):
         @return list of lists [mbed_name, mbed_dev_disk, mbed_mount_point, mbed_dev_serial, disk_hex_id]
         @details Find for all disk connected all MBED ones we know about from TID list
         """
+        disk_hex_ids = self.get_disk_hex_ids(disk_list)
+
         map_tid_to_mbed = self.get_tid_mbed_name_remap(tids)
-        orphan_mbeds = []
-        for disk in disk_list:
-            if "mbed" in disk.lower():
+        orphan_mbeds = {}
+        for disk in disk_hex_ids:
+            if "mbed" in disk_hex_ids[disk].lower():
                 orphan_found = True
                 for tid in map_tid_to_mbed.keys():
-                    if tid in disk:
+                    if disk.startswith(tid):
                         orphan_found = False
                         break
                 if orphan_found:
-                    orphan_mbeds.append(disk)
+                    orphan_mbeds[disk] = disk_hex_ids[disk]
 
         # Search for corresponding MBED serial
-        disk_hex_ids = self.get_disk_hex_ids(orphan_mbeds)
-
         result = []
-        # FInd orphan serial name
-        for dhi in disk_hex_ids:
+        # Find orphan serial name
+        for dhi in orphan_mbeds:
             orphan_serial = self.get_mbed_serial(serial_list, dhi)
             if orphan_serial:
                 orphan_dev_disk = self.get_dev_name(disk_hex_ids[dhi])
