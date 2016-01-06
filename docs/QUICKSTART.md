@@ -8,7 +8,8 @@ This document is a simple cookbook introducing the testing facilities available 
 
 This document provides examples for all three methods of testing.
 
-* You can also create [unit tests](http://en.wikipedia.org/wiki/Unit_testing) with the [mbed compatible CppUTest library](https://github.com/ARMmbed/mbed-cpputest-private). Information about the CppUTest library can be found [here](https://cpputest.github.io/manual.html).
+* You can also create [unit tests](http://en.wikipedia.org/wiki/Unit_testing) with the mbed compatible CppUTest library. Information about the CppUTest library can be found [here](https://cpputest.github.io/manual.html) or 
+* use [Unity framework](https://github.com/ThrowTheSwitch/Unity) supported by mbed: [Unit](https://github.com/ARMmbed/unity) framework.
 
 Both test tools and host test scripts are written in Python 2.7. This means some knowledge about Python development is required.
 
