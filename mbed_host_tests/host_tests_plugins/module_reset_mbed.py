@@ -83,10 +83,7 @@ class HostTestPluginResetMethod_Mbed(HostTestPluginBase):
         except:
             # In Linux a termios.error is raised in sendBreak and in setBreak.
             # The following break_condition = False is needed to release the reset signal on the target mcu.
-            try:
-                serial.break_condition = False
-            except:
-                result = False
+            serial.break_condition = False
         return result
 
     # Plugin interface

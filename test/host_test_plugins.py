@@ -19,8 +19,10 @@ limitations under the License.
 import unittest
 
 import os
+import re
 import sys
 import platform
+import pkg_resources
 from mbed_host_tests.host_tests_plugins.host_test_plugins import HostTestPluginBase
 
 class HostOSDetectionTestCase(unittest.TestCase):
@@ -28,6 +30,7 @@ class HostOSDetectionTestCase(unittest.TestCase):
     def setUp(self):
         self.plugin_base = HostTestPluginBase()
         self.os_names = ['Windows7', 'Ubuntu', 'LinuxGeneric', 'Darwin']
+        self.re_float = re.compile("^\d+\.\d+$")
 
     def tearDown(self):
         pass
@@ -49,6 +52,14 @@ class HostOSDetectionTestCase(unittest.TestCase):
                    sys.platform)
 
         self.assertEqual(os_info, self.plugin_base.mbed_os_info())
+
+    def test_pyserial_version_as_float(self):
+        pyserial_version = pkg_resources.require("pyserial")[0].version
+        # We want to make sure pyserial version is a parsabl;e float
+        # Because we are using float(version) conversion to check version
+        # of this module
+        self.assertTrue(self.re_float.findall(pyserial_version))
+
 
 if __name__ == '__main__':
     unittest.main()
