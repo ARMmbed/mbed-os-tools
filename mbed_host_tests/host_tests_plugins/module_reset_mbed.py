@@ -17,30 +17,74 @@ limitations under the License.
 Author: Przemyslaw Wirkus <Przemyslaw.Wirkus@arm.com>
 """
 
+import pkg_resources
 from host_test_plugins import HostTestPluginBase
 
 
 class HostTestPluginResetMethod_Mbed(HostTestPluginBase):
 
-    def safe_sendBreak(self, serial):
-        """! Wraps serial.sendBreak() to avoid serial::serialposix.py exception on Linux
-        @details  Traceback (most recent call last):
-                    File "make.py", line 189, in <module>
-                      serial.sendBreak()
-                    File "/usr/lib/python2.7/dist-packages/serial/serialposix.py", line 511, in sendBreak
-                      termios.tcsendbreak(self.fd, int(duration/0.25))
-                  error: (32, 'Broken pipe')
+    def __init__(self):
+        """! ctor
+        @details We can check module version by referring to version attribute
+        import pkg_resources
+        print pkg_resources.require("mbed-host-tests")[0].version
+        '2.7'
+        """
+        self.pyserial_version = self.__get_pyserial_version()
+        self.is_pyserial_v3 = float(self.pyserial_version) >= 3.0
 
-        @return Returns True if command was successful
+    def __get_pyserial_version(self):
+        """! Retrieve pyserial module version
+        @return Returns float with pyserial module number
+        """
+        pyserial_version = pkg_resources.require("pyserial")[0].version
+        version = 3.0
+        try:
+            version = float(pyserial_version)
+        except ValueError:
+            version = 3.0   # We will assume users have newer version of the module
+        return version
+
+    def safe_sendBreak(self, serial):
+        """! Closure for pyserial version dependant API calls
+        """
+        if self.is_pyserial_v3:
+            return self.__safe_sendBreak_v3_0(serial)
+        return self.__safe_sendBreak_v2_7(serial)
+
+    def __safe_sendBreak_v2_7(self, serial):
+        """! pyserial 2.7 API implementation of sendBreak/setBreak
+        @details
+        Below API is deprecated for pyserial 3.x versions!
+        http://pyserial.readthedocs.org/en/latest/pyserial_api.html#serial.Serial.sendBreak
+        http://pyserial.readthedocs.org/en/latest/pyserial_api.html#serial.Serial.setBreak
         """
         result = True
         try:
             serial.sendBreak()
         except:
-            # In linux a termios.error is raised in sendBreak and in setBreak.
+            # In Linux a termios.error is raised in sendBreak and in setBreak.
             # The following setBreak() is needed to release the reset signal on the target mcu.
             try:
                 serial.setBreak(False)
+            except:
+                result = False
+        return result
+
+    def __safe_sendBreak_v3_0(self, serial):
+        """! pyserial 3.x API implementation of send_brea / break_condition
+        @details
+        http://pyserial.readthedocs.org/en/latest/pyserial_api.html#serial.Serial.send_break
+        http://pyserial.readthedocs.org/en/latest/pyserial_api.html#serial.Serial.break_condition
+        """
+        result = True
+        try:
+            serial.send_break()
+        except:
+            # In Linux a termios.error is raised in sendBreak and in setBreak.
+            # The following break_condition = False is needed to release the reset signal on the target mcu.
+            try:
+                serial.break_condition = False
             except:
                 result = False
         return result
