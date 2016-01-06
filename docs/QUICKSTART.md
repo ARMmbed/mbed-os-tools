@@ -384,9 +384,42 @@ Here it is! :)
   ```
 
 ## Create a simple UT with CppUTest
-In order to use the CppUTest library with your yotta package and test tools you need to include the dependency [mbed-cpputest-private](https://github.com/ARMmbed/mbed-cpputest-private), the mbed porting of CppUTest.
+In order to use the CppUTest library with your yotta package and test tools you need to include the dependency to CppUTest. Note: currently we do not expose public CppUTest library yotta module!
 * This package contains the CppUTest library code (with useful UT macros).
-* The additional source file [testrunner.cpp](https://github.com/ARMmbed/mbed-cpputest-private/blob/master/source/testrunner.cpp) is provided to guarantee correct implementation of the main() function.
+* The additional source file testrunner.cpp is provided to guarantee correct implementation of the main() function:
+
+* testrunner.cpp
+```c++
+#include "CommandLineTestRunner.h"
+#include <stdio.h>
+#include "testrunner.h"
+
+/**
+Object 'mbed_cpputest_console' is used to show prints on console.
+It is declared in \cpputest\src\Platforms\armcc\UtestPlatform.cpp
+*/
+int main(int ac, char** av) {
+    (void)ac;
+    (void)av;
+    unsigned failureCount = 0;
+    {
+        // Some compilers may not pass ac, av so we need to supply them ourselves
+        int ac = 2;
+        const char* av[] = {__FILE__, "-v"};
+        failureCount = CommandLineTestRunner::RunAllTests(ac, av);
+    }
+
+    return failureCount;
+}
+```
+
+* testrunner.h
+```c++
+#ifndef TEST_RUNNER_H_
+#define TEST_RUNNER_H_
+
+#endif
+```
 
   Note: in your unit test source code **please do not implement the ```main()``` function**. The ```main()``` function is already provided and is compatible with the existing tools.
 
