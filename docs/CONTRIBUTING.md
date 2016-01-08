@@ -69,13 +69,15 @@ $ cd <package>
 $ python setup.py test
 ```
 ## Code coverage
-To measure application code coverage for unit tests please use the coverage tool. This set of commands will locally create a code coverage report for all unit tests:.
+To measure application code coverage for unit tests please use the coverage tool. This set of commands will locally create a code coverage report for all unit tests:
 ```
 $ cd <package>
-$ coverage –x setup.py test
-$ coverage –rm
+$ coverage run setup.py test
+$ coverage report
 $ coverage html
 ```
+Last command will generate for you useful HTML code coverage report. It can be used to check which parts of your code are not unit tested.
+
 # Keep your GitHub fork updated
 I want to fork a GitHub repo SOME_REPO/appname to USER/appname and want to keep it updated.
 ### Tracking changes
