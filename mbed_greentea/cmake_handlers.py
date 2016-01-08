@@ -74,12 +74,14 @@ def parse_ctesttestfile_line(link_target, binary_type, line, verbose=False):
             return test_case, test_case_path
     return None
 
+
 def list_binaries_for_targets(build_dir='./build', verbose_footer=False):
     """! Prints tests in target directories, only if tests exist.
     @details Skips empty / no tests for target directories.
     """
     dir = build_dir
-    sub_dirs = [os.path.join(dir, o) for o in os.listdir(dir) if os.path.isdir(os.path.join(dir, o))]
+    sub_dirs = [os.path.join(dir, o) for o in os.listdir(dir) if os.path.isdir(os.path.join(dir, o))] \
+        if os.path.exists(dir) else []
 
     def count_tests():
         result = 0
