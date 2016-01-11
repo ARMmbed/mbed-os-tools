@@ -85,7 +85,42 @@ def print_version(verbose=True):
     if verbose:
         print version
     return version
+    
+def create_filtered_test_list(ctest_test_list, opts):
+    filtered_ctest_test_list = ctest_test_list
+    test_list = None
+    invalid_test_names = []
+    if opts.test_by_names:
+        filtered_ctest_test_list = {}   # Subset of 'ctest_test_list'
+        test_list = opts.test_by_names.split(',')
+        gt_logger.gt_log("test case filter (specified with -n option)")
 
+        for test_name in test_list:
+            if test_name not in ctest_test_list:
+                invalid_test_names.append(test_name)
+            else:
+                gt_logger.gt_log_tab("test filtered in '%s'"% gt_logger.gt_bright(test_name))
+                filtered_ctest_test_list[test_name] = ctest_test_list[test_name]
+    elif opts.skip_test:
+        test_list = opts.skip_test.split(',')   
+        gt_logger.gt_log("test case filter (specified with --skip-build option)")
+        
+        for test_name in test_list:
+            if test_name not in ctest_test_list:
+                invalid_test_names.append(test_name)
+            else:
+                gt_logger.gt_log_tab("test '%s' skipped"% gt_logger.gt_bright(test_name))
+                del filtered_ctest_test_list[test_name]
+    
+    if invalid_test_names:
+        opt_to_print = '-n' if opts.test_by_names else 'skip-build'
+        gt_logger.gt_log_warn("invalid test case names (specified with '%s' option)"% opt_to_print)
+        for test_name in invalid_test_names:
+            gt_logger.gt_log_warn("test name '%s' not found in CTestTestFile.cmake (specified with '%s' option)"% (gt_logger.gt_bright(test_name),opt_to_print))
+        gt_logger.gt_log_tab("note: test case names are case sensitive")
+        gt_logger.gt_log_tab("note: see list of available test cases below")
+        list_binaries_for_targets(verbose_footer=False)
+    return filtered_ctest_test_list
 
 def main():
     """ Closure for main_cli() function """
@@ -619,40 +654,10 @@ def main_cli(opts, args, gt_instance_uuid=None):
                     ctest_test_list = load_ctest_testsuite(os.path.join('.', 'build', yotta_target_name),
                         binary_type=binary_type)
                     #TODO no tests to execute
-
-                filtered_ctest_test_list = ctest_test_list
-                test_list = None
-                invalid_test_names = []
-                if opts.test_by_names:
-                    filtered_ctest_test_list = {}   # Subset of 'ctest_test_list'
-                    test_list = opts.test_by_names.split(',')
-                    gt_logger.gt_log("test case filter (specified with -n option)")
-
-                    for test_name in test_list:
-                        if test_name not in ctest_test_list:
-                            invalid_test_names.append(test_name)
-                        else:
-                            gt_logger.gt_log_tab("test filtered in '%s'"% gt_logger.gt_bright(test_name))
-                            filtered_ctest_test_list[test_name] = ctest_test_list[test_name]
-                elif opts.skip_test:
-                    test_list = opts.skip_test.split(',')   
-                    gt_logger.gt_log("test case filter (specified with --skip-build option)")
-                    
-                    for test_name in test_list:
-                        if test_name not in ctest_test_list:
-                            invalid_test_names.append(test_name)
-                        else:
-                            gt_logger.gt_log_tab("test '%s' skipped"% gt_logger.gt_bright(test_name))
-                            del filtered_ctest_test_list[test_name]
                 
-                if invalid_test_names:
-                    opt_to_print = '-n' if opts.test_by_names else 'skip-build'
-                    gt_logger.gt_log_warn("invalid test case names (specified with '%s' option)"% opt_to_print)
-                    for test_name in invalid_test_names:
-                        gt_logger.gt_log_warn("test name '%s' not found in CTestTestFile.cmake (specified with '%s' option)"% (gt_logger.gt_bright(test_name),opt_to_print))
-                    gt_logger.gt_log_tab("note: test case names are case sensitive")
-                    gt_logger.gt_log_tab("note: see list of available test cases below")
-                    list_binaries_for_targets(verbose_footer=False)
+                filtered_ctest_test_list = ctest_test_list
+                if opts.test_by_names or opts.skip_test:
+                    filtered_ctest_test_list = create_filtered_test_list(ctest_test_list, opts)
 
                 gt_logger.gt_log("running %d test%s for target '%s' and platform '%s'"% (
                     len(filtered_ctest_test_list),
