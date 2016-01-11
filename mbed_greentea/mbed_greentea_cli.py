@@ -134,7 +134,7 @@ def main():
                     dest='test_by_names',
                     help='Runs only test enumerated it this switch. Use comma to separate test case names.')
                     
-    parser.add_option('', '--skip-test',
+    parser.add_option('-i', '--skip-test',
                     dest='skip_test',
                     help='Skip tests enumerated it this switch. Use comma to separate test case names.')
                     
