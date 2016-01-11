@@ -654,11 +654,11 @@ def main_cli(opts, args, gt_instance_uuid=None):
                     ctest_test_list = load_ctest_testsuite(os.path.join('.', 'build', yotta_target_name),
                         binary_type=binary_type)
                     #TODO no tests to execute
-                
-                filtered_ctest_test_list = ctest_test_list
-                if opts.test_by_names or opts.skip_test:
-                    filtered_ctest_test_list = create_filtered_test_list(ctest_test_list, opts)
 
+                filtered_ctest_test_list = dict(ctest_test_list)
+                if opts.test_by_names or opts.skip_test:
+                    filtered_ctest_test_list = create_filtered_test_list(filtered_ctest_test_list, opts)
+                   
                 gt_logger.gt_log("running %d test%s for target '%s' and platform '%s'"% (
                     len(filtered_ctest_test_list),
                     "s" if len(filtered_ctest_test_list) != 1 else "",
