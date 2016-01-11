@@ -57,7 +57,7 @@ class Mbed:
 
         # Users can use command to pass port speeds together with port name. E.g. COM4:115200:1
         # Format if PORT:SPEED:TIMEOUT
-        port_config = self.port.split(':')
+        port_config = self.port.split(':') if self.port else ''
         if len(port_config) == 2:
             # -p COM4:115200
             self.port = port_config[0]
@@ -83,7 +83,7 @@ class Mbed:
                 print "MBED: Test configuration JSON Unexpected error:"
                 raise
 
-        print 'MBED: Instrumentation: "%s" and disk: "%s"' % (self.port, self.disk)
+        print 'HOST: Instrumentation: "%s" and disk: "%s"' % (self.port, self.disk)
 
     def init_serial_params(self, serial_baud=115200, serial_timeout=1):
         """! Initialize port parameters.

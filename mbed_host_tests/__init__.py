@@ -225,7 +225,6 @@ class DefaultTestSelector(DefaultTestSelectorBase):
 
         # Handle extra command from
         if options:
-
             if options.enum_host_tests:
                 path = self.options.enum_host_tests
                 enum_host_tests(path, verbose=options.verbose)
@@ -342,9 +341,10 @@ class DefaultTestSelector(DefaultTestSelectorBase):
 
     def run(self):
         """! This function will perform extra setup and proceed with test selector's work flow
-
         @details This function will call execute() but first will call setup() to perform extra actions
         """
+        print "HOST: My PID is %d"% os.getpid()
+
         self.setup()    # Additional setup (optional before execute() call)
 
         if self.mbed.options:
