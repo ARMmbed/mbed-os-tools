@@ -512,12 +512,9 @@ class DefaultTestSelector(DefaultTestSelectorBase):
         self.notify("HOST: Aborted by parent process!")
         self.aborted = True
         try:
-            if self.test_supervisor is not None and 'abort' in dir(self.test_supervisor) and \
-                    callable(getattr(self.test_supervisor, 'abort')):
-                self.test_supervisor.abort()
+            self.test_supervisor.rampDown()
         finally:
-            pass
-        self.finish()
+            self.finish()
 
 
 def init_host_test_cli_params():
