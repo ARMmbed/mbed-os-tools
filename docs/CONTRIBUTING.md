@@ -7,7 +7,7 @@
   * [Issues and bug reporting](#issues-and-bug-reporting)
 * [How to contribute](#how-to-contribute)
   * [Coding style and coding rules](#coding-style-and-coding-rules)
-* [Code Like a Pythonista: Idiomatic Python](#code-like-a-pythonista-idiomatic-python)
+    * [Code Like a Pythonista: Idiomatic Python](#code-like-a-pythonista-idiomatic-python)
     * [Coding Style: Readability Counts](#coding-style-readability-counts)
     * [Style Guide for Python Code](#style-guide-for-python-code)
     * [Whitespace](#whitespace)
@@ -68,7 +68,9 @@ You can either file a bug, help fix a bug or propose a new feature (or enhanceme
 * General feedback: Give your feedback by posting your comments on existing pull requests and issues.
 
 ## Coding style and coding rules
-# Code Like a Pythonista: Idiomatic Python
+This chapter attempts to explain the basic styles and patterns that are used in mbed test tools projects. he following norms should be followed for new code, and for code that needs clean-up.
+
+### Code Like a Pythonista: Idiomatic Python
 Please do your best to follow [Idiomatic Python](http://python.net/~goodger/projects/pycon/2007/idiomatic/handout.html) interactive tutorial.
 
 ### Coding Style: Readability Counts
@@ -85,6 +87,7 @@ Please see [PEP 0008 -- Style Guide for Python Code](https://www.python.org/dev/
 * Never mix tabs and spaces.
 * One blank line between functions.
 * Two blank lines between classes.
+* No whitespace at the end of a line.
 
 * Add a space after "," in dicts, lists, tuples, & argument lists, and after ":" in dicts, but not before.
 * Put spaces around assignments & comparisons (except in argument lists).
