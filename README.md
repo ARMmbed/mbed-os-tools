@@ -16,6 +16,8 @@ The basic host test only monitors the device's default serial port (the serial c
 +------------------+                               +-------------------------+
 ```
 
+Test runner on the target writes the test case properties like timeout, host test name, description and test_id on the serial port. This helps host test runner to find the required python module in the host tests store for executing the host side of the test.
+
 # The decoupled module
 
 The mbed-host-tests package is a decoupled functionality, originally implemented for [mbedmicro/mbed workspace_tools](https://github.com/mbedmicro/mbed). The original host tests implementation is [available on GitHub](https://github.com/mbedmicro/mbed/tree/master/workspace_tools/host_tests). 
@@ -91,6 +93,19 @@ mbed_host_tests/
 ** Supervise test runner execution (test case flow) with a timeout watchdog.
 ** Conclude the test case's result. The result can be grabbed from the test runner console output or independently determined by the host test.
 ** Inform the test suite environment that the test's execution finished.
+
+# Enumeration of host tests
+
+A host test is the implementation derived from the BaseHostTest base class. These classes are looked inside the files in the directory passed with -e or --enum-host-tests= command line argument. One python file may contain multiple host test classes. Found host test classes are stored by their name. If the host test class has an attribute ```name``` then that is used as the host test name. Otherwise python file name is used as the host test name.  
+
+In case a host test python file fails to load because of syntax or other error. Following behavior is expected:
+
+* Host test class(es) in the failed file are ignored. 
+* mbed host test continues to load test classes from other files.
+* Test binaries requiring those host test(s) are still flashed and executed. As only binary tells the required host test name.
+* The tests will fail with error ```HOST: Error! Unknown host test name 'failed_to_load_module'...```. 
+
+Above behavior has an overhead of flashing binaries that will not run. May be in the future a meta data file can be added to help mbed host test to know the test properties before flashing the binary.  
 
 # Example of the CLI version of the host test's DefaultTestSelector supervisor
 
