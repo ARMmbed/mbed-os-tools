@@ -22,13 +22,13 @@ from mbed_host_tests.host_tests_registry import HostRegistry
 
 
 class HostTestClassMock:
-    def setUp(self):
+    def setup(self):
         pass
 
     def test(self, selftest):
         return None
         
-    def tearDown(self):
+    def teardown(self):
         pass
 
 

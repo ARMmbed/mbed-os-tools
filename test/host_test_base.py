@@ -28,12 +28,14 @@ class BaseHostTestTestCase(unittest.TestCase):
     def tearDown(self):
         pass
 
-    def test_host_test_has_setUp_tearDown_attribute(self):
+    def test_host_test_has_setup_teardown_attribute(self):
         for ht_name in self.HOSTREGISTRY.HOST_TESTS:
             ht = self.HOSTREGISTRY.HOST_TESTS[ht_name]
-            self.assertTrue(hasattr(ht, 'setUp'))
-            self.assertTrue(hasattr(ht, 'tearDown'))
-                         
+            print ht
+            print ht_name
+            self.assertTrue(hasattr(ht, 'setup'))
+            self.assertTrue(hasattr(ht, 'teardown'))
+
     def test_host_test_has_no_rampUpDown_attribute(self):
         for ht_name in self.HOSTREGISTRY.HOST_TESTS:
             ht = self.HOSTREGISTRY.HOST_TESTS[ht_name]
