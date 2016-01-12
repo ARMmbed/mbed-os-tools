@@ -156,6 +156,7 @@ Note:
 
 * Use the option ```-V``` to display the serial port communication between the host computer and the mbed device on your console.
 * Use the option ```-n <test-name>``` to execute only a specific test (using name matching). You can use a comma to execute more than one test case. ```<test-name>``` is the name of the test case's binary (without an extension).
+* Use the option ```-i <test-name>``` to skip a specific test (using name matching). You can use a comma to skip more than one test case. ```<test-name>``` is the name of the test case's binary (without an extension).
 
 ### Notes
 * We've included ```mbed/test_env.h``` to get access to the generic mbed test's ```MBED_HOSTTEST_*``` macros. These macros are used to pass to the test suite information about the above test case. For example: 

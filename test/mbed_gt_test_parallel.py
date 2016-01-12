@@ -136,6 +136,7 @@ class GtOptions:
     def __init__(self,
                  list_of_targets,
                  test_by_names=None,
+                 skip_test=None,
                  only_build_tests=False,
                  skip_yotta_build=True,
                  copy_method=None,
@@ -163,6 +164,7 @@ class GtOptions:
 
         self.list_of_targets = list_of_targets
         self.test_by_names = test_by_names
+        self.skip_test = skip_test
         self.only_build_tests = only_build_tests
         self.skip_yotta_build = skip_yotta_build
         self.copy_method = copy_method
