@@ -22,6 +22,10 @@
   * [Example 1 - digest the default mbed host test runner](#example-1---digest-the-default-mbed-host-test-runner)
   * [Example 2 - digest directly from file](#example-2---digest-directly-from-file)
   * [Example 3 - pipe test.txt file content (as in example 2)](#example-3---pipe-testtxt-file-content-as-in-example-2)
+* [Additional features](#additional-features)
+  * [Dynamic host test loader](#dynamic-host-test-loader)
+  * [yotta config parse](#yotta-config-parse)
+  * [Local yotta targets scan for mbed-target keywords](#local-yotta-targets-scan-for-mbed-target-keywords)
 * [Common Issues](#common-issues)
   * [Uninstalling Greentea](#uninstalling-greentea)
 
