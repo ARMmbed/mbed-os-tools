@@ -8,8 +8,9 @@ This document is a simple cookbook introducing the testing facilities available 
 
 This document provides examples for all three methods of testing.
 
-* You can also create [unit tests](http://en.wikipedia.org/wiki/Unit_testing) with the mbed compatible CppUTest library. Information about the CppUTest library can be found [here](https://cpputest.github.io/manual.html) or 
-* use [Unity framework](https://github.com/ThrowTheSwitch/Unity) supported by mbed: [Unit](https://github.com/ARMmbed/unity) framework.
+* Use [Unity framework](https://github.com/ThrowTheSwitch/Unity) supported by mbed: [Unity](https://github.com/ARMmbed/unity) framework.
+  * Please have a look at our Unity integration under lean test hardness called [utest: A Simple C++ Test Harness](https://github.com/ARMmbed/utest). Utest documentation provides [examples how to use it with Greentea](https://github.com/ARMmbed/utest#example).
+* You can also create [unit tests](http://en.wikipedia.org/wiki/Unit_testing) with the mbed compatible CppUTest library. Information about the CppUTest library can be found [here](https://cpputest.github.io/manual.html) or
 
 Both test tools and host test scripts are written in Python 2.7. This means some knowledge about Python development is required.
 
@@ -24,7 +25,7 @@ Each host test should be as generic as possible, so that many test cases running
 Test tools are designed to let you:
 
 * Concentrate on test development rather than test framework building.
-* (Re)use existing host tests. 
+* (Re)use existing host tests.
 * Create new host tests to cover new functional and interoperability domains.
 
 ### Test suite (mbed-greentea)
@@ -95,24 +96,24 @@ To do so just:
 
 1. Create a new test case sub-directory and test source code under the ```\test``` directory.
 2. Populate the test case source code with the following template:
-	
+
   ```c++
   #include "mbed/test_env.h"
-  
+
   int main() {
       MBED_HOSTTEST_TIMEOUT(20);
       MBED_HOSTTEST_SELECT(default);
       MBED_HOSTTEST_DESCRIPTION(Basic);
       MBED_HOSTTEST_START("MBED_A1");
-      
+
       int result = 0; // 0 - false, !0 - true
-      
+
       /*
        * Call your API function(s) here and
        * calculate 'result' in runtime.
        * Set 'result' with  true / false success code
        */
-      
+
       MBED_HOSTTEST_RESULT(result);
   }
   ```
@@ -139,7 +140,7 @@ Note:
 * Use the option ```-n <test-name>``` to execute only a specific test (using name matching). You can use a comma to execute more than one test case. ```<test-name>``` is the name of the test case's binary (without an extension).
 
 ### Notes
-* We've included ```mbed/test_env.h``` to get access to the generic mbed test's ```MBED_HOSTTEST_*``` macros. These macros are used to pass to the test suite information about the above test case. For example: 
+* We've included ```mbed/test_env.h``` to get access to the generic mbed test's ```MBED_HOSTTEST_*``` macros. These macros are used to pass to the test suite information about the above test case. For example:
   * ```MBED_HOSTTEST_TIMEOUT```: Test case timeout, in this case 20 seconds.
   * ```MBED_HOSTTEST_SELECT```: Host test name (which host test should be used to supervise this test). In this case the 'default' host test that's available in the standard mbed-host-tests package distribution.
   * ```MBED_HOSTTEST_DESCRIPTION```: A simple test case description; currently ignored by the test suite.
@@ -200,7 +201,7 @@ We need to create a new host test script (let's call it ```rtc_auto``` for now).
 ```c++
 MBED_HOSTTEST_SELECT(rtc_auto);
 ```
-to tell the test suite which host test is used to instrument the above code. Our ```rtc_auto``` script is a Python script that will read and parse the serial port prints from the target: 
+to tell the test suite which host test is used to instrument the above code. Our ```rtc_auto``` script is a Python script that will read and parse the serial port prints from the target:
 ```c++
 printf("MBED: [%ld] [%s]\r\n", seconds, buffer);
 ```
@@ -212,14 +213,14 @@ Changes in the mbed-host-tests module:
 2. Create a new ```rtc_auto.py``` host test script under ```mbed-host-tests/mbed_host_tests/host_tests/``` and populate it with the following template:
   ```python
     class TestCaseName_Test():
-    
+
         def test(self, selftest):
             test_result = True
-  
+
             #
             # Here we will implement our host test
             #
-  
+
             return selftest.RESULT_SUCCESS if test_result else selftest.RESULT_FAILURE
   ```
 
@@ -237,29 +238,29 @@ Changes in the mbed-host-tests module:
       if c is None:
           return selftest.RESULT_IO_SERIAL
       ```
-      
+
       ```python
       c = selftest.mbed.serial_readline() # {{start}} preamble
       if c is None:
          return selftest.RESULT_IO_SERIAL
       ```
-      
+
       ```python
       # Write bytes to serial port
       selftest.mbed.serial_write(str(random_integer) + "\n")
       ```
-      
+
       ```python
       # Custom initialization for echo test
       selftest.mbed.init_serial_params(serial_baud=self.TEST_SERIAL_BAUDRATE)
       selftest.mbed.init_serial()
       ```
-      
+
       ```python
       # Flush serial port queues (in/out)
       selftest.mbed.flush()
-      ```    
-      
+      ```
+
       ```python
       # We want to dump the serial port while the test is ongoing
       #
@@ -271,16 +272,16 @@ Changes in the mbed-host-tests module:
       # flow is controlled over different media like sockets or, for example, Bluetooth or BLE
       # communication.
       selftest.dump_serial()
-      ```    
-      
+      ```
+
       ```python
       # Stop serial port in background initiated with selftest.dump_serial() method
       selftest.dump_serial_end()
       ```
-      
+
       ```python
       # Read test configuration data passed to host test from command line, option --test-cfg=<JSON_FILE>
-      test_cfg = selftest.mbed.test_cfg 
+      test_cfg = selftest.mbed.test_cfg
       ```
       Note: You can pass extra test configuration data to host tests. Define JSON formated file and use command line option ```--test-cfg``` to define path for that file. JSON test configuration file will be loaded (if possible) from file and stored in above data structure. This is very flexible feature but limits users to define only one JSON configuration file.
 
@@ -288,11 +289,11 @@ Changes in the mbed-host-tests module:
   ```python
   import re
   from time import time, strftime, gmtime
-  
+
   class RTCTest():
       PATTERN_RTC_VALUE = "\[(\d+)\] \[(\d+-\d+-\d+ \d+:\d+:\d+ [AaPpMm]{2})\]"
       re_detect_rtc_value = re.compile(PATTERN_RTC_VALUE)
-  
+
       def test(self, selftest):
           test_result = True
           start = time()
@@ -324,7 +325,7 @@ Changes in the mbed-host-tests module:
 3. Add ```rtc_auto.py``` to the mbed-host-tests module's registry under ```mbed-host-tests/mbed_host_tests/__init__.py```:
   ```python
   .
-  .  
+  .
   # Host test supervisors
   .
   .
@@ -340,7 +341,7 @@ Changes in the mbed-host-tests module:
   ```
   * ```from host_tests.rtc_auto import RTCTest``` is used to import the ```rtc_auto.py``` script to this module.
   * ```HOSTREGISTRY.register_host_test("rtc_auto", RTCTest())``` is used to register the RTCTest() class implemented in ```rtc_auto.py``` under the name ```rtc_auto```.
-    
+
     Note: ```rtc_auto``` is the same name that we are using in the test case C/C++ source code via the macro ```MBED_HOSTTEST_SELECT(rtc_auto);```.
 
 4. (Re)install the mbed-host-tests module using the ```python setup.py install``` command in the cloned mbed-host-tests directory.
@@ -432,11 +433,11 @@ To create this UT, first:
   ```c++
   #include <TestHarness.h>    // CppUTest stuff
   #include <mbed.h>
-  
+
   TEST_GROUP(FirstTestGroup)
   {
   };
-  
+
   TEST(FirstTestGroup, FirstTest)
   {
       /* These checks are here to make sure assertions outside test runs don't crash */
@@ -492,7 +493,7 @@ target 'frdm-k64f-gcc':
         test 'mbed-test-div'
         test 'mbed-test-dev_null'
         test 'mbed-test-stl'
-        test 'mbed-test-sleep_timeout'       
+        test 'mbed-test-sleep_timeout'
         test 'mbed-test-rtc'
         test 'mbed-test-hello'
         test 'mbed-test-stdio'
@@ -542,7 +543,7 @@ HOST: Reset target...
 mbed-host-test-runner: Stopped
 ```
 
-Note: There is no way to determine if application executed on target finished executing. To prevent timout ```mbed-greentea``` exit please add print ```{{end}}``` at the end of your application execution. All tests ported to support ```mbed-greentea``` already print ```{{{end}}}``` tag so mbed-greentea exits after print is parsed. 
+Note: There is no way to determine if application executed on target finished executing. To prevent timout ```mbed-greentea``` exit please add print ```{{end}}``` at the end of your application execution. All tests ported to support ```mbed-greentea``` already print ```{{{end}}}``` tag so mbed-greentea exits after print is parsed.
 You can always stop mbed-greentea by pressing ```Ctrl+C```.
 
 # Greentea Workflows
