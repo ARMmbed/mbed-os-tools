@@ -74,7 +74,7 @@ This chapter attempts to explain the basic styles and patterns that are used in 
 Please do your best to follow [Idiomatic Python](http://python.net/~goodger/projects/pycon/2007/idiomatic/handout.html) interactive tutorial.
 
 ### Coding Style: Readability Counts
-"Programs must be written for people to read, and only incidentally for machines to execute."
+"*Programs must be written for people to read, and only incidentally for machines to execute.*"
     —Abelson & Sussman, Structure and Interpretation of Computer Programs
 Try to make your programs easy to read and obvious.
 
