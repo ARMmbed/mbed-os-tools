@@ -6,6 +6,8 @@
     * [Code review](#code-review)
   * [Issues and bug reporting](#issues-and-bug-reporting)
 * [How to contribute](#how-to-contribute)
+  * [Simple workflow for bugifx](#simple-workflow-for-bugifx)
+    * [Branch naming conventions](#branch-naming-conventions)
   * [Coding style and coding rules](#coding-style-and-coding-rules)
     * [Code Like a Pythonista: Idiomatic Python](#code-like-a-pythonista-idiomatic-python)
     * [Coding Style: Readability Counts](#coding-style-readability-counts)
