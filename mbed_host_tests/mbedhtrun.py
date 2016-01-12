@@ -46,8 +46,9 @@ def main():
     """
     test_selector = DefaultTestSelector(init_host_test_cli_params())
     try:
-        t = threading.Thread(target=parent_monitor_thread, args=(test_selector,))
-        t.start()   # This thread will shutdown automatically after stdin is closed on returning from main()
+        if not sys.stdin.isatty(): # Only monitor stdin if started from a parent process.
+            t = threading.Thread(target=parent_monitor_thread, args=(test_selector,))
+            t.start()   # This thread will shutdown automatically after stdin is closed on returning from main()
         test_selector.run()
     except (KeyboardInterrupt, SystemExit):
         test_selector.finish()
