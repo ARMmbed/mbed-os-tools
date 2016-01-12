@@ -616,6 +616,13 @@ $ echo error level is %ERRORLEVEL%
 error level is 5
 ```
 
+# Additional features
+## yotta config parse
+Greentea reads ```yotta_config.json``` file to get information regarding current yotta module configuration.
+* Currently ```yotta_config::mbed-os::stdio::default-baud``` setting is read to determine default (interface chip) serial port baudrate. Note that this serial port is usually hooked to mbed's ```stdio```.
+* This feature changes dafault yotta connfiguration baudrate (default-baud) to 115200. All test tool follow this change.
+* Feature implementation is [here](https://github.com/ARMmbed/greentea/pull/41)
+
 # Common Issues
 
 * Issue: In this release there are known issues related to Virtual Machine support.
