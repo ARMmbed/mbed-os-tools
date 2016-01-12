@@ -22,6 +22,10 @@
   * [Example 1 - digest the default mbed host test runner](#example-1---digest-the-default-mbed-host-test-runner)
   * [Example 2 - digest directly from file](#example-2---digest-directly-from-file)
   * [Example 3 - pipe test.txt file content (as in example 2)](#example-3---pipe-testtxt-file-content-as-in-example-2)
+* [Additional features](#additional-features)
+  * [Dynamic host test loader](#dynamic-host-test-loader)
+  * [yotta config parse](#yotta-config-parse)
+  * [Local yotta targets scan for mbed-target keywords](#local-yotta-targets-scan-for-mbed-target-keywords)
 * [Common Issues](#common-issues)
   * [Uninstalling Greentea](#uninstalling-greentea)
 
@@ -30,6 +34,10 @@
 Hello and welcome to the mbed SDK test suite, codename *Greentea*. The test suite is a collection of tools that enable automated testing on mbed boards.
 
 In its current configuration, the mbed test suite can automatically detect most of the popular mbed-enabled boards connected to the host over USB. The test suite uses the ```mbed-ls``` module to check for connected devices. A separate module called ```mbed-host-tests``` is used to flash and supervise each board's test. This decoupling allows us to make better software and maintain each of the functionalities as a separate domain.
+
+Additional documentation:
+* [Quickstart document](https://github.com/ARMmbed/greentea/blob/master/docs/QUICKSTART.md)
+* Things you need to know [when you contribute](https://github.com/ARMmbed/greentea/blob/master/docs/CONTRIBUTING.md) to open source mbed test tools repositories.
 
 # Supported operating systems
 
@@ -611,6 +619,28 @@ $ cat test.txt | mbedgt --digest=stdin
 $ echo error level is %ERRORLEVEL%
 error level is 5
 ```
+
+# Additional features
+
+## Dynamic host test loader
+* This feature allows users to point ```greentea``` and (indirectly ```mbedhtrun```) to arbitrary directory (switch ```-e <dir>``` containing new/proprietary host test scripts. Host tests script files are enumerated in ```<dir>``` and registered so they can be used with local module test cases.
+* Not all host tests can be stored with ```mbedhtrun``` package. Some of them may and will be only used locally, for prototyping. Some host tests may just be very module dependent and should not be stored with ``mbedhtrun```. 
+* In many cases users will add host tests to their yotta modules preferably under ```/test/host_tests/```module directory.
+* **Note**: Directory ytmodule```/test/host_tests``` will be default local host test location used by test tools such as ```greentea```.
+* This feature allows ```mbedhtrun``` to load and register additional host test scripts from given directory.
+* Feature implementation is [here](https://github.com/ARMmbed/greentea/pull/33)
+
+## yotta config parse
+* Greentea reads ```yotta_config.json``` file to get information regarding current yotta module configuration.
+* Currently ```yotta_config::mbed-os::stdio::default-baud``` setting is read to determine default (interface chip) serial port baudrate. Note that this serial port is usually hooked to mbed's ```stdio```.
+* This feature changes dafault yotta connfiguration baudrate (default-baud) to 115200. All test tool follow this change.
+* Feature implementation is [here](https://github.com/ARMmbed/greentea/pull/41)
+
+## Local yotta targets scan for mbed-target keywords
+* ```yotta search``` command was used to check for compatibility between connected mbed devices and specified (available) yotta targets.
+* New functionality uses locally stored yotta targets (```mymodule/yotta_targets``` directory) to do so and allows user to add yotta registry results with new command line switch ```--yotta-registry```.
+* This method is much faster than yotta registry queries and allows users to work and test off-line.
+* Feature implementation is [here](https://github.com/ARMmbed/greentea/pull/42)
 
 # Common Issues
 
