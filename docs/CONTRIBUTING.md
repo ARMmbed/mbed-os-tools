@@ -67,6 +67,38 @@ You can either file a bug, help fix a bug or propose a new feature (or enhanceme
 * New features or bug fix: Create a pull request with your changes.
 * General feedback: Give your feedback by posting your comments on existing pull requests and issues.
 
+## Simple workflow for bugifx
+1. Select an issue to fix from open issues.
+2. Fork repository you wish to modify.
+3. Clone locally your fork, create a separate branch for issue to fix:
+
+Note: In this example we will fix issue #38.
+```
+$ git clone <fork-repo-link>
+$ git checkout -b issue_38
+... add changes locally to fix an issue
+```
+
+4. Add and commit your changes.
+
+```
+$ git add .
+$ git commit -m "Add fix for issue #38" -m "More verbose explanation of the change/fix"
+$ git push origin issue_38
+
+```
+
+5. Push changes to GitHub.
+6. Create pull request from GitHub webpage (your fork's dashboard).
+
+### Branch naming conventions
+We prefer is you use standardised naming convention when creating pull requests.
+Below few example of branch names' prefixes you could use when creating pull request from your fork:
+* ```issue_``` - branch with fix for issue. E.g. ```issue_38```.
+* ```doc_``` - documentation update. E.g. ```doc_add_faq```.
+* ```devel_``` - development of a new feature. E.g. ```devel_udp_client_test```.
+* ```test_``` - when pull request will consist of only new/updates to test cases. E.g. ```test_paralllel_execution```.
+
 ## Coding style and coding rules
 This chapter attempts to explain the basic styles and patterns that are used in mbed test tools projects. he following norms should be followed for new code, and for code that needs clean-up.
 
