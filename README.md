@@ -31,7 +31,9 @@ Hello and welcome to the mbed SDK test suite, codename *Greentea*. The test suit
 
 In its current configuration, the mbed test suite can automatically detect most of the popular mbed-enabled boards connected to the host over USB. The test suite uses the ```mbed-ls``` module to check for connected devices. A separate module called ```mbed-host-tests``` is used to flash and supervise each board's test. This decoupling allows us to make better software and maintain each of the functionalities as a separate domain.
 
-
+Additional documentation:
+* [Quickstart document](https://github.com/ARMmbed/greentea/blob/master/docs/QUICKSTART.md)
+* Things you need to know [when you contribute](https://github.com/ARMmbed/greentea/blob/master/docs/CONTRIBUTING.md) to open source mbed test tools repositories.
 
 # Supported operating systems
 
