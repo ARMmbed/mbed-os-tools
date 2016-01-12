@@ -70,9 +70,9 @@ You can either file a bug, help fix a bug or propose a new feature (or enhanceme
 * General feedback: Give your feedback by posting your comments on existing pull requests and issues.
 
 ## Simple workflow for bugifx
-1. Select an issue to fix from open issues.
-2. Fork repository you wish to modify.
-3. Clone locally your fork, create a separate branch for issue to fix:
+* Select an issue to fix from open issues.
+* Fork repository you wish to modify.
+* Clone locally your fork, create a separate branch for issue to fix:
 
 Note: In this example we will fix issue #38.
 ```
@@ -81,7 +81,7 @@ $ git checkout -b issue_38
 ... add changes locally to fix an issue
 ```
 
-4. Add and commit your changes.
+* Add and commit your changes.
 
 ```
 $ git add .
@@ -90,8 +90,8 @@ $ git push origin issue_38
 
 ```
 
-5. Push changes to GitHub.
-6. Create pull request from GitHub webpage (your fork's dashboard).
+* Push changes to GitHub.
+* Create pull request from GitHub webpage (your fork's dashboard).
 
 ### Branch naming conventions
 We prefer is you use standardised naming convention when creating pull requests.
