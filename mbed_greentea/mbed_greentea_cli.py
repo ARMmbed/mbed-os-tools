@@ -85,7 +85,7 @@ def print_version(verbose=True):
     if verbose:
         print version
     return version
-    
+
 def create_filtered_test_list(ctest_test_list, test_by_names, skip_test):
     filtered_ctest_test_list = ctest_test_list
     test_list = None
@@ -104,16 +104,16 @@ def create_filtered_test_list(ctest_test_list, test_by_names, skip_test):
                 gt_logger.gt_log_tab("test filtered in '%s'"% gt_logger.gt_bright(test_name))
                 filtered_ctest_test_list[test_name] = ctest_test_list[test_name]
     elif skip_test:
-        test_list = skip_test.split(',')   
-        gt_logger.gt_log("test case filter (specified with --skip-build option)")
-        
+        test_list = skip_test.split(',')
+        gt_logger.gt_log("test case filter (specified with -i option)")
+
         for test_name in test_list:
             if test_name not in ctest_test_list:
                 invalid_test_names.append(test_name)
             else:
                 gt_logger.gt_log_tab("test '%s' skipped"% gt_logger.gt_bright(test_name))
                 del filtered_ctest_test_list[test_name]
-    
+
     if invalid_test_names:
         opt_to_print = '-n' if test_by_names else 'skip-build'
         gt_logger.gt_log_warn("invalid test case names (specified with '%s' option)"% opt_to_print)
@@ -135,11 +135,11 @@ def main():
     parser.add_option('-n', '--test-by-names',
                     dest='test_by_names',
                     help='Runs only test enumerated it this switch. Use comma to separate test case names.')
-                    
+
     parser.add_option('-i', '--skip-test',
                     dest='skip_test',
                     help='Skip tests enumerated it this switch. Use comma to separate test case names.')
-                    
+
     parser.add_option("-O", "--only-build",
                     action="store_true",
                     dest="only_build_tests",
@@ -656,9 +656,9 @@ def main_cli(opts, args, gt_instance_uuid=None):
                     ctest_test_list = load_ctest_testsuite(os.path.join('.', 'build', yotta_target_name),
                         binary_type=binary_type)
                     #TODO no tests to execute
-                
+
                 filtered_ctest_test_list = create_filtered_test_list(ctest_test_list, opts.test_by_names, opts.skip_test)
-                   
+
                 gt_logger.gt_log("running %d test%s for target '%s' and platform '%s'"% (
                     len(filtered_ctest_test_list),
                     "s" if len(filtered_ctest_test_list) != 1 else "",
