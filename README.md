@@ -617,11 +617,26 @@ error level is 5
 ```
 
 # Additional features
+
+## Dynamic host test loader
+* This feature allows users to point ```greentea``` and (indirectly ```mbedhtrun```) to arbitrary directory (switch ```-e <dir>``` containing new/proprietary host test scripts. Host tests script files are enumerated in ```<dir>``` and registered so they can be used with local module test cases.
+* Not all host tests can be stored with ```mbedhtrun``` package. Some of them may and will be only used locally, for prototyping. Some host tests may just be very module dependent and should not be stored with ``mbedhtrun```. 
+* In many cases users will add host tests to their yotta modules preferably under ```/test/host_tests/```module directory.
+* **Note**: Directory ytmodule```/test/host_tests``` will be default local host test location used by test tools such as ```greentea```.
+* This feature allows ```mbedhtrun``` to load and register additional host test scripts from given directory.
+* Feature implementation is [here](https://github.com/ARMmbed/greentea/pull/33)
+
 ## yotta config parse
-Greentea reads ```yotta_config.json``` file to get information regarding current yotta module configuration.
+* Greentea reads ```yotta_config.json``` file to get information regarding current yotta module configuration.
 * Currently ```yotta_config::mbed-os::stdio::default-baud``` setting is read to determine default (interface chip) serial port baudrate. Note that this serial port is usually hooked to mbed's ```stdio```.
 * This feature changes dafault yotta connfiguration baudrate (default-baud) to 115200. All test tool follow this change.
 * Feature implementation is [here](https://github.com/ARMmbed/greentea/pull/41)
+
+## Local yotta targets scan for mbed-target keywords
+* ```yotta search``` command was used to check for compatibility between connected mbed devices and specified (available) yotta targets.
+* New functionality uses locally stored yotta targets (```mymodule/yotta_targets``` directory) to do so and allows user to add yotta registry results with new command line switch ```--yotta-registry```.
+* This method is much faster than yotta registry queries and allows users to work and test off-line.
+* Feature implementation is [here](https://github.com/ARMmbed/greentea/pull/42)
 
 # Common Issues
 
