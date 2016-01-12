@@ -1,3 +1,23 @@
+* [Description](#description)
+  * [Test process](#test-process)
+    * [Test suite (mbed-greentea)](#test-suite-mbed-greentea)
+    * [Limitations](#limitations)
+  * [yotta package](#yotta-package)
+  * [yotta's testDependencies](#yottas-testdependencies)
+* [Dependencies](#dependencies)
+* [Examples](#examples)
+  * [Creating a simple test case (no mocking)](#creating-a-simple-test-case-no-mocking)
+    * [Notes](#notes)
+  * [Creating a test case with simple mocking](#creating-a-test-case-with-simple-mocking)
+  * [Create a simple UT with CppUTest](#create-a-simple-ut-with-cpputest)
+  * [More examples:](#more-examples)
+* [Run mode. Running existing binaries with mbed-greentea](#run-mode-running-existing-binaries-with-mbed-greentea)
+  * [Rationale](#rationale)
+  * [Example](#example)
+* [Greentea Workflows](#greentea-workflows)
+  * [Current configuration check](#current-configuration-check)
+  * [Test build and execution workflow](#test-build-and-execution-workflow)
+
 # Description
 
 This document is a simple cookbook introducing the testing facilities available for mbed 3.0. From this document you will learn how to:
