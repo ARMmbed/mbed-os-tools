@@ -6,8 +6,16 @@
     * [Code review](#code-review)
   * [Issues and bug reporting](#issues-and-bug-reporting)
 * [How to contribute](#how-to-contribute)
-  * [Testing and code coverage](#testing-and-code-coverage)
-  * [Code coverage](#code-coverage)
+  * [Simple workflow for bugifx](#simple-workflow-for-bugifx)
+    * [Branch naming conventions](#branch-naming-conventions)
+  * [Coding style and coding rules](#coding-style-and-coding-rules)
+    * [Code Like a Pythonista: Idiomatic Python](#code-like-a-pythonista-idiomatic-python)
+    * [Coding Style: Readability Counts](#coding-style-readability-counts)
+    * [Style Guide for Python Code](#style-guide-for-python-code)
+    * [Whitespace](#whitespace)
+    * [Naming](#naming)
+* [Testing and code coverage](#testing-and-code-coverage)
+* [Code coverage](#code-coverage)
 * [Keep your GitHub fork updated](#keep-your-github-fork-updated)
     * [Tracking changes](#tracking-changes)
     * [Verify with:](#verify-with)
@@ -43,7 +51,7 @@ Simple work-flow issue solving process may contain below steps:
 4. Optional clarifications made using the Issues tab's Comment section.
 5. Pull request with fix created.
 6. Pull request reviewed by others.
-7. All code review comments handled. 
+7. All code review comments handled.
 8. Pull request accepted by gate-keeper.
 9. Pull request merged successfully.
 
@@ -58,17 +66,93 @@ You can either file a bug, help fix a bug or propose a new feature (or enhanceme
   * Include information about the host computer's configuration and OS or VM used.
   * Include information about the application's version. All applications should have at least a ``--version`` switch you can use to check the version.
   * Copy/paste useful console dumps and configuration files' content. Please use [fenced code blocks](https://help.github.com/articles/github-flavored-markdown/#fenced-code-blocks) to encapsulate code snippets.
-* New features or bug fix: Create a pull request with your changes. 
+* New features or bug fix: Create a pull request with your changes.
 * General feedback: Give your feedback by posting your comments on existing pull requests and issues.
 
-## Testing and code coverage
-The application should be unit tested (at least a minimal set of unit tests should be implemented in the ``/test`` directory). We should be able to measure the unit test code coverage. 
+## Simple workflow for bugifx
+* Select an issue to fix from open issues.
+* Fork repository you wish to modify.
+* Clone locally your fork, create a separate branch for issue to fix:
+
+Note: In this example we will fix issue #38.
+```
+$ git clone <fork-repo-link>
+$ git checkout -b issue_38
+... add changes locally to fix an issue
+```
+
+* Add and commit your changes.
+
+```
+$ git add .
+$ git commit -m "Add fix for issue #38" -m "More verbose explanation of the change/fix"
+$ git push origin issue_38
+
+```
+
+* Push changes to GitHub.
+* Create pull request from GitHub webpage (your fork's dashboard).
+
+### Branch naming conventions
+We prefer is you use standardised naming convention when creating pull requests.
+Below few example of branch names' prefixes you could use when creating pull request from your fork:
+* ```issue_``` - branch with fix for issue. E.g. ```issue_38```.
+* ```doc_``` - documentation update. E.g. ```doc_add_faq```.
+* ```devel_``` - development of a new feature. E.g. ```devel_udp_client_test```.
+* ```test_``` - when pull request will consist of only new/updates to test cases. E.g. ```test_paralllel_execution```.
+
+## Coding style and coding rules
+This chapter attempts to explain the basic styles and patterns that are used in mbed test tools projects. he following norms should be followed for new code, and for code that needs clean-up.
+
+### Code Like a Pythonista: Idiomatic Python
+Please do your best to follow [Idiomatic Python](http://python.net/~goodger/projects/pycon/2007/idiomatic/handout.html) interactive tutorial.
+
+### Coding Style: Readability Counts
+"*Programs must be written for people to read, and only incidentally for machines to execute.*"
+    —Abelson & Sussman, Structure and Interpretation of Computer Programs
+Try to make your programs easy to read and obvious.
+
+### Style Guide for Python Code
+Please see [PEP 0008 -- Style Guide for Python Code](https://www.python.org/dev/peps/pep-0008/) for details.
+
+### Whitespace
+* 4 spaces per indentation level.
+* No hard tabs.
+* Never mix tabs and spaces.
+* One blank line between functions.
+* Two blank lines between classes.
+* No whitespace at the end of a line.
+
+* Add a space after "," in dicts, lists, tuples, & argument lists, and after ":" in dicts, but not before.
+* Put spaces around assignments & comparisons (except in argument lists).
+* No spaces just inside parentheses or just before argument lists.
+* No spaces just inside docstrings.
+
+Example:
+```python
+def make_squares(key, value=0):
+    """Return a dictionary and a list..."""
+    d = {key: value}
+    l = [key, value]
+    return d, l
+```
+
+### Naming
+* ```joined_lower``` for functions, methods, attributes
+* ```joined_lower``` or ALL_CAPS for constants
+* ```StudlyCaps``` for classes
+* ```camelCase``` only to conform to pre-existing conventions
+* Attributes: ```interface```, ```_internal```, ```__private```
+* But try to avoid the ```__private``` form. I never use it. Trust me. If you use it, you WILL regret it later.
+
+# Testing and code coverage
+The application should be unit tested (at least a minimal set of unit tests should be implemented in the ``/test`` directory). We should be able to measure the unit test code coverage.
 Run a unit test suite to make sure your changes are not breaking current implementation:
 ```
 $ cd <package>
 $ python setup.py test
 ```
-## Code coverage
+# Code coverage
 To measure application code coverage for unit tests please use the coverage tool. This set of commands will locally create a code coverage report for all unit tests:
 ```
 $ cd <package>
