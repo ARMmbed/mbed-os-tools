@@ -40,3 +40,11 @@ class BaseHostTest():
         """ Ramp up function, free your test case dynamic resources in this function
         """
         pass
+
+    def abort(self):
+        """
+        Called by selector to abort the test. Test case should implement any necessary cleanup required to unblock the
+         selector to stop. Test Cases do not need to implement this if there is nothing blocking in the test.
+        :return:
+        """
+        pass
