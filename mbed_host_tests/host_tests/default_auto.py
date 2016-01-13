@@ -35,8 +35,8 @@ class DefaultAuto(BaseHostTest):
 
                 line += c
                 if '\n' in line:
-                    if '{end}' in line:
-                        return None # Run executable end
+                    #if '{end}' in line:
+                    #    return None # Run executable end
                     i = line.index('\n')
                     line = line[i:]
 
