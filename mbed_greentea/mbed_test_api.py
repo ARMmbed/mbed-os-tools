@@ -182,8 +182,10 @@ def run_host_test(image_path,
                 pass
 
             # Give 5 sec for mbedhtrun to exit
+            ret_code = None
             for i in range(5):
                 ret_code = self.proc.poll()
+                # A None value indicates that the process hasn't terminated yet.
                 if ret_code is not None:
                     break
                 sleep(1)
@@ -194,7 +196,6 @@ def run_host_test(image_path,
                     self.proc.terminate()
                 except Exception as e:
                     print "ProcessObserver.stop(): %s" % str(e)
-                    pass
 
     def get_char_from_queue(obs):
         """ Get character from queue safe way
