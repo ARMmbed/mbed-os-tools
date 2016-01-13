@@ -226,7 +226,6 @@ class DefaultTestSelector(DefaultTestSelectorBase):
 
         # Handle extra command from
         if options:
-
             if options.enum_host_tests:
                 path = self.options.enum_host_tests
                 enum_host_tests(path, verbose=options.verbose)
@@ -348,9 +347,9 @@ class DefaultTestSelector(DefaultTestSelectorBase):
 
     def run(self):
         """! This function will perform extra setup and proceed with test selector's work flow
-
         @details This function will call execute() but first will call setup() to perform extra actions
         """
+        print "HOST: My PID is %d"% os.getpid()
         if self.aborted:
             return
         self.setup()    # Additional setup (optional before execute() call)
@@ -413,16 +412,16 @@ class DefaultTestSelector(DefaultTestSelectorBase):
             return
         try:
             self.test_supervisor = get_host_test("run_binary_auto")
-            # Call to rampUp if function is implemented
-            if hasattr(self.test_supervisor, 'rampUp') and callable(getattr(self.test_supervisor, 'rampUp')):
-                self.test_supervisor.rampUp()
+            # Call to setup if function is implemented
+            if hasattr(self.test_supervisor, 'setup') and callable(getattr(self.test_supervisor, 'setup')):
+                self.test_supervisor.setup()
 
             # Call to test function
             result = self.test_supervisor.test(self)    # This is blocking, waits for {end}
 
-            # Call to rampDown if function is implemented
-            if hasattr(self.test_supervisor, 'rampDown') and callable(getattr(self.test_supervisor, 'rampDown')):
-                self.test_supervisor.rampDown()
+            # Call to teardown if function is implemented
+            if hasattr(self.test_supervisor, 'teardown') and callable(getattr(self.test_supervisor, 'teardown')):
+                self.test_supervisor.teardown()
         except Exception, e:
             print str(e)
             self.print_result(self.RESULT_ERROR)
@@ -512,7 +511,7 @@ class DefaultTestSelector(DefaultTestSelectorBase):
         self.notify("HOST: Aborted by parent process!")
         self.aborted = True
         try:
-            self.test_supervisor.rampDown()
+            self.test_supervisor.teardown()
         finally:
             self.finish()
 

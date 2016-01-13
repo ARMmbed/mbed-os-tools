@@ -17,26 +17,26 @@ limitations under the License.
 
 class BaseHostTest():
     """ Base class for each host-test test cases with standard
-        rampUp, test and rampDown set of functions
+        setup, test and teardown set of functions
     """
 
     name = ''   # name of the host test (used for local registration)
 
-    def rampUp(self):
-        """ Ramp up function, initialize your test case dynamic resources in this function
+    def setup(self):
+        """ Set up function, initialize your test case dynamic resources in this function
         """
         pass
 
     def test(self, selftest):
         """ Blocking test execution process:
 
-            rampUp()
+            setup()
             test()
-            rampDown()
+            teardown()
         """
         pass
 
-    def rampDown(self):
-        """ Ramp up function, free your test case dynamic resources in this function
+    def teardown(self):
+        """ Tear down function, free your test case dynamic resources in this function
         """
         pass
