@@ -22,8 +22,14 @@ from mbed_host_tests.host_tests_registry import HostRegistry
 
 
 class HostTestClassMock:
+    def setup(self):
+        pass
+
     def test(self, selftest):
         return None
+        
+    def teardown(self):
+        pass
 
 
 class HostRegistryTestCase(unittest.TestCase):

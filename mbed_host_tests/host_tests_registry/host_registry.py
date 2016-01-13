@@ -37,7 +37,7 @@ class HostRegistry:
         @param ht_name Host test unique name
         """
         if ht_name in self.HOST_TESTS:
-            self.HOST_TESTS[ht_name] = None
+            del self.HOST_TESTS[ht_name]
 
     def get_host_test(self, ht_name):
         """! Fetches host test object by name
