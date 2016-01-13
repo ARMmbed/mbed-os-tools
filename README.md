@@ -426,3 +426,6 @@ Ran 18 tests in 0.302s
 
 OK
 ```
+
+# Known issues
+* [mbedls fails to list devices on OS X El Capitan](https://github.com/ARMmbed/mbed-ls/issues/38).
