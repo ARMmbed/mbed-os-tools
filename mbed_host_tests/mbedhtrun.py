@@ -32,8 +32,11 @@ def parent_monitor_thread(selector):
     :return:
     """
     while True:
-        c = sys.stdin.read(1)
-        if c is None or len(c) == 0:
+        try:
+            c = sys.stdin.read(1)
+            if c is None or len(c) == 0:    # read returns None or empty string when stdin is closed.
+                break
+        except IOError:     # Error on pipe should have same behavior as stdin close.
             break
     selector.abort()    # Tell selector to abort
 
