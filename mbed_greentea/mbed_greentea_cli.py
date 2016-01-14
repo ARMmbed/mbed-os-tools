@@ -456,8 +456,6 @@ def main_cli(opts, args, gt_instance_uuid=None):
             ))
             return (-1)
 
-    #print "yt_targets:", yt_targets
-
     ### Query with mbedls for available mbed-enabled devices
     gt_logger.gt_log("detecting connected mbed-enabled devices...")
 
@@ -472,6 +470,9 @@ def main_cli(opts, args, gt_instance_uuid=None):
         for mut in mbeds_list:
             if not all(mut.values()):
                 gt_logger.gt_log_err("can't detect all properties of the device!")
+                for prop in mut:
+                    if not mut[prop]:
+                        gt_logger.gt_log_tab("property '%s' is '%s'"% (prop, str(mut[prop])))
             else:
                 ready_mbed_devices.append(mut)
                 gt_logger.gt_log_tab("detected '%s' -> '%s', console at '%s', mounted at '%s', target id '%s'"% (
