@@ -18,47 +18,26 @@ limitations under the License.
 
 import unittest
 
-import os
-import re
-import sys
-import platform
-import pkg_resources
-from mbed_host_tests.host_tests_plugins.host_test_plugins import HostTestPluginBase
+from mbed_host_tests.host_tests_plugins.module_reset_mbed import HostTestPluginResetMethod_Mbed
 
 class HostOSDetectionTestCase(unittest.TestCase):
 
     def setUp(self):
-        self.plugin_base = HostTestPluginBase()
-        self.os_names = ['Windows7', 'Ubuntu', 'LinuxGeneric', 'Darwin']
-        self.re_float = re.compile("^\d+\.\d+$")
+        self.plugin_reset_mbed = HostTestPluginResetMethod_Mbed()
 
     def tearDown(self):
         pass
 
-    def test_os_info(self):
-        self.assertNotEqual(None, self.plugin_base.mbed_os_info())
+    def test_examle(self):
+        pass
 
-    def test_os_support(self):
-        self.assertNotEqual(None, self.plugin_base.mbed_os_support())
-
-    def test_supported_os_name(self):
-        self.assertIn(self.plugin_base.mbed_os_support(), self.os_names)
-
-    def test_detect_os_support_ext(self):
-        os_info = (os.name,
-                   platform.system(),
-                   platform.release(),
-                   platform.version(),
-                   sys.platform)
-
-        self.assertEqual(os_info, self.plugin_base.mbed_os_info())
-
-    def test_pyserial_version_as_float(self):
-        pyserial_version = pkg_resources.require("pyserial")[0].version
-        # We want to make sure pyserial version is a parsabl;e float
-        # Because we are using float(version) conversion to check version
-        # of this module
-        self.assertTrue(self.re_float.findall(pyserial_version))
+    def test_pyserial_version_detect(self):
+        self.assertEqual(1.0, self.plugin_reset_mbed.get_pyserial_version("1.0"))
+        self.assertEqual(1.0, self.plugin_reset_mbed.get_pyserial_version("1.0.0"))
+        self.assertEqual(2.7, self.plugin_reset_mbed.get_pyserial_version("2.7"))
+        self.assertEqual(2.7, self.plugin_reset_mbed.get_pyserial_version("2.7.1"))
+        self.assertEqual(3.0, self.plugin_reset_mbed.get_pyserial_version("3.0"))
+        self.assertEqual(3.0, self.plugin_reset_mbed.get_pyserial_version("3.0.1"))
 
 
 if __name__ == '__main__':
