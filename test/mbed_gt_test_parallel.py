@@ -59,6 +59,7 @@ class TestmbedGt(unittest.TestCase):
 class PopenMock:
     def __init__(self, *args, **kwargs):
         self.stdout = StdOutMock()
+        self.stdin = StdOutMock()
 
     def communicate(self):
         return "_stdout", "_stderr"
@@ -68,6 +69,10 @@ class PopenMock:
 
     def terminate(self):
         pass
+
+    def poll(self):
+        return 0
+    
 
 class StdOutMock:
     def __init__(self):
@@ -98,6 +103,9 @@ HOST: Starting the ECHO test
             time.sleep(uniform(0.1, 2))
             self.offset = 0
             return None
+
+    def close(self):
+        pass
 
 
 def run_host_test_mock(*args, **kwargs):
