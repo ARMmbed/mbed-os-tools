@@ -213,6 +213,7 @@ def enum_host_tests(path, verbose=False):
                                     print "HOST: Registering '%s' as '%s'"% (str(host_test_cls), host_test_name)
                                 HOSTREGISTRY.register_host_test(host_test_name, host_test_cls())
 
+
 class DefaultTestSelector(DefaultTestSelectorBase):
     """ Select default host_test supervision (replaced after auto detection)
     """
@@ -251,6 +252,11 @@ class DefaultTestSelector(DefaultTestSelectorBase):
                 sys.exit(0)
 
         DefaultTestSelectorBase.__init__(self, options)
+
+        # Following flag is to indicate to this selector that parent process wants it to abort.
+        # It would to set by self.abort() by parent_monitor_thread() thread in mbedhtrun.py.
+        # Since this selector does not employ a loop and immediate exit is not necessary we don't need locking around it
+        self.aborted = False
 
     def print_ht_list(self):
         """! Prints list of registered host test classes (by name)
@@ -344,9 +350,12 @@ class DefaultTestSelector(DefaultTestSelectorBase):
         @details This function will call execute() but first will call setup() to perform extra actions
         """
         print "HOST: My PID is %d"% os.getpid()
-
+        if self.aborted:
+            return
         self.setup()    # Additional setup (optional before execute() call)
 
+        if self.aborted:
+            return
         if self.mbed.options:
             # We would like to run some binaries, not as tests but as examples, demos etc.
             # In this case we will use host-tests to just print console output
@@ -354,6 +363,8 @@ class DefaultTestSelector(DefaultTestSelectorBase):
                 self.execute_run()
                 return
         # Normal host test path: flash, reset, host test execution, grab test results, end
+        if self.aborted:
+            return
         self.execute()
 
     def execute_run(self):
@@ -365,6 +376,8 @@ class DefaultTestSelector(DefaultTestSelectorBase):
 
         @details This feature is sensitive for flags such as --skip-reset or --skip-flashing
         """
+        if self.aborted:
+            return
         # Copy image to device
         if self.options.skip_flashing is False:
             self.notify("HOST: Copy image onto target...")
@@ -374,12 +387,16 @@ class DefaultTestSelector(DefaultTestSelectorBase):
         else:
             self.notify("HOST: Image copy onto target SKIPPED!")
 
+        if self.aborted:
+            return
         # Initialize and open target's serial port (console)
         self.notify("HOST: Initialize serial port...")
         result = self.mbed.init_serial()
         if not result:
             self.print_result(self.RESULT_IO_SERIAL)
 
+        if self.aborted:
+            return
         # Reset device
         if self.options.skip_reset is False:
             self.notify("HOST: Reset target...")
@@ -391,6 +408,8 @@ class DefaultTestSelector(DefaultTestSelectorBase):
 
         # Run binary and grab and print console output
         # Read serial and wait for binary execution end
+        if self.aborted:
+            return
         try:
             self.test_supervisor = get_host_test("run_binary_auto")
             # Call to setup if function is implemented
@@ -423,6 +442,8 @@ class DefaultTestSelector(DefaultTestSelectorBase):
                  and test execution timeout will be measured.
         """
         # Copy image to device
+        if self.aborted:
+            return
         if self.options.skip_flashing is False:
             self.notify("HOST: Copy image onto target...")
             result = self.mbed.copy_image()
@@ -432,6 +453,8 @@ class DefaultTestSelector(DefaultTestSelectorBase):
         else:
             self.notify("HOST: Copy image onto target... SKIPPED!")
 
+        if self.aborted:
+            return
         # Initialize and open target's serial port (console)
         self.notify("HOST: Initialize serial port...")
         result = self.mbed.init_serial()
@@ -439,6 +462,8 @@ class DefaultTestSelector(DefaultTestSelectorBase):
             self.print_result(self.RESULT_IO_SERIAL)
             return  # No need to continue, we can't open serial port
 
+        if self.aborted:
+            return
         # Reset device
         if self.options.skip_reset is False:
             self.notify("HOST: Reset target...")
@@ -450,6 +475,8 @@ class DefaultTestSelector(DefaultTestSelectorBase):
             self.notify("HOST: Reset target... SKIPPED!")
 
         # Run test
+        if self.aborted:
+            return
         try:
             CONFIG = self.detect_test_config(verbose=True) # print CONFIG
 
@@ -474,6 +501,20 @@ class DefaultTestSelector(DefaultTestSelectorBase):
         except Exception, e:
             print str(e)
             self.print_result(self.RESULT_ERROR)
+
+    def abort(self):
+        """
+        Handler for abort instruction from mbed greentea.
+
+        :return:
+        """
+        self.notify("HOST: Aborted by parent process!")
+        self.aborted = True
+        try:
+            self.test_supervisor.teardown()
+        finally:
+            self.finish()
+
 
 def init_host_test_cli_params():
     """! Function creates CLI parser object and returns populated options object.
