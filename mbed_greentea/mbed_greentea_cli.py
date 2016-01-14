@@ -415,8 +415,6 @@ def main_cli(opts, args, gt_instance_uuid=None):
             ))
             return (-1)
 
-    #print "yt_targets:", yt_targets
-
     ### Query with mbedls for available mbed-enabled devices
     gt_logger.gt_log("detecting connected mbed-enabled devices...")
 
