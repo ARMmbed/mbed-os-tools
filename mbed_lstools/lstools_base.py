@@ -133,6 +133,7 @@ class MbedLsToolsBase:
         "1130": "NRF51822_SBK",
         "1140": "WALLBOT_BLE",
         "1168": "LPC11U68",
+        "1200": "NCS36510",
         "1234": "UBLOX_C027",
         "1235": "UBLOX_C027",
         "1236": "UBLOX_C029",
