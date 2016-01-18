@@ -21,6 +21,7 @@ Author: Przemyslaw Wirkus <Przemyslaw.wirkus@arm.com>
 
 import os
 import sys
+import random
 import optparse
 from time import time, sleep
 from Queue import Queue
@@ -198,6 +199,17 @@ def main():
     parser.add_option('', '--use-tids',
                     dest='use_target_ids',
                     help='Specify explicitly which devices can be used by Greentea for testing by creating list of allowed Target IDs (use comma separated list)')
+
+    parser.add_option('-u', '--shuffle',
+                    dest='shuffle_test_order',
+                    default=False,
+                    action="store_true",
+                    help='Shuffles test execution order')
+
+    parser.add_option('', '--shuffle-seed',
+                    dest='shuffle_test_seed',
+                    default=None,
+                    help='Shuffle seed (If you want to reproduce your shuffle order please use seed provided in test summary)')
 
     parser.add_option('', '--lock',
                     dest='lock_by_target',
@@ -483,7 +495,7 @@ def main_cli(opts, args, gt_instance_uuid=None):
                     gt_logger.gt_bright(mut['target_id'])
                 ))
     else:
-        gt_logger.gt_log("no devices detected")
+        gt_logger.gt_log_err("no devices detected")
         return (RET_NO_DEVICES)
 
     ### Use yotta to search mapping between platform names and available platforms
@@ -559,6 +571,11 @@ def main_cli(opts, args, gt_instance_uuid=None):
         gt_logger.gt_log_err("argument of mode --parallel is not a int, disable parallel mode")
         parallel_test_exec = 1
 
+    # Values uised to generate random seed for test order shuffle
+    shuffle_random_seed = 0.0
+    SHUFFLE_SEED_ROUND = 10
+
+    shuffle_random_seed = round(random.random(), SHUFFLE_SEED_ROUND)
 
     ### Testing procedures, for each target, for each target's compatible platform
     for yotta_target_name in yt_target_platform_map:
@@ -667,9 +684,19 @@ def main_cli(opts, args, gt_instance_uuid=None):
                     gt_logger.gt_bright(platform_name)
                 ))
 
-                for test_bin, image_path in filtered_ctest_test_list.iteritems():
+                filtered_ctest_test_list_keys = filtered_ctest_test_list.keys()
+                if opts.shuffle_test_order:
+                    # We want to shuffle test names randomly
+                    random.shuffle(filtered_ctest_test_list_keys, lambda: shuffle_random_seed)
+
+                for test_bin in filtered_ctest_test_list_keys:
+                    image_path = filtered_ctest_test_list[test_bin]
                     test = {"test_bin":test_bin, "image_path":image_path}
                     test_queue.put(test)
+
+                #for test_bin, image_path in filtered_ctest_test_list.iteritems():
+                #    test = {"test_bin":test_bin, "image_path":image_path}
+                #    test_queue.put(test)
 
                 number_of_threads = 0
                 for mut in muts_to_test:
@@ -714,6 +741,9 @@ def main_cli(opts, args, gt_instance_uuid=None):
     # only if testes were executed and all passed we want to
     # return 0 (success)
     if not opts.only_build_tests:
+        # Prints shuffle seed
+        gt_logger.gt_log("shuffle seed: %.*f"% (SHUFFLE_SEED_ROUND, shuffle_random_seed))
+
         # Reports (to file)
         if opts.report_junit_file_name:
             junit_report = exporter_junit(test_report)
