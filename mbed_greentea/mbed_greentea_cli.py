@@ -115,7 +115,7 @@ def create_filtered_test_list(ctest_test_list, test_by_names, skip_test):
                 del filtered_ctest_test_list[test_name]
 
     if invalid_test_names:
-        opt_to_print = '-n' if test_by_names else 'skip-build'
+        opt_to_print = '-n' if test_by_names else 'skip-test'
         gt_logger.gt_log_warn("invalid test case names (specified with '%s' option)"% opt_to_print)
         for test_name in invalid_test_names:
             gt_logger.gt_log_warn("test name '%s' not found in CTestTestFile.cmake (specified with '%s' option)"% (gt_logger.gt_bright(test_name),opt_to_print))
