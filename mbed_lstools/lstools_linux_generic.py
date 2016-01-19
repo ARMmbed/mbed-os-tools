@@ -88,10 +88,10 @@ class MbedLsToolsLinuxGeneric(MbedLsToolsBase):
         self.ERRORLEVEL_FLAG = 0
 
         result = []
-        tidhex = re.compile(r'_([0-9a-fA-F]+)-\d+:\d+')
+        tidpattern = re.compile(r'_([0-9a-zA-Z]+)-\d+:\d+')
         for device in all_devices:
             tid = None
-            m = tidhex.search(device[4])
+            m = tidpattern.search(device[4])
             if m and len(m.groups()):
                 tid = m.group(1)
             mbed = {'mount_point' : device[2],
