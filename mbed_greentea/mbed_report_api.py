@@ -77,10 +77,10 @@ def exporter_text(test_result_ext, test_suite_properties=None):
 
     result_dict = {}    # Used to print mbed 2.0 test result like short summary
 
-    for target_name in test_result_ext:
+    for target_name in sorted(test_result_ext):
         test_results = test_result_ext[target_name]
         row = []
-        for test_name in test_results:
+        for test_name in sorted(test_results):
             test = test_results[test_name]
 
             # Grab quantity of each test result
