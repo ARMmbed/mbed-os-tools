@@ -257,7 +257,7 @@ lrwxrwxrwx root  10 Dec  3 09:10 wwn-0x5000cca30ccffb77-part5 -> ../../sda5
 
 ***Note:*** ```mbed-ls``` tools pair only serial ports and mount points (not CMSIS-DAP - yet).
 
-We can see that on our host machine (running Ubuntu) there are many 'disk type' devices visible under ```/dev/disk```. The mbed boards can be distinguished and filtered by their unique ```USB-ID``` conventions. In our case, we can see pairs of ```usb-ids``` in both ```/dev/serial/usb-id``` and ```/dev/disk/usb-id``` with embedded ``` TargetID```.  ```TargetID``` can be filtered out, for example using this sudo-regexpr: ```(“MBED”|”mbed”|”STMicro”)_([a-zA-z_-]+)_([a-fA_F0-0]){4,}```
+We can see that on our host machine (running Ubuntu) there are many 'disk type' devices visible under ```/dev/disk```. The mbed boards can be distinguished and filtered by their unique ```USB-ID``` conventions. In our case, we can see pairs of ```usb-ids``` in both ```/dev/serial/usb-id``` and ```/dev/disk/usb-id``` with embedded ``` TargetID```.  ```TargetID``` can be filtered out, for example using this sudo-regexpr: ```(“MBED”|”mbed”|”STMicro”)_([a-zA-z_-]+)_([a-zA-Z0-9]){4,}```
 
 For example, we can match the board 066EFF525257775087141721 by connecting a few dots:
 
