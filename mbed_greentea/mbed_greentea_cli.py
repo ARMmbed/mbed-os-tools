@@ -571,11 +571,13 @@ def main_cli(opts, args, gt_instance_uuid=None):
         gt_logger.gt_log_err("argument of mode --parallel is not a int, disable parallel mode")
         parallel_test_exec = 1
 
-    # Values uised to generate random seed for test order shuffle
-    shuffle_random_seed = 0.0
-    SHUFFLE_SEED_ROUND = 10
-
+    # Values used to generate random seed for test execution order shuffle
+    SHUFFLE_SEED_ROUND = 10 # Value used to round float random seed
     shuffle_random_seed = round(random.random(), SHUFFLE_SEED_ROUND)
+
+    # Set shuffle seed if it is provided with command line option
+    if opts.shuffle_test_seed:
+        shuffle_random_seed = round(float(opts.shuffle_test_seed), SHUFFLE_SEED_ROUND)
 
     ### Testing procedures, for each target, for each target's compatible platform
     for yotta_target_name in yt_target_platform_map:
@@ -684,6 +686,8 @@ def main_cli(opts, args, gt_instance_uuid=None):
                     gt_logger.gt_bright(platform_name)
                 ))
 
+                # Test execution order can be shuffled (also with provided random seed)
+                # for test execution reproduction.
                 filtered_ctest_test_list_keys = filtered_ctest_test_list.keys()
                 if opts.shuffle_test_order:
                     # We want to shuffle test names randomly
