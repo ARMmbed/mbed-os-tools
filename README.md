@@ -1,3 +1,14 @@
+* [mbed-host-tests](#mbed-host-tests)
+  * [Interaction between the test runner and the host test](#interaction-between-the-test-runner-and-the-host-test)
+* [The decoupled module](#the-decoupled-module)
+  * [Module responsibilities](#module-responsibilities)
+  * [Module structure](#module-structure)
+  * [Host test class structure](#host-test-class-structure)
+* [Enumeration of host tests](#enumeration-of-host-tests)
+* [Example of the CLI version of the host test's DefaultTestSelector supervisor](#example-of-the-cli-version-of-the-host-tests-defaulttestselector-supervisor)
+  * [Installation from PyPI (Python Package Index)](#installation-from-pypi-python-package-index)
+  * [Installation from Python sources ](#installation-from-python-sources-)
+
 # mbed-host-tests
 [![Circle CI](https://circleci.com/gh/ARMmbed/htrun.svg?style=svg)](https://circleci.com/gh/ARMmbed/htrun)
 
