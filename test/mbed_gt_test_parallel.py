@@ -72,7 +72,7 @@ class PopenMock:
 
     def poll(self):
         return 0
-    
+
 
 class StdOutMock:
     def __init__(self):
@@ -167,6 +167,8 @@ class GtOptions:
                  enum_host_tests=None,
                  yotta_search_for_mbed_target=False,
                  plain=False,
+                 shuffle_test_order=False,
+                 shuffle_test_seed=None,
                  verbose=True,
                  version=False):
 
@@ -195,6 +197,8 @@ class GtOptions:
         self.enum_host_tests = enum_host_tests
         self.yotta_search_for_mbed_target = yotta_search_for_mbed_target
         self.plain = plain
+        self.shuffle_test_order = shuffle_test_order
+        self.shuffle_test_seed = shuffle_test_seed
         self.verbose = verbose
         self.version = version
 
