@@ -1,5 +1,6 @@
 * [mbed-host-tests](#mbed-host-tests)
   * [Interaction between the test runner and the host test](#interaction-between-the-test-runner-and-the-host-test)
+* [Writing host tests](#writing-host-tests)
 * [The decoupled module](#the-decoupled-module)
   * [Module responsibilities](#module-responsibilities)
   * [Module structure](#module-structure)
@@ -19,6 +20,48 @@
 mbed's test suite (codenamed Greentea) supports the *test supervisor* concept. This concept is realised by a separate Python script called "host test", which is executed in parallel with the test runner (a binary running on the target hardware) to monitor the test execution's progress or to control the test flow (interaction with the mbed device under test - MUT). The host test is also responsible for grabbing the test result, or deducing it from the test runner's behaviour.
 
 The basic host test only monitors the device's default serial port (the serial console or - in the future - console communication channel) for test result prints returned by the test runner in a specific and unique format. In other cases, a host test can, for example, judge from the test runner's console output if the test passed or failed. It all depends on the test itself: In some cases the host test can be a TCP server echoing packets from the test runner and judging packet loss. In other cases it can just check whether values returned from an accelerometer are actually valid (sane).
+
+# Writing host tests
+When writing a new host test for your module please bear in mind that:
+* You own the host test and you should write it the way so it can coexist with the same host tests ran by other processes such as Continuous Integration  systems, other host users etc.
+  * Note: If you work in isolation and your test environment if fully controlled by you (for example you queue all tasks calling host tests, or use global host unique socket port numbers) this rule doesn’t apply to you.
+* When writing host test using OS resources such as sockets, files, serial ports, peripheral devices like multi-meters /scopes etc. remember that those resources are indivisible!
+  * For example if you hardcode in your host test UDP port 32123 and use it for UDP server implementation  of your host test bear in mind that this port may be already used. It is your responsibility to react for this event and implement means to overcome it (if possible).
+So you would rather do somethins like this in your host test:
+```python
+import socket
+
+for port in range(32000, 32100):
+    try:
+        s.connect((HOSTNAME, PORT))
+        ...
+        # Got connection on 'port' let's conitnue
+        ...
+        self.sendToDUTIPandPORT(IP, PORT)
+        ...
+    except socket.timeout:   
+        ...
+        continue
+else:
+    ... 
+    # Oh my, none of 3200-32099 ports if available! Let me return an ERROR
+    print "No free socket ports available"
+    return selftest.RESULT_ERRROR
+```
+than:
+```python
+    
+PORT = 32123
+s.connect((HOSTNAME, PORT))
+...
+# Got connection on 'port' let's conitnue
+...
+self.sendToDUTIPandPORT(IP, PORT)
+```
+  
+* Final notes:
+  * We do not provide serial port abstraction other that one used for mbed-host test connection. 
+  * We do not provide socket abstraction or isolation in host tests and I do not think we will.
 
 ## Interaction between the test runner and the host test
 
