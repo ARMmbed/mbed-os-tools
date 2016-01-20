@@ -1,7 +1,7 @@
 # mbed-host-tests
 [![Circle CI](https://circleci.com/gh/ARMmbed/htrun.svg?style=svg)](https://circleci.com/gh/ARMmbed/htrun)
 
-mbed's test suite (codenamed Greentea) supports the *test supervisor* concept. This concept is realised by a separate Python script called "host test", which is executed in parallel with the test runner (a binary running on the target hardware) to monitor the test execution's progress or to control the test flow (interaction with the mbed device under test - MUT). The host test is also responsible for grabbing the test result, or deducing it from the test runner's behaviour. 
+mbed's test suite (codenamed Greentea) supports the *test supervisor* concept. This concept is realised by a separate Python script called "host test", which is executed in parallel with the test runner (a binary running on the target hardware) to monitor the test execution's progress or to control the test flow (interaction with the mbed device under test - MUT). The host test is also responsible for grabbing the test result, or deducing it from the test runner's behaviour.
 
 The basic host test only monitors the device's default serial port (the serial console or - in the future - console communication channel) for test result prints returned by the test runner in a specific and unique format. In other cases, a host test can, for example, judge from the test runner's console output if the test passed or failed. It all depends on the test itself: In some cases the host test can be a TCP server echoing packets from the test runner and judging packet loss. In other cases it can just check whether values returned from an accelerometer are actually valid (sane).
 
@@ -20,8 +20,8 @@ Test runner on the target writes the test case properties like timeout, host tes
 
 # The decoupled module
 
-The mbed-host-tests package is a decoupled functionality, originally implemented for [mbedmicro/mbed workspace_tools](https://github.com/mbedmicro/mbed). The original host tests implementation is [available on GitHub](https://github.com/mbedmicro/mbed/tree/master/workspace_tools/host_tests). 
- 
+The mbed-host-tests package is a decoupled functionality, originally implemented for [mbedmicro/mbed workspace_tools](https://github.com/mbedmicro/mbed). The original host tests implementation is [available on GitHub](https://github.com/mbedmicro/mbed/tree/master/workspace_tools/host_tests).
+
 With the announcement of mbed OS, the existing mbed SDK and test framework will no longer be supported: the monolithic model will be replaced with a set of tools and supporting an ecosystem that will provide generic and comprehensive services to mbed users, both individual and commercial (partners).
 
 ## Module responsibilities
@@ -32,7 +32,7 @@ mbed ecosystem tools, implemented by mbed users or third party companies, can ta
 
 ```
 mbed_host_tests/
-    host_tests/             - Supervising host test scripts used for instrumentation. 
+    host_tests/             - Supervising host test scripts used for instrumentation.
     host_tests_plugins/     - Plugins used by host test to flash test runner binary and reset device.
     host_tests_registry/    - Registry, used to store 'host test name' to 'host test class' mapping.
     host_tests_runner/      - Classes implementing basic host test functionality (like test flow control).
@@ -96,16 +96,16 @@ mbed_host_tests/
 
 # Enumeration of host tests
 
-A host test is the implementation derived from the BaseHostTest base class. These classes are looked inside the files in the directory passed with -e or --enum-host-tests= command line argument. One python file may contain multiple host test classes. Found host test classes are stored by their name. If the host test class has an attribute ```name``` then that is used as the host test name. Otherwise python file name is used as the host test name.  
+A host test is the implementation derived from the BaseHostTest base class. These classes are looked inside the files in the directory passed with -e or --enum-host-tests= command line argument. One python file may contain multiple host test classes. Found host test classes are stored by their name. If the host test class has an attribute ```name``` then that is used as the host test name. Otherwise python file name is used as the host test name.
 
 In case a host test python file fails to load because of syntax or other error. Following behavior is expected:
 
-* Host test class(es) in the failed file are ignored. 
+* Host test class(es) in the failed file are ignored.
 * mbed host test continues to load test classes from other files.
 * Test binaries requiring those host test(s) are still flashed and executed. As only binary tells the required host test name.
-* The tests will fail with error ```HOST: Error! Unknown host test name 'failed_to_load_module'...```. 
+* The tests will fail with error ```HOST: Error! Unknown host test name 'failed_to_load_module'...```.
 
-Above behavior has an overhead of flashing binaries that will not run. May be in the future a meta data file can be added to help mbed host test to know the test properties before flashing the binary.  
+Above behavior has an overhead of flashing binaries that will not run. May be in the future a meta data file can be added to help mbed host test to know the test properties before flashing the binary.
 
 # Example of the CLI version of the host test's DefaultTestSelector supervisor
 
@@ -162,13 +162,13 @@ Completed in 10.00 sec
 **Note:**
 
 * MUT (mbed under test) is K64F: ```-m K64F```.
-* The test runner binary is located at ```C:\Work\mbed\build\test\K64F\ARM\RTOS_7\timer.bin```. 
+* The test runner binary is located at ```C:\Work\mbed\build\test\K64F\ARM\RTOS_7\timer.bin```.
 * The K64F virtual serial port (USB CDC) is mounted at ```-p COM61```.
 * The K64F virtual serial port (USB MSC) is mounted at ```-d E:```.
 * Test result: SUCCESS ```{{success}}}```.
 * The test ended after the success code was received: ```{{end}}}```.
 
-##Command line parameters 
+##Command line parameters
 
 The default command line parameters deployed with the ```mbed_host_tests``` module are:
 
@@ -222,7 +222,7 @@ $ pip install mbed-host-tests
 
 **Note:** Python 2.7.9 and later (on the Python 2 series), and Python 3.4 and later include pip by default, so you may have pip already.
 
-## Installation from Python sources 
+## Installation from Python sources
 
 Clone the mbed-host-tests GitHub repository:
 ```
@@ -232,7 +232,7 @@ Change the directory to the mbed-host-tests's repository directory:
 ```
 $ cd mbed-host-tests
 ```
-Run the setup file: 
+Run the setup file:
 ```
 $ python setup.py install
 ```
@@ -335,4 +335,63 @@ Options:
   -v, --verbose         Verbose mode (prints some extra information)
 
 Example: mbedgt --auto --target frdm-k64f-gcc
+```
+
+# mbedflsh - supporting command line tool for mbed flashing
+Simple command line tool ```mbedflsh``` is added to help flashing devices from command line. The same functionality can be achieved using ```mbedhtrun``` command line but multiple additional switches may blur way we do it.
+This tools will be installed together with ```mbedhtrun``` command line tool.
+
+## Example - Default copy method (shell)
+When called without additional switch ```-c``` ```mbedflsh``` will call shell copy command:
+* For Windows ```copy``` command and
+* for Linux/Mac flavours we will use ```cp``` command.
+
+In this example we will copy file
+
+```
+$ mbedflsh -f mbed-drivers-test-echo.bin -d F:
+mbedflsh: opening file mbed-drivers-test-echo.bin (...
+        1 file(s) copied.
+```
+
+## Example - selecting other available copy method
+
+We can force a supported copy method by using ```-c <method>``` switch.
+
+```
+$ mbedflsh -f mbed-drivers-test-echo.bin -d F: -c cp
+mbedflsh: opening file mbed-drivers-test-echo.bin...
+```
+
+See ```mbedflsh -h``` for more details:
+```
+-c COPY_METHOD, --copy=COPY_METHOD
+                    Copy (flash the target) method selector. Plugin
+                    support: copy, cp, default, eACommander, eACommander-
+                    usb, shell, shutil, stlink, xcopy
+```
+
+## mbedflsh command line switches
+
+```
+$ mbedflsh -h
+Usage: mbedflsh-script.py [options]
+
+Flash mbed devices from command line.This module is using build in to mbed-
+host-tests plugins used for flashing mbed devices
+
+Options:
+  -h, --help            show this help message and exit
+  -f FILENAME, --file=FILENAME
+                        File to flash onto mbed device
+  -d DISK_PATH, --disk=DISK_PATH
+                        Target disk (mount point) path. Example: F:, /mnt/MBED
+  -c COPY_METHOD, --copy=COPY_METHOD
+                        Copy (flash the target) method selector. Plugin
+                        support: copy, cp, default, eACommander, eACommander-
+                        usb, shell, shutil, stlink, xcopy
+  --plugins             Prints registered plugins and exits
+  --version             Prints package version and exits
+
+Example: mbedflsh -d E: -f /path/to/file.bin
 ```
