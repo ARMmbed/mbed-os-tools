@@ -1,5 +1,6 @@
 * [mbed-host-tests](#mbed-host-tests)
   * [Interaction between the test runner and the host test](#interaction-between-the-test-runner-and-the-host-test)
+* [Writing host tests](#writing-host-tests)
 * [The decoupled module](#the-decoupled-module)
   * [Module responsibilities](#module-responsibilities)
   * [Module structure](#module-structure)
