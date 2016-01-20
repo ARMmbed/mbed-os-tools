@@ -283,11 +283,15 @@ $ cd mbed-drivers
 
 Set your target, for example:
 
-```yotta target frdm-k64f-gcc```
+```
+$ yotta target frdm-k64f-gcc
+```
 
 Then build the ```mbed-drivers``` (you don’t need to specify what you’re building; yotta builds the code in the current directory):
 
-```yotta build```
+```
+$ yotta build
+```
 
 # Testing
 
@@ -350,8 +354,12 @@ Now that the tests are built, the test suite can be called again to run the test
 ```
 $ mbedgt --target=frdm-k64f-gcc
 ```
+or if you want to be more verbose:
+```
+$ mbedgt _V --target=frdm-k64f-gcc
+```
 
-You'll see
+You'll see:
 
 ```
 mbed-ls: detecting connected mbed-enabled devices...
