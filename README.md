@@ -20,6 +20,11 @@ mbed's test suite (codenamed Greentea) supports the *test supervisor* concept. T
 
 The basic host test only monitors the device's default serial port (the serial console or - in the future - console communication channel) for test result prints returned by the test runner in a specific and unique format. In other cases, a host test can, for example, judge from the test runner's console output if the test passed or failed. It all depends on the test itself: In some cases the host test can be a TCP server echoing packets from the test runner and judging packet loss. In other cases it can just check whether values returned from an accelerometer are actually valid (sane).
 
+# Writing host tests
+When writing a new host test for your module or host test you would like to include to this repository directly please bear in mind that:
+* You own the host test and you should write it the way so it knows it can be not the only host test of the same (or similar type) running on the system. 
+* We do not provide socket abstraction or isolation in host tests and I do not think we will.
+
 ## Interaction between the test runner and the host test
 
 ```
