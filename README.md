@@ -26,6 +26,39 @@ When writing a new host test for your module please bear in mind that:
   * Note: If you work in isolation and your test environment if fully controlled by you (for example you queue all tasks calling host tests, or use global host unique socket port numbers) this rule doesn’t apply to you.
 * When writing host test using OS resources such as sockets, files, serial ports, peripheral devices like multi-meters /scopes etc. remember that those resources are indivisible!
   * For example if you hardcode in your host test UDP port 32123 and use it for UDP server implementation  of your host test bear in mind that this port may be already used. It is your responsibility to react for this event and implement means to overcome it (if possible).
+So you would rather do somethins like this in your host test:
+```python
+import socket
+
+for port in range(32000, 32100):
+    try:
+        s.connect((HOSTNAME, PORT))
+        ...
+        # Got connection on 'port' let's conitnue
+        ...
+        self.sendToDUTIPandPORT(IP, PORT)
+        ...
+    except socket.timeout:   
+        ...
+        continue
+else:
+    ... 
+    # Oh my, none of 3200-32099 ports if available! Let me return an ERROR
+    print "No free socket ports available"
+    return selftest.RESULT_ERRROR
+```
+than:
+```python
+    
+PORT = 32123
+s.connect((HOSTNAME, PORT))
+...
+# Got connection on 'port' let's conitnue
+...
+self.sendToDUTIPandPORT(IP, PORT)
+```
+  
+* Final notes:
   * We do not provide serial port abstraction other that one used for mbed-host test connection. 
   * We do not provide socket abstraction or isolation in host tests and I do not think we will.
 
