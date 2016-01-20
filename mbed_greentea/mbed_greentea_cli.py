@@ -21,6 +21,7 @@ Author: Przemyslaw Wirkus <Przemyslaw.wirkus@arm.com>
 
 import os
 import sys
+import random
 import optparse
 from time import time, sleep
 from Queue import Queue
@@ -86,6 +87,43 @@ def print_version(verbose=True):
         print version
     return version
 
+def create_filtered_test_list(ctest_test_list, test_by_names, skip_test):
+    filtered_ctest_test_list = ctest_test_list
+    test_list = None
+    invalid_test_names = []
+    if filtered_ctest_test_list is None:
+        return {}
+    elif test_by_names:
+        filtered_ctest_test_list = {}   # Subset of 'ctest_test_list'
+        test_list = test_by_names.split(',')
+        gt_logger.gt_log("test case filter (specified with -n option)")
+
+        for test_name in test_list:
+            if test_name not in ctest_test_list:
+                invalid_test_names.append(test_name)
+            else:
+                gt_logger.gt_log_tab("test filtered in '%s'"% gt_logger.gt_bright(test_name))
+                filtered_ctest_test_list[test_name] = ctest_test_list[test_name]
+    elif skip_test:
+        test_list = skip_test.split(',')
+        gt_logger.gt_log("test case filter (specified with -i option)")
+
+        for test_name in test_list:
+            if test_name not in ctest_test_list:
+                invalid_test_names.append(test_name)
+            else:
+                gt_logger.gt_log_tab("test '%s' skipped"% gt_logger.gt_bright(test_name))
+                del filtered_ctest_test_list[test_name]
+
+    if invalid_test_names:
+        opt_to_print = '-n' if test_by_names else 'skip-test'
+        gt_logger.gt_log_warn("invalid test case names (specified with '%s' option)"% opt_to_print)
+        for test_name in invalid_test_names:
+            gt_logger.gt_log_warn("test name '%s' not found in CTestTestFile.cmake (specified with '%s' option)"% (gt_logger.gt_bright(test_name),opt_to_print))
+        gt_logger.gt_log_tab("note: test case names are case sensitive")
+        gt_logger.gt_log_tab("note: see list of available test cases below")
+        list_binaries_for_targets(verbose_footer=False)
+    return filtered_ctest_test_list
 
 def main():
     """ Closure for main_cli() function """
@@ -98,6 +136,10 @@ def main():
     parser.add_option('-n', '--test-by-names',
                     dest='test_by_names',
                     help='Runs only test enumerated it this switch. Use comma to separate test case names.')
+
+    parser.add_option('-i', '--skip-test',
+                    dest='skip_test',
+                    help='Skip tests enumerated it this switch. Use comma to separate test case names.')
 
     parser.add_option("-O", "--only-build",
                     action="store_true",
@@ -157,6 +199,17 @@ def main():
     parser.add_option('', '--use-tids',
                     dest='use_target_ids',
                     help='Specify explicitly which devices can be used by Greentea for testing by creating list of allowed Target IDs (use comma separated list)')
+
+    parser.add_option('-u', '--shuffle',
+                    dest='shuffle_test_order',
+                    default=False,
+                    action="store_true",
+                    help='Shuffles test execution order')
+
+    parser.add_option('', '--shuffle-seed',
+                    dest='shuffle_test_seed',
+                    default=None,
+                    help='Shuffle seed (If you want to reproduce your shuffle order please use seed provided in test summary)')
 
     parser.add_option('', '--lock',
                     dest='lock_by_target',
@@ -415,8 +468,6 @@ def main_cli(opts, args, gt_instance_uuid=None):
             ))
             return (-1)
 
-    #print "yt_targets:", yt_targets
-
     ### Query with mbedls for available mbed-enabled devices
     gt_logger.gt_log("detecting connected mbed-enabled devices...")
 
@@ -431,6 +482,9 @@ def main_cli(opts, args, gt_instance_uuid=None):
         for mut in mbeds_list:
             if not all(mut.values()):
                 gt_logger.gt_log_err("can't detect all properties of the device!")
+                for prop in mut:
+                    if not mut[prop]:
+                        gt_logger.gt_log_tab("property '%s' is '%s'"% (prop, str(mut[prop])))
             else:
                 ready_mbed_devices.append(mut)
                 gt_logger.gt_log_tab("detected '%s' -> '%s', console at '%s', mounted at '%s', target id '%s'"% (
@@ -441,7 +495,7 @@ def main_cli(opts, args, gt_instance_uuid=None):
                     gt_logger.gt_bright(mut['target_id'])
                 ))
     else:
-        gt_logger.gt_log("no devices detected")
+        gt_logger.gt_log_err("no devices detected")
         return (RET_NO_DEVICES)
 
     ### Use yotta to search mapping between platform names and available platforms
@@ -517,6 +571,13 @@ def main_cli(opts, args, gt_instance_uuid=None):
         gt_logger.gt_log_err("argument of mode --parallel is not a int, disable parallel mode")
         parallel_test_exec = 1
 
+    # Values used to generate random seed for test execution order shuffle
+    SHUFFLE_SEED_ROUND = 10 # Value used to round float random seed
+    shuffle_random_seed = round(random.random(), SHUFFLE_SEED_ROUND)
+
+    # Set shuffle seed if it is provided with command line option
+    if opts.shuffle_test_seed:
+        shuffle_random_seed = round(float(opts.shuffle_test_seed), SHUFFLE_SEED_ROUND)
 
     ### Testing procedures, for each target, for each target's compatible platform
     for yotta_target_name in yt_target_platform_map:
@@ -616,28 +677,7 @@ def main_cli(opts, args, gt_instance_uuid=None):
                         binary_type=binary_type)
                     #TODO no tests to execute
 
-                filtered_ctest_test_list = ctest_test_list
-                test_list = None
-                if opts.test_by_names:
-                    filtered_ctest_test_list = {}   # Subset of 'ctest_test_list'
-                    test_list = opts.test_by_names.split(',')
-                    gt_logger.gt_log("test case filter (specified with -n option)")
-
-                    invalid_test_names = False
-                    for test_name in test_list:
-                        if test_name not in ctest_test_list:
-                            invalid_test_names = True
-                        else:
-                            gt_logger.gt_log_tab("test filtered in '%s'"% gt_logger.gt_bright(test_name))
-                            filtered_ctest_test_list[test_name] = ctest_test_list[test_name]
-                    if invalid_test_names:
-                        gt_logger.gt_log_warn("invalid test case names (specified with -n option)")
-                        for test_name in test_list:
-                            if test_name not in ctest_test_list:
-                                gt_logger.gt_log_warn("test name '%s' not found in CTestTestFile.cmake (specified with -n option)"% gt_logger.gt_bright(test_name))
-                        gt_logger.gt_log_tab("note: test case names are case sensitive")
-                        gt_logger.gt_log_tab("note: see list of available test cases below")
-                        list_binaries_for_targets(verbose_footer=False)
+                filtered_ctest_test_list = create_filtered_test_list(ctest_test_list, opts.test_by_names, opts.skip_test)
 
                 gt_logger.gt_log("running %d test%s for target '%s' and platform '%s'"% (
                     len(filtered_ctest_test_list),
@@ -646,9 +686,21 @@ def main_cli(opts, args, gt_instance_uuid=None):
                     gt_logger.gt_bright(platform_name)
                 ))
 
-                for test_bin, image_path in filtered_ctest_test_list.iteritems():
+                # Test execution order can be shuffled (also with provided random seed)
+                # for test execution reproduction.
+                filtered_ctest_test_list_keys = filtered_ctest_test_list.keys()
+                if opts.shuffle_test_order:
+                    # We want to shuffle test names randomly
+                    random.shuffle(filtered_ctest_test_list_keys, lambda: shuffle_random_seed)
+
+                for test_bin in filtered_ctest_test_list_keys:
+                    image_path = filtered_ctest_test_list[test_bin]
                     test = {"test_bin":test_bin, "image_path":image_path}
                     test_queue.put(test)
+
+                #for test_bin, image_path in filtered_ctest_test_list.iteritems():
+                #    test = {"test_bin":test_bin, "image_path":image_path}
+                #    test_queue.put(test)
 
                 number_of_threads = 0
                 for mut in muts_to_test:
@@ -693,6 +745,9 @@ def main_cli(opts, args, gt_instance_uuid=None):
     # only if testes were executed and all passed we want to
     # return 0 (success)
     if not opts.only_build_tests:
+        # Prints shuffle seed
+        gt_logger.gt_log("shuffle seed: %.*f"% (SHUFFLE_SEED_ROUND, shuffle_random_seed))
+
         # Reports (to file)
         if opts.report_junit_file_name:
             junit_report = exporter_junit(test_report)
