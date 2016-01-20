@@ -356,7 +356,7 @@ $ mbedgt --target=frdm-k64f-gcc
 ```
 or if you want to be more verbose:
 ```
-$ mbedgt _V --target=frdm-k64f-gcc
+$ mbedgt -V --target=frdm-k64f-gcc
 ```
 
 You'll see:
