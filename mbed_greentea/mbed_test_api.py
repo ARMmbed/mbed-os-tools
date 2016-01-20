@@ -324,8 +324,9 @@ def run_host_test(image_path,
                     output.append('{{mbed_assert}}')
                     break
 
-                # Check for test end
-                if '{end}' in line:
+                # Check for test end. Only a '{{end}}' in the start of line indicates a test end.
+                # A sub string '{{end}}' may also appear in an error message.
+                if re.search('^\{\{end\}\}', line, re.I):
                     break
                 line = ''
             else:
