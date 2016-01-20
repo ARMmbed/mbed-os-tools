@@ -222,6 +222,7 @@ class DefaultTestSelector(DefaultTestSelectorBase):
     def __init__(self, options):
         """! ctor
         """
+        self.result = None
         self.options = options
 
         # Handle extra command from
@@ -306,8 +307,8 @@ class DefaultTestSelector(DefaultTestSelectorBase):
 
         serial_port.flush()
         # Reset using one of the plugins
-        result = host_tests_plugins.call_plugin('ResetMethod', reset_type, serial=serial_port, disk=disk)
-        if not result:
+        self.result = host_tests_plugins.call_plugin('ResetMethod', reset_type, serial=serial_port, disk=disk)
+        if not self.result:
             print "mbedhtrun: reset plugin failed"
             print json.dumps({
                 "port" : port,
@@ -381,8 +382,8 @@ class DefaultTestSelector(DefaultTestSelectorBase):
         # Copy image to device
         if self.options.skip_flashing is False:
             self.notify("HOST: Copy image onto target...")
-            result = self.mbed.copy_image()
-            if not result:
+            self.result = self.mbed.copy_image()
+            if not self.result:
                 self.print_result(self.RESULT_IOERR_COPY)
         else:
             self.notify("HOST: Image copy onto target SKIPPED!")
@@ -391,8 +392,8 @@ class DefaultTestSelector(DefaultTestSelectorBase):
             return
         # Initialize and open target's serial port (console)
         self.notify("HOST: Initialize serial port...")
-        result = self.mbed.init_serial()
-        if not result:
+        self.result = self.mbed.init_serial()
+        if not self.result:
             self.print_result(self.RESULT_IO_SERIAL)
 
         if self.aborted:
@@ -400,8 +401,8 @@ class DefaultTestSelector(DefaultTestSelectorBase):
         # Reset device
         if self.options.skip_reset is False:
             self.notify("HOST: Reset target...")
-            result = self.mbed.reset()
-            if not result:
+            self.result = self.mbed.reset()
+            if not self.result:
                 self.print_result(self.RESULT_IO_SERIAL)
         else:
             self.notify("HOST: Target reset SKIPPED!")
@@ -410,15 +411,7 @@ class DefaultTestSelector(DefaultTestSelectorBase):
         # Read serial and wait for binary execution end
         if self.aborted:
             return
-        try:
-            self.test_supervisor = get_host_test("run_binary_auto")
-            self.test_supervisor.setup()
-            result = self.test_supervisor.test(self)    # This is blocking, waits for {end}
-        except Exception, e:
-            print str(e)
-            self.print_result(self.RESULT_ERROR)
-        finally:
-            self.test_supervisor.teardown()
+        self.run_test("run_binary_auto")
                 
     def execute(self):
         """! Test runner for host test.
@@ -440,8 +433,8 @@ class DefaultTestSelector(DefaultTestSelectorBase):
             return
         if self.options.skip_flashing is False:
             self.notify("HOST: Copy image onto target...")
-            result = self.mbed.copy_image()
-            if not result:
+            self.result = self.mbed.copy_image()
+            if not self.result:
                 self.print_result(self.RESULT_IOERR_COPY)
                 return  # No need to continue, we can't flash device
         else:
@@ -451,8 +444,8 @@ class DefaultTestSelector(DefaultTestSelectorBase):
             return
         # Initialize and open target's serial port (console)
         self.notify("HOST: Initialize serial port...")
-        result = self.mbed.init_serial()
-        if not result:
+        self.result = self.mbed.init_serial()
+        if not self.result:
             self.print_result(self.RESULT_IO_SERIAL)
             return  # No need to continue, we can't open serial port
 
@@ -461,8 +454,8 @@ class DefaultTestSelector(DefaultTestSelectorBase):
         # Reset device
         if self.options.skip_reset is False:
             self.notify("HOST: Reset target...")
-            result = self.mbed.reset()
-            if not result:
+            self.result = self.mbed.reset()
+            if not self.result:
                 self.print_result(self.RESULT_IO_SERIAL)
                 return
         else:
@@ -474,12 +467,10 @@ class DefaultTestSelector(DefaultTestSelectorBase):
         try:
             CONFIG = self.detect_test_config(verbose=True) # print CONFIG
 
-            result = None
+            self.result = None
             if "host_test_name" in CONFIG:
                 if is_host_test(CONFIG["host_test_name"]):
-                    self.test_supervisor = get_host_test(CONFIG["host_test_name"])
-                    self.test_supervisor.setup()
-                    result = self.test_supervisor.test(self)
+                    self.run_test(CONFIG["host_test_name"])
                 else:
                     self.notify("HOST: Error! Unknown host test name '%s' (use 'mbedhtrun --list' to verify)!"% CONFIG["host_test_name"])
                     self.notify("HOST: Error! You can use switch '-e <dir>' to specify local directory with host tests to load")
@@ -488,16 +479,25 @@ class DefaultTestSelector(DefaultTestSelectorBase):
                 self.notify("HOST: Error! No host test name defined in preamble")
                 self.print_result(self.RESULT_ERROR)
 
-            if result is not None:
-                self.print_result(result)
+            if self.result is not None:
+                self.print_result(self.result)
             else:
                 self.notify("HOST: Passive mode...")
         except Exception, e:
             print str(e)
             self.print_result(self.RESULT_ERROR)
+
+    def run_test(self, host_test_name):
+        try:
+            self.test_supervisor = get_host_test(host_test_name)
+            self.test_supervisor.setup()
+            self.result = self.test_supervisor.test(self)    # This is blocking, waits for {end}
+        except Exception, e:
+            print str(e)
+            self.print_result(self.RESULT_ERROR)
         finally:
             self.test_supervisor.teardown()
-
+    
     def abort(self):
         """
         Handler for abort instruction from mbed greentea.
