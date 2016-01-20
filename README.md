@@ -21,9 +21,13 @@ mbed's test suite (codenamed Greentea) supports the *test supervisor* concept. T
 The basic host test only monitors the device's default serial port (the serial console or - in the future - console communication channel) for test result prints returned by the test runner in a specific and unique format. In other cases, a host test can, for example, judge from the test runner's console output if the test passed or failed. It all depends on the test itself: In some cases the host test can be a TCP server echoing packets from the test runner and judging packet loss. In other cases it can just check whether values returned from an accelerometer are actually valid (sane).
 
 # Writing host tests
-When writing a new host test for your module or host test you would like to include to this repository directly please bear in mind that:
-* You own the host test and you should write it the way so it knows it can be not the only host test of the same (or similar type) running on the system. 
-* We do not provide socket abstraction or isolation in host tests and I do not think we will.
+When writing a new host test for your module please bear in mind that:
+* You own the host test and you should write it the way so it can coexist with the same host tests ran by other processes such as Continuous Integration  systems, other host users etc.
+  * Note: If you work in isolation and your test environment if fully controlled by you (for example you queue all tasks calling host tests, or use global host unique socket port numbers) this rule doesn’t apply to you.
+* When writing host test using OS resources such as sockets, files, serial ports, peripheral devices like multi-meters /scopes etc. remember that those resources are indivisible!
+  * For example if you hardcode in your host test UDP port 32123 and use it for UDP server implementation  of your host test bear in mind that this port may be already used. It is your responsibility to react for this event and implement means to overcome it (if possible).
+  * We do not provide serial port abstraction other that one used for mbed-host test connection. 
+  * We do not provide socket abstraction or isolation in host tests and I do not think we will.
 
 ## Interaction between the test runner and the host test
 
