@@ -410,7 +410,9 @@ class DefaultTestSelector(DefaultTestSelectorBase):
         # Read serial and wait for binary execution end
         if self.aborted:
             return
-        self.run_test("run_binary_auto")
+        
+        test_supervisor = get_host_test("run_binary_auto")
+        self.run_test(test_supervisor)
                 
     def execute(self):
         """! Test runner for host test.
@@ -469,7 +471,8 @@ class DefaultTestSelector(DefaultTestSelectorBase):
             result = None
             if "host_test_name" in CONFIG:
                 if is_host_test(CONFIG["host_test_name"]):
-                    result = self.run_test(CONFIG["host_test_name"])
+                    test_supervisor = get_host_test(CONFIG["host_test_name"])
+                    result = self.run_test(test_supervisor)
                 else:
                     self.notify("HOST: Error! Unknown host test name '%s' (use 'mbedhtrun --list' to verify)!"% CONFIG["host_test_name"])
                     self.notify("HOST: Error! You can use switch '-e <dir>' to specify local directory with host tests to load")
@@ -486,9 +489,10 @@ class DefaultTestSelector(DefaultTestSelectorBase):
             print str(e)
             self.print_result(self.RESULT_ERROR)
 
-    def run_test(self, host_test_name):
+    def run_test(self, test_supervisor):
+        result = None
         try:
-            self.test_supervisor = get_host_test(host_test_name)
+            self.test_supervisor = test_supervisor
             self.test_supervisor.setup()
             result = self.test_supervisor.test(self)    # This is blocking, waits for {end}
         except Exception, e:
