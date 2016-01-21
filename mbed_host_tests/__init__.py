@@ -410,22 +410,10 @@ class DefaultTestSelector(DefaultTestSelectorBase):
         # Read serial and wait for binary execution end
         if self.aborted:
             return
-        try:
-            self.test_supervisor = get_host_test("run_binary_auto")
-            # Call to setup if function is implemented
-            if hasattr(self.test_supervisor, 'setup') and callable(getattr(self.test_supervisor, 'setup')):
-                self.test_supervisor.setup()
-
-            # Call to test function
-            result = self.test_supervisor.test(self)    # This is blocking, waits for {end}
-
-            # Call to teardown if function is implemented
-            if hasattr(self.test_supervisor, 'teardown') and callable(getattr(self.test_supervisor, 'teardown')):
-                self.test_supervisor.teardown()
-        except Exception, e:
-            print str(e)
-            self.print_result(self.RESULT_ERROR)
-
+        
+        test_supervisor = get_host_test("run_binary_auto")
+        self.run_test(test_supervisor)
+                
     def execute(self):
         """! Test runner for host test.
 
@@ -483,9 +471,8 @@ class DefaultTestSelector(DefaultTestSelectorBase):
             result = None
             if "host_test_name" in CONFIG:
                 if is_host_test(CONFIG["host_test_name"]):
-                    #self.notify("HOST: CONFIG['host_test_name'] is '%s'" % CONFIG["host_test_name"])
-                    self.test_supervisor = get_host_test(CONFIG["host_test_name"])
-                    result = self.test_supervisor.test(self)    #result = self.test()
+                    test_supervisor = get_host_test(CONFIG["host_test_name"])
+                    result = self.run_test(test_supervisor)
                 else:
                     self.notify("HOST: Error! Unknown host test name '%s' (use 'mbedhtrun --list' to verify)!"% CONFIG["host_test_name"])
                     self.notify("HOST: Error! You can use switch '-e <dir>' to specify local directory with host tests to load")
@@ -502,6 +489,19 @@ class DefaultTestSelector(DefaultTestSelectorBase):
             print str(e)
             self.print_result(self.RESULT_ERROR)
 
+    def run_test(self, test_supervisor):
+        result = None
+        try:
+            self.test_supervisor = test_supervisor
+            self.test_supervisor.setup()
+            result = self.test_supervisor.test(self)    # This is blocking, waits for {end}
+        except Exception, e:
+            print str(e)
+            self.print_result(self.RESULT_ERROR)
+        finally:
+            self.test_supervisor.teardown()
+        return result
+    
     def abort(self):
         """
         Handler for abort instruction from mbed greentea.
