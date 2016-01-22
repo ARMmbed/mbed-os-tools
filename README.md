@@ -2,6 +2,10 @@
 
 * [Introduction](#introduction)
 * [Supported operating systems](#supported-operating-systems)
+  * [Virtual Environments (Python)](#virtual-environments-python)
+    * [How to get and install](#how-to-get-and-install)
+    * [Basic Usage](#basic-usage)
+    * [Basic usage - Windows example](#basic-usage---windows-example)
 * [Getting started](#getting-started)
   * [End to end example](#end-to-end-example)
   * [Dependencies](#dependencies)
@@ -44,6 +48,78 @@ Additional documentation:
 * Windows
 * Linux (experimental)
 * OS X 10.10 (experimental)
+
+## Virtual Environments (Python)
+You may already recognize that out test tools are mainly written in Python (2.7).
+If your project / CI job etc. is using Python tools and Python packages extensively you may find that installing our test tools may cause Python dependencies collision.
+To avoid unnecessary hassle and separate packages used by tools and your system you can use virtual environment!
+
+*A Virtual Environment is a tool to keep Python package dependencies required by different projects in separate places, by creating virtual Python environments for them.*
+
+For more details check [Virtual Environments](http://docs.python-guide.org/en/latest/dev/virtualenvs/).
+
+### How to get and install
+The simplest way is to just install ```virtualenv``` via ```pip```:
+```
+$ pip install virtualenv
+```
+
+### Basic Usage
+* Create a virtual environment for your project:
+```
+$ cd my_project
+$ virtualenv venv
+```
+
+* To begin using the virtual environment (On Windows), it needs to be activated:
+```
+$ venv/script/activate.bat
+```
+
+* To begin using the virtual environment (On Linux), it needs to be activated:
+```
+$ source venv/bin/activate
+```
+
+* Install packages as usual, for example:
+```
+$ pip install yotta
+$ pip install greentea
+  pip ...
+```
+
+* If you are done working in the virtual environment (On Windows) for the moment, you can deactivate it:
+```
+$ venv/script/deactivate.bat
+```
+
+* If you are done working in the virtual environment (On Windows) for the moment, you can deactivate it:
+```
+$ source venv/bin/deactivate
+```
+
+### Basic usage - Windows example
+Setup virtual environment and install all dependencies:
+```
+$ cd my_project
+$ virtualenv venv
+$ venv/script/activate.bat
+
+$ pip install yotta
+$ pip install greentea
+```
+
+Call your test procedures and tools using active environment, for example:
+```
+$ cd yotta_module/
+$ mbedgt -V t frdom-k64f-gcc
+```
+
+Finally deactivate environment and go back to original Python module dependency settings:
+
+```
+$ venv/script/deactivate.bat
+```
 
 # Getting started
 
