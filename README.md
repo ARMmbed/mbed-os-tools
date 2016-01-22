@@ -1,5 +1,7 @@
 [![Circle CI](https://circleci.com/gh/ARMmbed/greentea.svg?style=svg)](https://circleci.com/gh/ARMmbed/greentea)
 
+# Table of contents
+
 * [Introduction](#introduction)
 * [Supported operating systems](#supported-operating-systems)
   * [Virtual Environments (Python)](#virtual-environments-python)
@@ -32,6 +34,7 @@
   * [Local yotta targets scan for mbed-target keywords](#local-yotta-targets-scan-for-mbed-target-keywords)
 * [Common Issues](#common-issues)
   * [Uninstalling Greentea](#uninstalling-greentea)
+* [Commissioning mbed platforms (Linux)](#commissioning-mbed-platforms-linux)
 
 # Introduction
 
@@ -391,11 +394,11 @@ mbed-ls: detected K64F, console at: COM61, mounted at: E:
 * ```frdm-k64f-gcc``` - Freescale K64F platform compiled with the GCC cross-compiler.
 * ```frdm-k64f-armcc``` - Freescale K64F platform compiled with the Keil armcc cross-compiler.
 
-For simplicity, only the GCC targets are described below.  
+For simplicity, only the GCC targets are described below.
 
 You can invoke yotta from the test suite to build the targets. In this example:
 
-* ```--target``` is used to specify the targets that the test suite will interact with.  
+* ```--target``` is used to specify the targets that the test suite will interact with.
 * The option ```-O``` is used to tell the test suite to *build* sources and tests, but not to *run* the tests.
 
 ```
@@ -474,7 +477,7 @@ mbedgt: running tests...
 ```
 
 # Using Greentea with new targets
-When prototyping or developing new port you will find yourself in a situation where your yotta modules are not published (especially targets) and you still want to use Greentea. 
+When prototyping or developing new port you will find yourself in a situation where your yotta modules are not published (especially targets) and you still want to use Greentea.
 
 ## Greentea and yotta targets
 
@@ -539,7 +542,7 @@ $ mbedls
 
 **Note:** This is an example workflow; you may need to add or remove steps for your own workflow.
 
-This example creates a new mbed yotta target, then runs ```mbed-drivers``` tests on it to check that it was ported correctly. 
+This example creates a new mbed yotta target, then runs ```mbed-drivers``` tests on it to check that it was ported correctly.
 
 
 * Clone the [```mbed-drivers```](https://github.com/ARMmbed/mbed-drivers) repository
@@ -552,7 +555,7 @@ This example creates a new mbed yotta target, then runs ```mbed-drivers``` tests
 * In ```mbed-drivers```: set your target, compile and test!
 * Edit your HAL modules until things work, committing and pushing to your source control as you go
 * When your modules and targets are ready for public consumption, open a Pull request on mbed-hal with your dependency addition, and `yotta publish` your target and module(s)
- 
+
 Note that we're now using [config.html](http://yottadocs.mbed.com/reference/config.html) for pin definitions. mbed-hal has a script that processes config definitions into pin definitions, see frdm-k64f targets for an example of how to define these: [target.json](https://github.com/ARMmbed/target-frdm-k64f-gcc/blob/master/target.json#L38))
 
 # Selecting boards for test running
@@ -615,7 +618,7 @@ This option allows you to write your own automation where you execute the test r
 
 The examples below demonstrate the use of the ```--digest``` option. Assume that you have written a test runner in ```bash``` shell scripting, or just collected a bunch of test results in a database and the test console output is available.
 
-To get the mbed test suite's predefined test results, you must scan the console output from the tests. 
+To get the mbed test suite's predefined test results, you must scan the console output from the tests.
 
 **Note:** test suite results and tags are encoded between double curly braces. For example, a typical success code looks like this: ```{{success}}{{end}}```.
 
@@ -708,7 +711,7 @@ error level is 5
 
 ## Dynamic host test loader
 * This feature allows users to point ```greentea``` and (indirectly ```mbedhtrun```) to arbitrary directory (switch ```-e <dir>``` containing new/proprietary host test scripts. Host tests script files are enumerated in ```<dir>``` and registered so they can be used with local module test cases.
-* Not all host tests can be stored with ```mbedhtrun``` package. Some of them may and will be only used locally, for prototyping. Some host tests may just be very module dependent and should not be stored with ``mbedhtrun```. 
+* Not all host tests can be stored with ```mbedhtrun``` package. Some of them may and will be only used locally, for prototyping. Some host tests may just be very module dependent and should not be stored with ``mbedhtrun```.
 * In many cases users will add host tests to their yotta modules preferably under ```/test/host_tests/```module directory.
 * **Note**: Directory ytmodule```/test/host_tests``` will be default local host test location used by test tools such as ```greentea```.
 * This feature allows ```mbedhtrun``` to load and register additional host test scripts from given directory.
@@ -770,5 +773,5 @@ $ vi /etc/udev/rules.d/10-mbed-platforms.rules
 ```sh
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="<target Vendor Id>", ATTRS{idProduct}=="<target Product Id>", MODE:="0666"
 ```
-    
+
 Create a line for each type of platform based on their vendor and platform Ids. With this change mbed devices can be used with any user account.
