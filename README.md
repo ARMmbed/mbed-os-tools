@@ -758,3 +758,17 @@ Uninstalling mbed-greentea:
 Proceed (y/n)? Y
   Successfully uninstalled mbed-greentea
 ```
+
+# Commissioning mbed platforms (Linux)
+On Ubuntu/Linux target serial device nodes are created with root permissions by default. Forcing user to run mbedgt as root.
+Create a udev rules file to change permission of the device nodes when they are created.
+
+```sh
+$ vi /etc/udev/rules.d/10-mbed-platforms.rules
+```
+
+```sh
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="<target Vendor Id>", ATTRS{idProduct}=="<target Product Id>", MODE:="0666"
+```
+    
+Create a line for each type of platform based on their vendor and platform Ids. With this change mbed devices can be used with any user account.
