@@ -1,3 +1,4 @@
+# Table of contents
 * [mbed-host-tests](#mbed-host-tests)
   * [Interaction between the test runner and the host test](#interaction-between-the-test-runner-and-the-host-test)
 * [Writing host tests](#writing-host-tests)
