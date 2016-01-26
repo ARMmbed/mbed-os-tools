@@ -264,12 +264,11 @@ class MbedLsToolsLinuxGeneric(MbedLsToolsBase):
         # Find orphan serial name
         for dhi in orphan_mbeds:
             orphan_serial = self.get_mbed_serial(serial_list, dhi)
-            if orphan_serial:
-                orphan_dev_disk = self.get_dev_name(disk_hex_ids[dhi])
-                orphan_dev_serial = '/dev/' + self.get_dev_name(orphan_serial)
-                orphan_mount_point = self.get_mount_point(orphan_dev_disk, mount_list)
-                if orphan_mount_point and orphan_dev_serial:
-                    result.append([None, orphan_dev_disk, orphan_mount_point, orphan_dev_serial, disk_hex_ids[dhi]])
+            orphan_dev_disk = self.get_dev_name(disk_hex_ids[dhi])
+            orphan_dev_serial = '/dev/' + self.get_dev_name(orphan_serial) if orphan_serial else None
+            orphan_mount_point = self.get_mount_point(orphan_dev_disk, mount_list)
+            if orphan_mount_point:
+                result.append([None, orphan_dev_disk, orphan_mount_point, orphan_dev_serial, disk_hex_ids[dhi]])
         return result
 
     def get_tid_mbed_name_remap(self, tids):
