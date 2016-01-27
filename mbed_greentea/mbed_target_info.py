@@ -92,6 +92,20 @@ TARGET_INFO_MAPPING = {
                 "reset_method": "default",
                 "program_cycle_s": 4
             }
+        },
+    "ARCH_BLE" : {
+        "yotta_targets": [
+                {
+                    "yotta_target": "tinyble-gcc",
+                    "mbed_toolchain": "GCC_ARM"
+                }
+             ],
+        "properties" : {
+                "binary_type": "-combined.hex",
+                "copy_method": "shell",
+                "reset_method": "default",
+                "program_cycle_s": 4
+            }
         }
 }
 
