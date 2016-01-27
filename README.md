@@ -76,7 +76,7 @@ $ virtualenv venv
 
 * To begin using the virtual environment (On Windows), it needs to be activated:
 ```
-$ venv/script/activate.bat
+$ venv\Scripts\activate.bat
 ```
 
 * To begin using the virtual environment (On Linux), it needs to be activated:
