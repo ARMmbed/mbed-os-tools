@@ -1,5 +1,6 @@
-## Description
 [![Build status](https://circleci.com/gh/ARMmbed/mbed-ls/tree/master.svg?style=svg)](https://circleci.com/gh/ARMmbed/mbed-ls/tree/master)
+
+# Description
 
 mbed-lstools is a Python module that detects and lists mbed-enabled devices connected to the host computer. It will be delivered as a redistributable Python module (package) and command line tool.
 
@@ -12,7 +13,7 @@ Currently supported operating system:
 
 The stand-alone mbed-lstools Python package is still under development, but it's already delivered as part of the mbed SDK's test suite and a command line tool (see below).
 
-## Rationale
+# Rationale
 
 When connecting more than one mbed-enabled device to the host computer, it takes time to manually check the platforms' binds:
 
@@ -23,6 +24,8 @@ When connecting more than one mbed-enabled device to the host computer, it takes
 mbedls provides these points of information for all connected boards at once in a simple console (terminal) output.
 
 **Tip:** Because we are all automation fanatics, the ```mbedls``` command will also output mbed-enabled auto-detection data in JSON format (see below).
+
+# Installation
 
 ## Installation from PyPI (Python Package Index)
 
@@ -40,7 +43,7 @@ To install latest version use command:
 $ pip install mbed-ls --upgrade
 ```
 
-## Installation from Python sources 
+## Installation from Python sources
 
 **Prerequisites:** you need to have [Python 2.7.x](https://www.python.org/download/releases/2.7/) installed on your system.
 
@@ -60,7 +63,7 @@ Change the directory to the mbed-ls repository directory:
 $ cd mbed-ls
 ```
 
-Now you are ready to install mbed-ls. 
+Now you are ready to install mbed-ls.
 
 ```
 $ python setup.py install
@@ -104,37 +107,37 @@ Extended mbedls API example:
 >>> import mbed_lstools
 >>> m = mbed_lstools.create()
 >>> dir(m)
-['DEBUG_FLAG', 
- 'ERRORLEVEL_FLAG', 
- '__doc__', 
- '__init__', 
- '__module__', 
- '__str__', 
- 'debug', 
- 'discover_connected_mbeds', 
- 'err', 
- 'get_connected_mbeds', 
- 'get_dos_devices', 
- 'get_json_data_from_file', 
- 'get_mbed_com_port', 
- 'get_mbed_devices', 
- 'get_mbed_htm_target_id', 
- 'get_mbeds', 
- 'get_mounted_devices', 
- 'get_string', 
- 'iter_keys', 
- 'iter_keys_as_str', 
- 'iter_vals', 'list_mbeds', 
- 'list_mbeds_by_targetid', 
- 'list_mbeds_ext', 
- 'list_platforms', 
- 'list_platforms_ext', 
- 'load_mbed_description', 
- 'manufacture_ids', 
- 'os_supported', 
- 'regbin2str', 
- 'scan_html_line_for_target_id', 
- 'usb_vendor_list', 
+['DEBUG_FLAG',
+ 'ERRORLEVEL_FLAG',
+ '__doc__',
+ '__init__',
+ '__module__',
+ '__str__',
+ 'debug',
+ 'discover_connected_mbeds',
+ 'err',
+ 'get_connected_mbeds',
+ 'get_dos_devices',
+ 'get_json_data_from_file',
+ 'get_mbed_com_port',
+ 'get_mbed_devices',
+ 'get_mbed_htm_target_id',
+ 'get_mbeds',
+ 'get_mounted_devices',
+ 'get_string',
+ 'iter_keys',
+ 'iter_keys_as_str',
+ 'iter_vals', 'list_mbeds',
+ 'list_mbeds_by_targetid',
+ 'list_mbeds_ext',
+ 'list_platforms',
+ 'list_platforms_ext',
+ 'load_mbed_description',
+ 'manufacture_ids',
+ 'os_supported',
+ 'regbin2str',
+ 'scan_html_line_for_target_id',
+ 'usb_vendor_list',
  'winreg']
 >>> m.list_platforms()
 ['LPC1768', 'K64F']
@@ -142,7 +145,7 @@ Extended mbedls API example:
 {'K64F': 1, 'LPC1768': 2}
 ```
 
-## mbedls command line tool
+# mbedls as command line tool
 
 After installation of the mbed-ls package, you can use the mbedls command. It allows you to list all connected mbed-enabled devices and gives you the correct association between your board mount point (disk) and the serial port. TargetID information is also provided for your information.
 
@@ -158,7 +161,7 @@ $ mbedls
 
 If you want to use ```mbedls``` in your toolchain, continuous integration or automation script and do not necessarily want to use the Python module ```mbed_lstools``` - this solution is for you.
 
-### Exporting mbedls output to JSON
+## Exporting mbedls output to JSON
 
 You can export mbedls outputs to JSON format: just use the ```---json``` switch and dump your file on the screen or redirect to a file. It should help you further automate your processes.
 
@@ -198,9 +201,15 @@ $ mbedls --json
 ]
 ```
 
+# Porting instructions
+
+You can help us improve the mbed-ls tools by - for example - committing a new OS port. You can see the list of currently supported OSs in the [Description](#description) section; if your OS isn't there, you can port it.
+
+For further study please check how Mac OS X (Darwin) was ported in [this pull request](https://github.com/ARMmbed/mbed-ls/pull/1).
+
 ## mbed-ls auto-detection approach for Ubuntu
 
-Let's connect  a few mbed boards to our Ubuntu host. The devices should mount as MSC and CDC (virtual disk and serial port). We'll use regular Linux commands to see the boards, then see how ```mbed-ls``` displays them.
+Let's connect a few mbed boards to our Ubuntu host. The devices should mount as MSC and CDC (virtual disk and serial port). We'll use regular Linux commands to see the boards, then see how ```mbed-ls``` displays them.
 
 In this example, we've connected to our Ububtu machine's USB ports:
 
@@ -301,12 +310,6 @@ $ mbedls
 |unknown              |F:                 |COM5               |A000000001                              |
 +---------------------+-------------------+-------------------+----------------------------------------+
 ```
-
-## Porting instructions
-
-You can help us improve the mbed-ls tools by - for example - committing a new OS port. You can see the list of currently supported OSs in the [Description](#description) section; if your OS isn't there, you can port it.
-
-For further study please check how Mac OS X (Darwin) was ported in [this pull request](https://github.com/ARMmbed/mbed-ls/pull/1).
 
 # Mocking new or existing target to custom platform name
 Command line switch ```--mock``` provide simple manufacturers ID masking with new platform name.
