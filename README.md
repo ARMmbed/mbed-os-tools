@@ -1,5 +1,22 @@
 [![Build status](https://circleci.com/gh/ARMmbed/mbed-ls/tree/master.svg?style=svg)](https://circleci.com/gh/ARMmbed/mbed-ls/tree/master)
 
+# Table of contents
+
+* [Description](#description)
+* [Rationale](#rationale)
+* [Installation](#installation)
+  * [Installation from PyPI (Python Package Index)](#installation-from-pypi-python-package-index)
+  * [Installation from Python sources](#installation-from-python-sources)
+* [mbedls as command line tool](#mbedls-as-command-line-tool)
+  * [Exporting mbedls output to JSON](#exporting-mbedls-output-to-json)
+* [Porting instructions](#porting-instructions)
+  * [mbed-ls auto-detection approach for Ubuntu](#mbed-ls-auto-detection-approach-for-ubuntu)
+* [Mocking new or existing target to custom platform name](#mocking-new-or-existing-target-to-custom-platform-name)
+  * [Mock command line examples](#mock-command-line-examples)
+  * [Mocking example with Freescale K64F platform](#mocking-example-with-freescale-k64f-platform)
+* [mbed-ls unit testing](#mbed-ls-unit-testing)
+* [Known issues](#known-issues)
+
 # Description
 
 mbed-lstools is a Python module that detects and lists mbed-enabled devices connected to the host computer. It will be delivered as a redistributable Python module (package) and command line tool.
