@@ -157,6 +157,9 @@ def mbedls_main():
 
     mbeds.DEBUG_FLAG = opts.debug
 
+    if not opts.skip_retarget:
+        mbeds.retarget()
+
     if opts.mock_platform:
         if opts.mock_platform == '*':
             if opts.json:
