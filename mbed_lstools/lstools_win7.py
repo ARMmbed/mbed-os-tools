@@ -39,9 +39,7 @@ class MbedLsToolsWin7(MbedLsToolsBase):
 
     def list_mbeds(self):
         """! Returns detailed list of connected mbeds
-
             @return Returns list of structures with detailed info about each mbed
-
             @details Function returns list of dictionaries with mbed attributes such as mount point, TargetID name etc.
         """
         self.ERRORLEVEL_FLAG = 0
@@ -64,9 +62,7 @@ class MbedLsToolsWin7(MbedLsToolsBase):
 
     def discover_connected_mbeds(self, defs={}):
         """! Function produces list of mbeds with additional information and bind mbed with correct TargetID
-
             @return Returns [(<mbed_mount_point>, <mbed_id>, <com port>, <board model>), ..]
-
             @details Notice: this function is permissive: adds new elements in-places when and if found
         """
         mbeds = [(m[0], m[1], None, None) for m in self.get_connected_mbeds()]
@@ -85,11 +81,8 @@ class MbedLsToolsWin7(MbedLsToolsBase):
 
     def get_mbed_com_port(self, tid):
         """! Function checks mbed serial port in Windows registry entries
-
         @param tid TargetID
-
         @return Returns None if port is not found. In normal circumstances it should never return None
-
         @details This goes through a whole new loop, but this assures that even if serial port (COM)
                  is not detected, we still get the rest of info like mount point etc.
         """
@@ -139,18 +132,14 @@ class MbedLsToolsWin7(MbedLsToolsBase):
 
     def get_connected_mbeds(self):
         """! Function  return mbeds with existing mount point
-
         @return Returns [(<mbed_mount_point>, <mbed_id>), ..]
-
         @details Helper function
         """
         return [m for m in self.get_mbeds() if os.path.exists(m[0])]
 
     def get_mbeds(self):
         """! Function filters devices' mount points for valid TargetID
-
         @return Returns [(<mbed_mount_point>, <mbed_id>), ..]
-
         @details TargetID should be a hex string with 10-48 chars
         """
         mbeds = []
@@ -166,28 +155,26 @@ class MbedLsToolsWin7(MbedLsToolsBase):
     # =============================== Registry ====================================
 
     def iter_keys_as_str(self, key):
-        """ Iterate over subkeys of a key returning subkey as string
+        """! Iterate over subkeys of a key returning subkey as string
         """
         for i in range(self.winreg.QueryInfoKey(key)[0]):
             yield self.winreg.EnumKey(key, i)
 
     def iter_keys(self, key):
-        """ Iterate over subkeys of a key
+        """! Iterate over subkeys of a key
         """
         for i in range(self.winreg.QueryInfoKey(key)[0]):
             yield self.winreg.OpenKey(key, self.winreg.EnumKey(key, i))
 
     def iter_vals(self, key):
-        """ Iterate over values of a key
+        """! Iterate over values of a key
         """
         for i in range(self.winreg.QueryInfoKey(key)[1]):
             yield self.winreg.EnumValue(key, i)
 
     def get_mbed_devices(self):
         """! Get MBED devices (connected or not)
-
         @return List of devices
-
         @details Note: We will detect also non-standard MBED devices mentioned on 'usb_vendor_list' list.
                  This will help to detect boards like EFM boards.
         """
@@ -201,18 +188,18 @@ class MbedLsToolsWin7(MbedLsToolsBase):
         return result
 
     def get_dos_devices(self):
-        """ Get DOS devices (connected or not)
+        """! Get DOS devices (connected or not)
         """
         ddevs = [dev for dev in self.get_mounted_devices() if 'DosDevices' in dev[0]]
         return [(d[0], self.regbin2str(d[1])) for d in ddevs]
 
     def get_mounted_devices(self):
-        """ Get all mounted devices (connected or not)
+        """! Get all mounted devices (connected or not)
         """
         mounts = self.winreg.OpenKey(self.winreg.HKEY_LOCAL_MACHINE, 'SYSTEM\MountedDevices')
         return [val for val in self.iter_vals(mounts)]
 
     def regbin2str(self, regbin):
-        """ Decode registry binary to readable string
+        """! Decode registry binary to readable string
         """
         return filter(lambda ch: ch in string.printable, regbin)
