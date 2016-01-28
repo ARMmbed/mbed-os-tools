@@ -119,6 +119,12 @@ def cmd_parser_setup():
                       action="store_true",
                       help='JSON formatted dictionary of platforms count')
 
+    parser.add_option('', '--skip-retarget',
+                      dest='skip_retarget',
+                      default=False,
+                      action="store_true",
+                      help='Ignores file ./mbedls.json with retarget data')
+
     parser.add_option('-d', '--debug',
                       dest='debug',
                       default=False,
@@ -150,6 +156,9 @@ def mbedls_main():
         sys.exit(-1)
 
     mbeds.DEBUG_FLAG = opts.debug
+
+    if not opts.skip_retarget:
+        mbeds.retarget()
 
     if opts.mock_platform:
         if opts.mock_platform == '*':

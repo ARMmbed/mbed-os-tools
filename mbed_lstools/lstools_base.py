@@ -29,6 +29,7 @@ class MbedLsToolsBase:
         #extra flags
         self.DEBUG_FLAG = False     # Used to enable debug code / prints
         self.ERRORLEVEL_FLAG = 0    # Used to return success code to environment
+        self.retarget_data = {}          # Used to retarget mbed-enabled platform properties
 
         # If there is a local mocking data use it and add / override manufacture_ids
         mock_ids = self.mock_read()
@@ -169,6 +170,7 @@ class MbedLsToolsBase:
     }
 
     MOCK_FILE_NAME = '.mbedls-mock'
+    RETARGET_FILE_NAME = 'mbedls.json'
 
     def mock_read(self):
         """! Load mocking data from local file
@@ -176,23 +178,63 @@ class MbedLsToolsBase:
         """
         if os.path.isfile(self.MOCK_FILE_NAME):
             if self.DEBUG_FLAG:
-                self.debug(self.mock_read.__name__, "reading %s"% self.MOCK_FILE_NAME)
-            with open(self.MOCK_FILE_NAME, "r") as f:
-                return json.load(f)
+                self.debug(self.mock_read.__name__, "reading mock file %s"% self.MOCK_FILE_NAME)
+            try:
+                with open(self.MOCK_FILE_NAME, "r") as f:
+                    return json.load(f)
+            except IOError as e:
+                self.err("reading file '%s' failed: %s"% (os.path.abspath(self.MOCK_FILE_NAME),
+                    str(e)))
+            except ValueError as e:
+                self.err("reading file '%s' content failed: %s"% (os.path.abspath(self.MOCK_FILE_NAME),
+                    str(e)))
         return {}
 
     def mock_write(self, mock_ids):
-        # Write current mocking structure
+        """! Write current mocking structure
+        @param mock_ids JSON mock data to dump to file
+        """
         if self.DEBUG_FLAG:
             self.debug(self.mock_write.__name__, "writing %s"% self.MOCK_FILE_NAME)
-        with open(self.MOCK_FILE_NAME, "w") as f:
-            f.write(json.dumps(mock_ids, indent=4))
+        try:
+            with open(self.MOCK_FILE_NAME, "w") as f:
+                f.write(json.dumps(mock_ids, indent=4))
+        except IOError as e:
+            self.err("reading file '%s' failed: %s"% (os.path.abspath(self.MOCK_FILE_NAME),
+                str(e)))
+        except ValueError as e:
+            self.err("reading file '%s' content failed: %s"% (os.path.abspath(self.MOCK_FILE_NAME),
+                str(e)))
+
+    def retarget_read(self):
+        """! Load retarget data from local file
+        @return Curent retarget configuration (dictionary)
+        """
+        if os.path.isfile(self.RETARGET_FILE_NAME):
+            if self.DEBUG_FLAG:
+                self.debug(self.retarget_read.__name__, "reading retarget file %s"% self.RETARGET_FILE_NAME)
+            try:
+                with open(self.RETARGET_FILE_NAME, "r") as f:
+                    return json.load(f)
+            except IOError as e:
+                self.err("reading file '%s' failed: %s"% (os.path.abspath(self.RETARGET_FILE_NAME),
+                    str(e)))
+            except ValueError as e:
+                self.err("reading file '%s' content failed: %s"% (os.path.abspath(self.RETARGET_FILE_NAME),
+                    str(e)))
+        return {}
+
+    def retarget(self):
+        """! Enable retargeting
+        """
+        self.retarget_data = self.retarget_read()
+        return self.retarget_data
 
     def mock_manufacture_ids(self, mid, platform_name, oper='+'):
         """! Replace (or add if manufacture id doesn't exist) entry in self.manufacture_ids
-            @param oper '+' add new mock / override existing entry
-                        '-' remove mid from mocking entry
-            @return Mocked structure (json format)
+        @param oper '+' add new mock / override existing entry
+                    '-' remove mid from mocking entry
+        @return Mocked structure (json format)
         """
         mock_ids = self.mock_read()
 
@@ -236,9 +278,7 @@ class MbedLsToolsBase:
 
     def list_mbeds_ext(self):
         """! Function adds extra information for each mbed device
-
         @return Returns list of mbed devices plus extended data like 'platform_name_unique'
-
         @details Get information about mbeds with extended parameters/info included
         """
         platform_names = {} # Count existing platforms and assign unique number
@@ -252,13 +292,22 @@ class MbedLsToolsBase:
                 platform_names[platform_name] += 1
             # Assign normalized, unique string at the end of target name: TARGET_NAME[x] where x is an ordinal integer
             mbeds[i]['platform_name_unique'] = "%s[%d]" % (platform_name, platform_names[platform_name])
+
+            # Retarget values from retarget (mbedls.json) file
+            if self.retarget_data and 'target_id' in val:
+                target_id = val['target_id']
+                if target_id in self.retarget_data:
+                    mbeds[i].update(self.retarget_data[target_id])
+                    if self.DEBUG_FLAG:
+                        self.debug(self.list_mbeds_ext.__name__, ("retargeting", target_id, mbed[i]))
+
             if self.DEBUG_FLAG:
                 self.debug(self.list_mbeds_ext.__name__, (mbeds[i]['platform_name_unique'], val['target_id']))
         return mbeds
 
     def list_platforms(self):
-        """ Useful if you just want to know which platforms are currently available on the system
-            @return List of (unique values) available platforms
+        """! Useful if you just want to know which platforms are currently available on the system
+        @return List of (unique values) available platforms
         """
         result = []
         mbeds = self.list_mbeds()
@@ -269,8 +318,8 @@ class MbedLsToolsBase:
         return result
 
     def list_platforms_ext(self):
-        """ Useful if you just want to know how many platforms of each type are currently available on the system
-            @return Dict of platform: platform_count
+        """! Useful if you just want to know how many platforms of each type are currently available on the system
+        @return Dict of platform: platform_count
         """
         result = {}
         mbeds = self.list_mbeds()
@@ -283,12 +332,9 @@ class MbedLsToolsBase:
         return result
 
     def list_mbeds_by_targetid(self):
-        """ Get information about mbeds with extended parameters/info included
-
-            @return Returns dictionary where keys are TargetIDs and values are mbed structures
-
-            @details Ordered by target id (key: target_id).
-
+        """! Get information about mbeds with extended parameters/info included
+        @return Returns dictionary where keys are TargetIDs and values are mbed structures
+        @details Ordered by target id (key: target_id).
         """
         result = {}
         mbed_list = self.list_mbeds_ext()
@@ -299,7 +345,7 @@ class MbedLsToolsBase:
 
     # Private part, methods used to drive interface functions
     def load_mbed_description(self, file_name):
-        """ Loads JSON file with mbeds' description (mapping between target id and platform name)
+        """! Load JSON file with mbeds' description (mapping between target id and platform name)
             Sets self.manufacture_ids with mapping between manufacturers' ids and platform name.
         """
         #self.manufacture_ids = {}   # TODO: load this values from file
@@ -307,19 +353,15 @@ class MbedLsToolsBase:
 
     def err(self, text):
         """! Prints error messages
-
         @param text Text to be included in error message
-
         @details Function prints directly on console
         """
         print 'error: %s'% text
 
     def debug(self, name, text):
         """! Prints error messages
-
         @param name Called function name
         @param text Text to be included in debug message
-
         @details Function prints directly on console
         """
         print 'debug @%s.%s: %s'% (self.__class__.__name__, name, text)
@@ -333,12 +375,10 @@ class MbedLsToolsBase:
 
     def get_string(self, border=False, header=True, padding_width=0, sortby='platform_name'):
         """! Printing with some sql table like decorators
-
         @param border Table border visibility
         @param header Table header visibility
         @param padding_width Table padding
         @param sortby Column used to sort results
-
         @return Returns string which can be printed on console
         """
         from prettytable import PrettyTable
@@ -367,7 +407,6 @@ class MbedLsToolsBase:
 
     def get_json_data_from_file(self, json_spec_filename, verbose=False):
         """! Loads from file JSON formatted string to data structure
-
         @return None if JSON can be loaded
         """
         result = None
@@ -386,9 +425,7 @@ class MbedLsToolsBase:
 
     def get_mbed_htm_target_id(self, mount_point):
         """! Function scans mbed.htm to get information about TargetID.
-
         @return Function returns targetID, in case of failure returns None.
-
         @details Note: This function should be improved to scan variety of boards' mbed.htm files
         """
         result = None
@@ -409,7 +446,6 @@ class MbedLsToolsBase:
 
     def scan_html_line_for_target_id(self, line):
         """! Scan if given line contains target id encoded in URL.
-
         @return Returns None when no target_id string in line
         """
         # Detecting modern mbed.htm file format

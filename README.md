@@ -11,6 +11,9 @@
   * [Exporting mbedls output to JSON](#exporting-mbedls-output-to-json)
 * [Porting instructions](#porting-instructions)
   * [mbed-ls auto-detection approach for Ubuntu](#mbed-ls-auto-detection-approach-for-ubuntu)
+* [Retarget mbed-ls autodetection results](#retarget-mbed-ls-autodetection-results)
+  * [mbedls.json file properties](#mbedlsjson-file-properties)
+  * [Example of retargeting](#example-of-retargeting)
 * [Mocking new or existing target to custom platform name](#mocking-new-or-existing-target-to-custom-platform-name)
   * [Mock command line examples](#mock-command-line-examples)
   * [Mocking example with Freescale K64F platform](#mocking-example-with-freescale-k64f-platform)
@@ -326,6 +329,86 @@ $ mbedls
 |NUCLEO_L152RE        |E:                 |COM9               |07100200860579FAB960EFD7                |
 |unknown              |F:                 |COM5               |A000000001                              |
 +---------------------+-------------------+-------------------+----------------------------------------+
+```
+
+# Retarget mbed-ls autodetection results
+
+User can create file ```mbedls.json``` in given directory. ```mbedls.json``` file should contain JSON formatted data which will redefine mbed's parameters returned by mbed-ls. ```mbed-ls``` will automatically read ```mbedls.json``` file and alter auto-detection result.
+File should be placed in directory where we want to alter mbed-ls behavior.
+
+* Note: This feature in implicitly ON.
+* Note: This feature can be turned off with command line switch ```--skip-retarget```.
+
+## mbedls.json file properties
+* If file ```mbedls.json``` exists will be implicitly used to retarget results.
+* If file ```mbedls.json``` exists and flag ```--skip-retarget``` is set, there will be no retarget.
+* If file ```mbedls.json``` doesn't exist flag ```--skip-retarget``` has no effect.
+
+## Example of retargeting
+In this example we will replace serial port name during Freescale's K64F auto-detection:
+```
+$ mbedls
++--------------+---------------------+------------+------------+-------------------------------------------------+
+|platform_name |platform_name_unique |mount_point |serial_port |target_id                                        |
++--------------+---------------------+------------+------------+-------------------------------------------------+
+|K64F          |K64F[0]              |F:          |COM9        |0240022648cb1e77000000000000000000000000b512e3cf |
++--------------+---------------------+------------+------------+-------------------------------------------------+
+```
+
+Our device is detected on port ```COM9``` and MSD is mounted on ```F:```. We can check more details using ```--json``` switch:
+```
+$ mbedls --json
+[
+    {
+        "mount_point": "F:",
+        "platform_name": "K64F",
+        "platform_name_unique": "K64F[0]",
+        "serial_port": "COM9",
+        "target_id": "0240022648cb1e77000000000000000000000000b512e3cf",
+        "target_id_mbed_htm": "0240022648cb1e77000000000000000000000000b512e3cf",
+        "target_id_usb_id": "0240022648cb1e77000000000000000000000000b512e3cf"
+    }
+]
+```
+
+We must understand that ```mbed-ls``` stores information about mbed devices in dictionaries.
+The same information can be presented as dictionary where its keys are ```target_id``` and value is a mbed auto-detection data.
+
+```
+$ mbedls --json-by-target-id
+{
+    "0240022648cb1e77000000000000000000000000b512e3cf": {
+        "mount_point": "F:",
+        "platform_name": "K64F",
+        "platform_name_unique": "K64F[0]",
+        "serial_port": "COM9",
+        "target_id": "0240022648cb1e77000000000000000000000000b512e3cf",
+        "target_id_mbed_htm": "0240022648cb1e77000000000000000000000000b512e3cf",
+        "target_id_usb_id": "0240022648cb1e77000000000000000000000000b512e3cf"
+    }
+}
+```
+
+Let's say we want change ```serial_port```'s value to other COM port. For example we are using other serial port (e.g. while debugging) on our device as standard output.
+To do so we would have to create a new file called ```mbedls.json``` in directory where want to use this modification. File content could look like this: a JSON file where keys are ```target_id```'s and values are dictionaries with new values:
+
+```
+$ cat mbedls.ls
+{
+    "0240022648cb1e77000000000000000000000000b512e3cf" : {
+        "serial_port" : "MyComPort01"
+    }
+}
+```
+
+Now, when we issue ```mbedls``` command in this directory our auto-detection data will be replaced:
+```
+$ mbedls
++--------------+---------------------+------------+------------+-------------------------------------------------+
+|platform_name |platform_name_unique |mount_point |serial_port |target_id                                        |
++--------------+---------------------+------------+------------+-------------------------------------------------+
+|K64F          |K64F[0]              |F:          |MyComPort01 |0240022648cb1e77000000000000000000000000b512e3cf |
++--------------+---------------------+------------+------------+-------------------------------------------------+
 ```
 
 # Mocking new or existing target to custom platform name
