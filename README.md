@@ -1,5 +1,26 @@
-## Description
 [![Build status](https://circleci.com/gh/ARMmbed/mbed-ls/tree/master.svg?style=svg)](https://circleci.com/gh/ARMmbed/mbed-ls/tree/master)
+
+# Table of contents
+
+* [Description](#description)
+* [Rationale](#rationale)
+* [Installation](#installation)
+  * [Installation from PyPI (Python Package Index)](#installation-from-pypi-python-package-index)
+  * [Installation from Python sources](#installation-from-python-sources)
+* [mbedls as command line tool](#mbedls-as-command-line-tool)
+  * [Exporting mbedls output to JSON](#exporting-mbedls-output-to-json)
+* [Porting instructions](#porting-instructions)
+  * [mbed-ls auto-detection approach for Ubuntu](#mbed-ls-auto-detection-approach-for-ubuntu)
+* [Retarget mbed-ls autodetection results](#retarget-mbed-ls-autodetection-results)
+  * [mbedls.json file properties](#mbedlsjson-file-properties)
+  * [Example of retargeting](#example-of-retargeting)
+* [Mocking new or existing target to custom platform name](#mocking-new-or-existing-target-to-custom-platform-name)
+  * [Mock command line examples](#mock-command-line-examples)
+  * [Mocking example with Freescale K64F platform](#mocking-example-with-freescale-k64f-platform)
+* [mbed-ls unit testing](#mbed-ls-unit-testing)
+* [Known issues](#known-issues)
+
+# Description
 
 mbed-lstools is a Python module that detects and lists mbed-enabled devices connected to the host computer. It will be delivered as a redistributable Python module (package) and command line tool.
 
@@ -12,7 +33,7 @@ Currently supported operating system:
 
 The stand-alone mbed-lstools Python package is still under development, but it's already delivered as part of the mbed SDK's test suite and a command line tool (see below).
 
-## Rationale
+# Rationale
 
 When connecting more than one mbed-enabled device to the host computer, it takes time to manually check the platforms' binds:
 
@@ -23,6 +44,8 @@ When connecting more than one mbed-enabled device to the host computer, it takes
 mbedls provides these points of information for all connected boards at once in a simple console (terminal) output.
 
 **Tip:** Because we are all automation fanatics, the ```mbedls``` command will also output mbed-enabled auto-detection data in JSON format (see below).
+
+# Installation
 
 ## Installation from PyPI (Python Package Index)
 
@@ -142,7 +165,7 @@ Extended mbedls API example:
 {'K64F': 1, 'LPC1768': 2}
 ```
 
-## mbedls command line tool
+# mbedls as command line tool
 
 After installation of the mbed-ls package, you can use the mbedls command. It allows you to list all connected mbed-enabled devices and gives you the correct association between your board mount point (disk) and the serial port. TargetID information is also provided for your information.
 
@@ -158,7 +181,7 @@ $ mbedls
 
 If you want to use ```mbedls``` in your toolchain, continuous integration or automation script and do not necessarily want to use the Python module ```mbed_lstools``` - this solution is for you.
 
-### Exporting mbedls output to JSON
+## Exporting mbedls output to JSON
 
 You can export mbedls outputs to JSON format: just use the ```---json``` switch and dump your file on the screen or redirect to a file. It should help you further automate your processes.
 
@@ -198,9 +221,15 @@ $ mbedls --json
 ]
 ```
 
+# Porting instructions
+
+You can help us improve the mbed-ls tools by - for example - committing a new OS port. You can see the list of currently supported OSs in the [Description](#description) section; if your OS isn't there, you can port it.
+
+For further study please check how Mac OS X (Darwin) was ported in [this pull request](https://github.com/ARMmbed/mbed-ls/pull/1).
+
 ## mbed-ls auto-detection approach for Ubuntu
 
-Let's connect  a few mbed boards to our Ubuntu host. The devices should mount as MSC and CDC (virtual disk and serial port). We'll use regular Linux commands to see the boards, then see how ```mbed-ls``` displays them.
+Let's connect a few mbed boards to our Ubuntu host. The devices should mount as MSC and CDC (virtual disk and serial port). We'll use regular Linux commands to see the boards, then see how ```mbed-ls``` displays them.
 
 In this example, we've connected to our Ububtu machine's USB ports:
 
@@ -301,12 +330,6 @@ $ mbedls
 |unknown              |F:                 |COM5               |A000000001                              |
 +---------------------+-------------------+-------------------+----------------------------------------+
 ```
-
-## Porting instructions
-
-You can help us improve the mbed-ls tools by - for example - committing a new OS port. You can see the list of currently supported OSs in the [Description](#description) section; if your OS isn't there, you can port it.
-
-For further study please check how Mac OS X (Darwin) was ported in [this pull request](https://github.com/ARMmbed/mbed-ls/pull/1).
 
 # Retarget mbed-ls autodetection results
 
