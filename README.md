@@ -40,7 +40,7 @@ To install latest version use command:
 $ pip install mbed-ls --upgrade
 ```
 
-## Installation from Python sources 
+## Installation from Python sources
 
 **Prerequisites:** you need to have [Python 2.7.x](https://www.python.org/download/releases/2.7/) installed on your system.
 
@@ -60,7 +60,7 @@ Change the directory to the mbed-ls repository directory:
 $ cd mbed-ls
 ```
 
-Now you are ready to install mbed-ls. 
+Now you are ready to install mbed-ls.
 
 ```
 $ python setup.py install
@@ -104,37 +104,37 @@ Extended mbedls API example:
 >>> import mbed_lstools
 >>> m = mbed_lstools.create()
 >>> dir(m)
-['DEBUG_FLAG', 
- 'ERRORLEVEL_FLAG', 
- '__doc__', 
- '__init__', 
- '__module__', 
- '__str__', 
- 'debug', 
- 'discover_connected_mbeds', 
- 'err', 
- 'get_connected_mbeds', 
- 'get_dos_devices', 
- 'get_json_data_from_file', 
- 'get_mbed_com_port', 
- 'get_mbed_devices', 
- 'get_mbed_htm_target_id', 
- 'get_mbeds', 
- 'get_mounted_devices', 
- 'get_string', 
- 'iter_keys', 
- 'iter_keys_as_str', 
- 'iter_vals', 'list_mbeds', 
- 'list_mbeds_by_targetid', 
- 'list_mbeds_ext', 
- 'list_platforms', 
- 'list_platforms_ext', 
- 'load_mbed_description', 
- 'manufacture_ids', 
- 'os_supported', 
- 'regbin2str', 
- 'scan_html_line_for_target_id', 
- 'usb_vendor_list', 
+['DEBUG_FLAG',
+ 'ERRORLEVEL_FLAG',
+ '__doc__',
+ '__init__',
+ '__module__',
+ '__str__',
+ 'debug',
+ 'discover_connected_mbeds',
+ 'err',
+ 'get_connected_mbeds',
+ 'get_dos_devices',
+ 'get_json_data_from_file',
+ 'get_mbed_com_port',
+ 'get_mbed_devices',
+ 'get_mbed_htm_target_id',
+ 'get_mbeds',
+ 'get_mounted_devices',
+ 'get_string',
+ 'iter_keys',
+ 'iter_keys_as_str',
+ 'iter_vals', 'list_mbeds',
+ 'list_mbeds_by_targetid',
+ 'list_mbeds_ext',
+ 'list_platforms',
+ 'list_platforms_ext',
+ 'load_mbed_description',
+ 'manufacture_ids',
+ 'os_supported',
+ 'regbin2str',
+ 'scan_html_line_for_target_id',
+ 'usb_vendor_list',
  'winreg']
 >>> m.list_platforms()
 ['LPC1768', 'K64F']
@@ -307,6 +307,86 @@ $ mbedls
 You can help us improve the mbed-ls tools by - for example - committing a new OS port. You can see the list of currently supported OSs in the [Description](#description) section; if your OS isn't there, you can port it.
 
 For further study please check how Mac OS X (Darwin) was ported in [this pull request](https://github.com/ARMmbed/mbed-ls/pull/1).
+
+# Retarget mbed-ls autodetection results
+
+User can create file ```mbedls.json``` in given directory. ```mbedls.json``` file should contain JSON formatted data which will redefine mbed's parameters returned by mbed-ls. ```mbed-ls``` will automatically read ```mbedls.json``` file and alter auto-detection result.
+File should be placed in directory where we want to alter mbed-ls behavior.
+
+* Note: This feature in implicitly ON.
+* Note: This feature can be turned off with command line switch ```--skip-retarget```.
+
+## mbedls.json file properties
+* If file ```mbedls.json``` exists will be implicitly used to retarget results.
+* If file ```mbedls.json``` exists and flag ```--skip-retarget``` is set, there will be no retarget.
+* If file ```mbedls.json``` doesn't exist flag ```--skip-retarget``` has no effect.
+
+## Example of retargeting
+In this example we will replace serial port name during Freescale's K64F auto-detection:
+```
+$ mbedls
++--------------+---------------------+------------+------------+-------------------------------------------------+
+|platform_name |platform_name_unique |mount_point |serial_port |target_id                                        |
++--------------+---------------------+------------+------------+-------------------------------------------------+
+|K64F          |K64F[0]              |F:          |COM9        |0240022648cb1e77000000000000000000000000b512e3cf |
++--------------+---------------------+------------+------------+-------------------------------------------------+
+```
+
+Our device is detected on port ```COM9``` and MSD is mounted on ```F:```. We can check more details using ```--json``` switch:
+```
+$ mbedls --json
+[
+    {
+        "mount_point": "F:",
+        "platform_name": "K64F",
+        "platform_name_unique": "K64F[0]",
+        "serial_port": "COM9",
+        "target_id": "0240022648cb1e77000000000000000000000000b512e3cf",
+        "target_id_mbed_htm": "0240022648cb1e77000000000000000000000000b512e3cf",
+        "target_id_usb_id": "0240022648cb1e77000000000000000000000000b512e3cf"
+    }
+]
+```
+
+We must understand that ```mbed-ls``` stores information about mbed devices in dictionaries.
+The same information can be presented as dictionary where its keys are ```target_id``` and value is a mbed auto-detection data.
+
+```
+$ mbedls --json-by-target-id
+{
+    "0240022648cb1e77000000000000000000000000b512e3cf": {
+        "mount_point": "F:",
+        "platform_name": "K64F",
+        "platform_name_unique": "K64F[0]",
+        "serial_port": "COM9",
+        "target_id": "0240022648cb1e77000000000000000000000000b512e3cf",
+        "target_id_mbed_htm": "0240022648cb1e77000000000000000000000000b512e3cf",
+        "target_id_usb_id": "0240022648cb1e77000000000000000000000000b512e3cf"
+    }
+}
+```
+
+Let's say we want change ```serial_port```'s value to other COM port. For example we are using other serial port (e.g. while debugging) on our device as standard output.
+To do so we would have to create a new file called ```mbedls.json``` in directory where want to use this modification. File content could look like this: a JSON file where keys are ```target_id```'s and values are dictionaries with new values:
+
+```
+$ cat mbedls.ls
+{
+    "0240022648cb1e77000000000000000000000000b512e3cf" : {
+        "serial_port" : "MyComPort01"
+    }
+}
+```
+
+Now, when we issue ```mbedls``` command in this directory our auto-detection data will be replaced:
+```
+$ mbedls
++--------------+---------------------+------------+------------+-------------------------------------------------+
+|platform_name |platform_name_unique |mount_point |serial_port |target_id                                        |
++--------------+---------------------+------------+------------+-------------------------------------------------+
+|K64F          |K64F[0]              |F:          |MyComPort01 |0240022648cb1e77000000000000000000000000b512e3cf |
++--------------+---------------------+------------+------------+-------------------------------------------------+
+```
 
 # Mocking new or existing target to custom platform name
 Command line switch ```--mock``` provide simple manufacturers ID masking with new platform name.
