@@ -179,8 +179,15 @@ class MbedLsToolsBase:
         if os.path.isfile(self.MOCK_FILE_NAME):
             if self.DEBUG_FLAG:
                 self.debug(self.mock_read.__name__, "reading mock file %s"% self.MOCK_FILE_NAME)
-            with open(self.MOCK_FILE_NAME, "r") as f:
-                return json.load(f)
+            try:
+                with open(self.MOCK_FILE_NAME, "r") as f:
+                    return json.load(f)
+            except IOError as e:
+                self.err("reading file '%s' failed: %s"% (os.path.abspath(self.MOCK_FILE_NAME),
+                    str(e)))
+            except ValueError as e:
+                self.err("reading file '%s' content failed: %s"% (os.path.abspath(self.MOCK_FILE_NAME),
+                    str(e)))
         return {}
 
     def mock_write(self, mock_ids):
@@ -189,8 +196,15 @@ class MbedLsToolsBase:
         """
         if self.DEBUG_FLAG:
             self.debug(self.mock_write.__name__, "writing %s"% self.MOCK_FILE_NAME)
-        with open(self.MOCK_FILE_NAME, "w") as f:
-            f.write(json.dumps(mock_ids, indent=4))
+        try:
+            with open(self.MOCK_FILE_NAME, "w") as f:
+                f.write(json.dumps(mock_ids, indent=4))
+        except IOError as e:
+            self.err("reading file '%s' failed: %s"% (os.path.abspath(self.MOCK_FILE_NAME),
+                str(e)))
+        except ValueError as e:
+            self.err("reading file '%s' content failed: %s"% (os.path.abspath(self.MOCK_FILE_NAME),
+                str(e)))
 
     def retarget_read(self):
         """! Load retarget data from local file
@@ -199,8 +213,15 @@ class MbedLsToolsBase:
         if os.path.isfile(self.RETARGET_FILE_NAME):
             if self.DEBUG_FLAG:
                 self.debug(self.retarget_read.__name__, "reading retarget file %s"% self.RETARGET_FILE_NAME)
-            with open(self.RETARGET_FILE_NAME, "r") as f:
-                return json.load(f)
+            try:
+                with open(self.RETARGET_FILE_NAME, "r") as f:
+                    return json.load(f)
+            except IOError as e:
+                self.err("reading file '%s' failed: %s"% (os.path.abspath(self.RETARGET_FILE_NAME),
+                    str(e)))
+            except ValueError as e:
+                self.err("reading file '%s' content failed: %s"% (os.path.abspath(self.RETARGET_FILE_NAME),
+                    str(e)))
         return {}
 
     def retarget(self):
@@ -271,12 +292,15 @@ class MbedLsToolsBase:
                 platform_names[platform_name] += 1
             # Assign normalized, unique string at the end of target name: TARGET_NAME[x] where x is an ordinal integer
             mbeds[i]['platform_name_unique'] = "%s[%d]" % (platform_name, platform_names[platform_name])
+
             # Retarget values from retarget (mbedls.json) file
             if self.retarget_data and 'target_id' in val:
                 target_id = val['target_id']
-                mbed[i].update(self.retarget_data[target_id])
-                if self.DEBUG_FLAG:
-                    self.debug(self.list_mbeds_ext.__name__, ("retargeting", target_id, mbed[i]))
+                if target_id in self.retarget_data:
+                    mbeds[i].update(self.retarget_data[target_id])
+                    if self.DEBUG_FLAG:
+                        self.debug(self.list_mbeds_ext.__name__, ("retargeting", target_id, mbed[i]))
+
             if self.DEBUG_FLAG:
                 self.debug(self.list_mbeds_ext.__name__, (mbeds[i]['platform_name_unique'], val['target_id']))
         return mbeds

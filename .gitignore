@@ -4,6 +4,7 @@ __pycache__/
 
 # mbed-ls related files
 .mbedls-mock
+mbedls.json
 
 # C extensions
 *.so
