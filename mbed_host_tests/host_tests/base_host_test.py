@@ -75,17 +75,13 @@ class HostTestCallbackBase(BaseHostTestAbstract):
 
     def _callback_forward(self, key, value, timestamp):
         """! We want to print on stdout things Greentea can capture"""
-        if key in self.printable:
-            self.print_kv(key, value)
+        pass
 
     def _assign_callbacks(self):
         """! Assigns default callback handlers
         """
         for key in self.printable:
             self.callbacks[key] = self._callback_forward
-
-    def print_kv(self, key, value):
-        print "FORWARD: {{%s;%s}}"% (key, value)
 
     def register_callback(self, key, callback):
         if type(key) is not str:

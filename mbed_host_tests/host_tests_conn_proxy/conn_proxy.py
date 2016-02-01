@@ -42,7 +42,7 @@ class SerialConnectorPrimitive(object):
         sleep(program_cycle_s)
 
     def send_break(self, delay=0.5):
-        self.logger.prn_inf("reset device (send_break(%f sec))"% round(delay, 2))
+        self.logger.prn_inf("reset device (send_break(%.2f sec))"% delay)
         if self.serial:
             self.serial.send_break(delay)
         
