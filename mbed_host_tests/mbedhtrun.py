@@ -23,24 +23,6 @@ from mbed_host_tests import DefaultTestSelector         # Default adapter for De
 from mbed_host_tests import init_host_test_cli_params   # Provided command line options
 
 
-def parent_monitor_thread(selector):
-    """
-    Monitors that parent is still connected to the child via stdin pipe. When pipe is disconnected assumes that parent
-    wants it to exit. Example: in timeout situations.
-
-    :param selector:
-    :return:
-    """
-    while True:
-        try:
-            c = sys.stdin.read(1)
-            if c is None or len(c) == 0:    # read returns None or empty string when stdin is closed.
-                break
-        except IOError:     # Error on pipe should have same behavior as stdin close.
-            break
-    selector.abort()    # Tell selector to abort
-
-
 def main():
     """! This function drives command line tool 'mbedhtrun' which is using DefaultTestSelector
 
@@ -49,14 +31,9 @@ def main():
     """
     test_selector = DefaultTestSelector(init_host_test_cli_params())
     try:
-        if not sys.stdin.isatty(): # Only monitor stdin if started from a parent process.
-            t = threading.Thread(target=parent_monitor_thread, args=(test_selector,))
-            t.start()   # This thread will shutdown automatically after stdin is closed on returning from main()
-        test_selector.run()
+        test_selector.execute()
     except (KeyboardInterrupt, SystemExit):
         test_selector.finish()
         raise
-    except:
-        pass
     else:
         test_selector.finish()

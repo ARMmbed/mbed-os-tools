@@ -30,15 +30,18 @@ import sys
 import imp
 import json
 import inspect
+from multiprocessing import Process, Queue, Lock
+
 from os import listdir
 from os.path import isfile, join, abspath
-from time import sleep
+from time import sleep, time
 from optparse import OptionParser
 
 import host_tests_plugins
 from host_tests_registry import HostRegistry
 from host_tests import BaseHostTest
-
+from host_tests_conn_proxy import conn_process
+from host_tests_conn_proxy import HtrunLogger
 
 # Host test supervisors
 from host_tests.echo import EchoTest
@@ -335,85 +338,6 @@ class DefaultTestSelector(DefaultTestSelectorBase):
         serial_port.close()
         return True
 
-    def print_plugin_list(self):
-        """! Prints current plugin status
-            @Detail For devel & debug purposes
-        """
-
-    def setup(self):
-        """! Additional setup before work-flow execution
-        """
-        pass
-
-    def run(self):
-        """! This function will perform extra setup and proceed with test selector's work flow
-        @details This function will call execute() but first will call setup() to perform extra actions
-        """
-        print "HOST: My PID is %d"% os.getpid()
-        if self.aborted:
-            return
-        self.setup()    # Additional setup (optional before execute() call)
-
-        if self.aborted:
-            return
-        if self.mbed.options:
-            # We would like to run some binaries, not as tests but as examples, demos etc.
-            # In this case we will use host-tests to just print console output
-            if self.mbed.options.run_binary:
-                self.execute_run()
-                return
-        # Normal host test path: flash, reset, host test execution, grab test results, end
-        if self.aborted:
-            return
-        self.execute()
-
-    def execute_run(self):
-        """! This function implements a feature which allows users to simply
-            flash, reset and run binary without host test instrumentation
-
-        @return This function doesn't return. It prints result on serial port from host test supervisor.
-                Test result string is cough by test framework
-
-        @details This feature is sensitive for flags such as --skip-reset or --skip-flashing
-        """
-        if self.aborted:
-            return
-        # Copy image to device
-        if self.options.skip_flashing is False:
-            self.notify("HOST: Copy image onto target...")
-            result = self.mbed.copy_image()
-            if not result:
-                self.print_result(self.RESULT_IOERR_COPY)
-        else:
-            self.notify("HOST: Image copy onto target SKIPPED!")
-
-        if self.aborted:
-            return
-        # Initialize and open target's serial port (console)
-        self.notify("HOST: Initialize serial port...")
-        result = self.mbed.init_serial()
-        if not result:
-            self.print_result(self.RESULT_IO_SERIAL)
-
-        if self.aborted:
-            return
-        # Reset device
-        if self.options.skip_reset is False:
-            self.notify("HOST: Reset target...")
-            result = self.mbed.reset()
-            if not result:
-                self.print_result(self.RESULT_IO_SERIAL)
-        else:
-            self.notify("HOST: Target reset SKIPPED!")
-
-        # Run binary and grab and print console output
-        # Read serial and wait for binary execution end
-        if self.aborted:
-            return
-        
-        test_supervisor = get_host_test("run_binary_auto")
-        self.run_test(test_supervisor)
-                
     def execute(self):
         """! Test runner for host test.
 
@@ -430,8 +354,6 @@ class DefaultTestSelector(DefaultTestSelectorBase):
                  and test execution timeout will be measured.
         """
         # Copy image to device
-        if self.aborted:
-            return
         if self.options.skip_flashing is False:
             self.notify("HOST: Copy image onto target...")
             result = self.mbed.copy_image()
@@ -441,80 +363,118 @@ class DefaultTestSelector(DefaultTestSelectorBase):
         else:
             self.notify("HOST: Copy image onto target... SKIPPED!")
 
-        if self.aborted:
-            return
         # Initialize and open target's serial port (console)
-        self.notify("HOST: Initialize serial port...")
-        result = self.mbed.init_serial()
-        if not result:
-            self.print_result(self.RESULT_IO_SERIAL)
-            return  # No need to continue, we can't open serial port
 
-        if self.aborted:
-            return
-        # Reset device
-        if self.options.skip_reset is False:
-            self.notify("HOST: Reset target...")
-            result = self.mbed.reset()
-            if not result:
-                self.print_result(self.RESULT_IO_SERIAL)
-                return
-        else:
-            self.notify("HOST: Reset target... SKIPPED!")
-
-        # Run test
-        if self.aborted:
-            return
-        try:
-            CONFIG = self.detect_test_config(verbose=True) # print CONFIG
-
-            result = None
-            if "host_test_name" in CONFIG:
-                if is_host_test(CONFIG["host_test_name"]):
-                    test_supervisor = get_host_test(CONFIG["host_test_name"])
-                    result = self.run_test(test_supervisor)
-                else:
-                    self.notify("HOST: Error! Unknown host test name '%s' (use 'mbedhtrun --list' to verify)!"% CONFIG["host_test_name"])
-                    self.notify("HOST: Error! You can use switch '-e <dir>' to specify local directory with host tests to load")
-                    self.print_result(self.RESULT_ERROR)
-            else:
-                self.notify("HOST: Error! No host test name defined in preamble")
-                self.print_result(self.RESULT_ERROR)
-
-            if result is not None:
-                self.print_result(result)
-            else:
-                self.notify("HOST: Passive mode...")
-        except Exception, e:
-            print str(e)
+        result = self.run_test()
+        if result == True:
+            self.print_result(self.RESULT_SUCCESS)
+        elif result == False:
+            self.print_result(self.RESULT_FAILURE)
+        elif result is None:
             self.print_result(self.RESULT_ERROR)
 
-    def run_test(self, test_supervisor):
+    def run_test(self):
         result = None
-        try:
-            self.test_supervisor = test_supervisor
-            self.test_supervisor.setup()
-            result = self.test_supervisor.test(self)    # This is blocking, waits for {end}
-        except Exception, e:
-            print str(e)
-            self.print_result(self.RESULT_ERROR)
-        finally:
+        timeout_duration = 10
+        prn_lock = Lock()
+        event_queue = Queue()       # Events from DUT to host
+        dut_event_queue = Queue()   # Events from host to DUT {k;v}
+        logger = HtrunLogger(prn_lock)
+
+        callbacks = {
+            "__notify_prn" : lambda k, v, t : logger.prn_inf(v)
+        }
+
+        # if True we will allow host test to consume all events after test is funished
+        callbacks_consume = True
+        self.test_supervisor = None
+
+        config = {
+            "digest" : "serial",
+            "port" : self.mbed.port,
+            "baudrate" : self.mbed.serial_baud,
+            "program_cycle_s" : self.options.program_cycle_s
+            }
+
+        logger.prn_inf("starting host test process...")
+        start_time = time()
+        args = (event_queue, prn_lock, config)
+        p = Process(target=conn_process, args=args)
+        p.deamon = True
+        p.start()
+
+        consume_preamble_events = True
+        while (time() - start_time) < timeout_duration:
+            # Handle default events like timeout, host_test_name, ...
+            if event_queue.qsize():
+                (key, value, timestamp) = event_queue.get()
+
+                if consume_preamble_events:
+                    if key == 'timeout':
+                        logger.prn_inf("setting timeout to: %d sec"% int(value))
+                        start_time = time()
+                        timeout_duration = int(value) # New timeout
+                    elif key == 'host_test_name':
+                        self.test_supervisor = get_host_test(value)
+                        if self.test_supervisor:
+                            self.test_supervisor.event_queue = event_queue
+                            self.test_supervisor.setup()
+                            logger.prn_inf("host test setup() call...")
+                            if self.test_supervisor.callbacks:
+                                callbacks.update(self.test_supervisor.callbacks)
+                                logger.prn_inf("CALLBACKs updated")
+                            else:
+                                logger.prn_wrn("no CALLBACKs specified by host test")
+                            logger.prn_inf("host test detected: %s"% value)
+                        else:
+                            logger.prn_err("host test not detected: %s"% value)
+                        consume_preamble_events = False
+                    elif key == 'sync':
+                        logger.prn_inf("sync KV found, uuid=%s, timestamp=%f"% (str(value), timestamp))
+                    else:
+                        logger.prn_err("orphan event in preamble phase: {{%s;%s}}, timestamp=%f"% (key, str(value), timestamp))
+                else:
+                    if key == '__notify_complete':
+                        logger.prn_inf(key)
+                        callbacks_consume = value
+                        break
+                    elif key in callbacks:
+                        callbacks[key](key, value, timestamp)
+                    else:
+                        logger.prn_err("orphan event in main phase: {{%s;%s}}, timestamp=%f"% (key, str(value), timestamp))
+
+        time_duration = time() - start_time
+        logger.prn_inf("test suite run finished after %.2f..."% time_duration)
+
+        p.terminate()
+        logger.prn_inf("exited with code: %s"% str(p.exitcode))
+
+        # Callbacks...
+        logger.prn_inf("%d events in queue"% event_queue.qsize())
+
+        if self.test_supervisor:
+            if callbacks_consume:
+                # We are consuming all remaining events if requested
+                while event_queue.qsize():
+                    (key, value, timestamp) = event_queue.get()
+                    if key in callbacks:
+                        callbacks[key](key, value, timestamp)
+                    else:
+                        logger.prn_inf(">>> orphan event: {{%s;%s}}, timestamp=%f"% (key, str(value), timestamp))
+
+            result = self.test_supervisor.test()
+            logger.prn_inf("Host test test() result: %s"% str(result))
             self.test_supervisor.teardown()
+
         return result
-    
+
     def abort(self):
         """
         Handler for abort instruction from mbed greentea.
 
         :return:
         """
-        self.notify("HOST: Aborted by parent process!")
-        self.aborted = True
-        try:
-            self.test_supervisor.teardown()
-        finally:
-            self.finish()
-
+        pass
 
 def init_host_test_cli_params():
     """! Function creates CLI parser object and returns populated options object.

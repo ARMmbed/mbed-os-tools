@@ -15,28 +15,110 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-class BaseHostTest():
+from time import time
+
+
+class BaseHostTestAbstract(object):
     """ Base class for each host-test test cases with standard
         setup, test and teardown set of functions
     """
 
     name = ''   # name of the host test (used for local registration)
+    event_queue = None
+
+    def _notify(self, text, nl=True):
+        if self.event_queue:
+            if nl:
+                text += '\n'
+            self.event_queue.put(('__notify_prn', text, time()))
+
+    def notify_complete(self, consume=True):
+        """! Notify htrun that host test finished processing
+        @param consume If True htrun will process (consume) all remaining events
+        """
+        if self.event_queue:
+            self.event_queue.put(('__notify_complete', consume, time()))
+
+    def log(self, text):
+        self._notify(text)
 
     def setup(self):
-        """ Set up function, initialize your test case dynamic resources in this function
-        """
         pass
 
-    def test(self, selftest):
-        """ Blocking test execution process:
-
-            setup()
-            test()
-            teardown()
-        """
+    def test(self):
         pass
 
     def teardown(self):
-        """ Tear down function, free your test case dynamic resources in this function
+        pass
+
+
+class HostTestCallbackBase(BaseHostTestAbstract):
+
+    def __init__(self):
+        BaseHostTestAbstract.__init__(self)
+        self.callbacks = {}
+        self._restricted_callbacks = ['coverage_start',
+            'testcase_start',
+            'testcase_finish'
+            ]
+
+        self.printable = ['coverage_start',
+            'testcase_start',
+            'testcase_finish'
+            ]
+
+        self._assign_callbacks()
+
+    def _callback_default(self, key, value, timestamp):
+        """! Default callback """
+        print "CALLBACK:", key, value, timestamp
+
+    def _callback_forward(self, key, value, timestamp):
+        """! We want to print on stdout things Greentea can capture"""
+        if key in self.printable:
+            self.print_kv(key, value)
+
+    def _assign_callbacks(self):
+        """! Assigns default callback handlers
         """
+        for key in self.printable:
+            self.callbacks[key] = self._callback_forward
+
+    def print_kv(self, key, value):
+        print "FORWARD: {{%s;%s}}"% (key, value)
+
+    def register_callback(self, key, callback):
+        if type(key) is not str:
+            raise TypeError
+
+        if key in self._restricted_callbacks:
+            raise ValueError
+
+        if not callable(callback):
+            raise TypeError
+
+        self.callbacks[key] = callback
+
+    def setup(self):
+        pass
+
+    def test(self):
+        pass
+
+    def teardown(self):
+        pass
+
+
+class BaseHostTest(HostTestCallbackBase):
+
+    def __init__(self):
+        HostTestCallbackBase.__init__(self)
+
+    def setup(self):
+        pass
+
+    def test(self):
+        pass
+
+    def teardown(self):
         pass
