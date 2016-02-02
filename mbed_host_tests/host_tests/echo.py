@@ -15,9 +15,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import sys
+
 import uuid
-from sys import stdout
 from mbed_host_tests import BaseHostTest
 
 class EchoTest(BaseHostTest):
@@ -25,6 +24,8 @@ class EchoTest(BaseHostTest):
     result = None
     COUNT_MAX = 10
     count = 0
+    uuid_sent = []
+    uuid_recv = []
 
     def _callback_end(self, key, value, timestamp):
         pass
@@ -32,24 +33,29 @@ class EchoTest(BaseHostTest):
     def _callback_exit(self, key, value, timestamp):
         pass
 
+    def _send_echo_uuid(self):
+        str_uuid = str(uuid.uuid4())
+        self.send_kv("echo", str_uuid)
+        self.uuid_sent.append(str_uuid)
+
     def _callback_echo(self, key, value, timestamp):
-        if self.count < self.COUNT_MAX:
-            self.send_kv("echo", uuid.uuid4())
+        self.uuid_recv.append(value)
         if key == 'echo':
             self.count += 1
-        if self.count == 10:
+        if self.count == self.COUNT_MAX:
             self.notify_complete()
+        else:
+            self._send_echo_uuid()
 
     def setup(self):
         self.register_callback("end", self._callback_end)
         self.register_callback("exit", self._callback_exit)
         self.register_callback("echo", self._callback_echo)
 
-        self.send_kv("echo", uuid.uuid4())
+        self._send_echo_uuid()  # Echo no. 1
 
     def test(self):
-        if self.count >= self.COUNT_MAX:
-            self.result = True
+        self.result = self.uuid_sent == self.uuid_recv
         return self.result
 
     def teardown(self):
