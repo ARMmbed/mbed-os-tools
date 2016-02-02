@@ -20,17 +20,14 @@ from mbed_host_tests import BaseHostTest
 class HelloTest(BaseHostTest):
     HELLO_WORLD = "Hello World"
 
-    def test(self, selftest):
-        c = selftest.mbed.serial_readline()
-        if c is None:
-           return selftest.RESULT_IO_SERIAL
-        selftest.notify("Read %d bytes:"% len(c))
-        selftest.notify(c.strip())
+    result = None
 
-        result = True
-        # Because we can have targetID here let's try to decode
-        if len(c) < len(self.HELLO_WORLD):
-            result = False
-        else:
-            result = self.HELLO_WORLD in c
-        return selftest.RESULT_SUCCESS if result else selftest.RESULT_FAILURE
+    def _callback_hello_world(self, key, value, timestamp):
+        self.result = value == self.HELLO_WORLD
+        self.notify_complete()
+
+    def setup(self):
+        self.register_callback("hello_world", self._callback_hello_world)
+
+    def test(self):
+        return self.result
