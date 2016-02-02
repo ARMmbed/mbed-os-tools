@@ -227,6 +227,9 @@ class DefaultTestSelector(DefaultTestSelectorBase):
         """
         self.options = options
 
+        self.prn_lock = Lock()
+        self.logger = HtrunLogger(self.prn_lock)
+
         # Handle extra command from
         if options:
             if options.enum_host_tests:
@@ -355,13 +358,13 @@ class DefaultTestSelector(DefaultTestSelectorBase):
         """
         # Copy image to device
         if self.options.skip_flashing is False:
-            self.notify("HOST: Copy image onto target...")
+            self.logger.prn_inf("copy image onto target...")
             result = self.mbed.copy_image()
             if not result:
                 self.print_result(self.RESULT_IOERR_COPY)
                 return  # No need to continue, we can't flash device
         else:
-            self.notify("HOST: Copy image onto target... SKIPPED!")
+            self.logger.prn_inf("copy image onto target... SKIPPED!")
 
         # Initialize and open target's serial port (console)
 
@@ -375,14 +378,12 @@ class DefaultTestSelector(DefaultTestSelectorBase):
 
     def run_test(self):
         result = None
-        timeout_duration = 10
-        prn_lock = Lock()
+        timeout_duration = 10       # Default test case timeout
         event_queue = Queue()       # Events from DUT to host
         dut_event_queue = Queue()   # Events from host to DUT {k;v}
-        logger = HtrunLogger(prn_lock)
 
         callbacks = {
-            "__notify_prn" : lambda k, v, t : logger.prn_inf(v)
+            "__notify_prn" : lambda k, v, t : self.logger.prn_inf(v)
         }
 
         # if True we will allow host test to consume all events after test is funished
@@ -396,9 +397,9 @@ class DefaultTestSelector(DefaultTestSelectorBase):
             "program_cycle_s" : self.options.program_cycle_s
             }
 
-        logger.prn_inf("starting host test process...")
+        self.logger.prn_inf("starting host test process...")
         start_time = time()
-        args = (event_queue, prn_lock, config)
+        args = (event_queue, dut_event_queue, self.prn_lock, config)
         p = Process(target=conn_process, args=args)
         p.deamon = True
         p.start()
@@ -411,46 +412,47 @@ class DefaultTestSelector(DefaultTestSelectorBase):
 
                 if consume_preamble_events:
                     if key == 'timeout':
-                        logger.prn_inf("setting timeout to: %d sec"% int(value))
+                        self.logger.prn_inf("setting timeout to: %d sec"% int(value))
                         start_time = time()
                         timeout_duration = int(value) # New timeout
                     elif key == 'host_test_name':
                         self.test_supervisor = get_host_test(value)
                         if self.test_supervisor:
                             self.test_supervisor.event_queue = event_queue
+                            self.test_supervisor.dut_event_queue = dut_event_queue
                             self.test_supervisor.setup()
-                            logger.prn_inf("host test setup() call...")
+                            self.logger.prn_inf("host test setup() call...")
                             if self.test_supervisor.callbacks:
                                 callbacks.update(self.test_supervisor.callbacks)
-                                logger.prn_inf("CALLBACKs updated")
+                                self.logger.prn_inf("CALLBACKs updated")
                             else:
-                                logger.prn_wrn("no CALLBACKs specified by host test")
-                            logger.prn_inf("host test detected: %s"% value)
+                                self.logger.prn_wrn("no CALLBACKs specified by host test")
+                            self.logger.prn_inf("host test detected: %s"% value)
                         else:
-                            logger.prn_err("host test not detected: %s"% value)
+                            self.logger.prn_err("host test not detected: %s"% value)
                         consume_preamble_events = False
                     elif key == 'sync':
-                        logger.prn_inf("sync KV found, uuid=%s, timestamp=%f"% (str(value), timestamp))
+                        self.logger.prn_inf("sync KV found, uuid=%s, timestamp=%f"% (str(value), timestamp))
                     else:
-                        logger.prn_err("orphan event in preamble phase: {{%s;%s}}, timestamp=%f"% (key, str(value), timestamp))
+                        self.logger.prn_err("orphan event in preamble phase: {{%s;%s}}, timestamp=%f"% (key, str(value), timestamp))
                 else:
                     if key == '__notify_complete':
-                        logger.prn_inf(key)
+                        self.logger.prn_inf(key)
                         callbacks_consume = value
                         break
                     elif key in callbacks:
                         callbacks[key](key, value, timestamp)
                     else:
-                        logger.prn_err("orphan event in main phase: {{%s;%s}}, timestamp=%f"% (key, str(value), timestamp))
+                        self.logger.prn_err("orphan event in main phase: {{%s;%s}}, timestamp=%f"% (key, str(value), timestamp))
 
         time_duration = time() - start_time
-        logger.prn_inf("test suite run finished after %.2f..."% time_duration)
+        self.logger.prn_inf("test suite run finished after %.2f..."% time_duration)
 
         p.terminate()
-        logger.prn_inf("exited with code: %s"% str(p.exitcode))
+        self.logger.prn_inf("exited with code: %s"% str(p.exitcode))
 
         # Callbacks...
-        logger.prn_inf("%d events in queue"% event_queue.qsize())
+        self.logger.prn_inf("%d events in queue"% event_queue.qsize())
 
         if self.test_supervisor:
             if callbacks_consume:
@@ -460,10 +462,10 @@ class DefaultTestSelector(DefaultTestSelectorBase):
                     if key in callbacks:
                         callbacks[key](key, value, timestamp)
                     else:
-                        logger.prn_inf(">>> orphan event: {{%s;%s}}, timestamp=%f"% (key, str(value), timestamp))
+                        self.logger.prn_inf(">>> orphan event: {{%s;%s}}, timestamp=%f"% (key, str(value), timestamp))
 
             result = self.test_supervisor.test()
-            logger.prn_inf("Host test test() result: %s"% str(result))
+            self.logger.prn_inf("Host test test() result: %s"% str(result))
             self.test_supervisor.teardown()
 
         return result

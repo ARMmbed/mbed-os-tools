@@ -22,32 +22,35 @@ from mbed_host_tests import BaseHostTest
 
 class EchoTest(BaseHostTest):
 
-    # Test parameters
-    TEST_SERIAL_BAUDRATE = 115200
-    TEST_LOOP_COUNT = 50
+    result = None
+    COUNT_MAX = 10
+    count = 0
 
-    def test(self, selftest):
-        """ This host test will use mbed serial port with
-            baudrate 115200 to perform echo test on that port.
-        """
-        # Custom initialization for echo test
-        selftest.mbed.init_serial_params(serial_baud=self.TEST_SERIAL_BAUDRATE)
-        selftest.mbed.init_serial()
+    def _callback_end(self, key, value, timestamp):
+        pass
 
-        # Test function, return True or False to get standard test notification on stdout
-        selftest.mbed.flush()
-        selftest.notify("HOST: Starting the ECHO test")
-        result = True
-        for i in range(0, self.TEST_LOOP_COUNT):
-            TEST_STRING = str(uuid.uuid4()) + "\n"
-            selftest.mbed.serial_write(TEST_STRING)
-            c = selftest.mbed.serial_readline()
-            if c is None:
-                return selftest.RESULT_IO_SERIAL
-            if c.strip() != TEST_STRING.strip():
-                selftest.notify('HOST: "%s" != "%s"'% (c, TEST_STRING))
-                result = False
-            else:
-                sys.stdout.write('.')
-                stdout.flush()
-        return selftest.RESULT_SUCCESS if result else selftest.RESULT_FAILURE
+    def _callback_exit(self, key, value, timestamp):
+        pass
+
+    def _callback_echo(self, key, value, timestamp):
+        if self.count < self.COUNT_MAX:
+            self.send_kv("echo", uuid.uuid4())
+        if key == 'echo':
+            self.count += 1
+        if self.count == 10:
+            self.notify_complete()
+
+    def setup(self):
+        self.register_callback("end", self._callback_end)
+        self.register_callback("exit", self._callback_exit)
+        self.register_callback("echo", self._callback_echo)
+
+        self.send_kv("echo", uuid.uuid4())
+
+    def test(self):
+        if self.count >= self.COUNT_MAX:
+            self.result = True
+        return self.result
+
+    def teardown(self):
+        pass

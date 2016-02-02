@@ -48,3 +48,12 @@ class HtrunLogger(object):
 
     def prn_inf(self, text, timestamp=None):
         self._prn_log('INF', text, timestamp)
+
+    def prn_txt(self, text, timestamp=None):
+        self._prn_log('TXT', text, timestamp)
+
+    def prn_txd(self, text, timestamp=None):
+        self._prn_log('TXD', text, timestamp)
+
+    def prn_rxd(self, text, timestamp=None):
+        self._prn_log('RXD', text, timestamp)

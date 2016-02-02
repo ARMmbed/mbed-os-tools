@@ -34,18 +34,22 @@ class SerialConnectorPrimitive(object):
 
         self.logger.prn_inf("Serial port=%s baudrate=%s program_cycle_s=%s"% (str(port), (baudrate), (program_cycle_s)))
         try:
-            self.serial = Serial(port, baudrate=baudrate, timeout=0)
+            self.serial = Serial(port, baudrate=baudrate, timeout=0.2)
         except SerialException as e:
             self.logger.prn_err(str(e))
             self.serial = None
         self.send_break()
-        sleep(program_cycle_s)
+        self.program_cycle_wait(program_cycle_s)
 
     def send_break(self, delay=0.5):
         self.logger.prn_inf("reset device (send_break(%.2f sec))"% delay)
         if self.serial:
             self.serial.send_break(delay)
-        
+
+    def program_cycle_wait(self, program_cycle_s):
+        self.logger.prn_inf("wait after flashing (sleep(%.2f sec))"% program_cycle_s)
+        sleep(program_cycle_s)
+
     def read(self, count):
         c = ''
         try:
@@ -63,10 +67,12 @@ class SerialConnectorPrimitive(object):
         except SerialException as e:
             self.serial = None
             self.logger.prn_err(str(e))
+        return payload
 
     def write_kv(self, key, value):
         kv_buff = "{{%s;%s}}\n"% (key, value)
         self.write(kv_buff)
+        return kv_buff
 
     def flush(self):
         if self.serial:
@@ -76,15 +82,15 @@ class SerialConnectorPrimitive(object):
         if self.serial:
             self.serial.close()
 
-            
-def conn_process(event_queue, prn_lock, config):
+
+def conn_process(event_queue, dut_event_queue, prn_lock, config):
 
     port = config['port'] if 'port' in config else None
     baudrate = config['baudrate'] if 'baudrate' in config else None
     logger = HtrunLogger(prn_lock)
 
-    logger.prn_inf("Starting process... ")
-    
+    logger.prn_inf("starting connection process... ")
+
     connector = SerialConnectorPrimitive(port,
         baudrate,
         prn_lock,
@@ -94,33 +100,44 @@ def conn_process(event_queue, prn_lock, config):
     buff = ''
     buff_idx = 0
     sync_uuid = str(uuid.uuid4())
-    
+
     # We will ignore all kv pairs before we get sync back
     sync_uuid_discovered = False
 
-    logger.prn_inf("Sending preamble...")
+    logger.prn_inf("sending preamble '%s'..."% sync_uuid)
 
     connector.write_kv('sync', sync_uuid)
 
     while True:
-        data = connector.read(512)
-        buff += data
+        if dut_event_queue.qsize():
+            (key, value, timestamp) = dut_event_queue.get()
+            kv_buff = connector.write_kv(key, value)
+            logger.prn_txd(kv_buff)
 
-        m = kv.search(buff[buff_idx:])
-        if m:
-            (key, value) = m.groups()
-            kv_str = m.group(0)
-            buff_idx = buff.find(kv_str, buff_idx) + len(kv_str)
-            if sync_uuid_discovered:
-                event_queue.put((key, value, time()))
-                logger.prn_inf("found KV pair in stream: {{%s;%s}}"% (key, value))
-            else:
-                if key == 'sync':
-                    if value == sync_uuid:
-                        sync_uuid_discovered = True
+        data = connector.read(1024)
+        if data:
+
+            for line in data.split('\n'):
+                if line:
+                    logger.prn_rxd(line)
+
+            buff += data
+            while kv.search(buff[buff_idx:]):
+                m = kv.search(buff[buff_idx:])
+                if m:
+                    (key, value) = m.groups()
+                    kv_str = m.group(0)
+                    buff_idx = buff.find(kv_str, buff_idx) + len(kv_str)
+                    if sync_uuid_discovered:
                         event_queue.put((key, value, time()))
-                        logger.prn_inf("found KV pair in stream: {{%s;%s}}, queued..."% (key, value))
+                        logger.prn_inf("found KV pair in stream: {{%s;%s}}"% (key, value))
                     else:
-                        logger.prn_wrn("found SYNC pair in stream: {{%s;%s}}, queued..."% (key, value))
-                else:
-                    logger.prn_inf("found KV pair in stream: {{%s;%s}}, ignoring..."% (key, value))
+                        if key == 'sync':
+                            if value == sync_uuid:
+                                sync_uuid_discovered = True
+                                event_queue.put((key, value, time()))
+                                logger.prn_inf("found KV pair in stream: {{%s;%s}}, queued..."% (key, value))
+                            else:
+                                logger.prn_wrn("found SYNC pair in stream: {{%s;%s}}, queued..."% (key, value))
+                        else:
+                            logger.prn_inf("found KV pair in stream: {{%s;%s}}, ignoring..."% (key, value))

@@ -80,7 +80,6 @@ class Mbed:
                 print "MBED: Test configuration JSON Unexpected error:"
                 raise
 
-        print 'HOST: Instrumentation: "%s" and disk: "%s"' % (self.port, self.disk)
 
     def copy_image(self, image_path=None, disk=None, copy_method=None, port=None):
         """! Closure for copy_image_raw() method.

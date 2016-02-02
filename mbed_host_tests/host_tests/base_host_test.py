@@ -24,9 +24,10 @@ class BaseHostTestAbstract(object):
     """
 
     name = ''   # name of the host test (used for local registration)
-    event_queue = None
+    event_queue = None      # To main even loop
+    dut_event_queue = None  # To DUT
 
-    def _notify(self, text, nl=True):
+    def _notify_prn(self, text, nl=True):
         if self.event_queue:
             if nl:
                 text += '\n'
@@ -40,7 +41,15 @@ class BaseHostTestAbstract(object):
             self.event_queue.put(('__notify_complete', consume, time()))
 
     def log(self, text):
-        self._notify(text)
+        self._notify_prn(text)
+
+    def _notify_dut(self, key, value):
+        """! Send data over serial to DUT """
+        if self.event_queue:
+            self.dut_event_queue.put((key, value, time()))
+
+    def send_kv(self, key, value):
+        self._notify_dut(key, value)
 
     def setup(self):
         pass
@@ -71,10 +80,11 @@ class HostTestCallbackBase(BaseHostTestAbstract):
 
     def _callback_default(self, key, value, timestamp):
         """! Default callback """
-        print "CALLBACK:", key, value, timestamp
+        self.log("CALLBACK: key=%s, value=%s, timestamp=%f"% (key, value, timestamp))
 
     def _callback_forward(self, key, value, timestamp):
         """! We want to print on stdout things Greentea can capture"""
+        # TODO:
         pass
 
     def _assign_callbacks(self):
