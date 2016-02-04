@@ -23,8 +23,8 @@ class RTCTest(BaseHostTest):
     PATTERN_RTC_VALUE = "\[(\d+)\] \[(\d+-\d+-\d+ \d+:\d+:\d+ [AaPpMm]{2})\]"
     re_detect_rtc_value = re.compile(PATTERN_RTC_VALUE)
 
+    __result = None
     timestamp = None
-    result = None
     rtc_reads = []
 
     def _callback_timestamp(self, key, value, timestamp):
@@ -41,15 +41,18 @@ class RTCTest(BaseHostTest):
         self.register_callback('rtc', self._callback_rtc)
         self.register_callback('exit', self._callback_exit)
 
-    def test(self):
+    def result(self):
         def check_strftimes_format(t):
             m = self.re_detect_rtc_value.search(t)
             if m and len(m.groups()):
                 sec, time_str = int(m.groups()[0]), m.groups()[1]
-                correct_time_str = strftime("%Y-%m-%d %H:%M:%S %p", gmtime(float(sec)))
+                correct_time_str = strftime("%Y-%m-%d %H:%M:%S", gmtime(float(sec)))
                 return time_str == correct_time_str
             return False
 
         ts = [t for _, t, _ in self.rtc_reads]
-        self.result = all(filter(check_strftimes_format, ts))
-        return self.result
+        self.__result = all(filter(check_strftimes_format, ts))
+        return self.__result
+
+    def teardown(self):
+        pass

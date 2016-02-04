@@ -24,23 +24,16 @@ class DefaultAuto(BaseHostTest):
         output from MUT, no supervision over test running in MUT is executed.
     """
 
-    result = None
+    __result = None
 
     def _callback_end(self, key, value, timeout):
-        if value == 'success':
-            self.result = True
-        elif value == 'failure':
-            self.result = False
-
-    def _callback_exit(self, key, value, timeout):
-        self.notify_complete()
+        self.notify_complete(value == 'success')
 
     def setup(self):
         self.register_callback('end', self._callback_end)
-        self.register_callback('exit', self._callback_exit)
 
-    def test(self):
-        return self.result
+    def result(self):
+        return self.__result
 
     def teardown(self):
         pass

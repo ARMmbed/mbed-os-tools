@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
 mbed SDK
-Copyright (c) 2011-2015 ARM Limited
+Copyright (c) 2011-2016 ARM Limited
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,38 +17,50 @@ limitations under the License.
 """
 
 import re
-import sys
 import uuid
+from time import time, sleep
 from serial import Serial, SerialException
-from time import sleep, time
+from mbed_host_tests import host_tests_plugins
 from conn_proxy_logger import HtrunLogger
 
 
 class SerialConnectorPrimitive(object):
     def __init__(self, port, baudrate, prn_lock, config):
-        #ConnectorPrimitive.__init__(self)
+        self.port = port
+        self.baudrate = int(baudrate)
+        self.timeout = 0
         self.prn_lock = prn_lock
         self.config = config
-        self.logger = HtrunLogger(prn_lock)
-        program_cycle_s = int(self.config['program_cycle_s']) if 'program_cycle_s' in self.config else 4
+        self.logger = HtrunLogger(prn_lock, 'SERI')
+        self.LAST_ERROR = None
 
-        self.logger.prn_inf("Serial port=%s baudrate=%s program_cycle_s=%s"% (str(port), (baudrate), (program_cycle_s)))
+        self.logger.prn_inf("serial port=%s baudrate=%s"% (str(port), baudrate))
         try:
-            self.serial = Serial(port, baudrate=baudrate, timeout=0.2)
+            self.serial = Serial(port, baudrate=baudrate, timeout=self.timeout)
         except SerialException as e:
-            self.logger.prn_err(str(e))
             self.serial = None
-        self.send_break()
-        self.program_cycle_wait(program_cycle_s)
+            self.LAST_ERROR = "connection lost, serial.Serial(%s. %d, %d): %s"% (self.port,
+                self.baudrate,
+                self.timeout,
+                str(e))
+            self.logger.prn_err(str(e))
+        else:
+            self.reset_serial()
 
-    def send_break(self, delay=0.5):
-        self.logger.prn_inf("reset device (send_break(%.2f sec))"% delay)
-        if self.serial:
-            self.serial.send_break(delay)
+    def reset_serial(self, delay=1):
+        reset_type = self.config.get('reset_type', 'default')
+        if not reset_type:
+            reset_type = 'default'
+        disk = self.config.get('disk', None)
 
-    def program_cycle_wait(self, program_cycle_s):
-        self.logger.prn_inf("wait after flashing (sleep(%.2f sec))"% program_cycle_s)
-        sleep(program_cycle_s)
+        self.logger.prn_inf("reset device using '%s' method..."% reset_type)
+        result = host_tests_plugins.call_plugin('ResetMethod',
+            reset_type,
+            serial=self.serial,
+            disk=disk)
+        # Post-reset sleep
+        sleep(delay)
+        return result
 
     def read(self, count):
         c = ''
@@ -57,6 +69,7 @@ class SerialConnectorPrimitive(object):
                 c = self.serial.read(count)
         except SerialException as e:
             self.serial = None
+            self.LAST_ERROR = "connection lost, serial.read(%d): %s"% (count, str(e))
             self.logger.prn_err(str(e))
         return c
 
@@ -66,78 +79,125 @@ class SerialConnectorPrimitive(object):
                 self.serial.write(payload)
         except SerialException as e:
             self.serial = None
+            self.LAST_ERROR = "connection lost, serial.write(%d bytes): %s"% (len(payload), str(e))
             self.logger.prn_err(str(e))
         return payload
 
     def write_kv(self, key, value):
         kv_buff = "{{%s;%s}}\n"% (key, value)
         self.write(kv_buff)
+        self.logger.prn_txd(kv_buff)
         return kv_buff
 
     def flush(self):
         if self.serial:
             self.serial.flush()
 
+    def connected(self):
+        return bool(self.serial)
+
+    def error(self):
+        return self.LAST_ERROR
+
     def finish(self):
         if self.serial:
             self.serial.close()
 
 
+class KiViBufferWalker():
+    """! Simple auxiliary class used to walk through a buffer and search for KV tokens """
+    def __init__(self):
+        self.KIVI_REGEX = r"\{\{([\w\d_-]+);([^\}]+)\}\}"
+        self.buff = ''
+        self.buff_idx = 0
+        self.re_kv = re.compile(self.KIVI_REGEX)
+
+    def append(self, payload):
+        """! Append stream buffer with payload """
+        self.buff += payload
+
+    def search(self):
+        """! Check if there is a KV value in buffer """
+        return self.re_kv.search(self.buff[self.buff_idx:])
+
+    def get_kv(self):
+        m = self.re_kv.search(self.buff[self.buff_idx:])
+        if m:
+            (key, value) = m.groups()
+            kv_str = m.group(0)
+            self.buff_idx = self.buff.find(kv_str, self.buff_idx) + len(kv_str)
+        return (key, value, time())
+
+
 def conn_process(event_queue, dut_event_queue, prn_lock, config):
 
-    port = config['port'] if 'port' in config else None
-    baudrate = config['baudrate'] if 'baudrate' in config else None
-    logger = HtrunLogger(prn_lock)
-
+    logger = HtrunLogger(prn_lock, 'CONN')
     logger.prn_inf("starting connection process... ")
 
+    port = config.get('port')
+    baudrate = config.get('baudrate')
+
+    logger.prn_inf("initializing serial port listener... ")
     connector = SerialConnectorPrimitive(port,
         baudrate,
         prn_lock,
         config=config)
 
-    kv = re.compile(r"\{\{([\w\d_-]+);([^\}]+)\}\}")
-    buff = ''
-    buff_idx = 0
+    kv_buffer = KiViBufferWalker()
     sync_uuid = str(uuid.uuid4())
 
     # We will ignore all kv pairs before we get sync back
     sync_uuid_discovered = False
 
-    logger.prn_inf("sending preamble '%s'..."% sync_uuid)
+    # Some RXD data buffering so we can show more text per log line
+    print_data = ''
+    print_timeout = time()
 
-    connector.write_kv('sync', sync_uuid)
+    # Handshake, we will send {{sync;UUID}} preamble and wait for mirrored reply
+    logger.prn_inf("sending preamble '%s'..."% sync_uuid)
+    connector.write_kv('__sync', sync_uuid)
 
     while True:
-        if dut_event_queue.qsize():
-            (key, value, timestamp) = dut_event_queue.get()
-            kv_buff = connector.write_kv(key, value)
-            logger.prn_txd(kv_buff)
 
-        data = connector.read(1024)
+        # Check if connection is lost to serial
+        if not connector.connected():
+            error_msg = connector.error()
+            connector.finish()
+            event_queue.put(('__notify_conn_lost', error_msg, time()))
+            break
+
+        # Send data to DUT
+        if dut_event_queue.qsize():
+            (key, value, _) = dut_event_queue.get()
+            kv_tx_buff = connector.write_kv(key, value)
+
+        data = connector.read(2048)
         if data:
 
-            for line in data.split('\n'):
-                if line:
-                    logger.prn_rxd(line)
+            # We want to print RXD data every 200ms to get longer buffers
+            print_data += data
+            if ('}}' in print_data or time() - print_timeout) >= 0.2:
+                for line in print_data.split('\n'):
+                    if line:
+                        logger.prn_rxd(line)
+                print_data = ''
+                print_timeout = time()
 
-            buff += data
-            while kv.search(buff[buff_idx:]):
-                m = kv.search(buff[buff_idx:])
-                if m:
-                    (key, value) = m.groups()
-                    kv_str = m.group(0)
-                    buff_idx = buff.find(kv_str, buff_idx) + len(kv_str)
-                    if sync_uuid_discovered:
-                        event_queue.put((key, value, time()))
-                        logger.prn_inf("found KV pair in stream: {{%s;%s}}"% (key, value))
-                    else:
-                        if key == 'sync':
-                            if value == sync_uuid:
-                                sync_uuid_discovered = True
-                                event_queue.put((key, value, time()))
-                                logger.prn_inf("found KV pair in stream: {{%s;%s}}, queued..."% (key, value))
-                            else:
-                                logger.prn_wrn("found SYNC pair in stream: {{%s;%s}}, queued..."% (key, value))
+            # Stream data stream KV parsing
+            kv_buffer.append(data)
+            while kv_buffer.search():
+                key, value, timestamp = kv_buffer.get_kv()
+
+                if sync_uuid_discovered:
+                    event_queue.put((key, value, timestamp))
+                    logger.prn_inf("found KV pair in stream: {{%s;%s}}, queued..."% (key, value))
+                else:
+                    if key == '__sync':
+                        if value == sync_uuid:
+                            sync_uuid_discovered = True
+                            event_queue.put((key, value, time()))
+                            logger.prn_inf("found SYNC in stream: {{%s;%s}}, queued..."% (key, value))
                         else:
-                            logger.prn_inf("found KV pair in stream: {{%s;%s}}, ignoring..."% (key, value))
+                            logger.prn_err("found faulty SYNC in stream: {{%s;%s}}, ignored..."% (key, value))
+                    else:
+                        logger.prn_wrn("found KV pair in stream: {{%s;%s}}, ignoring..."% (key, value))

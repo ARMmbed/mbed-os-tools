@@ -1,6 +1,6 @@
 """
 mbed SDK
-Copyright (c) 2011-2013 ARM Limited
+Copyright (c) 2011-2016 ARM Limited
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -21,19 +21,13 @@ from mbed_host_tests import BaseHostTest
 
 class EchoTest(BaseHostTest):
 
-    result = None
+    __result = None
     COUNT_MAX = 10
     count = 0
     uuid_sent = []
     uuid_recv = []
 
-    def _callback_end(self, key, value, timestamp):
-        pass
-
-    def _callback_exit(self, key, value, timestamp):
-        pass
-
-    def _send_echo_uuid(self):
+    def __send_echo_uuid(self):
         str_uuid = str(uuid.uuid4())
         self.send_kv("echo", str_uuid)
         self.uuid_sent.append(str_uuid)
@@ -43,20 +37,18 @@ class EchoTest(BaseHostTest):
         if key == 'echo':
             self.count += 1
         if self.count == self.COUNT_MAX:
-            self.notify_complete()
+            self.notify_complete(False)
         else:
-            self._send_echo_uuid()
+            self.__send_echo_uuid()
 
     def setup(self):
-        self.register_callback("end", self._callback_end)
-        self.register_callback("exit", self._callback_exit)
         self.register_callback("echo", self._callback_echo)
 
-        self._send_echo_uuid()  # Echo no. 1
+        self.__send_echo_uuid()  # Echo no. 1
 
-    def test(self):
-        self.result = self.uuid_sent == self.uuid_recv
-        return self.result
+    def result(self):
+        self.__result = self.uuid_sent == self.uuid_recv
+        return self.__result
 
     def teardown(self):
         pass

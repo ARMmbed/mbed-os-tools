@@ -23,7 +23,7 @@ class WaitusTest(BaseHostTest):
     """ This test is reading single characters from stdio
         and measures time between their occurrences.
     """
-    result = None
+    __result = None
     DEVIATION = 0.10    # +/-10%
     ticks = []
 
@@ -39,17 +39,20 @@ class WaitusTest(BaseHostTest):
         self.register_callback('exit', self._callback_exit)
         self.register_callback('tick', self._callback_tick)
 
-    def test(self):
+    def result(self):
         def sub_timestamps(t1, t2):
             delta = t1 - t2
             deviation = abs(delta - 1.0)
             #return True if delta > 0 and deviation <= self.DEVIATION else False
             return deviation <= self.DEVIATION
-    
+
         # Check if time between ticks was accurate
         timestamps = [timestamp for _, _, timestamp in self.ticks]
         self.log(str(timestamps))
         m = map(sub_timestamps, timestamps[1:], timestamps[:-1])
         self.log(str(m))
-        self.result = all(m)
-        return self.result
+        self.__result = all(m)
+        return self.__result
+
+    def teardown(self):
+        pass

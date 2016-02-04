@@ -1,6 +1,6 @@
 """
 mbed SDK
-Copyright (c) 2011-2013 ARM Limited
+Copyright (c) 2011-2016 ARM Limited
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -27,88 +27,114 @@ class BaseHostTestAbstract(object):
     event_queue = None      # To main even loop
     dut_event_queue = None  # To DUT
 
-    def _notify_prn(self, text, nl=True):
+    def __notify_prn(self, text, nl=True):
         if self.event_queue:
             if nl:
                 text += '\n'
             self.event_queue.put(('__notify_prn', text, time()))
 
-    def notify_complete(self, consume=True):
-        """! Notify htrun that host test finished processing
-        @param consume If True htrun will process (consume) all remaining events
-        """
+    def __notify_conn_lost(self, text):
         if self.event_queue:
-            self.event_queue.put(('__notify_complete', consume, time()))
+            self.event_queue.put(('__notify_conn_lost', text, time()))
 
-    def log(self, text):
-        self._notify_prn(text)
-
-    def _notify_dut(self, key, value):
+    def __notify_dut(self, key, value):
         """! Send data over serial to DUT """
         if self.event_queue:
             self.dut_event_queue.put((key, value, time()))
 
+    def notify_complete(self, result=None):
+        """! Notify main even loop that host test finished processing
+        @param result True for success, False failure. If None - no action in main even loop
+        """
+        if self.event_queue:
+            self.event_queue.put(('__notify_complete', result, time()))
+
+    def notify_conn_lost(self, text):
+        """! Notify main even loop that there was a DUT-host test connection error
+        @param consume If True htrun will process (consume) all remaining events
+        """
+        self.__notify_conn_lost(text)
+
+    def log(self, text):
+        """! Send log message to main event loop """
+        self.__notify_prn(text)
+
     def send_kv(self, key, value):
-        self._notify_dut(key, value)
+        """! Send Key-Value data to DUT """
+        self.__notify_dut(key, value)
 
     def setup(self):
         pass
 
-    def test(self):
+    def result(self):
+        """! Returns host test result (True, False or None) """
         pass
 
     def teardown(self):
         pass
+
+    def test(self):
+        raise NotImplementedError
 
 
 class HostTestCallbackBase(BaseHostTestAbstract):
 
     def __init__(self):
         BaseHostTestAbstract.__init__(self)
-        self.callbacks = {}
-        self._restricted_callbacks = ['coverage_start',
-            'testcase_start',
-            'testcase_finish'
-            ]
+        self.__callbacks = {}
+        self.__restricted_callbacks = [
+            '__coverage_start',
+            '__testcase_start',
+            '__testcase_finish',
+            '__exit',
+        ]
 
-        self.printable = ['coverage_start',
-            'testcase_start',
-            'testcase_finish'
-            ]
+        self.__printable = [
+            '__coverage_start',
+            '__testcase_start',
+            '__testcase_finish'
+        ]
 
-        self._assign_callbacks()
+        self.__assign_default_callbacks()
 
-    def _callback_default(self, key, value, timestamp):
+    def __callback_default(self, key, value, timestamp):
         """! Default callback """
         self.log("CALLBACK: key=%s, value=%s, timestamp=%f"% (key, value, timestamp))
+        # TODO: Add here proper handlers for LCVO and TCs
 
-    def _callback_forward(self, key, value, timestamp):
-        """! We want to print on stdout things Greentea can capture"""
-        # TODO:
-        pass
-
-    def _assign_callbacks(self):
-        """! Assigns default callback handlers
-        """
-        for key in self.printable:
-            self.callbacks[key] = self._callback_forward
+    def __assign_default_callbacks(self):
+        """! Assigns default callback handlers """
+        for key in self.__printable:
+            self.__callbacks[key] = self.__callback_default
 
     def register_callback(self, key, callback):
+        """! Register callback for a specific event (key: event name) """
+
+        # Non-string keys are not allowed
         if type(key) is not str:
             raise TypeError
 
-        if key in self._restricted_callbacks:
+        # Event starting with '__' are reserved
+        if key.startswith('__'):
             raise ValueError
 
+        # We predefined few callbacks you can't use
+        if key in self.__restricted_callbacks:
+            raise ValueError
+
+        # And finally callback should be callable
         if not callable(callback):
             raise TypeError
 
-        self.callbacks[key] = callback
+        self.__callbacks[key] = callback
+
+    def get_callbacks(self):
+        return self.__callbacks
 
     def setup(self):
         pass
 
-    def test(self):
+    def result(self):
         pass
 
     def teardown(self):
@@ -123,7 +149,7 @@ class BaseHostTest(HostTestCallbackBase):
     def setup(self):
         pass
 
-    def test(self):
+    def result(self):
         pass
 
     def teardown(self):

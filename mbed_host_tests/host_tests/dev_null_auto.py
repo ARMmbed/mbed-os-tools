@@ -19,23 +19,19 @@ from mbed_host_tests import BaseHostTest
 
 class DevNullTest(BaseHostTest):
 
-    result = None
+    __result = None
 
     def _callback_result(self, key, value, timestamp):
         # We should not see result data in this test
-        self.result = False
+        self.__result = False
 
     def _callback_to_stdout(self, key, value, timestamp):
-        self.result = True
+        self.__result = True
 
     def setup(self):
-        # This should never appear in this test
         self.register_callback("end", self._callback_result)
-        self.register_callback("exit", self._callback_result)
         self.register_callback("to_null", self._callback_result)
-        # This is the only KV which should appear
         self.register_callback("to_stdout", self._callback_to_stdout)
 
-    def test(self):
-        return self.result
-
+    def result(self):
+        return self.__result

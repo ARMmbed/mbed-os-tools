@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
 mbed SDK
-Copyright (c) 2011-2015 ARM Limited
+Copyright (c) 2011-2016 ARM Limited
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -22,11 +22,12 @@ from time import time
 
 
 class HtrunLogger(object):
-    def __init__(self, prn_lock):
-        self.prn_lock = prn_lock
+    def __init__(self, prn_lock, name):
+        self.__prn_lock = prn_lock
+        self.__name = name
 
     def _prn_func(self, text, nl=True):
-        with self.prn_lock:
+        with self.__prn_lock:
             if nl and not text.endswith('\n'):
                 text += '\n'
             sys.stdout.write(text)
@@ -34,7 +35,7 @@ class HtrunLogger(object):
     def _prn_log(self, level, text, timestamp=None):
         if not timestamp:
             timestamp = time()
-        s = "[%.2f][%s] %s"% (timestamp, level, text)
+        s = "[%.2f][%s][%s] %s"% (timestamp, self.__name, level, text)
         self._prn_func(s, nl=True)
 
     def prn_dbg(self, text, timestamp=None):

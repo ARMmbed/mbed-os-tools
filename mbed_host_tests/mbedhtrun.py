@@ -1,6 +1,6 @@
 """
 mbed SDK
-Copyright (c) 2011-2014 ARM Limited
+Copyright (c) 2011-2016 ARM Limited
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,23 +17,24 @@ limitations under the License.
 Author: Przemyslaw Wirkus <Przemyslaw.Wirkus@arm.com>
 """
 
-import sys
-import threading
-from mbed_host_tests import DefaultTestSelector         # Default adapter for DefaultTestSelectorBase
-from mbed_host_tests import init_host_test_cli_params   # Provided command line options
+from mbed_host_tests import init_host_test_cli_params
+from mbed_host_tests.host_tests_runner.host_test_default import DefaultTestSelector
 
 
 def main():
     """! This function drives command line tool 'mbedhtrun' which is using DefaultTestSelector
-
     @details 1. Create DefaultTestSelector object and pass command line parameters
              2. Call default test execution function run() to start test instrumentation
     """
+    result = -2
     test_selector = DefaultTestSelector(init_host_test_cli_params())
     try:
-        test_selector.execute()
+        result = test_selector.execute()
     except (KeyboardInterrupt, SystemExit):
         test_selector.finish()
+        result = -3
         raise
     else:
         test_selector.finish()
+
+    return result

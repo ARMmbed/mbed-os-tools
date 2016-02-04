@@ -1,6 +1,6 @@
 """
 mbed SDK
-Copyright (c) 2011-2015 ARM Limited
+Copyright (c) 2011-2016 ARM Limited
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -18,17 +18,13 @@ Author: Przemyslaw Wirkus <Przemyslaw.Wirkus@arm.com>
 """
 
 import json
-from sys import stdout
-from serial import Serial
-from time import sleep, time
-import mbed_host_tests.host_tests_plugins as ht_plugins
+from time import sleep
 
-from threading import Lock
+import mbed_host_tests.host_tests_plugins as ht_plugins
 
 
 class Mbed:
     """! Base class for a host driven test
-
     @details This class stores information about things like disk, port, serial speed etc.
              Class is also responsible for manipulation of serial port between host and mbed device
     """
@@ -38,8 +34,6 @@ class Mbed:
         # For compatibility with old mbed. We can use command line options for Mbed object
         # or we can pass options directly from .
         self.options = options
-
-        self.DEFAULT_RESET_TOUT = 0
 
         # Options related to copy / reset mbed device
         self.port = self.options.port
@@ -77,13 +71,11 @@ class Mbed:
             except IOError as e:
                 print "MBED: Test configuration JSON file '{0}' I/O error({1}): {2}".format(json_test_configuration_path, e.errno, e.strerror)
             except:
-                print "MBED: Test configuration JSON Unexpected error:"
+                print "MBED: Test configuration JSON Unexpected error:", str(e)
                 raise
-
 
     def copy_image(self, image_path=None, disk=None, copy_method=None, port=None):
         """! Closure for copy_image_raw() method.
-
         @return Returns result from copy plugin
         """
         # Set-up closure environment
@@ -103,10 +95,8 @@ class Mbed:
 
     def copy_image_raw(self, image_path=None, disk=None, copy_method=None, port=None):
         """! Copy file depending on method you want to use. Handles exception
-            and return code from shell copy commands.
-
+             and return code from shell copy commands.
         @return Returns result from copy plugin
-
         @details Method which is actually copying image to mbed
         """
         # image_path - Where is binary with target's firmware
