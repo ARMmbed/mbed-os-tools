@@ -98,8 +98,8 @@ class HostTestCallbackBase(BaseHostTestAbstract):
 
     def __callback_default(self, key, value, timestamp):
         """! Default callback """
-        self.log("CALLBACK: key=%s, value=%s, timestamp=%f"% (key, value, timestamp))
-        # TODO: Add here proper handlers for LCVO and TCs
+        #self.log("CALLBACK: key=%s, value=%s, timestamp=%f"% (key, value, timestamp))
+        pass
 
     def __assign_default_callbacks(self):
         """! Assigns default callback handlers """
@@ -126,18 +126,6 @@ class HostTestCallbackBase(BaseHostTestAbstract):
             raise TypeError
 
         self.__callbacks[key] = callback
-
-    def __setup(self):
-        """! Closure for user-space setup() and host test setup() """
-        pass
-
-    def __teardown(self):
-        """! Closure for user-space teardown and htrun "clean" """
-        pass
-
-    def __result(self):
-        """! Closure for user-space result() and htrun "result" """
-        pass
 
     def get_callbacks(self):
         return self.__callbacks

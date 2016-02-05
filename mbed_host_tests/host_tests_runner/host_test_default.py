@@ -253,6 +253,5 @@ class DefaultTestSelector(DefaultTestSelectorBase):
         else:
             result = test_result
 
-        self.logger.prn_inf("greentea formatted output section...")
-        self.print_result(result)
+        self.logger.prn_inf("{{result;%s}}"% result)
         return self.get_test_result_int(result)
