@@ -70,9 +70,9 @@ def get_test_result(output):
     @details If test result not found returns by default TEST_RESULT_TIMEOUT value
     @return Returns found test result
     """
-    RE_DETECT_TESTCASE_RESULT = re.compile("\\{(" + "|".join(TEST_RESULT_MAPPING.keys()) + ")\\}")
+    re_detect = re.compile("\\{(" + "|".join(TEST_RESULT_MAPPING.keys()) + ")\\}")
     for line in "".join(output).splitlines():
-        search_result = RE_DETECT_TESTCASE_RESULT.search(line)
+        search_result = re_detect.search(line)
         if search_result and search_result.groups():
             return TEST_RESULT_MAPPING[search_result.groups(0)[0]]
     return TEST_RESULT_TIMEOUT
@@ -121,7 +121,8 @@ def run_host_test(image_path,
                     stdout=PIPE,
                     stderr=STDOUT)
         except OSError as e:
-            print "mbedgt: run_command(%s) ret= %d failed: "% (cmd, int(ret)), str(e), e.child_traceback
+            print "mbedgt: run_command(%s) ret= %d failed: %s"% (str(cmd),
+                str(e), e.child_traceback)
         return iter(p.stdout.readline, b'')
 
     if verbose:
