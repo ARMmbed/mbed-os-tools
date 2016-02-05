@@ -64,16 +64,15 @@ class BaseHostTestAbstract(object):
         self.__notify_dut(key, value)
 
     def setup(self):
-        pass
+        """! Setup your tests and callbacks """
+        raise NotImplementedError
 
     def result(self):
         """! Returns host test result (True, False or None) """
-        pass
+        raise NotImplementedError
 
     def teardown(self):
-        pass
-
-    def test(self):
+        """! Blocking always guaranteed test teardown """
         raise NotImplementedError
 
 
@@ -127,6 +126,18 @@ class HostTestCallbackBase(BaseHostTestAbstract):
             raise TypeError
 
         self.__callbacks[key] = callback
+
+    def __setup(self):
+        """! Closure for user-space setup() and host test setup() """
+        pass
+
+    def __teardown(self):
+        """! Closure for user-space teardown and htrun "clean" """
+        pass
+
+    def __result(self):
+        """! Closure for user-space result() and htrun "result" """
+        pass
 
     def get_callbacks(self):
         return self.__callbacks

@@ -22,39 +22,42 @@ from time import time
 
 
 class HtrunLogger(object):
+    """! Yet another logger flavour """
     def __init__(self, prn_lock, name):
         self.__prn_lock = prn_lock
         self.__name = name
 
-    def _prn_func(self, text, nl=True):
+    def __prn_func(self, text, nl=True):
+        """! Prints and flushes data to stdout """
         with self.__prn_lock:
             if nl and not text.endswith('\n'):
                 text += '\n'
             sys.stdout.write(text)
+            sys.stdout.flush()
 
-    def _prn_log(self, level, text, timestamp=None):
+    def __prn_log(self, level, text, timestamp=None):
         if not timestamp:
             timestamp = time()
         s = "[%.2f][%s][%s] %s"% (timestamp, self.__name, level, text)
-        self._prn_func(s, nl=True)
+        self.__prn_func(s, nl=True)
 
     def prn_dbg(self, text, timestamp=None):
-        self._prn_log('DBG', text, timestamp)
+        self.__prn_log('DBG', text, timestamp)
 
     def prn_wrn(self, text, timestamp=None):
-        self._prn_log('WRN', text, timestamp)
+        self.__prn_log('WRN', text, timestamp)
 
     def prn_err(self, text, timestamp=None):
-        self._prn_log('ERR', text, timestamp)
+        self.__prn_log('ERR', text, timestamp)
 
     def prn_inf(self, text, timestamp=None):
-        self._prn_log('INF', text, timestamp)
+        self.__prn_log('INF', text, timestamp)
 
     def prn_txt(self, text, timestamp=None):
-        self._prn_log('TXT', text, timestamp)
+        self.__prn_log('TXT', text, timestamp)
 
     def prn_txd(self, text, timestamp=None):
-        self._prn_log('TXD', text, timestamp)
+        self.__prn_log('TXD', text, timestamp)
 
     def prn_rxd(self, text, timestamp=None):
-        self._prn_log('RXD', text, timestamp)
+        self.__prn_log('RXD', text, timestamp)

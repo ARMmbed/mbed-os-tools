@@ -174,7 +174,7 @@ class DefaultTestSelector(DefaultTestSelectorBase):
                         self.logger.prn_err("orphan event in main phase: {{%s;%s}}, timestamp=%f"% (key, str(value), timestamp))
 
         time_duration = time() - start_time
-        self.logger.prn_inf("test suite run finished after %.2f..."% time_duration)
+        self.logger.prn_inf("test suite run finished after %.2f sec..."% time_duration)
 
         p.terminate()
         self.logger.prn_inf("exited with code: %s"% str(p.exitcode))
@@ -183,6 +183,10 @@ class DefaultTestSelector(DefaultTestSelectorBase):
         self.logger.prn_inf("%d events in queue"% event_queue.qsize())
 
         if self.test_supervisor:
+            # If host test was used we will:
+            # 1. Consume all existing events in queue if consume=True
+            # 2. Check result from host test and call teardown()
+
             if callbacks_consume:
                 # We are consuming all remaining events if requested
                 while event_queue.qsize():
@@ -193,14 +197,19 @@ class DefaultTestSelector(DefaultTestSelectorBase):
                         self.logger.prn_wrn(">>> orphan event: {{%s;%s}}, timestamp=%f"% (key, str(value), timestamp))
                 self.logger.prn_inf("stopped consuming events")
 
-            if not callbacks__exit and not result:
-                self.logger.prn_err("timeout...")
-                result = self.RESULT_TIMEOUT
-            elif not result:
+            if result:
+                # Here for example we've received some error code like IOERR_COPY
+                self.logger.prn_inf("host test result() skipped, received: %s"% str(result))
+            else:
                 result = self.test_supervisor.result()
                 self.logger.prn_inf("host test result(): %s"% str(result))
-            else:
-                self.logger.prn_inf("host test result() skipped, got: %s"% str(result))
+
+            if not callbacks__exit:
+                self.logger.prn_wrn("missing __exit event from DUT")
+
+            if not callbacks__exit and not result:
+                self.logger.prn_err("missing __exit event from DUT and no result from host test, timeout...")
+                result = self.RESULT_TIMEOUT
 
             self.logger.prn_inf("calling blocking teardown()")
             self.test_supervisor.teardown()
@@ -244,5 +253,6 @@ class DefaultTestSelector(DefaultTestSelectorBase):
         else:
             result = test_result
 
+        self.logger.prn_inf("greentea formatted output section...")
         self.print_result(result)
         return self.get_test_result_int(result)

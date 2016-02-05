@@ -34,7 +34,7 @@ class SerialConnectorPrimitive(object):
         self.logger = HtrunLogger(prn_lock, 'SERI')
         self.LAST_ERROR = None
 
-        self.logger.prn_inf("serial port=%s baudrate=%s"% (str(port), baudrate))
+        self.logger.prn_inf("serial(port=%s, baudrate=%d)"% (self.port, self.baudrate))
         try:
             self.serial = Serial(port, baudrate=baudrate, timeout=self.timeout)
         except SerialException as e:
@@ -45,24 +45,27 @@ class SerialConnectorPrimitive(object):
                 str(e))
             self.logger.prn_err(str(e))
         else:
-            self.reset_serial()
+            self.reset_dev_via_serial()
 
-    def reset_serial(self, delay=1):
+    def reset_dev_via_serial(self, delay=1):
+        """! Reset device using selected method, calls one of the reset plugins """
         reset_type = self.config.get('reset_type', 'default')
         if not reset_type:
             reset_type = 'default'
         disk = self.config.get('disk', None)
 
-        self.logger.prn_inf("reset device using '%s' method..."% reset_type)
+        self.logger.prn_inf("reset device using '%s' plugin..."% reset_type)
         result = host_tests_plugins.call_plugin('ResetMethod',
             reset_type,
             serial=self.serial,
             disk=disk)
         # Post-reset sleep
+        self.logger.prn_inf("wait for it...")
         sleep(delay)
         return result
 
     def read(self, count):
+        """! Read data from serial port RX buffer """
         c = ''
         try:
             if self.serial:
@@ -73,10 +76,13 @@ class SerialConnectorPrimitive(object):
             self.logger.prn_err(str(e))
         return c
 
-    def write(self, payload):
+    def write(self, payload, log=False):
+        """! Write data to serial port TX buffer """
         try:
             if self.serial:
                 self.serial.write(payload)
+                if log:
+                    self.logger.prn_txd(payload)
         except SerialException as e:
             self.serial = None
             self.LAST_ERROR = "connection lost, serial.write(%d bytes): %s"% (len(payload), str(e))
@@ -131,6 +137,8 @@ class KiViBufferWalker():
 
 def conn_process(event_queue, dut_event_queue, prn_lock, config):
 
+    exitcode = 0
+
     logger = HtrunLogger(prn_lock, 'CONN')
     logger.prn_inf("starting connection process... ")
 
@@ -155,6 +163,7 @@ def conn_process(event_queue, dut_event_queue, prn_lock, config):
 
     # Handshake, we will send {{sync;UUID}} preamble and wait for mirrored reply
     logger.prn_inf("sending preamble '%s'..."% sync_uuid)
+    connector.write("mbed" * 10, log=True)
     connector.write_kv('__sync', sync_uuid)
 
     while True:
@@ -164,12 +173,13 @@ def conn_process(event_queue, dut_event_queue, prn_lock, config):
             error_msg = connector.error()
             connector.finish()
             event_queue.put(('__notify_conn_lost', error_msg, time()))
+            exitcode = -1
             break
 
         # Send data to DUT
         if dut_event_queue.qsize():
             (key, value, _) = dut_event_queue.get()
-            kv_tx_buff = connector.write_kv(key, value)
+            connector.write_kv(key, value)
 
         data = connector.read(2048)
         if data:
@@ -201,3 +211,5 @@ def conn_process(event_queue, dut_event_queue, prn_lock, config):
                             logger.prn_err("found faulty SYNC in stream: {{%s;%s}}, ignored..."% (key, value))
                     else:
                         logger.prn_wrn("found KV pair in stream: {{%s;%s}}, ignoring..."% (key, value))
+
+    return 0

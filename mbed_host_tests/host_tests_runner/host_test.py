@@ -32,6 +32,7 @@ class HostTestResults(object):
             RESULT_SUCCESS = 'success',
             RESULT_FAILURE = 'failure',
             RESULT_ERROR = 'error',
+            RESULT_END = 'end',
             RESULT_UNDEF = 'undefined', # Rather for debug purpose
             RESULT_TIMEOUT = 'timeout',
             RESULT_IOERR_COPY = "ioerr_copy",
@@ -56,6 +57,7 @@ class HostTestResults(object):
             self.TestResults.RESULT_SUCCESS,
             self.TestResults.RESULT_FAILURE,
             self.TestResults.RESULT_ERROR,
+            self.TestResults.RESULT_END,
             self.TestResults.RESULT_UNDEF,
             self.TestResults.RESULT_TIMEOUT,
             self.TestResults.RESULT_IOERR_COPY,
@@ -69,6 +71,7 @@ class HostTestResults(object):
         ]
 
     def get_test_result_int(self, test_result_str):
+        """! Maps test result string to unique integer """
         if test_result_str in self.TestResultsList:
             return self.TestResultsList.index(test_result_str)
         return -1
@@ -99,23 +102,19 @@ class Test(HostTestResults):
         """
         pass
 
-    def notify(self, message, newline=True):
+    def notify(self, msg):
         """! On screen notification function
-        @param message Text message sent to stdout directly
-        @param newline If True we will send NewLine at the end of message
+        @param msg Text message sent to stdout directly
         """
-        if message:
-            if newline:
-                print message
-            else:
-                stdout.write(message)
-            stdout.flush()
+        stdout.write(msg)
+        stdout.flush()
 
     def print_result(self, result):
         """! Test result unified printing function
         @param result Should be a member of HostTestResults.RESULT_* enums
         """
-        self.notify("\r\n{{%s}}\r\n{{end}}" % result)
+        self.notify("{{%s}}\n"% result)
+        self.notify("{{%s}}\n"% self.RESULT_END)
 
     def finish(self):
         """ dctor for this class, finishes tasks and closes resources

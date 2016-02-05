@@ -27,6 +27,7 @@ class DevNullTest(BaseHostTest):
 
     def _callback_to_stdout(self, key, value, timestamp):
         self.__result = True
+        self.log("_callback_to_stdout !")
 
     def setup(self):
         self.register_callback("end", self._callback_result)
