@@ -70,11 +70,15 @@ def get_test_result(output):
     @details If test result not found returns by default TEST_RESULT_TIMEOUT value
     @return Returns found test result
     """
-    re_detect = re.compile("\\{(" + "|".join(TEST_RESULT_MAPPING.keys()) + ")\\}")
-    for line in "".join(output).splitlines():
+    re_detect = re.compile(r"\{result;(" + "|".join(TEST_RESULT_MAPPING.keys()) + ")\}")
+
+    for line in output.split():
         search_result = re_detect.search(line)
-        if search_result and search_result.groups():
-            return TEST_RESULT_MAPPING[search_result.groups(0)[0]]
+        if search_result:
+            if search_result.group(1) in TEST_RESULT_MAPPING:
+                return TEST_RESULT_MAPPING[search_result.group(1)]
+            else:
+                return TEST_RESULT_UNDEF
     return TEST_RESULT_TIMEOUT
 
 
@@ -188,30 +192,28 @@ def run_host_test(image_path,
 
 def get_testcase_result(output):
     result_test_cases = {}  # Test cases results
-    re_tc_start = re.compile("^\{\{(__testcase_start);(\w+)\}")
-    re_tc_finish = re.compile("^\{\{(__testcase_finish);(\w+);(\d+)\}")
+    re_tc_start = re.compile(r"^\[(\d+\.\d+)\][^\{]+\{\{(__testcase_start);(\w+)\}\}")
+    re_tc_finish = re.compile(r"^\[(\d+\.\d+)\][^\{]+\{\{(__testcase_finish);(\w+);(\d+)\}\}")
 
-    for line in output.split():
+    for line in output.splitlines():
         m = re_tc_start.search(line)
-        if m and len(m.groups()) == 2:
-            # m1.group(1) == "__testcase_start"
-            testcase_id = m.group(2) # Test Case ID
+        if m:
+            timestamp, _, testcase_id = m.groups()
             if testcase_id not in result_test_cases:
                 result_test_cases[testcase_id] = {}
-            result_test_cases[testcase_id]['time_start'] = time()
+            result_test_cases[testcase_id]['time_start'] = float(timestamp)
 
         m = re_tc_finish.search(line)
-        if m and len(m.groups()) == 3:
-            # m.group(1) == "testcase_start"
-            testcase_id = m.group(2) # Test Case ID
-            testcase_result = int(m.group(3)) # success code, 0 == success, <0 inconclusive, >0 FAILure
+        if m:
+            timestamp, _, testcase_id, testcase_result = m.groups()
+            testcase_result = int(testcase_result)
             if testcase_id not in result_test_cases:
                 result_test_cases[testcase_id] = {}
             # Setting some info about test case itself
-            result_test_cases[testcase_id]['time_end'] = time()
+            result_test_cases[testcase_id]['time_end'] = float(timestamp)
             result_test_cases[testcase_id]['result'] = testcase_result
-
             result_test_cases[testcase_id]['result_text'] = 'OK'
+            # Assign human readable test case result
             if testcase_result > 0:
                 result_test_cases[testcase_id]['result_text'] = 'FAIL'
             elif testcase_result < 0:
