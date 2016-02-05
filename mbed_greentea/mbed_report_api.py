@@ -125,7 +125,7 @@ def exporter_testcase_text(test_result_ext, test_suite_properties=None):
     """
     from prettytable import PrettyTable
     #TODO: export to text, preferably to PrettyTable (SQL like) format
-    cols = ['target', 'platform_name', 'test suite', 'test case', 'result', 'elapsed_time (sec)', 'copy_method']
+    cols = ['target', 'platform_name', 'test suite', 'test case', 'result', 'elapsed_time (sec)']
     pt = PrettyTable(cols)
     for col in cols:
         pt.align[col] = "l"
@@ -166,7 +166,6 @@ def exporter_testcase_text(test_result_ext, test_suite_properties=None):
                 row.append(tc_name)
                 row.append(result_text)
                 row.append(round(duration, 2))
-                row.append(test['copy_method'])
                 pt.add_row(row)
                 row = []
 
