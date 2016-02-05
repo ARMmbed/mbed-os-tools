@@ -94,7 +94,7 @@ def run_host_test(image_path,
                   enum_host_tests_path=None,
                   run_app=None):
     """! This function runs host test supervisor (executes mbedhtrun) and checks output from host test process.
-    @return Tuple with test results, test output and test duration times
+    @return Tuple with test results, test output, test duration times and test case results
     @param image_path Path to binary file for flashing
     @param disk Currently mounted mbed-enabled devices disk (mount point)
     @param port Currently mounted mbed-enabled devices serial port (console)
@@ -179,11 +179,51 @@ def run_host_test(image_path,
     testcase_duration = end_time - start_time   # Test case duration from reset to {end}
 
     result = get_test_result(htrun_output)
+    result_test_cases = get_testcase_result(htrun_output)
 
     if verbose:
         gt_logger.gt_log("mbed-host-test-runner: stopped")
         gt_logger.gt_log("mbed-host-test-runner: returned '%s'"% result)
-    return (result, "".join(htrun_output), testcase_duration, duration)
+    return (result, "".join(htrun_output), testcase_duration, duration, result_test_cases)
+
+def get_testcase_result(output):
+    result_test_cases = {}  # Test cases results
+    re_tc_start = re.compile("^\{\{(__testcase_start);(\w+)\}")
+    re_tc_finish = re.compile("^\{\{(__testcase_finish);(\w+);(\d+)\}")
+
+    for line in output.split():
+        m = re_tc_start.search(line)
+        if m and len(m.groups()) == 2:
+            # m1.group(1) == "__testcase_start"
+            testcase_id = m.group(2) # Test Case ID
+            if testcase_id not in result_test_cases:
+                result_test_cases[testcase_id] = {}
+            result_test_cases[testcase_id]['time_start'] = time()
+
+        m = re_tc_finish.search(line)
+        if m and len(m.groups()) == 3:
+            # m.group(1) == "testcase_start"
+            testcase_id = m.group(2) # Test Case ID
+            testcase_result = int(m.group(3)) # success code, 0 == success, <0 inconclusive, >0 FAILure
+            if testcase_id not in result_test_cases:
+                result_test_cases[testcase_id] = {}
+            # Setting some info about test case itself
+            result_test_cases[testcase_id]['time_end'] = time()
+            result_test_cases[testcase_id]['result'] = testcase_result
+
+            result_test_cases[testcase_id]['result_text'] = 'OK'
+            if testcase_result > 0:
+                result_test_cases[testcase_id]['result_text'] = 'FAIL'
+            elif testcase_result < 0:
+                result_test_cases[testcase_id]['result_text'] = 'ERROR'
+
+            result_test_cases[testcase_id]['duration'] = 0.0
+            if 'time_start' in result_test_cases[testcase_id]:
+                result_test_cases[testcase_id]['duration'] = result_test_cases[testcase_id]['time_end'] - result_test_cases[testcase_id]['time_start']
+            else:
+                result_test_cases[testcase_id]['duration'] = 0.0
+
+    return result_test_cases
 
 def run_cli_command(cmd, shell=True, verbose=False):
     """! Runs command from command line

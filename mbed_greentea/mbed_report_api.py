@@ -18,6 +18,22 @@ Author: Przemyslaw Wirkus <Przemyslaw.wirkus@arm.com>
 """
 
 
+def export_to_file(file_name, payload):
+    """! Simple file dump used to store reports on disk
+    @param file_name Report file name (with path if needed)
+    @param payload Data to store inside file
+    @return True if report save was successful
+    """
+    result = True
+    try:
+        with open(file_name, 'w') as f:
+            f.write(payload)
+    except IOError as e:
+        print "Exporting report to file failed: ", str(e)
+        result = False
+    return result
+
+
 def exporter_junit(test_result_ext, test_suite_properties=None):
     """! Export test results in JUnit XML compliant format
     @details This function will import junit_xml library to perform report conversion
@@ -69,13 +85,13 @@ def exporter_text(test_result_ext, test_suite_properties=None):
     """
     from prettytable import PrettyTable
     #TODO: export to text, preferably to PrettyTable (SQL like) format
-    cols = ['target', 'platform_name', 'test', 'result', 'elapsed_time (sec)', 'copy_method']
+    cols = ['target', 'platform_name', 'test suite', 'result', 'elapsed_time (sec)', 'copy_method']
     pt = PrettyTable(cols)
     for col in cols:
         pt.align[col] = "l"
     pt.padding_width = 1 # One space between column edges and contents (default)
 
-    result_dict = {}    # Used to print mbed 2.0 test result like short summary
+    result_dict = {}     # Used to print test suite results
 
     for target_name in sorted(test_result_ext):
         test_results = test_result_ext[target_name]
@@ -100,4 +116,60 @@ def exporter_text(test_result_ext, test_suite_properties=None):
 
     result_pt = pt.get_string()
     result_res = ' / '.join(['%s %s' % (value, key) for (key, value) in {k: v for k, v in result_dict.items() if v != 0}.iteritems()])
+    return result_pt, result_res
+
+def exporter_testcase_text(test_result_ext, test_suite_properties=None):
+    """! Exports test case results to text formatted output
+    @details This is a human friendly format
+    @return Tuple with table of results and result quantity summary string
+    """
+    from prettytable import PrettyTable
+    #TODO: export to text, preferably to PrettyTable (SQL like) format
+    cols = ['target', 'platform_name', 'test suite', 'test case', 'result', 'elapsed_time (sec)', 'copy_method']
+    pt = PrettyTable(cols)
+    for col in cols:
+        pt.align[col] = "l"
+    pt.padding_width = 1 # One space between column edges and contents (default)
+
+    result_testcase_dict = {}   # Used to print test case results
+
+    for target_name in test_result_ext:
+        test_results = test_result_ext[target_name]
+        row = []
+        for test_suite_name in test_results:
+            test = test_results[test_suite_name]
+
+            # testcase_result stores info about test case results
+            testcase_result = test['testcase_result']
+            #   "testcase_result": {
+            #       "STRINGS004": {
+            #           "duration": 0.009999990463256836,
+            #           "time_start": 1453073018.275,
+            #           "time_end": 1453073018.285,
+            #           "result": 1
+            #       },
+
+            for tc_name in sorted(testcase_result.keys()):
+                duration = testcase_result[tc_name]['duration']
+                result = int(testcase_result[tc_name]['result'])
+                result_text = testcase_result[tc_name]['result_text']
+
+                # Grab quantity of each test result
+                if result_text in result_testcase_dict:
+                    result_testcase_dict[result_text] += 1
+                else:
+                    result_testcase_dict[result_text] = 1
+
+                row.append(target_name)
+                row.append(test['platform_name'])
+                row.append(test_suite_name)
+                row.append(tc_name)
+                row.append(result_text)
+                row.append(round(duration, 2))
+                row.append(test['copy_method'])
+                pt.add_row(row)
+                row = []
+
+    result_pt = pt.get_string()
+    result_res = ' / '.join(['%s %s' % (value, key) for (key, value) in {k: v for k, v in result_testcase_dict.items() if v != 0}.iteritems()])
     return result_pt, result_res

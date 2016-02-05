@@ -34,6 +34,7 @@ from mbed_greentea.mbed_test_api import TEST_RESULT_OK
 from mbed_greentea.cmake_handlers import load_ctest_testsuite
 from mbed_greentea.cmake_handlers import list_binaries_for_targets
 from mbed_greentea.mbed_report_api import exporter_text
+from mbed_greentea.mbed_report_api import exporter_testcase_text
 from mbed_greentea.mbed_report_api import exporter_json
 from mbed_greentea.mbed_report_api import exporter_junit
 from mbed_greentea.mbed_target_info import get_mbed_clasic_target_info
@@ -372,25 +373,37 @@ def run_test_thread(test_result_queue, test_queue, opts, mut, mut_info, yotta_ta
                                          enum_host_tests_path=enum_host_tests_path,
                                          verbose=verbose)
 
-        single_test_result, single_test_output, single_testduration, single_timeout = host_test_result
+        single_test_result, single_test_output, single_testduration, single_timeout, result_test_cases = host_test_result
         test_result = single_test_result
         if single_test_result != TEST_RESULT_OK:
             test_exec_retcode += 1
 
         # Update report for optional reporting feature
-        test_name = test['test_bin'].lower()
+        test_suite_name = test['test_bin'].lower()
         if yotta_target_name not in test_report:
             test_report[yotta_target_name] = {}
-        if test_name not in test_report[yotta_target_name]:
-            test_report[yotta_target_name][test_name] = {}
 
-        test_report[yotta_target_name][test_name]['single_test_result'] = single_test_result
-        test_report[yotta_target_name][test_name]['single_test_output'] = single_test_output
-        test_report[yotta_target_name][test_name]['elapsed_time'] = single_testduration
-        test_report[yotta_target_name][test_name]['platform_name'] = micro
-        test_report[yotta_target_name][test_name]['copy_method'] = copy_method
+        if test_suite_name not in test_report[yotta_target_name]:
+            test_report[yotta_target_name][test_suite_name] = {}
 
-        gt_logger.gt_log("test on hardware with target id: %s \n\ttest '%s' %s %s in %.2f sec"% (mut['target_id'], test['test_bin'], '.' * (80 - len(test['test_bin'])), test_result, single_testduration))
+        test_report[yotta_target_name][test_suite_name]['single_test_result'] = single_test_result
+        test_report[yotta_target_name][test_suite_name]['single_test_output'] = single_test_output
+        test_report[yotta_target_name][test_suite_name]['elapsed_time'] = single_testduration
+        test_report[yotta_target_name][test_suite_name]['platform_name'] = micro
+        test_report[yotta_target_name][test_suite_name]['copy_method'] = copy_method
+        test_report[yotta_target_name][test_suite_name]['testcase_result'] = result_test_cases
+
+        gt_logger.gt_log("test on hardware with target id: %s"% (mut['target_id']))
+        gt_logger.gt_log("test suite '%s' %s %s in %.2f sec"% (test['test_bin'],
+            '.' * (80 - len(test['test_bin'])),
+            test_result,
+            single_testduration))
+
+        for tc_name in sorted(result_test_cases.keys()):
+            gt_logger.gt_log_tab("test case '%s' %s %s in %.2f sec"% (tc_name,
+                '.' * (81 - len(tc_name)),
+                result_test_cases[tc_name]['result_text'],
+                result_test_cases[tc_name]['duration']))
 
         if single_test_result != 'OK' and not verbose and opts.report_fails:
             # In some cases we want to print console to see why test failed
@@ -442,7 +455,7 @@ def main_cli(opts, args, gt_instance_uuid=None):
                                          enum_host_tests_path=enum_host_tests_path,
                                          verbose=opts.verbose_test_result_only)
 
-        single_test_result, single_test_output, single_testduration, single_timeout = host_test_result
+        single_test_result, single_test_output, single_testduration, single_timeout, result_test_cases = host_test_result
         status = TEST_RESULTS.index(single_test_result) if single_test_result in TEST_RESULTS else -1
         return (status)
 
@@ -644,7 +657,7 @@ def main_cli(opts, args, gt_instance_uuid=None):
                                                      enum_host_tests_path=enum_host_tests_path,
                                                      verbose=True)
 
-                    single_test_result, single_test_output, single_testduration, single_timeout = host_test_result
+                    single_test_result, single_test_output, single_testduration, single_timeout, result_test_cases = host_test_result
                     status = TEST_RESULTS.index(single_test_result) if single_test_result in TEST_RESULTS else -1
                     if single_test_result != TEST_RESULT_OK:
                         test_exec_retcode += 1
@@ -750,6 +763,7 @@ def main_cli(opts, args, gt_instance_uuid=None):
 
         # Reports (to file)
         if opts.report_junit_file_name:
+            gt_logger.gt_log("exporting to JUnit file '%s'..."% gt_logger.gt_bright(opts.report_junit_file_name))
             junit_report = exporter_junit(test_report)
             with open(opts.report_junit_file_name, 'w') as f:
                 f.write(junit_report)
@@ -767,10 +781,16 @@ def main_cli(opts, args, gt_instance_uuid=None):
         else:
             # Final summary
             if test_report:
-                gt_logger.gt_log("test report:")
+                # Test suite report
+                gt_logger.gt_log("test suite report:")
                 text_report, text_results = exporter_text(test_report)
                 print text_report
-                gt_logger.gt_log("results: " + text_results)
+                gt_logger.gt_log("test suite results: " + text_results)
+                # test case detailed report
+                gt_logger.gt_log("test case report:")
+                text_testcase_report, text_testcase_results = exporter_testcase_text(test_report)
+                print text_testcase_report
+                gt_logger.gt_log("test case results: " + text_testcase_results)
 
         # This flag guards 'build only' so we expect only yotta errors
         if test_platforms_match == 0:
