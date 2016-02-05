@@ -402,8 +402,8 @@ def run_test_thread(test_result_queue, test_queue, opts, mut, mut_info, yotta_ta
         for tc_name in sorted(result_test_cases.keys()):
             gt_logger.gt_log_tab("test case '%s' %s %s in %.2f sec"% (tc_name,
                 '.' * (81 - len(tc_name)),
-                result_test_cases[tc_name]['result_text'],
-                result_test_cases[tc_name]['duration']))
+                result_test_cases[tc_name].get('result_text', '_'),
+                result_test_cases[tc_name].get('duration', 0.0)))
 
         if single_test_result != 'OK' and not verbose and opts.report_fails:
             # In some cases we want to print console to see why test failed
