@@ -70,7 +70,7 @@ def get_test_result(output):
     @details If test result not found returns by default TEST_RESULT_TIMEOUT value
     @return Returns found test result
     """
-    re_detect = re.compile(r"\{result;(" + "|".join(TEST_RESULT_MAPPING.keys()) + ")\}")
+    re_detect = re.compile(r"\{result;([\w+_]*)\}")
 
     for line in output.split():
         search_result = re_detect.search(line)
