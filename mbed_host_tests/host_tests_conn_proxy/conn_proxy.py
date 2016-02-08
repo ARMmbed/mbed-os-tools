@@ -137,8 +137,6 @@ class KiViBufferWalker():
 
 def conn_process(event_queue, dut_event_queue, prn_lock, config):
 
-    exitcode = 0
-
     logger = HtrunLogger(prn_lock, 'CONN')
     logger.prn_inf("starting connection process... ")
 
@@ -173,7 +171,6 @@ def conn_process(event_queue, dut_event_queue, prn_lock, config):
             error_msg = connector.error()
             connector.finish()
             event_queue.put(('__notify_conn_lost', error_msg, time()))
-            exitcode = -1
             break
 
         # Send data to DUT
