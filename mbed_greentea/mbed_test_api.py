@@ -176,7 +176,9 @@ def run_host_test(image_path,
 
     for line in run_command(cmd):
         htrun_output += line
-        sys.stdout.write(line)
+        # When dumping output to file both \r and \n will be a new line
+        # To avoid this "extra new-line" we only use \n at the end
+        sys.stdout.write(line.rstrip() + '\n')
         sys.stdout.flush()
 
     end_time = time()
