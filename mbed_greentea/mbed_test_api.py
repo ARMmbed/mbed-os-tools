@@ -194,8 +194,8 @@ def run_host_test(image_path,
 
 def get_testcase_result(output):
     result_test_cases = {}  # Test cases results
-    re_tc_start = re.compile(r"^\[(\d+\.\d+)\][^\{]+\{\{(__testcase_start);(\w+)\}\}")
-    re_tc_finish = re.compile(r"^\[(\d+\.\d+)\][^\{]+\{\{(__testcase_finish);(\w+);(\d+)\}\}")
+    re_tc_start = re.compile(r"^\[(\d+\.\d+)\][^\{]+\{\{(__testcase_start);([^;]+)\}\}")
+    re_tc_finish = re.compile(r"^\[(\d+\.\d+)\][^\{]+\{\{(__testcase_finish);([^;]+);(\d+);(\d+)\}\}")
 
     for line in output.splitlines():
         m = re_tc_start.search(line)
@@ -204,24 +204,34 @@ def get_testcase_result(output):
             if testcase_id not in result_test_cases:
                 result_test_cases[testcase_id] = {}
             result_test_cases[testcase_id]['time_start'] = float(timestamp)
+            continue
 
         m = re_tc_finish.search(line)
         if m:
-            timestamp, _, testcase_id, testcase_result = m.groups()
-            testcase_result = int(testcase_result)
+            timestamp, _, testcase_id, testcase_passed, testcase_failed = m.groups()
+
+            testcase_passed = int(testcase_passed)
+            testcase_failed = int(testcase_failed)
+
+            testcase_result = 0 # OK case
+            if testcase_failed != 0:
+                testcase_result = testcase_failed   # testcase_result > 0 is FAILure
+
             if testcase_id not in result_test_cases:
                 result_test_cases[testcase_id] = {}
             # Setting some info about test case itself
-            result_test_cases[testcase_id]['time_end'] = float(timestamp)
-            result_test_cases[testcase_id]['result'] = testcase_result
+            result_test_cases[testcase_id]['duration'] = 0.0
             result_test_cases[testcase_id]['result_text'] = 'OK'
+            result_test_cases[testcase_id]['time_end'] = float(timestamp)
+            result_test_cases[testcase_id]['passed'] = testcase_passed
+            result_test_cases[testcase_id]['failed'] = testcase_failed
+            result_test_cases[testcase_id]['result'] = testcase_result
             # Assign human readable test case result
             if testcase_result > 0:
                 result_test_cases[testcase_id]['result_text'] = 'FAIL'
             elif testcase_result < 0:
                 result_test_cases[testcase_id]['result_text'] = 'ERROR'
 
-            result_test_cases[testcase_id]['duration'] = 0.0
             if 'time_start' in result_test_cases[testcase_id]:
                 result_test_cases[testcase_id]['duration'] = result_test_cases[testcase_id]['time_end'] - result_test_cases[testcase_id]['time_start']
             else:

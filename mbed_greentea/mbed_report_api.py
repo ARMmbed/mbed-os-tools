@@ -125,7 +125,7 @@ def exporter_testcase_text(test_result_ext, test_suite_properties=None):
     """
     from prettytable import PrettyTable
     #TODO: export to text, preferably to PrettyTable (SQL like) format
-    cols = ['target', 'platform_name', 'test suite', 'test case', 'result', 'elapsed_time (sec)']
+    cols = ['target', 'platform_name', 'test suite', 'test case', 'passed', 'failed', 'result', 'elapsed_time (sec)']
     pt = PrettyTable(cols)
     for col in cols:
         pt.align[col] = "l"
@@ -150,9 +150,11 @@ def exporter_testcase_text(test_result_ext, test_suite_properties=None):
             #       },
 
             for tc_name in sorted(testcase_result.keys()):
-                duration = testcase_result[tc_name]['duration']
-                result = int(testcase_result[tc_name]['result'])
-                result_text = testcase_result[tc_name]['result_text']
+                duration = testcase_result[tc_name].get('duration', 0.0)
+                result = testcase_result[tc_name].get('result', 0)
+                passed = testcase_result[tc_name].get('passed', 0)
+                failed = testcase_result[tc_name].get('failed', 0)
+                result_text = testcase_result[tc_name].get('result_text', "UNDEF")
 
                 # Grab quantity of each test result
                 if result_text in result_testcase_dict:
@@ -164,6 +166,8 @@ def exporter_testcase_text(test_result_ext, test_suite_properties=None):
                 row.append(test['platform_name'])
                 row.append(test_suite_name)
                 row.append(tc_name)
+                row.append(passed)
+                row.append(failed)
                 row.append(result_text)
                 row.append(round(duration, 2))
                 pt.add_row(row)
