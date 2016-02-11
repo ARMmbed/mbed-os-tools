@@ -52,5 +52,5 @@ setup(name='mbed-host-tests',
             ["mbedhtrun=mbed_host_tests.mbedhtrun:main",
              "mbedflsh=mbed_host_tests.mbedflsh:main"],
       },
-      install_requires=["PySerial>=2.7",
+      install_requires=["PySerial==2.7",
         "PrettyTable>=0.7.2"])
