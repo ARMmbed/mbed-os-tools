@@ -187,7 +187,7 @@ def main():
                     action="store_true",
                     help='If possible force build in debug mode (yotta -d).')
 
-    parser.add_option('', '--list',
+    parser.add_option('-l', '--list',
                     dest='list_binaries',
                     default=False,
                     action="store_true",
