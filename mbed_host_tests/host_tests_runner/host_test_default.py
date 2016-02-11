@@ -196,7 +196,7 @@ class DefaultTestSelector(DefaultTestSelectorBase):
                     self.logger.prn_wrn(">>> orphan event: {{%s;%s}}, timestamp=%f"% (key, str(value), timestamp))
             self.logger.prn_inf("stopped consuming events")
 
-        if result:
+        if result is not None:  # We must compare here against None!
             # Here for example we've received some error code like IOERR_COPY
             self.logger.prn_inf("host test result() skipped, received: %s"% str(result))
         else:
@@ -254,5 +254,6 @@ class DefaultTestSelector(DefaultTestSelectorBase):
         else:
             result = test_result
 
+        # This will be captured by Greentea
         self.logger.prn_inf("{{result;%s}}"% result)
         return self.get_test_result_int(result)
