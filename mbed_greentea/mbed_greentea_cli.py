@@ -148,7 +148,7 @@ def main():
                     default=False,
                     help="Only build repository and tests, skips actual test procedures (flashing etc.)")
 
-    parser.add_option("", "--skip-build",
+    parser.add_option("-S", "--skip-build",
                     action="store_true",
                     dest="skip_yotta_build",
                     default=False,
