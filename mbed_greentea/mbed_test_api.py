@@ -169,7 +169,7 @@ def run_host_test(image_path,
 
     if verbose:
         gt_logger.gt_log_tab("calling mbedhtrun: %s"% " ".join(cmd))
-        gt_logger.gt_log("mbed-host-test-runner: started")
+    gt_logger.gt_log("mbed-host-test-runner: started")
 
     htrun_output = ''
     start_time = time()
@@ -178,8 +178,9 @@ def run_host_test(image_path,
         htrun_output += line
         # When dumping output to file both \r and \n will be a new line
         # To avoid this "extra new-line" we only use \n at the end
-        sys.stdout.write(line.rstrip() + '\n')
-        sys.stdout.flush()
+        if verbose:
+            sys.stdout.write(line.rstrip() + '\n')
+            sys.stdout.flush()
 
     end_time = time()
     testcase_duration = end_time - start_time   # Test case duration from reset to {end}
