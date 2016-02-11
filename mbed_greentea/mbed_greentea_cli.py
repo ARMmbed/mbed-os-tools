@@ -373,7 +373,7 @@ def run_test_thread(test_result_queue, test_queue, opts, mut, mut_info, yotta_ta
                                          enum_host_tests_path=enum_host_tests_path,
                                          verbose=verbose)
 
-        single_test_result, single_test_output, single_testduration, single_timeout, result_test_cases = host_test_result
+        single_test_result, single_test_output, single_testduration, single_timeout, result_test_cases, test_cases_summary = host_test_result
         test_result = single_test_result
         if single_test_result != TEST_RESULT_OK:
             test_exec_retcode += 1
@@ -399,11 +399,27 @@ def run_test_thread(test_result_queue, test_queue, opts, mut, mut_info, yotta_ta
             test_result,
             single_testduration))
 
+        passes_cnt, failures_cnt = 0, 0
         for tc_name in sorted(result_test_cases.keys()):
             gt_logger.gt_log_tab("test case: '%s' %s %s in %.2f sec"% (tc_name,
                 '.' * (80 - len(tc_name)),
                 result_test_cases[tc_name].get('result_text', '_'),
                 result_test_cases[tc_name].get('duration', 0.0)))
+            if result_test_cases[tc_name].get('result_text', '_') == 'OK':
+                passes_cnt += 1
+            else:
+                failures_cnt += 1
+
+        if test_cases_summary:
+            passes, failures = test_cases_summary
+            gt_logger.gt_log("test case summary: %d pass%s, %d failur%s"% (passes, 
+                '' if passes == 1 else 'es',
+                failures,
+                '' if failures == 1 else 'es'))
+            if passes != passes_cnt or failures != failures_cnt:
+                gt_logger.gt_log_err("test case summary mismatch: reported passes vs failures miscount!")
+        else:
+            gt_logger.gt_log_warn("test case summary not found")
 
         if single_test_result != 'OK' and not verbose and opts.report_fails:
             # In some cases we want to print console to see why test failed
@@ -455,7 +471,7 @@ def main_cli(opts, args, gt_instance_uuid=None):
                                          enum_host_tests_path=enum_host_tests_path,
                                          verbose=opts.verbose_test_result_only)
 
-        single_test_result, single_test_output, single_testduration, single_timeout, result_test_cases = host_test_result
+        single_test_result, single_test_output, single_testduration, single_timeout, result_test_cases, test_cases_summary = host_test_result
         status = TEST_RESULTS.index(single_test_result) if single_test_result in TEST_RESULTS else -1
         return (status)
 
@@ -657,7 +673,7 @@ def main_cli(opts, args, gt_instance_uuid=None):
                                                      enum_host_tests_path=enum_host_tests_path,
                                                      verbose=True)
 
-                    single_test_result, single_test_output, single_testduration, single_timeout, result_test_cases = host_test_result
+                    single_test_result, single_test_output, single_testduration, single_timeout, result_test_cases, test_cases_summary = host_test_result
                     status = TEST_RESULTS.index(single_test_result) if single_test_result in TEST_RESULTS else -1
                     if single_test_result != TEST_RESULT_OK:
                         test_exec_retcode += 1

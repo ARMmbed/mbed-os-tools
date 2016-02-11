@@ -186,11 +186,21 @@ def run_host_test(image_path,
 
     result = get_test_result(htrun_output)
     result_test_cases = get_testcase_result(htrun_output)
+    test_cases_summary = get_testcase_summary(htrun_output)
 
     if verbose:
         gt_logger.gt_log("mbed-host-test-runner: stopped")
         gt_logger.gt_log("mbed-host-test-runner: returned '%s'"% result)
-    return (result, "".join(htrun_output), testcase_duration, duration, result_test_cases)
+    return (result, htrun_output, testcase_duration, duration, result_test_cases, test_cases_summary)
+
+def get_testcase_summary(output):
+    re_tc_summary = re.compile(r"^\[(\d+\.\d+)\][^\{]+\{\{(__testcase_summary);(\d+);(\d+)\}\}")
+    for line in output.splitlines():
+        m = re_tc_summary.search(line)
+        if m:
+            timestamp, _, passes, failures = m.groups()
+            return int(passes), int(failures)
+    return None
 
 def get_testcase_result(output):
     result_test_cases = {}  # Test cases results
