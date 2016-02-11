@@ -35,6 +35,14 @@ class HtrunLogger(object):
             sys.stdout.write(text)
             sys.stdout.flush()
 
+    def __prn_log_human(self, level, text, timestamp=None):
+        if not timestamp:
+            timestamp = time()
+        timestamp_str = strftime("%y-%m-%d %H:%M:%S", gmtime(timestamp))
+        frac, whole = modf(timestamp)
+        s = "[%s.%d][%s][%s] %s"% (timestamp_str, frac, self.__name, level, text)
+        self.__prn_func(s, nl=True)
+
     def __prn_log(self, level, text, timestamp=None):
         if not timestamp:
             timestamp = time()
