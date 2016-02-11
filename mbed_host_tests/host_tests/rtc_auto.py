@@ -33,13 +33,13 @@ class RTCTest(BaseHostTest):
     def _callback_rtc(self, key, value, timestamp):
         self.rtc_reads.append((key, value, timestamp))
 
-    def _callback_exit(self, key, value, timestamp):
+    def _callback_end(self, key, value, timestamp):
         self.notify_complete()
 
     def setup(self):
         self.register_callback('timestamp', self._callback_timestamp)
         self.register_callback('rtc', self._callback_rtc)
-        self.register_callback('exit', self._callback_exit)
+        self.register_callback('end', self._callback_end)
 
     def result(self):
         def check_strftimes_format(t):
