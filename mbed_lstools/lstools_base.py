@@ -152,6 +152,7 @@ class MbedLsToolsBase:
         "5015": "ARM_MPS2_M7",
         "5020": "HOME_GATEWAY_6LOWPAN",
         "5500": "RZ_A1H",
+        "6660": "NZ32_SC151",
         "7778": "TEENSY3_1",
         "9001": "LPC1347",
         "9002": "LPC11U24",
