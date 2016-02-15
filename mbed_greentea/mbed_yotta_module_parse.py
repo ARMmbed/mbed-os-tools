@@ -1,6 +1,6 @@
 """
 mbed SDK
-Copyright (c) 2011-2015 ARM Limited
+Copyright (c) 2011-2016 ARM Limited
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -77,3 +77,34 @@ class YottaConfig():
             if 'test-pins' in self.yotta_config['hardware']:
                 return self.yotta_config['hardware']['test-pins']
         return None
+
+
+class YottaModule():
+
+    __yotta_module = None
+
+    def __init__(self):
+        self.MODULE_PATH = '.'
+        self.YOTTA_CONFIG_NAME = 'module.json'
+
+    def init(self):
+        """! Loads yotta_module.json as an object from local yotta build directory
+        @return True if data was successfuly loaded from the file
+        """
+        try:
+            path = os.path.join(self.MODULE_PATH, self.YOTTA_CONFIG_NAME)
+            with open(path, 'r') as data_file:
+                self.__yotta_module = json.load(data_file)
+        except IOError as e:
+            print "YottaModule: error - ", str(e)
+            self.__yotta_module = {}
+        return bool(len(self.__yotta_module))
+
+    def set_yotta_config(self, yotta_module):
+        self.__yotta_module = yotta_module
+
+    def get_data(self):
+        return self.__yotta_module
+
+    def get_name(self):
+        return self.__yotta_module.get('name', 'unknown')

@@ -36,7 +36,7 @@ from mbed_greentea.cmake_handlers import list_binaries_for_targets
 from mbed_greentea.mbed_report_api import exporter_text
 from mbed_greentea.mbed_report_api import exporter_testcase_text
 from mbed_greentea.mbed_report_api import exporter_json
-from mbed_greentea.mbed_report_api import exporter_junit
+from mbed_greentea.mbed_report_api import exporter_testcase_junit
 from mbed_greentea.mbed_target_info import get_mbed_clasic_target_info
 from mbed_greentea.mbed_target_info import get_mbed_target_from_current_dir
 from mbed_greentea.mbed_greentea_log import gt_logger
@@ -45,7 +45,8 @@ from mbed_greentea.mbed_greentea_dlm import greentea_get_app_sem
 from mbed_greentea.mbed_greentea_dlm import greentea_update_kettle
 from mbed_greentea.mbed_greentea_dlm import greentea_clean_kettle
 from mbed_greentea.mbed_yotta_api import build_with_yotta
-from mbed_greentea.mbed_yotta_target_parse import YottaConfig
+from mbed_greentea.mbed_yotta_module_parse import YottaConfig
+from mbed_greentea.mbed_yotta_module_parse import YottaModule
 
 try:
     import mbed_lstools
@@ -412,7 +413,7 @@ def run_test_thread(test_result_queue, test_queue, opts, mut, mut_info, yotta_ta
 
         if test_cases_summary:
             passes, failures = test_cases_summary
-            gt_logger.gt_log("test case summary: %d pass%s, %d failur%s"% (passes, 
+            gt_logger.gt_log("test case summary: %d pass%s, %d failur%s"% (passes,
                 '' if passes == 1 else 'es',
                 failures,
                 '' if failures == 1 else 'es'))
@@ -474,6 +475,10 @@ def main_cli(opts, args, gt_instance_uuid=None):
         single_test_result, single_test_output, single_testduration, single_timeout, result_test_cases, test_cases_summary = host_test_result
         status = TEST_RESULTS.index(single_test_result) if single_test_result in TEST_RESULTS else -1
         return (status)
+
+    ### Read yotta module basic information
+    yotta_module = YottaModule()
+    yotta_module.init() # Read actual yotta module data
 
     ### Selecting yotta targets to process
     yt_targets = [] # List of yotta targets specified by user used to process during this run
@@ -780,14 +785,16 @@ def main_cli(opts, args, gt_instance_uuid=None):
         # Reports (to file)
         if opts.report_junit_file_name:
             gt_logger.gt_log("exporting to JUnit file '%s'..."% gt_logger.gt_bright(opts.report_junit_file_name))
-            junit_report = exporter_junit(test_report)
+            junit_report = exporter_testcase_junit(test_report, test_suite_properties=yotta_module.get_data())
             with open(opts.report_junit_file_name, 'w') as f:
                 f.write(junit_report)
         if opts.report_text_file_name:
-            gt_logger.gt_log("exporting to junit '%s'..."% gt_logger.gt_bright(opts.report_text_file_name))
+            gt_logger.gt_log("exporting to text '%s'..."% gt_logger.gt_bright(opts.report_text_file_name))
+
             text_report, text_results = exporter_text(test_report)
+            text_testcase_report, text_testcase_results = exporter_testcase_text(test_report)
             with open(opts.report_text_file_name, 'w') as f:
-                f.write(text_report)
+                f.write('\n'.join([text_report, text_results, text_testcase_report, text_testcase_results]))
 
         # Reports (to console)
         if opts.report_json:
@@ -804,7 +811,7 @@ def main_cli(opts, args, gt_instance_uuid=None):
                 gt_logger.gt_log("test suite results: " + text_results)
                 # test case detailed report
                 gt_logger.gt_log("test case report:")
-                text_testcase_report, text_testcase_results = exporter_testcase_text(test_report)
+                text_testcase_report, text_testcase_results = exporter_testcase_text(test_report, test_suite_properties=yotta_module.get_data())
                 print text_testcase_report
                 gt_logger.gt_log("test case results: " + text_testcase_results)
 
