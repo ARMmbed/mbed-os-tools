@@ -194,6 +194,45 @@ def run_host_test(image_path,
         gt_logger.gt_log("mbed-host-test-runner: returned '%s'"% result)
     return (result, htrun_output, testcase_duration, duration, result_test_cases, test_cases_summary)
 
+def get_testcase_utest(output, test_case_name):
+    """ Example test case prints
+    [1455553765.52][CONN][RXD] >>> Running case #1: 'Simple Test'...
+    [1455553765.52][CONN][RXD] {{__testcase_start;Simple Test}}
+    [1455553765.52][CONN][INF] found KV pair in stream: {{__testcase_start;Simple Test}}, queued...
+    [1455553765.58][CONN][RXD] Simple test called
+    [1455553765.58][CONN][RXD] {{__testcase_finish;Simple Test;1;0}}
+    [1455553765.58][CONN][INF] found KV pair in stream: {{__testcase_finish;Simple Test;1;0}}, queued...
+    [1455553765.70][CONN][RXD] >>> 'Simple Test': 1 passed, 0 failed
+    """
+
+    # Return string with all non-alphanumerics backslashed;
+    # this is useful if you want to match an arbitrary literal
+    # string that may have regular expression metacharacters in it.
+    escaped_test_case_name = re.escape(test_case_name)
+
+    re_tc_utest_log_start  = re.compile(r"^\[(\d+\.\d+)\]\[(\w+)\]\[(\w+)\] >>> Running case #(\d)+: '(%s)'"% escaped_test_case_name)
+    re_tc_utest_log_finish = re.compile(r"^\[(\d+\.\d+)\]\[(\w+)\]\[(\w+)\] >>> '(%s)': (\d+) passed, (\d+) failed"% escaped_test_case_name)
+
+    tc_log_lines = []
+    for line in output.splitlines():
+
+        # utest test case start string search
+        m = re_tc_utest_log_start.search(line)
+        if m:
+            tc_log_lines.append(line)
+
+        # If utest test case end string found
+        m = re_tc_utest_log_finish.search(line)
+        if m:
+            tc_log_lines.append(line)
+            break
+
+        # Continue adding utest log lines
+        if tc_log_lines:
+            tc_log_lines.append(line)
+
+    return tc_log_lines
+
 def get_testcase_summary(output):
     re_tc_summary = re.compile(r"^\[(\d+\.\d+)\][^\{]+\{\{(__testcase_summary);(\d+);(\d+)\}\}")
     for line in output.splitlines():
@@ -215,6 +254,8 @@ def get_testcase_result(output):
             if testcase_id not in result_test_cases:
                 result_test_cases[testcase_id] = {}
             result_test_cases[testcase_id]['time_start'] = float(timestamp)
+            result_test_cases[testcase_id]['utest_log'] = get_testcase_utest(output, testcase_id)
+
             continue
 
         m = re_tc_finish.search(line)

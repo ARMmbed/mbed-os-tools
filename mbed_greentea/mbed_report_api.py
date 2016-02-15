@@ -219,8 +219,10 @@ def exporter_testcase_junit(test_result_ext, test_suite_properties=None):
                 # result = testcase_result[tc_name].get('result', 0)
                 # passed = testcase_result[tc_name].get('passed', 0)
                 # failed = testcase_result[tc_name].get('failed', 0)
+                utest_log = testcase_result[tc_name].get('utest_log', 0)
                 result_text = testcase_result[tc_name].get('result_text', "UNDEF")
 
+                tc_stdout = '\n'.join(utest_log)
                 tc_class = ym_name + '.' + target_name + '.' + test_suite_name
                 tc = TestCase(tc_name, tc_class, duration, tc_stdout, tc_stderr)
 
