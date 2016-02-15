@@ -157,7 +157,6 @@ def conn_process(event_queue, dut_event_queue, prn_lock, config):
 
     # Some RXD data buffering so we can show more text per log line
     print_data = ''
-    print_timeout = time()
 
     # Handshake, we will send {{sync;UUID}} preamble and wait for mirrored reply
     logger.prn_inf("sending preamble '%s'..."% sync_uuid)
@@ -181,14 +180,20 @@ def conn_process(event_queue, dut_event_queue, prn_lock, config):
         data = connector.read(2048)
         if data:
 
-            # We want to print RXD data every 200ms to get longer buffers
+            # We want to print RXD data with nice line division in log
             print_data += data
-            if ('}}' in print_data or time() - print_timeout) >= 0.2:
-                for line in print_data.split('\n'):
-                    if line:
-                        logger.prn_rxd(line)
-                print_data = ''
-                print_timeout = time()
+            print_data_lines = print_data.split('\n')
+            if print_data_lines:
+                if data.endswith('\n'):
+                    for line in print_data_lines:
+                        if line:
+                            logger.prn_rxd(line)
+                    print_data = ''
+                else:
+                    for line in print_data_lines[:-1]:
+                        if line:
+                            logger.prn_rxd(line)
+                    print_data = print_data_lines[-1]
 
             # Stream data stream KV parsing
             kv_buffer.append(data)
