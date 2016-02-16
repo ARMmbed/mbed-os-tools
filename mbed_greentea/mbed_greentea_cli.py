@@ -818,11 +818,11 @@ def main_cli(opts, args, gt_instance_uuid=None):
         # This flag guards 'build only' so we expect only yotta errors
         if test_platforms_match == 0:
             # No tests were executed
-            gt_logger.gt_log("no platform/target matching tests were found!")
+            gt_logger.gt_log_warn("no platform/target matching tests were found!")
             test_exec_retcode += -10
         if target_platforms_match == 0:
             # No platforms were tested
-            gt_logger.gt_log("no target matching platforms were found!")
+            gt_logger.gt_log_warn("no target matching platforms were found!")
             test_exec_retcode += -100
 
     return (test_exec_retcode)

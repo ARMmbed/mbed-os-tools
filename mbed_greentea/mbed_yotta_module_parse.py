@@ -100,7 +100,7 @@ class YottaModule():
             self.__yotta_module = {}
         return bool(len(self.__yotta_module))
 
-    def set_yotta_config(self, yotta_module):
+    def set_yotta_module(self, yotta_module):
         self.__yotta_module = yotta_module
 
     def get_data(self):
