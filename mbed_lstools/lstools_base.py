@@ -393,7 +393,7 @@ class MbedLsToolsBase:
         from prettytable import PLAIN_COLUMNS
         result = ''
         mbeds = self.list_mbeds_ext()
-        if mbeds is not None:
+        if mbeds:
             """ ['platform_name', 'mount_point', 'serial_port', 'target_id'] - columns generated from USB auto-detection
                 ['platform_name_unique', ...] - columns generated outside detection subsystem (OS dependent detection)
             """
@@ -406,7 +406,7 @@ class MbedLsToolsBase:
             for mbed in mbeds:
                 row = []
                 for col in columns:
-                    row.append(mbed[col] if col in mbed and mbed[col] is not None else 'unknown')
+                    row.append(mbed[col] if col in mbed and mbed[col] else 'unknown')
                 pt.add_row(row)
             pt.set_style(PLAIN_COLUMNS)
             result = pt.get_string(border=border, header=header, padding_width=padding_width, sortby=sortby)
@@ -445,10 +445,9 @@ class MbedLsToolsBase:
                 mbed_htm_path = os.path.join(mount_point, mount_point_file)
                 try:
                     with open(mbed_htm_path, 'r') as f:
-                        fline = f.readlines()
-                        for line in fline:
+                        for line in f.readlines():
                             target_id = self.scan_html_line_for_target_id(line)
-                            if target_id is not None:
+                            if target_id:
                                 return target_id
                 except IOError:
                     if self.DEBUG_FLAG:
@@ -484,7 +483,7 @@ class MbedLsToolsBase:
         """
         # Detecting modern mbed.htm file format
         m = re.search('\?code=([a-fA-F0-9]+)', line)
-        if m is not None:
+        if m:
             result = m.groups()[0]
             if self.DEBUG_FLAG:
                 self.debug(self.scan_html_line_for_target_id.__name__, line.strip())
@@ -494,7 +493,7 @@ class MbedLsToolsBase:
         # Last resort, we can try to see if old mbed.htm format is there
         else:
             m = re.search('\?auth=([a-fA-F0-9]+)', line)
-            if m is not None:
+            if m:
                 result = m.groups()[0]
                 if self.DEBUG_FLAG:
                     self.debug(self.scan_html_line_for_target_id.__name__, line.strip())
