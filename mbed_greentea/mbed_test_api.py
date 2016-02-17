@@ -220,6 +220,7 @@ def get_testcase_utest(output, test_case_name):
         m = re_tc_utest_log_start.search(line)
         if m:
             tc_log_lines.append(line)
+            continue
 
         # If utest test case end string found
         m = re_tc_utest_log_finish.search(line)

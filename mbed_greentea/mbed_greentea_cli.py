@@ -419,6 +419,7 @@ def run_test_thread(test_result_queue, test_queue, opts, mut, mut_info, yotta_ta
                 '' if failures == 1 else 'es'))
             if passes != passes_cnt or failures != failures_cnt:
                 gt_logger.gt_log_err("test case summary mismatch: reported passes vs failures miscount!")
+                gt_logger.gt_log_tab("(%d, %d) vs (%d, %d)"% (passes, failures, passes_cnt, failures_cnt))
         else:
             gt_logger.gt_log_warn("test case summary not found")
 
