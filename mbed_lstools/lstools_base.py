@@ -304,10 +304,19 @@ class MbedLsToolsBase:
                     if self.DEBUG_FLAG:
                         self.debug(self.list_mbeds_ext.__name__, ("retargeting", target_id, mbeds[i]))
 
+            # Add meta data to mbed structure
+            mbeds[i]['meta'] = {}
+
             details_txt = self.get_details_txt(val['mount_point'])
             if details_txt:
+                mbeds[i]['meta']['DETAILS.TXT'] = details_txt
                 mbeds[i]['fw_version'] = details_txt.get('Version', 'unknown')
-                mbeds[i]['DETAILS.TXT'] = details_txt
+
+            mbed_htm = self.get_mbed_htm(val['mount_point'])
+            if mbed_htm:
+                mbeds[i]['meta']['mbed.htm'] = mbed_htm
+                if 'fw_version' not in mbeds[i]:
+                    mbeds[i]['fw_version'] = mbed_htm.get('Version', 'unknown')
 
             if self.DEBUG_FLAG:
                 self.debug(self.list_mbeds_ext.__name__, (mbeds[i]['platform_name_unique'], val['target_id']))
@@ -439,16 +448,43 @@ class MbedLsToolsBase:
         @details Note: This function should be improved to scan variety of boards' mbed.htm files
         """
         result = None
+        for line in self.get_mbed_htm(mount_point):
+            target_id = self.scan_html_line_for_target_id(line)
+            if target_id:
+                return target_id
+        return result
 
+    def get_mbed_htm(self, mount_point):
+        """!
+        <!-- mbed Microcontroller Website and Authentication Shortcut -->
+        <!-- Version: 0200 Build: Mar 26 2014 13:22:20 -->
+        <html>
+        ...
+        </html>
+        """
+        result = {}
+        for line in self.get_mbed_htm_lines(mount_point):
+            # Check for Version and Build date of interface chip firmware
+            m = re.search(r'^<!-- Version: (\d+) Build: ([\d\w: ]+) -->', line)
+            if m:
+                version_str, build_str = m.groups()
+                result['Version'] = version_str.strip()
+                result['Build'] = build_str.strip()
+
+            # Check for mbed URL
+            m = re.search(r'url=([\w\d\:/\\\?\.=-_]+)', line)
+            if m:
+                result['url'] = m.group(1).strip()
+        return result
+
+    def get_mbed_htm_lines(self, mount_point):
+        result = []
         for mount_point_file in [f for f in listdir(mount_point) if isfile(join(mount_point, f))]:
             if mount_point_file.lower() == self.MBED_HTM_NAME:
                 mbed_htm_path = os.path.join(mount_point, mount_point_file)
                 try:
                     with open(mbed_htm_path, 'r') as f:
-                        for line in f.readlines():
-                            target_id = self.scan_html_line_for_target_id(line)
-                            if target_id:
-                                return target_id
+                        result = f.readlines()
                 except IOError:
                     if self.DEBUG_FLAG:
                         self.debug(self.get_mbed_htm_target_id.__name__, ('Failed to open file', mbed_htm_path))
