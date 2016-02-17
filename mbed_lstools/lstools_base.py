@@ -448,7 +448,7 @@ class MbedLsToolsBase:
         @details Note: This function should be improved to scan variety of boards' mbed.htm files
         """
         result = None
-        for line in self.get_mbed_htm(mount_point):
+        for line in self.get_mbed_htm_lines(mount_point):
             target_id = self.scan_html_line_for_target_id(line)
             if target_id:
                 return target_id
