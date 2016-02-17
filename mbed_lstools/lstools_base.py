@@ -171,6 +171,7 @@ class MbedLsToolsBase:
 
     MOCK_FILE_NAME = '.mbedls-mock'
     RETARGET_FILE_NAME = 'mbedls.json'
+    DETAILS_TXT_NAME = 'DETAILS.TXT'
 
     def mock_read(self):
         """! Load mocking data from local file
@@ -299,7 +300,12 @@ class MbedLsToolsBase:
                 if target_id in self.retarget_data:
                     mbeds[i].update(self.retarget_data[target_id])
                     if self.DEBUG_FLAG:
-                        self.debug(self.list_mbeds_ext.__name__, ("retargeting", target_id, mbed[i]))
+                        self.debug(self.list_mbeds_ext.__name__, ("retargeting", target_id, mbeds[i]))
+
+            details_txt = self.get_details_txt(val['mount_point'])
+            if details_txt:
+                mbeds[i]['fw_version'] = details_txt.get('Version', 'unknown')
+                mbeds[i]['DETAILS.TXT'] = details_txt
 
             if self.DEBUG_FLAG:
                 self.debug(self.list_mbeds_ext.__name__, (mbeds[i]['platform_name_unique'], val['target_id']))
@@ -389,8 +395,9 @@ class MbedLsToolsBase:
             """ ['platform_name', 'mount_point', 'serial_port', 'target_id'] - columns generated from USB auto-detection
                 ['platform_name_unique', ...] - columns generated outside detection subsystem (OS dependent detection)
             """
-            columns = ['platform_name', 'platform_name_unique', 'mount_point', 'serial_port', 'target_id']
+            columns = ['platform_name', 'platform_name_unique', 'mount_point', 'serial_port', 'target_id', 'fw_version']
             pt = PrettyTable(columns)
+            pt.padding_width = 1
             for col in columns:
                 pt.align[col] = 'l'
 
@@ -425,6 +432,7 @@ class MbedLsToolsBase:
 
     def get_mbed_htm_target_id(self, mount_point):
         """! Function scans mbed.htm to get information about TargetID.
+        @param mount_point mbed mount point (disk / drive letter)
         @return Function returns targetID, in case of failure returns None.
         @details Note: This function should be improved to scan variety of boards' mbed.htm files
         """
@@ -443,6 +451,29 @@ class MbedLsToolsBase:
                 if self.DEBUG_FLAG:
                     self.debug(self.get_mbed_htm_target_id.__name__, ('Failed to open file', mbed_htm_path))
         return result
+
+    def get_details_txt(self, mount_point):
+        """! Load DETAILS.TXT to dictionary:
+            DETAILS.TXT example:
+            Version: 0226
+            Build:   Aug 24 2015 17:06:30
+            Git Commit SHA: 27a236b9fe39c674a703c5c89655fbd26b8e27e1
+            Git Local mods: Yes
+        """
+        result = {}
+        path_to_details_txt = os.path.join(mount_point, self.DETAILS_TXT_NAME)
+        if os.path.exists(path_to_details_txt):
+            try:
+                with open(path_to_details_txt, 'r') as f:
+                    for line in f.readlines():
+                        line_split = line.split(':')
+                        if line_split:
+                            idx = line.find(':')
+                            result[line_split[0]] = line[idx+1:].strip()
+            except IOError:
+                if self.DEBUG_FLAG:
+                    self.debug(self.get_mbed_fw_version.get_details_txt.__name__, ('Failed to open file', path_to_details_txt))
+        return result if result else None
 
     def scan_html_line_for_target_id(self, line):
         """! Scan if given line contains target id encoded in URL.
