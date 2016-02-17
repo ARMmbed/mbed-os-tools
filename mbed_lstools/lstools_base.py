@@ -18,7 +18,8 @@ limitations under the License.
 import re
 import os
 import json
-import os.path
+from os import listdir
+from os.path import isfile, join
 
 class MbedLsToolsBase:
     """ Base class for mbed-lstools, defines mbed-ls tools interface for mbed-enabled devices detection for various hosts
@@ -172,12 +173,13 @@ class MbedLsToolsBase:
     MOCK_FILE_NAME = '.mbedls-mock'
     RETARGET_FILE_NAME = 'mbedls.json'
     DETAILS_TXT_NAME = 'DETAILS.TXT'
+    MBED_HTM_NAME = 'mbed.htm'
 
     def mock_read(self):
         """! Load mocking data from local file
         @return Curent mocking configuration (dictionary)
         """
-        if os.path.isfile(self.MOCK_FILE_NAME):
+        if isfile(self.MOCK_FILE_NAME):
             if self.DEBUG_FLAG:
                 self.debug(self.mock_read.__name__, "reading mock file %s"% self.MOCK_FILE_NAME)
             try:
@@ -437,19 +439,20 @@ class MbedLsToolsBase:
         @details Note: This function should be improved to scan variety of boards' mbed.htm files
         """
         result = None
-        MBED_HTM_LIST = ['mbed.htm', 'MBED.HTM', 'MBED.htm']
-        for mbed_htm in MBED_HTM_LIST:
-            mbed_htm_path = os.path.join(mount_point, mbed_htm)
-            try:
-                with open(mbed_htm_path, 'r') as f:
-                    fline = f.readlines()
-                    for line in fline:
-                        target_id = self.scan_html_line_for_target_id(line)
-                        if target_id is not None:
-                            return target_id
-            except IOError:
-                if self.DEBUG_FLAG:
-                    self.debug(self.get_mbed_htm_target_id.__name__, ('Failed to open file', mbed_htm_path))
+
+        for mount_point_file in [f for f in listdir(mount_point) if isfile(join(mount_point, f))]:
+            if mount_point_file.lower() == self.MBED_HTM_NAME:
+                mbed_htm_path = os.path.join(mount_point, mount_point_file)
+                try:
+                    with open(mbed_htm_path, 'r') as f:
+                        fline = f.readlines()
+                        for line in fline:
+                            target_id = self.scan_html_line_for_target_id(line)
+                            if target_id is not None:
+                                return target_id
+                except IOError:
+                    if self.DEBUG_FLAG:
+                        self.debug(self.get_mbed_htm_target_id.__name__, ('Failed to open file', mbed_htm_path))
         return result
 
     def get_details_txt(self, mount_point):
