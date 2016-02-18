@@ -304,19 +304,20 @@ class MbedLsToolsBase:
                     if self.DEBUG_FLAG:
                         self.debug(self.list_mbeds_ext.__name__, ("retargeting", target_id, mbeds[i]))
 
-            # Add meta data to mbed structure
-            mbeds[i]['meta'] = {}
-
+            # Add interface chip meta data to mbed structure
             details_txt = self.get_details_txt(val['mount_point'])
             if details_txt:
-                mbeds[i]['meta']['DETAILS.TXT'] = details_txt
-                mbeds[i]['fw_version'] = details_txt.get('Version', 'unknown')
+                for field in details_txt:
+                    field_name = 'fw_' + field.lower().replace(' ', '_')
+                    if field_name not in mbeds[i]:
+                        mbeds[i][field_name] = details_txt[field]
 
             mbed_htm = self.get_mbed_htm(val['mount_point'])
             if mbed_htm:
-                mbeds[i]['meta']['mbed.htm'] = mbed_htm
-                if 'fw_version' not in mbeds[i]:
-                    mbeds[i]['fw_version'] = mbed_htm.get('Version', 'unknown')
+                for field in mbed_htm:
+                    field_name = 'fw_' + field.lower().replace(' ', '_')
+                    if field_name not in mbeds[i]:
+                        mbeds[i][field_name] = mbed_htm[field]
 
             if self.DEBUG_FLAG:
                 self.debug(self.list_mbeds_ext.__name__, (mbeds[i]['platform_name_unique'], val['target_id']))
@@ -408,7 +409,6 @@ class MbedLsToolsBase:
             """
             columns = ['platform_name', 'platform_name_unique', 'mount_point', 'serial_port', 'target_id', 'fw_version']
             pt = PrettyTable(columns)
-            pt.padding_width = 1
             for col in columns:
                 pt.align[col] = 'l'
 
