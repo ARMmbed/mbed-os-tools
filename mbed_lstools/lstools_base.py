@@ -391,7 +391,7 @@ class MbedLsToolsBase:
         """
         return self.get_string()
 
-    def get_string(self, border=False, header=True, padding_width=0, sortby='platform_name'):
+    def get_string(self, border=False, header=True, padding_width=1, sortby='platform_name'):
         """! Printing with some sql table like decorators
         @param border Table border visibility
         @param header Table header visibility
@@ -400,7 +400,6 @@ class MbedLsToolsBase:
         @return Returns string which can be printed on console
         """
         from prettytable import PrettyTable
-        from prettytable import PLAIN_COLUMNS
         result = ''
         mbeds = self.list_mbeds_ext()
         if mbeds:
@@ -417,7 +416,6 @@ class MbedLsToolsBase:
                 for col in columns:
                     row.append(mbed[col] if col in mbed and mbed[col] else 'unknown')
                 pt.add_row(row)
-            pt.set_style(PLAIN_COLUMNS)
             result = pt.get_string(border=border, header=header, padding_width=padding_width, sortby=sortby)
         return result
 
