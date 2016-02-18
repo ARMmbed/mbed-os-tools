@@ -78,8 +78,13 @@ class DefaultTestSelector(DefaultTestSelectorBase):
         event_queue = Queue()       # Events from DUT to host
         dut_event_queue = Queue()   # Events from host to DUT {k;v}
 
+        def callback__notify_prn(key, value, timestamp):
+            """! Handles __norify_prn. Prints all lines in separate log line """
+            for line in value.splitlines():
+                self.logger.prn_inf(line)
+
         callbacks = {
-            "__notify_prn" : lambda k, v, t: self.logger.prn_inf(v)
+            "__notify_prn" : callback__notify_prn
         }
 
         # if True we will allow host test to consume all events after test is finished
@@ -123,10 +128,15 @@ class DefaultTestSelector(DefaultTestSelectorBase):
                         self.test_supervisor = get_host_test(value)
                         if self.test_supervisor:
                             # Pass communication queues and setup() host test
-                            # After setup() user should already register all ccallbacks
-                            self.test_supervisor.event_queue = event_queue
-                            self.test_supervisor.dut_event_queue = dut_event_queue
-                            self.test_supervisor.setup()
+                            self.test_supervisor.setup_communication(event_queue, dut_event_queue)
+                            try:
+                                # After setup() user should already register all callbacks
+                                self.test_supervisor.setup()
+                            except (TypeError, ValueError) as e:
+                                self.logger.prn_err("host test setup() failed, reason: %s"% str(e))
+                                result = self.RESULT_ERROR
+                                break
+
                             self.logger.prn_inf("host test setup() call...")
                             if self.test_supervisor.get_callbacks():
                                 callbacks.update(self.test_supervisor.get_callbacks())

@@ -24,30 +24,28 @@ class BaseHostTestAbstract(object):
     """
 
     name = ''   # name of the host test (used for local registration)
-    event_queue = None      # To main even loop
-    dut_event_queue = None  # To DUT
+    __event_queue = None      # To main even loop
+    __dut_event_queue = None  # To DUT
 
-    def __notify_prn(self, text, nl=True):
-        if self.event_queue:
-            if nl:
-                text += '\n'
-            self.event_queue.put(('__notify_prn', text, time()))
+    def __notify_prn(self, text):
+        if self.__event_queue:
+            self.__event_queue.put(('__notify_prn', text, time()))
 
     def __notify_conn_lost(self, text):
-        if self.event_queue:
-            self.event_queue.put(('__notify_conn_lost', text, time()))
+        if self.__event_queue:
+            self.__event_queue.put(('__notify_conn_lost', text, time()))
 
     def __notify_dut(self, key, value):
         """! Send data over serial to DUT """
-        if self.event_queue:
-            self.dut_event_queue.put((key, value, time()))
+        if self.__event_queue:
+            self.__dut_event_queue.put((key, value, time()))
 
     def notify_complete(self, result=None):
         """! Notify main even loop that host test finished processing
         @param result True for success, False failure. If None - no action in main even loop
         """
-        if self.event_queue:
-            self.event_queue.put(('__notify_complete', result, time()))
+        if self.__event_queue:
+            self.__event_queue.put(('__notify_complete', result, time()))
 
     def notify_conn_lost(self, text):
         """! Notify main even loop that there was a DUT-host test connection error
@@ -62,6 +60,11 @@ class BaseHostTestAbstract(object):
     def send_kv(self, key, value):
         """! Send Key-Value data to DUT """
         self.__notify_dut(key, value)
+
+    def setup_communication(self, event_queue, dut_event_queue):
+        """! Setup queues used for IPC """
+        self.__event_queue = event_queue         # To main even loop
+        self.__dut_event_queue = dut_event_queue # To DUT
 
     def setup(self):
         """! Setup your tests and callbacks """
@@ -85,13 +88,17 @@ class HostTestCallbackBase(BaseHostTestAbstract):
             '__coverage_start',
             '__testcase_start',
             '__testcase_finish',
+            '__testcase_summary',
             '__exit',
         ]
 
-        self.__printable = [
+        self.__consume_by_default = [
             '__coverage_start',
             '__testcase_start',
-            '__testcase_finish'
+            '__testcase_finish',
+            '__testcase_count',
+            '__testcase_summary',
+            '__rxd_line',
         ]
 
         self.__assign_default_callbacks()
@@ -103,27 +110,32 @@ class HostTestCallbackBase(BaseHostTestAbstract):
 
     def __assign_default_callbacks(self):
         """! Assigns default callback handlers """
-        for key in self.__printable:
+        for key in self.__consume_by_default:
             self.__callbacks[key] = self.__callback_default
 
-    def register_callback(self, key, callback):
-        """! Register callback for a specific event (key: event name) """
+    def register_callback(self, key, callback, force=False):
+        """! Register callback for a specific event (key: event name)
+            @param key String with name of the event
+            @param callback Callable which will be registstered for event "key"
+            @param force God mode
+        """
 
         # Non-string keys are not allowed
         if type(key) is not str:
-            raise TypeError
-
-        # Event starting with '__' are reserved
-        if key.startswith('__'):
-            raise ValueError
-
-        # We predefined few callbacks you can't use
-        if key in self.__restricted_callbacks:
-            raise ValueError
+            raise TypeError("event non-string keys are not allowed")
 
         # And finally callback should be callable
         if not callable(callback):
-            raise TypeError
+            raise TypeError("event callback should be callable")
+
+        if not force:
+            # Event starting with '__' are reserved
+            if key.startswith('__'):
+                raise ValueError("event key starting with '__' are reserved")
+
+            # We predefined few callbacks you can't use
+            if key in self.__restricted_callbacks:
+                raise ValueError("we predefined few callbacks you can't use e.g. '%s'"% key)
 
         self.__callbacks[key] = callback
 
