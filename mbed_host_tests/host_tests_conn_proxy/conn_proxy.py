@@ -188,13 +188,13 @@ def conn_process(event_queue, dut_event_queue, prn_lock, config):
                     for line in print_data_lines:
                         if line:
                             logger.prn_rxd(line)
-                            event_queue.put(('__rxd_line', value, time()))
+                            event_queue.put(('__rxd_line', line, time()))
                     print_data = ''
                 else:
                     for line in print_data_lines[:-1]:
                         if line:
                             logger.prn_rxd(line)
-                            event_queue.put(('__rxd_line', value, time()))
+                            event_queue.put(('__rxd_line', line, time()))
                     print_data = print_data_lines[-1]
 
             # Stream data stream KV parsing
