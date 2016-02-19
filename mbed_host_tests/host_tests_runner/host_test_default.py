@@ -19,6 +19,7 @@ Author: Przemyslaw Wirkus <Przemyslaw.Wirkus@arm.com>
 
 
 import sys
+import traceback
 from time import time
 
 from multiprocessing import Process, Queue, Lock
@@ -111,77 +112,90 @@ class DefaultTestSelector(DefaultTestSelectorBase):
         p.deamon = True
         p.start()
 
-        consume_preamble_events = True
-        while (time() - start_time) < timeout_duration:
-            # Handle default events like timeout, host_test_name, ...
-            if event_queue.qsize():
-                (key, value, timestamp) = event_queue.get()
+        try:
+            consume_preamble_events = True
+            while (time() - start_time) < timeout_duration:
+                # Handle default events like timeout, host_test_name, ...
+                if event_queue.qsize():
+                    (key, value, timestamp) = event_queue.get()
 
-                if consume_preamble_events:
-                    if key == '__timeout':
-                        # Override default timeout for this event queue
-                        start_time = time()
-                        timeout_duration = int(value) # New timeout
-                        self.logger.prn_inf("setting timeout to: %d sec"% int(value))
-                    elif key == '__host_test_name':
-                        # Load dynamically requested host test
-                        self.test_supervisor = get_host_test(value)
-                        if self.test_supervisor:
-                            # Pass communication queues and setup() host test
-                            self.test_supervisor.setup_communication(event_queue, dut_event_queue)
-                            try:
-                                # After setup() user should already register all callbacks
-                                self.test_supervisor.setup()
-                            except (TypeError, ValueError) as e:
-                                self.logger.prn_err("host test setup() failed, reason: %s"% str(e))
-                                result = self.RESULT_ERROR
-                                break
+                    if consume_preamble_events:
+                        if key == '__timeout':
+                            # Override default timeout for this event queue
+                            start_time = time()
+                            timeout_duration = int(value) # New timeout
+                            self.logger.prn_inf("setting timeout to: %d sec"% int(value))
+                        elif key == '__host_test_name':
+                            # Load dynamically requested host test
+                            self.test_supervisor = get_host_test(value)
+                            if self.test_supervisor:
+                                # Pass communication queues and setup() host test
+                                self.test_supervisor.setup_communication(event_queue, dut_event_queue)
+                                try:
+                                    # After setup() user should already register all callbacks
+                                    self.test_supervisor.setup()
+                                except (TypeError, ValueError) as e:
+                                    # setup() can throw in normal circumstances TypeError and ValueError
+                                    self.logger.prn_err("host test setup() failed, reason:")
+                                    self.logger.prn_inf("==== Traceback start ====")
+                                    for line in traceback.format_exc().splitlines():
+                                        print line
+                                    self.logger.prn_inf("==== Traceback end ====")
+                                    result = self.RESULT_ERROR
+                                    break
 
-                            self.logger.prn_inf("host test setup() call...")
-                            if self.test_supervisor.get_callbacks():
-                                callbacks.update(self.test_supervisor.get_callbacks())
-                                self.logger.prn_inf("CALLBACKs updated")
+                                self.logger.prn_inf("host test setup() call...")
+                                if self.test_supervisor.get_callbacks():
+                                    callbacks.update(self.test_supervisor.get_callbacks())
+                                    self.logger.prn_inf("CALLBACKs updated")
+                                else:
+                                    self.logger.prn_wrn("no CALLBACKs specified by host test")
+                                self.logger.prn_inf("host test detected: %s"% value)
                             else:
-                                self.logger.prn_wrn("no CALLBACKs specified by host test")
-                            self.logger.prn_inf("host test detected: %s"% value)
+                                self.logger.prn_err("host test not detected: %s"% value)
+                            consume_preamble_events = False
+                        elif key == '__sync':
+                            # This is DUT-Host Test handshake event
+                            self.logger.prn_inf("sync KV found, uuid=%s, timestamp=%f"% (str(value), timestamp))
+                        elif key == '__notify_conn_lost':
+                            # This event is sent by conn_process, DUT connection was lost
+                            self.logger.prn_err(value)
+                            self.logger.prn_wrn("stopped to consume events due to %s event"% key)
+                            callbacks_consume = False
+                            result = self.RESULT_IO_SERIAL
+                            break
                         else:
-                            self.logger.prn_err("host test not detected: %s"% value)
-                        consume_preamble_events = False
-                    elif key == '__sync':
-                        # This is DUT-Host Test handshake event
-                        self.logger.prn_inf("sync KV found, uuid=%s, timestamp=%f"% (str(value), timestamp))
-                    elif key == '__notify_conn_lost':
-                        # This event is sent by conn_process, DUT connection was lost
-                        self.logger.prn_err(value)
-                        self.logger.prn_wrn("stopped to consume events due to %s event"% key)
-                        callbacks_consume = False
-                        result = self.RESULT_IO_SERIAL
-                        break
+                            self.logger.prn_err("orphan event in preamble phase: {{%s;%s}}, timestamp=%f"% (key, str(value), timestamp))
                     else:
-                        self.logger.prn_err("orphan event in preamble phase: {{%s;%s}}, timestamp=%f"% (key, str(value), timestamp))
-                else:
-                    if key == '__notify_complete':
-                        # This event is sent by Host Test, test result is in value
-                        # or if value is None, value will be retrieved from HostTest.result() method
-                        self.logger.prn_inf("%s(%s)"% (key, str(value)))
-                        result = value
-                    elif key == '__notify_conn_lost':
-                        # This event is sent by conn_process, DUT connection was lost
-                        self.logger.prn_err(value)
-                        self.logger.prn_wrn("stopped to consume events due to %s event"% key)
-                        callbacks_consume = False
-                        result = self.RESULT_IO_SERIAL
-                        break
-                    elif key == '__exit':
-                        # This event is sent by DUT, test suite exited
-                        self.logger.prn_inf("%s(%s)"% (key, str(value)))
-                        callbacks__exit = True
-                        break
-                    elif key in callbacks:
-                        # Handle callback
-                        callbacks[key](key, value, timestamp)
-                    else:
-                        self.logger.prn_err("orphan event in main phase: {{%s;%s}}, timestamp=%f"% (key, str(value), timestamp))
+                        if key == '__notify_complete':
+                            # This event is sent by Host Test, test result is in value
+                            # or if value is None, value will be retrieved from HostTest.result() method
+                            self.logger.prn_inf("%s(%s)"% (key, str(value)))
+                            result = value
+                        elif key == '__notify_conn_lost':
+                            # This event is sent by conn_process, DUT connection was lost
+                            self.logger.prn_err(value)
+                            self.logger.prn_wrn("stopped to consume events due to %s event"% key)
+                            callbacks_consume = False
+                            result = self.RESULT_IO_SERIAL
+                            break
+                        elif key == '__exit':
+                            # This event is sent by DUT, test suite exited
+                            self.logger.prn_inf("%s(%s)"% (key, str(value)))
+                            callbacks__exit = True
+                            break
+                        elif key in callbacks:
+                            # Handle callback
+                            callbacks[key](key, value, timestamp)
+                        else:
+                            self.logger.prn_err("orphan event in main phase: {{%s;%s}}, timestamp=%f"% (key, str(value), timestamp))
+        except Exception:
+            self.logger.prn_err("something went wrong in event main loop!")
+            self.logger.prn_inf("==== Traceback start ====")
+            for line in traceback.format_exc().splitlines():
+                print line
+            self.logger.prn_inf("==== Traceback end ====")
+            result = self.RESULT_ERROR
 
         time_duration = time() - start_time
         self.logger.prn_inf("test suite run finished after %.2f sec..."% time_duration)
