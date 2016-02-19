@@ -164,6 +164,9 @@ class DefaultTestSelector(DefaultTestSelectorBase):
                             callbacks_consume = False
                             result = self.RESULT_IO_SERIAL
                             break
+                        elif key.startswith('__'):
+                            # Consume other system level events
+                            pass
                         else:
                             self.logger.prn_err("orphan event in preamble phase: {{%s;%s}}, timestamp=%f"% (key, str(value), timestamp))
                     else:
