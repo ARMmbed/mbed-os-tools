@@ -18,7 +18,8 @@ limitations under the License.
 import re
 import os
 import json
-import os.path
+from os import listdir
+from os.path import isfile, join
 
 class MbedLsToolsBase:
     """ Base class for mbed-lstools, defines mbed-ls tools interface for mbed-enabled devices detection for various hosts
@@ -172,12 +173,14 @@ class MbedLsToolsBase:
 
     MOCK_FILE_NAME = '.mbedls-mock'
     RETARGET_FILE_NAME = 'mbedls.json'
+    DETAILS_TXT_NAME = 'DETAILS.TXT'
+    MBED_HTM_NAME = 'mbed.htm'
 
     def mock_read(self):
         """! Load mocking data from local file
         @return Curent mocking configuration (dictionary)
         """
-        if os.path.isfile(self.MOCK_FILE_NAME):
+        if isfile(self.MOCK_FILE_NAME):
             if self.DEBUG_FLAG:
                 self.debug(self.mock_read.__name__, "reading mock file %s"% self.MOCK_FILE_NAME)
             try:
@@ -300,7 +303,22 @@ class MbedLsToolsBase:
                 if target_id in self.retarget_data:
                     mbeds[i].update(self.retarget_data[target_id])
                     if self.DEBUG_FLAG:
-                        self.debug(self.list_mbeds_ext.__name__, ("retargeting", target_id, mbed[i]))
+                        self.debug(self.list_mbeds_ext.__name__, ("retargeting", target_id, mbeds[i]))
+
+            # Add interface chip meta data to mbed structure
+            details_txt = self.get_details_txt(val['mount_point'])
+            if details_txt:
+                for field in details_txt:
+                    field_name = 'daplink_' + field.lower().replace(' ', '_')
+                    if field_name not in mbeds[i]:
+                        mbeds[i][field_name] = details_txt[field]
+
+            mbed_htm = self.get_mbed_htm(val['mount_point'])
+            if mbed_htm:
+                for field in mbed_htm:
+                    field_name = 'daplink_' + field.lower().replace(' ', '_')
+                    if field_name not in mbeds[i]:
+                        mbeds[i][field_name] = mbed_htm[field]
 
             if self.DEBUG_FLAG:
                 self.debug(self.list_mbeds_ext.__name__, (mbeds[i]['platform_name_unique'], val['target_id']))
@@ -374,7 +392,7 @@ class MbedLsToolsBase:
         """
         return self.get_string()
 
-    def get_string(self, border=False, header=True, padding_width=0, sortby='platform_name'):
+    def get_string(self, border=False, header=True, padding_width=1, sortby='platform_name'):
         """! Printing with some sql table like decorators
         @param border Table border visibility
         @param header Table header visibility
@@ -383,14 +401,13 @@ class MbedLsToolsBase:
         @return Returns string which can be printed on console
         """
         from prettytable import PrettyTable
-        from prettytable import PLAIN_COLUMNS
         result = ''
         mbeds = self.list_mbeds_ext()
-        if mbeds is not None:
+        if mbeds:
             """ ['platform_name', 'mount_point', 'serial_port', 'target_id'] - columns generated from USB auto-detection
                 ['platform_name_unique', ...] - columns generated outside detection subsystem (OS dependent detection)
             """
-            columns = ['platform_name', 'platform_name_unique', 'mount_point', 'serial_port', 'target_id']
+            columns = ['platform_name', 'platform_name_unique', 'mount_point', 'serial_port', 'target_id', 'daplink_version']
             pt = PrettyTable(columns)
             for col in columns:
                 pt.align[col] = 'l'
@@ -398,9 +415,8 @@ class MbedLsToolsBase:
             for mbed in mbeds:
                 row = []
                 for col in columns:
-                    row.append(mbed[col] if col in mbed and mbed[col] is not None else 'unknown')
+                    row.append(mbed[col] if col in mbed and mbed[col] else 'unknown')
                 pt.add_row(row)
-            pt.set_style(PLAIN_COLUMNS)
             result = pt.get_string(border=border, header=header, padding_width=padding_width, sortby=sortby)
         return result
 
@@ -426,24 +442,75 @@ class MbedLsToolsBase:
 
     def get_mbed_htm_target_id(self, mount_point):
         """! Function scans mbed.htm to get information about TargetID.
+        @param mount_point mbed mount point (disk / drive letter)
         @return Function returns targetID, in case of failure returns None.
         @details Note: This function should be improved to scan variety of boards' mbed.htm files
         """
         result = None
-        MBED_HTM_LIST = ['mbed.htm', 'MBED.HTM', 'MBED.htm']
-        for mbed_htm in MBED_HTM_LIST:
-            mbed_htm_path = os.path.join(mount_point, mbed_htm)
+        for line in self.get_mbed_htm_lines(mount_point):
+            target_id = self.scan_html_line_for_target_id(line)
+            if target_id:
+                return target_id
+        return result
+
+    def get_mbed_htm(self, mount_point):
+        """!
+        <!-- mbed Microcontroller Website and Authentication Shortcut -->
+        <!-- Version: 0200 Build: Mar 26 2014 13:22:20 -->
+        <html>
+        ...
+        </html>
+        """
+        result = {}
+        for line in self.get_mbed_htm_lines(mount_point):
+            # Check for Version and Build date of interface chip firmware
+            m = re.search(r'^<!-- Version: (\d+) Build: ([\d\w: ]+) -->', line)
+            if m:
+                version_str, build_str = m.groups()
+                result['Version'] = version_str.strip()
+                result['Build'] = build_str.strip()
+
+            # Check for mbed URL
+            m = re.search(r'url=([\w\d\:/\\\?\.=-_]+)', line)
+            if m:
+                result['url'] = m.group(1).strip()
+        return result
+
+    def get_mbed_htm_lines(self, mount_point):
+        result = []
+        for mount_point_file in [f for f in listdir(mount_point) if isfile(join(mount_point, f))]:
+            if mount_point_file.lower() == self.MBED_HTM_NAME:
+                mbed_htm_path = os.path.join(mount_point, mount_point_file)
+                try:
+                    with open(mbed_htm_path, 'r') as f:
+                        result = f.readlines()
+                except IOError:
+                    if self.DEBUG_FLAG:
+                        self.debug(self.get_mbed_htm_target_id.__name__, ('Failed to open file', mbed_htm_path))
+        return result
+
+    def get_details_txt(self, mount_point):
+        """! Load DETAILS.TXT to dictionary:
+            DETAILS.TXT example:
+            Version: 0226
+            Build:   Aug 24 2015 17:06:30
+            Git Commit SHA: 27a236b9fe39c674a703c5c89655fbd26b8e27e1
+            Git Local mods: Yes
+        """
+        result = {}
+        path_to_details_txt = os.path.join(mount_point, self.DETAILS_TXT_NAME)
+        if os.path.exists(path_to_details_txt):
             try:
-                with open(mbed_htm_path, 'r') as f:
-                    fline = f.readlines()
-                    for line in fline:
-                        target_id = self.scan_html_line_for_target_id(line)
-                        if target_id is not None:
-                            return target_id
+                with open(path_to_details_txt, 'r') as f:
+                    for line in f.readlines():
+                        line_split = line.split(':')
+                        if line_split:
+                            idx = line.find(':')
+                            result[line_split[0]] = line[idx+1:].strip()
             except IOError:
                 if self.DEBUG_FLAG:
-                    self.debug(self.get_mbed_htm_target_id.__name__, ('Failed to open file', mbed_htm_path))
-        return result
+                    self.debug(self.get_mbed_fw_version.get_details_txt.__name__, ('Failed to open file', path_to_details_txt))
+        return result if result else None
 
     def scan_html_line_for_target_id(self, line):
         """! Scan if given line contains target id encoded in URL.
@@ -451,7 +518,7 @@ class MbedLsToolsBase:
         """
         # Detecting modern mbed.htm file format
         m = re.search('\?code=([a-fA-F0-9]+)', line)
-        if m is not None:
+        if m:
             result = m.groups()[0]
             if self.DEBUG_FLAG:
                 self.debug(self.scan_html_line_for_target_id.__name__, line.strip())
@@ -461,7 +528,7 @@ class MbedLsToolsBase:
         # Last resort, we can try to see if old mbed.htm format is there
         else:
             m = re.search('\?auth=([a-fA-F0-9]+)', line)
-            if m is not None:
+            if m:
                 result = m.groups()[0]
                 if self.DEBUG_FLAG:
                     self.debug(self.scan_html_line_for_target_id.__name__, line.strip())
