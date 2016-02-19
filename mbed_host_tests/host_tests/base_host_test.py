@@ -16,6 +16,7 @@ limitations under the License.
 """
 
 from time import time
+from inspect import isfunction, ismethod
 
 
 class BaseHostTestAbstract(object):
@@ -127,6 +128,23 @@ class HostTestCallbackBase(BaseHostTestAbstract):
         # And finally callback should be callable
         if not callable(callback):
             raise TypeError("event callback should be callable")
+
+        # Check if callback has all three required parameters (key, value, timestamp)
+        # When callback is class method should have 4 arguments (self, key, value, timestamp)
+        if ismethod(callback):
+            arg_count = callback.func_code.co_argcount
+            if arg_count != 4:
+                err_msg = "callback 'self.%s('%s', ...)' defined with %d arguments"% (callback.__name__, key, arg_count)
+                err_msg += ", should have 4 arguments: self.%s(self, key, value, timestamp)"% callback.__name__
+                raise TypeError(err_msg)
+
+        # When callback is just a function should have 3 arguments func(key, value, timestamp)
+        if isfunction(callback):
+            arg_count = callback.func_code.co_argcount
+            if arg_count != 3:
+                err_msg = "callback '%s('%s', ...)' defined with %d arguments"% (callback.__name__, key, arg_count)
+                err_msg += ", should have 3 arguments: %s(key, value, timestamp)"% callback.__name__
+                raise TypeError(err_msg)
 
         if not force:
             # Event starting with '__' are reserved
