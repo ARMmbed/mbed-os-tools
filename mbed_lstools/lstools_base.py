@@ -308,14 +308,14 @@ class MbedLsToolsBase:
             details_txt = self.get_details_txt(val['mount_point'])
             if details_txt:
                 for field in details_txt:
-                    field_name = 'fw_' + field.lower().replace(' ', '_')
+                    field_name = 'daplink_' + field.lower().replace(' ', '_')
                     if field_name not in mbeds[i]:
                         mbeds[i][field_name] = details_txt[field]
 
             mbed_htm = self.get_mbed_htm(val['mount_point'])
             if mbed_htm:
                 for field in mbed_htm:
-                    field_name = 'fw_' + field.lower().replace(' ', '_')
+                    field_name = 'daplink_' + field.lower().replace(' ', '_')
                     if field_name not in mbeds[i]:
                         mbeds[i][field_name] = mbed_htm[field]
 
@@ -406,7 +406,7 @@ class MbedLsToolsBase:
             """ ['platform_name', 'mount_point', 'serial_port', 'target_id'] - columns generated from USB auto-detection
                 ['platform_name_unique', ...] - columns generated outside detection subsystem (OS dependent detection)
             """
-            columns = ['platform_name', 'platform_name_unique', 'mount_point', 'serial_port', 'target_id', 'fw_version']
+            columns = ['platform_name', 'platform_name_unique', 'mount_point', 'serial_port', 'target_id', 'daplink_version']
             pt = PrettyTable(columns)
             for col in columns:
                 pt.align[col] = 'l'
