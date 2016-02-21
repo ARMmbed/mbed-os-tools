@@ -15,6 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import inspect
 from time import time
 from inspect import isfunction, ismethod
 
@@ -78,6 +79,19 @@ class BaseHostTestAbstract(object):
     def teardown(self):
         """! Blocking always guaranteed test teardown """
         raise NotImplementedError
+
+
+def event_cb(key):
+    """
+    Decorator for defining a event callback method. Adds a property attribute "event_key" with value as the passed key.
+
+    :param key:
+    :return:
+    """
+    def decorator(func):
+        func.event_key = key
+        return func
+    return decorator
 
 
 class HostTestCallbackBase(BaseHostTestAbstract):
@@ -161,7 +175,23 @@ class HostTestCallbackBase(BaseHostTestAbstract):
         return self.__callbacks
 
     def setup(self):
-        pass
+        """
+        Base implementation of test setup. It looks for methods decorated with decorator @event_cb and
+        registers them as event callbacks.
+
+        Example:
+        Define a method with @event_cb decorator like:
+
+         @event_cb('<event key>')
+         def event_handler(self, key, value, timestamp):
+            do something..
+
+        :return:
+        """
+        for name, method in inspect.getmembers(self, inspect.ismethod):
+            key = getattr(method, 'event_key', None)
+            if key:
+                self.register_callback(key, method)
 
     def result(self):
         pass
@@ -174,12 +204,3 @@ class BaseHostTest(HostTestCallbackBase):
 
     def __init__(self):
         HostTestCallbackBase.__init__(self)
-
-    def setup(self):
-        pass
-
-    def result(self):
-        pass
-
-    def teardown(self):
-        pass
