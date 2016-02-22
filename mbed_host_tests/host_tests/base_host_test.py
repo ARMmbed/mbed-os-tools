@@ -117,8 +117,6 @@ class HostTestCallbackBase(BaseHostTestAbstract):
         ]
 
         self.__assign_default_callbacks()
-        # Register default handler for event 'end' before assigning user defined callbacks to let users over write it.
-        self.register_callback('end', self.__default_end_callback)
         self.__assign_decorated_callbacks()
 
     def __callback_default(self, key, value, timestamp):
@@ -144,6 +142,8 @@ class HostTestCallbackBase(BaseHostTestAbstract):
         """! Assigns default callback handlers """
         for key in self.__consume_by_default:
             self.__callbacks[key] = self.__callback_default
+        # Register default handler for event 'end' before assigning user defined callbacks to let users over write it.
+        self.register_callback('end', self.__default_end_callback)
 
     def __assign_decorated_callbacks(self):
         """
