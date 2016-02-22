@@ -15,6 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import inspect
 from time import time
 from inspect import isfunction, ismethod
 
@@ -80,6 +81,19 @@ class BaseHostTestAbstract(object):
         raise NotImplementedError
 
 
+def event_callback(key):
+    """
+    Decorator for defining a event callback method. Adds a property attribute "event_key" with value as the passed key.
+
+    :param key:
+    :return:
+    """
+    def decorator(func):
+        func.event_key = key
+        return func
+    return decorator
+
+
 class HostTestCallbackBase(BaseHostTestAbstract):
 
     def __init__(self):
@@ -103,6 +117,7 @@ class HostTestCallbackBase(BaseHostTestAbstract):
         ]
 
         self.__assign_default_callbacks()
+        self.__assign_decorated_callbacks()
 
     def __callback_default(self, key, value, timestamp):
         """! Default callback """
@@ -113,6 +128,24 @@ class HostTestCallbackBase(BaseHostTestAbstract):
         """! Assigns default callback handlers """
         for key in self.__consume_by_default:
             self.__callbacks[key] = self.__callback_default
+
+    def __assign_decorated_callbacks(self):
+        """
+        It looks for any callback methods decorated with @event_callback
+
+        Example:
+        Define a method with @event_callback decorator like:
+
+         @event_callback('<event key>')
+         def event_handler(self, key, value, timestamp):
+            do something..
+
+        :return:
+        """
+        for name, method in inspect.getmembers(self, inspect.ismethod):
+            key = getattr(method, 'event_key', None)
+            if key:
+                self.register_callback(key, method)
 
     def register_callback(self, key, callback, force=False):
         """! Register callback for a specific event (key: event name)
@@ -174,12 +207,3 @@ class BaseHostTest(HostTestCallbackBase):
 
     def __init__(self):
         HostTestCallbackBase.__init__(self)
-
-    def setup(self):
-        pass
-
-    def result(self):
-        pass
-
-    def teardown(self):
-        pass
