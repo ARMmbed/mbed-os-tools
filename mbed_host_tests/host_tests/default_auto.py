@@ -23,17 +23,4 @@ class DefaultAuto(BaseHostTest):
     """ Simple, basic host test's test runner waiting for serial port
         output from MUT, no supervision over test running in MUT is executed.
     """
-
-    __result = None
-
-    def _callback_end(self, key, value, timeout):
-        self.notify_complete(value == 'success')
-
-    def setup(self):
-        self.register_callback('end', self._callback_end)
-
-    def result(self):
-        return self.__result
-
-    def teardown(self):
-        pass
+    pass
