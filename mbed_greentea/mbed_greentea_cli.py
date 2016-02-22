@@ -416,7 +416,7 @@ def run_test_thread(test_result_queue, test_queue, opts, mut, mut_info, yotta_ta
             gt_logger.gt_log("test case summary: %d pass%s, %d failur%s"% (passes,
                 '' if passes == 1 else 'es',
                 failures,
-                '' if failures == 1 else 'es'))
+                'e' if failures == 1 else 'es'))
             if passes != passes_cnt or failures != failures_cnt:
                 gt_logger.gt_log_err("test case summary mismatch: reported passes vs failures miscount!")
                 gt_logger.gt_log_tab("(%d, %d) vs (%d, %d)"% (passes, failures, passes_cnt, failures_cnt))
