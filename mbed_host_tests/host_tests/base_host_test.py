@@ -118,7 +118,7 @@ class HostTestCallbackBase(BaseHostTestAbstract):
 
         self.__assign_default_callbacks()
         # Register default handler for event 'end' before assigning user defined callbacks to let users over write it.
-        self.register_callback('end', self.default_end_callback)
+        self.register_callback('end', self.__default_end_callback)
         self.__assign_decorated_callbacks()
 
     def __callback_default(self, key, value, timestamp):
@@ -126,7 +126,7 @@ class HostTestCallbackBase(BaseHostTestAbstract):
         #self.log("CALLBACK: key=%s, value=%s, timestamp=%f"% (key, value, timestamp))
         pass
 
-    def default_end_callback(self, key, value, timestamp):
+    def __default_end_callback(self, key, value, timestamp):
         """
         Default handler for event 'end' that gives test result from target.
         This callback is not decorated as we don't know then in what order this
