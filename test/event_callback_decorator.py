@@ -14,7 +14,7 @@
 
 import unittest
 
-from mbed_host_tests.host_tests.base_host_test import BaseHostTest, event_cb
+from mbed_host_tests.host_tests.base_host_test import BaseHostTest, event_callback
 
 
 class TestEvenCallbackDecorator(unittest.TestCase):
@@ -27,11 +27,11 @@ class TestEvenCallbackDecorator(unittest.TestCase):
     def test_event_callback_decorator(self):
         class Ht(BaseHostTest):
 
-            @event_cb('Hi')
+            @event_callback('Hi')
             def hi(self, key, value, timestamp):
                 print 'hi'
 
-            @event_cb('Hello')
+            @event_callback('Hello')
             def hello(self, key, value, timestamp):
                 print 'hello'
         h = Ht()
