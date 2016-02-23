@@ -37,7 +37,7 @@ from optparse import OptionParser
 
 from mbed_host_tests import host_tests_plugins
 from mbed_host_tests.host_tests_registry import HostRegistry
-from mbed_host_tests.host_tests import BaseHostTest
+from mbed_host_tests.host_tests import BaseHostTest, event_callback
 
 # Host test supervisors
 from  mbed_host_tests.host_tests.echo import EchoTest
