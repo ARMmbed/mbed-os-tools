@@ -422,6 +422,50 @@ def run_test_thread(test_result_queue, test_queue, opts, mut, mut_info, yotta_ta
                 gt_logger.gt_log_tab("(%d, %d) vs (%d, %d)"% (passes, failures, passes_cnt, failures_cnt))
         else:
             gt_logger.gt_log_warn("test case summary not found")
+            if not result_test_cases:
+                gt_logger.gt_log_tab("no test case report, assuming test suite to be a single test case!")
+                # We will map test suite result to test case to
+                # output valid test case in report
+
+                # Generate "artificial" test case name from test suite name#
+                # E.g:
+                #   mbed-drivers-test-dev_null -> dev_null
+                test_case_name = test_suite_name
+                test_str_idx = test_suite_name.find("-test")
+                if test_str_idx != -1:
+                    test_case_name = test_case_name[test_str_idx + 6:]
+
+                # Test case result: OK, FAIL or ERROR
+                tc_result_text = {
+                    "OK": "OK",
+                    "FAIL": "FAIL",
+                }.get(single_test_result, 'ERROR')
+
+                # Test case integer success code OK, FAIL and ERROR: (0, >0, <0)
+                tc_result = {
+                    "OK": 0,
+                    "FAIL": 1024,
+                    "ERROR": -1024,
+                }.get(tc_result_text, '-2048')
+
+                # Test case passes and failures: (1 pass, 0 failures) or (0 passes, 1 failure)
+                tc_passed, tc_failed = {
+                    0: (1, 0),
+                }.get(tc_result, (0, 1))
+
+                # Add test case made from test suite result to test case report
+                test_report[yotta_target_name][test_suite_name]['testcase_result'] = {
+                    test_case_name: {
+                            'duration': single_testduration,
+                            'time_start': 0.0,
+                            'time_end': 0.0,
+                            'utest_log': single_test_output.splitlines(),
+                            'result_text': tc_result_text,
+                            'passed': tc_passed,
+                            'failed': tc_failed,
+                            'result': tc_result,
+                        }
+                }
 
         if single_test_result != 'OK' and not verbose and opts.report_fails:
             # In some cases we want to print console to see why test failed
