@@ -254,9 +254,18 @@ def get_testcase_result(output):
             timestamp, _, testcase_id = m.groups()
             if testcase_id not in result_test_cases:
                 result_test_cases[testcase_id] = {}
+
+            # Data collected when __testcase_start is fetched
             result_test_cases[testcase_id]['time_start'] = float(timestamp)
             result_test_cases[testcase_id]['utest_log'] = get_testcase_utest(output, testcase_id)
 
+            # Data collected when __testcase_finish is fetched
+            result_test_cases[testcase_id]['duration'] = 0.0
+            result_test_cases[testcase_id]['result_text'] = 'ERROR'
+            result_test_cases[testcase_id]['time_end'] = float(timestamp)
+            result_test_cases[testcase_id]['passed'] = 0
+            result_test_cases[testcase_id]['failed'] = 0
+            result_test_cases[testcase_id]['result'] = -4096
             continue
 
         m = re_tc_finish.search(line)
