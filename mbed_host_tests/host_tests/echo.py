@@ -22,7 +22,7 @@ from mbed_host_tests import BaseHostTest
 class EchoTest(BaseHostTest):
 
     __result = None
-    COUNT_MAX = 10
+    echo_count = 0
     count = 0
     uuid_sent = []
     uuid_recv = []
@@ -34,17 +34,18 @@ class EchoTest(BaseHostTest):
 
     def _callback_echo(self, key, value, timestamp):
         self.uuid_recv.append(value)
-        if key == 'echo':
-            self.count += 1
-        if self.count == self.COUNT_MAX:
-            self.notify_complete(False)
-        else:
-            self.__send_echo_uuid()
+        self.__send_echo_uuid()
+
+    def _callback_echo_count(self, key, value, timestamp):
+        # Handshake
+        self.echo_count = int(value)
+        self.send_kv(key, value)
+        # Send first echo to echo server on DUT
+        self.__send_echo_uuid()
 
     def setup(self):
         self.register_callback("echo", self._callback_echo)
-
-        self.__send_echo_uuid()  # Echo no. 1
+        self.register_callback("echo_count", self._callback_echo_count)
 
     def result(self):
         self.__result = self.uuid_sent == self.uuid_recv
