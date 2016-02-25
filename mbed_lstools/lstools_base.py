@@ -496,21 +496,46 @@ class MbedLsToolsBase:
             Build:   Aug 24 2015 17:06:30
             Git Commit SHA: 27a236b9fe39c674a703c5c89655fbd26b8e27e1
             Git Local mods: Yes
+
+            or:
+
+            # DAPLink Firmware - see https://mbed.com/daplink
+            Unique ID: 0240000029164e45002f0012706e0006f301000097969900
+            HIF ID: 97969900
+            Auto Reset: 0
+            Automation allowed: 0
+            Daplink Mode: Interface
+            Interface Version: 0240
+            Git SHA: c765cbb590f57598756683254ca38b211693ae5e
+            Local Mods: 0
+            USB Interfaces: MSD, CDC, HID
+            Interface CRC: 0x26764ebf
         """
         result = {}
         path_to_details_txt = os.path.join(mount_point, self.DETAILS_TXT_NAME)
         if os.path.exists(path_to_details_txt):
             try:
                 with open(path_to_details_txt, 'r') as f:
-                    for line in f.readlines():
-                        line_split = line.split(':')
-                        if line_split:
-                            idx = line.find(':')
-                            result[line_split[0]] = line[idx+1:].strip()
+                    result = self.parse_details_txt(f.readlines())
             except IOError:
                 if self.DEBUG_FLAG:
                     self.debug(self.get_mbed_fw_version.get_details_txt.__name__, ('Failed to open file', path_to_details_txt))
         return result if result else None
+
+    def parse_details_txt(self, lines):
+        result = {}
+        for line in lines:
+            if not line.startswith('#'):
+                # Lines starting with '#' are comments
+                line_split = line.split(':')
+                if line_split:
+                    idx = line.find(':')
+                    result[line_split[0]] = line[idx+1:].strip()
+
+        # Allign with new DAPlink DETAILS.TXT format
+        if 'Interface Version' in result:
+            result['Version'] = result['Interface Version']
+        return result
 
     def scan_html_line_for_target_id(self, line):
         """! Scan if given line contains target id encoded in URL.
