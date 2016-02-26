@@ -119,7 +119,10 @@ class DefaultTestSelector(DefaultTestSelectorBase):
             while (time() - start_time) < timeout_duration:
                 # Handle default events like timeout, host_test_name, ...
                 if event_queue.qsize():
-                    (key, value, timestamp) = event_queue.get()
+                    try:
+                        (key, value, timestamp) = event_queue.get(timeout=1)
+                    except QueueEmpty as e:
+                        continue
 
                     if consume_preamble_events:
                         if key == '__timeout':
