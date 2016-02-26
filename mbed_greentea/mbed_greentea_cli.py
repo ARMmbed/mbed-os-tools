@@ -398,9 +398,12 @@ def run_test_thread(test_result_queue, test_queue, opts, mut, mut_info, yotta_ta
             # E.g:
             #   mbed-drivers-test-dev_null -> dev_null
             test_case_name = test_suite_name
-            test_str_idx = test_suite_name.find("-test")
+            test_str_idx = test_suite_name.find("-test-")
             if test_str_idx != -1:
                 test_case_name = test_case_name[test_str_idx + 6:]
+
+            gt_logger.gt_log_tab("test suite: %s"% test_suite_name)
+            gt_logger.gt_log_tab("test case: %s"% test_case_name)
 
             # Test case result: OK, FAIL or ERROR
             tc_result_text = {
