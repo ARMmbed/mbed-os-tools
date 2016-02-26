@@ -175,6 +175,7 @@ class DefaultTestSelector(DefaultTestSelectorBase):
                             # or if value is None, value will be retrieved from HostTest.result() method
                             self.logger.prn_inf("%s(%s)"% (key, str(value)))
                             result = value
+                            break
                         elif key == '__notify_conn_lost':
                             # This event is sent by conn_process, DUT connection was lost
                             self.logger.prn_err(value)
@@ -233,7 +234,7 @@ class DefaultTestSelector(DefaultTestSelectorBase):
 
         if result is not None:  # We must compare here against None!
             # Here for example we've received some error code like IOERR_COPY
-            self.logger.prn_inf("host test result() skipped, received: %s"% str(result))
+            self.logger.prn_inf("host test result() call skipped, received: %s"% str(result))
         else:
             if self.test_supervisor:
                 result = self.test_supervisor.result()
@@ -242,7 +243,8 @@ class DefaultTestSelector(DefaultTestSelectorBase):
         if not callbacks__exit:
             self.logger.prn_wrn("missing __exit event from DUT")
 
-        if not callbacks__exit and not result:
+        #if not callbacks__exit and not result:
+        if not callbacks__exit and result is None:
             self.logger.prn_err("missing __exit event from DUT and no result from host test, timeout...")
             result = self.RESULT_TIMEOUT
 
