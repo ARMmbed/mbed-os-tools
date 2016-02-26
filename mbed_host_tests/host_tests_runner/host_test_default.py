@@ -217,7 +217,15 @@ class DefaultTestSelector(DefaultTestSelectorBase):
             # We are consuming all remaining events if requested
             while event_queue.qsize():
                 (key, value, timestamp) = event_queue.get()
-                if key in callbacks:
+                if key == '__notify_complete':
+                    # This event is sent by Host Test, test result is in value
+                    # or if value is None, value will be retrieved from HostTest.result() method
+                    self.logger.prn_inf("%s(%s)"% (key, str(value)))
+                    result = value
+                elif key.startswith('__'):
+                    # Consume other system level events
+                    pass
+                elif key in callbacks:
                     callbacks[key](key, value, timestamp)
                 else:
                     self.logger.prn_wrn(">>> orphan event: {{%s;%s}}, timestamp=%f"% (key, str(value), timestamp))
