@@ -136,10 +136,10 @@ def exporter_testcase_text(test_result_ext, test_suite_properties=None):
     # ym_name = test_suite_properties.get('name', 'unknown')
     result_testcase_dict = {}   # Used to print test case results
 
-    for target_name in test_result_ext:
+    for target_name in sorted(test_result_ext):
         test_results = test_result_ext[target_name]
         row = []
-        for test_suite_name in test_results:
+        for test_suite_name in sorted(test_results):
             test = test_results[test_suite_name]
 
             # testcase_result stores info about test case results
@@ -152,7 +152,7 @@ def exporter_testcase_text(test_result_ext, test_suite_properties=None):
             #           "result": 1
             #       },
 
-            for tc_name in sorted(testcase_result.keys()):
+            for tc_name in sorted(testcase_result):
                 duration = testcase_result[tc_name].get('duration', 0.0)
                 # result = testcase_result[tc_name].get('result', 0)
                 passed = testcase_result[tc_name].get('passed', 0)
