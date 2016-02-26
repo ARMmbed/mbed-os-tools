@@ -22,6 +22,8 @@ import sys
 import traceback
 from time import time
 
+from Queue import Empty as QueueEmpty   # Queue here refers to the module, not a class
+
 from multiprocessing import Process, Queue, Lock
 from mbed_host_tests import print_ht_list
 from mbed_host_tests import get_host_test
@@ -217,7 +219,11 @@ class DefaultTestSelector(DefaultTestSelectorBase):
         if callbacks_consume:
             # We are consuming all remaining events if requested
             while event_queue.qsize():
-                (key, value, timestamp) = event_queue.get()
+                try:
+                    (key, value, timestamp) = event_queue.get(timeout=1)
+                except QueueEmpty as e:
+                    break
+
                 if key == '__notify_complete':
                     # This event is sent by Host Test, test result is in value
                     # or if value is None, value will be retrieved from HostTest.result() method
