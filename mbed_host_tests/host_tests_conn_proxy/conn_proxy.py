@@ -19,6 +19,7 @@ limitations under the License.
 import re
 import uuid
 from time import time, sleep
+from Queue import Empty as QueueEmpty   # Queue here refers to the module, not a class
 from serial import Serial, SerialException
 from mbed_host_tests import host_tests_plugins
 from conn_proxy_logger import HtrunLogger
@@ -174,7 +175,10 @@ def conn_process(event_queue, dut_event_queue, prn_lock, config):
 
         # Send data to DUT
         if dut_event_queue.qsize():
-            (key, value, _) = dut_event_queue.get()
+            try:
+                (key, value, _) = dut_event_queue.get(timeout=1)
+            except QueueEmpty:
+                continue
             connector.write_kv(key, value)
 
         data = connector.read(2048)

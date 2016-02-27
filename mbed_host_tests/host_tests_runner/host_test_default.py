@@ -21,7 +21,6 @@ Author: Przemyslaw Wirkus <Przemyslaw.Wirkus@arm.com>
 import sys
 import traceback
 from time import time
-
 from Queue import Empty as QueueEmpty   # Queue here refers to the module, not a class
 
 from multiprocessing import Process, Queue, Lock
@@ -121,7 +120,7 @@ class DefaultTestSelector(DefaultTestSelectorBase):
                 if event_queue.qsize():
                     try:
                         (key, value, timestamp) = event_queue.get(timeout=1)
-                    except QueueEmpty as e:
+                    except QueueEmpty:
                         continue
 
                     if consume_preamble_events:
@@ -139,7 +138,7 @@ class DefaultTestSelector(DefaultTestSelectorBase):
                                 try:
                                     # After setup() user should already register all callbacks
                                     self.test_supervisor.setup()
-                                except (TypeError, ValueError) as e:
+                                except (TypeError, ValueError):
                                     # setup() can throw in normal circumstances TypeError and ValueError
                                     self.logger.prn_err("host test setup() failed, reason:")
                                     self.logger.prn_inf("==== Traceback start ====")
@@ -224,7 +223,7 @@ class DefaultTestSelector(DefaultTestSelectorBase):
             while event_queue.qsize():
                 try:
                     (key, value, timestamp) = event_queue.get(timeout=1)
-                except QueueEmpty as e:
+                except QueueEmpty:
                     break
 
                 if key == '__notify_complete':
