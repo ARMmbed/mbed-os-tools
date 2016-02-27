@@ -48,7 +48,6 @@ HOST_TEST_PLUGIN_REGISTRY = host_test_registry.HostTestRegistry()
 HOST_TEST_PLUGIN_REGISTRY.register_plugin(module_copy_mbed.load_plugin())
 HOST_TEST_PLUGIN_REGISTRY.register_plugin(module_copy_shell.load_plugin())
 HOST_TEST_PLUGIN_REGISTRY.register_plugin(module_reset_mbed.load_plugin())
-#HOST_TEST_PLUGIN_REGISTRY.register_plugin(module_copy_firefox.load_plugin())
 
 # Extra platforms support
 #HOST_TEST_PLUGIN_REGISTRY.register_plugin(module_copy_mps2.load_plugin())
