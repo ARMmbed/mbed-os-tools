@@ -18,7 +18,7 @@ Author: Przemyslaw Wirkus <Przemyslaw.Wirkus@arm.com>
 """
 
 from time import sleep
-from serial import Serial
+from serial import Serial, SerialException
 from mbed_host_tests import host_tests_plugins
 
 
