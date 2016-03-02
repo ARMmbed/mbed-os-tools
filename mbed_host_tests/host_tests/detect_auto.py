@@ -22,6 +22,9 @@ class DetectPlatformTest(BaseHostTest):
     PATTERN_MICRO_NAME = "Target '(\w+)'"
     re_detect_micro_name = re.compile(PATTERN_MICRO_NAME)
 
+    def result(self):
+        raise NotImplementedError
+
     def test(self, selftest):
         result = True
 

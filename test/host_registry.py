@@ -17,22 +17,21 @@ limitations under the License.
 """
 
 import unittest
-
 from mbed_host_tests.host_tests_registry import HostRegistry
-
-
-class HostTestClassMock:
-    def setup(self):
-        pass
-
-    def test(self, selftest):
-        return None
-        
-    def teardown(self):
-        pass
+from mbed_host_tests import BaseHostTest
 
 
 class HostRegistryTestCase(unittest.TestCase):
+
+    class HostTestClassMock(BaseHostTest):
+        def setup(self):
+            pass
+
+        def result(self):
+            pass
+
+        def teardown(self):
+            pass
 
     def setUp(self):
         self.HOSTREGISTRY = HostRegistry()
@@ -41,18 +40,18 @@ class HostRegistryTestCase(unittest.TestCase):
         pass
 
     def test_register_host_test(self):
-        self.HOSTREGISTRY.register_host_test('host_test_mock_auto', HostTestClassMock())
+        self.HOSTREGISTRY.register_host_test('host_test_mock_auto', self.HostTestClassMock())
         self.assertEqual(True, self.HOSTREGISTRY.is_host_test('host_test_mock_auto'))
 
     def test_unregister_host_test(self):
-        self.HOSTREGISTRY.register_host_test('host_test_mock_2_auto', HostTestClassMock())
+        self.HOSTREGISTRY.register_host_test('host_test_mock_2_auto', self.HostTestClassMock())
         self.assertEqual(True, self.HOSTREGISTRY.is_host_test('host_test_mock_2_auto'))
         self.assertNotEqual(None, self.HOSTREGISTRY.get_host_test('host_test_mock_2_auto'))
         self.HOSTREGISTRY.unregister_host_test('host_test_mock_2_auto')
         self.assertEqual(False, self.HOSTREGISTRY.is_host_test('host_test_mock_2_auto'))
 
     def test_get_host_test(self):
-        self.HOSTREGISTRY.register_host_test('host_test_mock_3_auto', HostTestClassMock())
+        self.HOSTREGISTRY.register_host_test('host_test_mock_3_auto', self.HostTestClassMock())
         self.assertEqual(True, self.HOSTREGISTRY.is_host_test('host_test_mock_3_auto'))
         self.assertNotEqual(None, self.HOSTREGISTRY.get_host_test('host_test_mock_3_auto'))
 
@@ -69,7 +68,9 @@ class HostRegistryTestCase(unittest.TestCase):
     def test_host_test_has_name_attribute(self):
         for ht_name in self.HOSTREGISTRY.HOST_TESTS:
             ht = self.HOSTREGISTRY.HOST_TESTS[ht_name]
-            self.assertTrue(hasattr(ht, 'test'))
+            self.assertTrue(hasattr(ht, 'setup'))
+            self.assertTrue(hasattr(ht, 'result'))
+            self.assertTrue(hasattr(ht, 'teardown'))
 
 
 if __name__ == '__main__':

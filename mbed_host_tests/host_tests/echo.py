@@ -1,6 +1,6 @@
 """
 mbed SDK
-Copyright (c) 2011-2013 ARM Limited
+Copyright (c) 2011-2016 ARM Limited
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,39 +15,41 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import sys
+
 import uuid
-from sys import stdout
 from mbed_host_tests import BaseHostTest
 
 class EchoTest(BaseHostTest):
 
-    # Test parameters
-    TEST_SERIAL_BAUDRATE = 115200
-    TEST_LOOP_COUNT = 50
+    __result = None
+    echo_count = 0
+    count = 0
+    uuid_sent = []
+    uuid_recv = []
 
-    def test(self, selftest):
-        """ This host test will use mbed serial port with
-            baudrate 115200 to perform echo test on that port.
-        """
-        # Custom initialization for echo test
-        selftest.mbed.init_serial_params(serial_baud=self.TEST_SERIAL_BAUDRATE)
-        selftest.mbed.init_serial()
+    def __send_echo_uuid(self):
+        str_uuid = str(uuid.uuid4())
+        self.send_kv("echo", str_uuid)
+        self.uuid_sent.append(str_uuid)
 
-        # Test function, return True or False to get standard test notification on stdout
-        selftest.mbed.flush()
-        selftest.notify("HOST: Starting the ECHO test")
-        result = True
-        for i in range(0, self.TEST_LOOP_COUNT):
-            TEST_STRING = str(uuid.uuid4()) + "\n"
-            selftest.mbed.serial_write(TEST_STRING)
-            c = selftest.mbed.serial_readline()
-            if c is None:
-                return selftest.RESULT_IO_SERIAL
-            if c.strip() != TEST_STRING.strip():
-                selftest.notify('HOST: "%s" != "%s"'% (c, TEST_STRING))
-                result = False
-            else:
-                sys.stdout.write('.')
-                stdout.flush()
-        return selftest.RESULT_SUCCESS if result else selftest.RESULT_FAILURE
+    def _callback_echo(self, key, value, timestamp):
+        self.uuid_recv.append(value)
+        self.__send_echo_uuid()
+
+    def _callback_echo_count(self, key, value, timestamp):
+        # Handshake
+        self.echo_count = int(value)
+        self.send_kv(key, value)
+        # Send first echo to echo server on DUT
+        self.__send_echo_uuid()
+
+    def setup(self):
+        self.register_callback("echo", self._callback_echo)
+        self.register_callback("echo_count", self._callback_echo_count)
+
+    def result(self):
+        self.__result = self.uuid_sent == self.uuid_recv
+        return self.__result
+
+    def teardown(self):
+        pass

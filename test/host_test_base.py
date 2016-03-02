@@ -31,8 +31,6 @@ class BaseHostTestTestCase(unittest.TestCase):
     def test_host_test_has_setup_teardown_attribute(self):
         for ht_name in self.HOSTREGISTRY.HOST_TESTS:
             ht = self.HOSTREGISTRY.HOST_TESTS[ht_name]
-            print ht
-            print ht_name
             self.assertTrue(hasattr(ht, 'setup'))
             self.assertTrue(hasattr(ht, 'teardown'))
 

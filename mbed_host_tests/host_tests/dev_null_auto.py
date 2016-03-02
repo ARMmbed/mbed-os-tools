@@ -19,34 +19,20 @@ from mbed_host_tests import BaseHostTest
 
 class DevNullTest(BaseHostTest):
 
-    def check_readline(self, selftest, text):
-        """ Reads line from serial port and checks if text was part of read string
-        """
-        result = False
-        c = selftest.mbed.serial_readline()
-        if c and text in c:
-            result = True
-        return result
+    __result = None
 
-    def test(self, selftest):
-        result = True
-        # Test should print some text and later stop printing
-        # 'MBED: re-routing stdout to /null'
-        res = self.check_readline(selftest, "re-routing stdout to /null")
-        if not res:
-            # We haven't read preamble line
-            result = False
-        else:
-            # Check if there are printed characters
-            str = ''
-            for i in range(3):
-                c = selftest.mbed.serial_read(32)
-                if c is None:
-                    return selftest.RESULT_IO_SERIAL
-                else:
-                    str += c
-                if len(str) > 0:
-                    result = False
-                    break
-            selftest.notify("Received %d bytes: %s"% (len(str), str))
-        return selftest.RESULT_SUCCESS if result else selftest.RESULT_FAILURE
+    def _callback_result(self, key, value, timestamp):
+        # We should not see result data in this test
+        self.__result = False
+
+    def _callback_to_stdout(self, key, value, timestamp):
+        self.__result = True
+        self.log("_callback_to_stdout !")
+
+    def setup(self):
+        self.register_callback("end", self._callback_result)
+        self.register_callback("to_null", self._callback_result)
+        self.register_callback("to_stdout", self._callback_to_stdout)
+
+    def result(self):
+        return self.__result
