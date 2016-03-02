@@ -175,8 +175,8 @@ $ git remote add upstream git@github.com:SOME_REPO/appname.git
 $ git remote -v
 origin  https://github.com/USER/appname.git (fetch)
 origin  https://github.com/USER/appname.git (push)
-upstream  https://github.com/USER/appname.git (fetch)
-upstream  https://github.com/USER/appname.git (push)
+upstream  https://github.com/SOME_REPO/appname.git (fetch)
+upstream  https://github.com/SOME_REPO/appname.git (push)
 ```
 ### Updating
 Each time I want to update, from my local master branch I will do the following:
