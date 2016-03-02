@@ -38,7 +38,7 @@ HOST: MUT Target name 'Unknown', expected 'K64F'... [FAIL]
 MBED: Test ID 'Unknown'
 MBED: UUID 'Unknown'
 
-{{failure}}
+{{result;failure}}
 {{end}}
 """
 
@@ -54,7 +54,7 @@ HOST: Property 'host_test_name' = 'default_auto'
 HOST: Property 'description' = 'Basic'
 HOST: Property 'test_id' = 'MBED_A1'
 HOST: Start test...
-{{success}}
+{{result;success}}
 {{end}}
 """
 
@@ -68,6 +68,7 @@ HOST: Copy image onto target...
 HOST: Initialize serial port...
 ...port ready!
 HOST: Reset target...
+{{result;some_random_value}
 {{end}}
 """
     

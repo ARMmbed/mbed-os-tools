@@ -30,12 +30,13 @@ from threading import Thread
 
 from mbed_greentea.mbed_test_api import run_host_test
 from mbed_greentea.mbed_test_api import TEST_RESULTS
-from mbed_greentea.mbed_test_api import TEST_RESULT_OK
+from mbed_greentea.mbed_test_api import TEST_RESULT_OK, TEST_RESULT_FAIL
 from mbed_greentea.cmake_handlers import load_ctest_testsuite
 from mbed_greentea.cmake_handlers import list_binaries_for_targets
 from mbed_greentea.mbed_report_api import exporter_text
+from mbed_greentea.mbed_report_api import exporter_testcase_text
 from mbed_greentea.mbed_report_api import exporter_json
-from mbed_greentea.mbed_report_api import exporter_junit
+from mbed_greentea.mbed_report_api import exporter_testcase_junit
 from mbed_greentea.mbed_target_info import get_mbed_clasic_target_info
 from mbed_greentea.mbed_target_info import get_mbed_target_from_current_dir
 from mbed_greentea.mbed_greentea_log import gt_logger
@@ -44,7 +45,9 @@ from mbed_greentea.mbed_greentea_dlm import greentea_get_app_sem
 from mbed_greentea.mbed_greentea_dlm import greentea_update_kettle
 from mbed_greentea.mbed_greentea_dlm import greentea_clean_kettle
 from mbed_greentea.mbed_yotta_api import build_with_yotta
-from mbed_greentea.mbed_yotta_target_parse import YottaConfig
+from mbed_greentea.mbed_greentea_hooks import GreenteaHooks
+from mbed_greentea.mbed_yotta_module_parse import YottaConfig
+from mbed_greentea.mbed_yotta_module_parse import YottaModule
 
 try:
     import mbed_lstools
@@ -147,7 +150,7 @@ def main():
                     default=False,
                     help="Only build repository and tests, skips actual test procedures (flashing etc.)")
 
-    parser.add_option("", "--skip-build",
+    parser.add_option("-S", "--skip-build",
                     action="store_true",
                     dest="skip_yotta_build",
                     default=False,
@@ -186,7 +189,7 @@ def main():
                     action="store_true",
                     help='If possible force build in debug mode (yotta -d).')
 
-    parser.add_option('', '--list',
+    parser.add_option('-l', '--list',
                     dest='list_binaries',
                     default=False,
                     action="store_true",
@@ -220,6 +223,10 @@ def main():
     parser.add_option('', '--digest',
                     dest='digest_source',
                     help='Redirect input from where test suite should take console input. You can use stdin or file name to get test case console output')
+
+    parser.add_option('-H', '--hooks',
+                    dest='hooks_json',
+                    help='Load hooks used drive extra functionality')
 
     parser.add_option('', '--test-cfg',
                     dest='json_test_configuration',
@@ -328,7 +335,7 @@ def main():
 
     return(cli_ret)
 
-def run_test_thread(test_result_queue, test_queue, opts, mut, mut_info, yotta_target_name):
+def run_test_thread(test_result_queue, test_queue, opts, mut, mut_info, yotta_target_name, greentea_hooks):
     test_exec_retcode = 0
     test_platforms_match = 0
     test_report = {}
@@ -372,25 +379,130 @@ def run_test_thread(test_result_queue, test_queue, opts, mut, mut_info, yotta_ta
                                          enum_host_tests_path=enum_host_tests_path,
                                          verbose=verbose)
 
-        single_test_result, single_test_output, single_testduration, single_timeout = host_test_result
+        single_test_result, single_test_output, single_testduration, single_timeout, result_test_cases, test_cases_summary = host_test_result
         test_result = single_test_result
+
+        build_path = os.path.join("./build", yotta_target_name)
+        build_path_abs = os.path.abspath(build_path)
+
         if single_test_result != TEST_RESULT_OK:
             test_exec_retcode += 1
 
+        if single_test_result in [TEST_RESULT_OK, TEST_RESULT_FAIL]:
+            if greentea_hooks:
+                # Test was successful
+                # We can execute test hook just after test is finished ('hook_test_end')
+                format = {
+                    "test_name": test['test_bin'],
+                    "test_bin_name": os.path.basename(test['image_path']),
+                    "image_path": test['image_path'],
+                    "build_path": build_path,
+                    "build_path_abs": build_path_abs,
+                    "yotta_target_name": yotta_target_name,
+                }
+                greentea_hooks.run_hook_ext('hook_test_end', format)
+
         # Update report for optional reporting feature
-        test_name = test['test_bin'].lower()
+        test_suite_name = test['test_bin'].lower()
         if yotta_target_name not in test_report:
             test_report[yotta_target_name] = {}
-        if test_name not in test_report[yotta_target_name]:
-            test_report[yotta_target_name][test_name] = {}
 
-        test_report[yotta_target_name][test_name]['single_test_result'] = single_test_result
-        test_report[yotta_target_name][test_name]['single_test_output'] = single_test_output
-        test_report[yotta_target_name][test_name]['elapsed_time'] = single_testduration
-        test_report[yotta_target_name][test_name]['platform_name'] = micro
-        test_report[yotta_target_name][test_name]['copy_method'] = copy_method
+        if test_suite_name not in test_report[yotta_target_name]:
+            test_report[yotta_target_name][test_suite_name] = {}
 
-        gt_logger.gt_log("test on hardware with target id: %s \n\ttest '%s' %s %s in %.2f sec"% (mut['target_id'], test['test_bin'], '.' * (80 - len(test['test_bin'])), test_result, single_testduration))
+        if not test_cases_summary and not result_test_cases:
+            gt_logger.gt_log_warn("test case summary event not found")
+            gt_logger.gt_log_tab("no test case report present, assuming test suite to be a single test case!")
+
+            # We will map test suite result to test case to
+            # output valid test case in report
+
+            # Generate "artificial" test case name from test suite name#
+            # E.g:
+            #   mbed-drivers-test-dev_null -> dev_null
+            test_case_name = test_suite_name
+            test_str_idx = test_suite_name.find("-test-")
+            if test_str_idx != -1:
+                test_case_name = test_case_name[test_str_idx + 6:]
+
+            gt_logger.gt_log_tab("test suite: %s"% test_suite_name)
+            gt_logger.gt_log_tab("test case: %s"% test_case_name)
+
+            # Test case result: OK, FAIL or ERROR
+            tc_result_text = {
+                "OK": "OK",
+                "FAIL": "FAIL",
+            }.get(single_test_result, 'ERROR')
+
+            # Test case integer success code OK, FAIL and ERROR: (0, >0, <0)
+            tc_result = {
+                "OK": 0,
+                "FAIL": 1024,
+                "ERROR": -1024,
+            }.get(tc_result_text, '-2048')
+
+            # Test case passes and failures: (1 pass, 0 failures) or (0 passes, 1 failure)
+            tc_passed, tc_failed = {
+                0: (1, 0),
+            }.get(tc_result, (0, 1))
+
+            # Test case report build for whole binary
+            # Add test case made from test suite result to test case report
+            result_test_cases = {
+                test_case_name: {
+                        'duration': single_testduration,
+                        'time_start': 0.0,
+                        'time_end': 0.0,
+                        'utest_log': single_test_output.splitlines(),
+                        'result_text': tc_result_text,
+                        'passed': tc_passed,
+                        'failed': tc_failed,
+                        'result': tc_result,
+                    }
+            }
+
+            # Test summary build for whole binary (as a test case)
+            test_cases_summary = (tc_passed, tc_failed, )
+
+        gt_logger.gt_log("test on hardware with target id: %s"% (mut['target_id']))
+        gt_logger.gt_log("test suite '%s' %s %s in %.2f sec"% (test['test_bin'],
+            '.' * (80 - len(test['test_bin'])),
+            test_result,
+            single_testduration))
+
+        # Test report build for whole binary
+        test_report[yotta_target_name][test_suite_name]['single_test_result'] = single_test_result
+        test_report[yotta_target_name][test_suite_name]['single_test_output'] = single_test_output
+        test_report[yotta_target_name][test_suite_name]['elapsed_time'] = single_testduration
+        test_report[yotta_target_name][test_suite_name]['platform_name'] = micro
+        test_report[yotta_target_name][test_suite_name]['copy_method'] = copy_method
+        test_report[yotta_target_name][test_suite_name]['testcase_result'] = result_test_cases
+
+        test_report[yotta_target_name][test_suite_name]['build_path'] = build_path
+        test_report[yotta_target_name][test_suite_name]['build_path_abs'] = build_path_abs
+        test_report[yotta_target_name][test_suite_name]['image_path'] = test['image_path']
+        test_report[yotta_target_name][test_suite_name]['test_bin_name'] = os.path.basename(test['image_path'])
+
+        passes_cnt, failures_cnt = 0, 0
+        for tc_name in sorted(result_test_cases.keys()):
+            gt_logger.gt_log_tab("test case: '%s' %s %s in %.2f sec"% (tc_name,
+                '.' * (80 - len(tc_name)),
+                result_test_cases[tc_name].get('result_text', '_'),
+                result_test_cases[tc_name].get('duration', 0.0)))
+            if result_test_cases[tc_name].get('result_text', '_') == 'OK':
+                passes_cnt += 1
+            else:
+                failures_cnt += 1
+
+        if test_cases_summary:
+            passes, failures = test_cases_summary
+            gt_logger.gt_log("test case summary: %d pass%s, %d failur%s"% (passes,
+                '' if passes == 1 else 'es',
+                failures,
+                'e' if failures == 1 else 'es'))
+            if passes != passes_cnt or failures != failures_cnt:
+                gt_logger.gt_log_err("test case summary mismatch: reported passes vs failures miscount!")
+                gt_logger.gt_log_tab("(%d, %d) vs (%d, %d)"% (passes, failures, passes_cnt, failures_cnt))
 
         if single_test_result != 'OK' and not verbose and opts.report_fails:
             # In some cases we want to print console to see why test failed
@@ -432,19 +544,27 @@ def main_cli(opts, args, gt_instance_uuid=None):
         print_version()
         return (0)
 
+    # We will load hooks from JSON file to support extra behaviour during test execution
+    greentea_hooks = GreenteaHooks(opts.hooks_json) if opts.hooks_json else None
+
     # Capture alternative test console inputs, used e.g. in 'yotta test command'
     if opts.digest_source:
         enum_host_tests_path = get_local_host_tests_dir(opts.enum_host_tests)
         host_test_result = run_host_test(image_path=None,
                                          disk=None,
                                          port=None,
+                                         hooks=greentea_hooks,
                                          digest_source=opts.digest_source,
                                          enum_host_tests_path=enum_host_tests_path,
                                          verbose=opts.verbose_test_result_only)
 
-        single_test_result, single_test_output, single_testduration, single_timeout = host_test_result
+        single_test_result, single_test_output, single_testduration, single_timeout, result_test_cases, test_cases_summary = host_test_result
         status = TEST_RESULTS.index(single_test_result) if single_test_result in TEST_RESULTS else -1
         return (status)
+
+    ### Read yotta module basic information
+    yotta_module = YottaModule()
+    yotta_module.init() # Read actual yotta module data
 
     ### Selecting yotta targets to process
     yt_targets = [] # List of yotta targets specified by user used to process during this run
@@ -644,7 +764,7 @@ def main_cli(opts, args, gt_instance_uuid=None):
                                                      enum_host_tests_path=enum_host_tests_path,
                                                      verbose=True)
 
-                    single_test_result, single_test_output, single_testduration, single_timeout = host_test_result
+                    single_test_result, single_test_output, single_testduration, single_timeout, result_test_cases, test_cases_summary = host_test_result
                     status = TEST_RESULTS.index(single_test_result) if single_test_result in TEST_RESULTS else -1
                     if single_test_result != TEST_RESULT_OK:
                         test_exec_retcode += 1
@@ -708,7 +828,7 @@ def main_cli(opts, args, gt_instance_uuid=None):
                     # Experimental, parallel test execution
                     #################################################################
                     if number_of_threads < parallel_test_exec:
-                        args = (test_result_queue, test_queue, opts, mut, mut_info, yotta_target_name)
+                        args = (test_result_queue, test_queue, opts, mut, mut_info, yotta_target_name, greentea_hooks)
                         t = Thread(target=run_test_thread, args=args)
                         execute_threads.append(t)
                         number_of_threads += 1
@@ -740,6 +860,41 @@ def main_cli(opts, args, gt_instance_uuid=None):
         print "Example: execute 'mbedgt --target=TARGET_NAME' to start testing for TARGET_NAME target"
         return (0)
 
+    gt_logger.gt_log("all tests finished!")
+
+    # We will execute post test hooks on tests
+    for yotta_target in test_report:
+        test_name_list = []    # All test case names for particular yotta target
+        for test_name in test_report[yotta_target]:
+            test = test_report[yotta_target][test_name]
+            # Test was successful
+            if test['single_test_result'] in [TEST_RESULT_OK, TEST_RESULT_FAIL]:
+                test_name_list.append(test_name)
+                # Call hook executed for each test, just after all tests are finished
+                if greentea_hooks:
+                    # We can execute this test hook just after all tests are finished ('hook_post_test_end')
+                    format = {
+                        "test_name": test_name,
+                        "test_bin_name": test['test_bin_name'],
+                        "image_path": test['image_path'],
+                        "build_path": test['build_path'],
+                        "build_path_abs": test['build_path_abs'],
+                        "yotta_target_name": yotta_target,
+                    }
+                    greentea_hooks.run_hook_ext('hook_post_test_end', format)
+        if greentea_hooks:
+            # Call hook executed for each yotta target, just after all tests are finished
+            build_path = os.path.join("./build", yotta_target)
+            build_path_abs = os.path.abspath(build_path)
+            # We can execute this test hook just after all tests are finished ('hook_post_test_end')
+            format = {
+                "build_path": build_path,
+                "build_path_abs": build_path_abs,
+                "test_name_list": test_name_list,
+                "yotta_target_name": yotta_target,
+            }
+            greentea_hooks.run_hook_ext('hook_post_all_test_end', format)
+
     # This tool is designed to work in CI
     # We want to return success codes based on tool actions,
     # only if testes were executed and all passed we want to
@@ -750,14 +905,17 @@ def main_cli(opts, args, gt_instance_uuid=None):
 
         # Reports (to file)
         if opts.report_junit_file_name:
-            junit_report = exporter_junit(test_report)
+            gt_logger.gt_log("exporting to JUnit file '%s'..."% gt_logger.gt_bright(opts.report_junit_file_name))
+            junit_report = exporter_testcase_junit(test_report, test_suite_properties=yotta_module.get_data())
             with open(opts.report_junit_file_name, 'w') as f:
                 f.write(junit_report)
         if opts.report_text_file_name:
-            gt_logger.gt_log("exporting to junit '%s'..."% gt_logger.gt_bright(opts.report_text_file_name))
+            gt_logger.gt_log("exporting to text '%s'..."% gt_logger.gt_bright(opts.report_text_file_name))
+
             text_report, text_results = exporter_text(test_report)
+            text_testcase_report, text_testcase_results = exporter_testcase_text(test_report)
             with open(opts.report_text_file_name, 'w') as f:
-                f.write(text_report)
+                f.write('\n'.join([text_report, text_results, text_testcase_report, text_testcase_results]))
 
         # Reports (to console)
         if opts.report_json:
@@ -767,19 +925,25 @@ def main_cli(opts, args, gt_instance_uuid=None):
         else:
             # Final summary
             if test_report:
-                gt_logger.gt_log("test report:")
+                # Test suite report
+                gt_logger.gt_log("test suite report:")
                 text_report, text_results = exporter_text(test_report)
                 print text_report
-                gt_logger.gt_log("results: " + text_results)
+                gt_logger.gt_log("test suite results: " + text_results)
+                # test case detailed report
+                gt_logger.gt_log("test case report:")
+                text_testcase_report, text_testcase_results = exporter_testcase_text(test_report, test_suite_properties=yotta_module.get_data())
+                print text_testcase_report
+                gt_logger.gt_log("test case results: " + text_testcase_results)
 
         # This flag guards 'build only' so we expect only yotta errors
         if test_platforms_match == 0:
             # No tests were executed
-            gt_logger.gt_log("no platform/target matching tests were found!")
+            gt_logger.gt_log_warn("no platform/target matching tests were found!")
             test_exec_retcode += -10
         if target_platforms_match == 0:
             # No platforms were tested
-            gt_logger.gt_log("no target matching platforms were found!")
+            gt_logger.gt_log_warn("no target matching platforms were found!")
             test_exec_retcode += -100
 
     return (test_exec_retcode)

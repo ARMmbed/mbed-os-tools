@@ -19,12 +19,12 @@ Author: Przemyslaw Wirkus <Przemyslaw.wirkus@arm.com>
 
 import re
 import sys
-from time import time, sleep
-from Queue import Queue, Empty
-from threading import Thread
-from subprocess import call, Popen, PIPE
+from time import time
+from subprocess import call, Popen, PIPE, STDOUT
 
 from mbed_greentea.mbed_greentea_log import gt_logger
+from mbed_greentea.mbed_coverage_api import coverage_dump_file
+from mbed_greentea.mbed_coverage_api import coverage_pack_hex_payload
 
 
 # Return codes for test script
@@ -66,20 +66,22 @@ TEST_RESULT_MAPPING = {"success" : TEST_RESULT_OK,
                        "build_failed" : TEST_RESULT_BUILD_FAILED
                        }
 
-RE_DETECT_TESTCASE_RESULT = re.compile("\\{(" + "|".join(TEST_RESULT_MAPPING.keys()) + ")\\}")
 
 def get_test_result(output):
     """! Parse test 'output' data
     @details If test result not found returns by default TEST_RESULT_TIMEOUT value
     @return Returns found test result
     """
-    result = TEST_RESULT_TIMEOUT
-    for line in "".join(output).splitlines():
-        search_result = RE_DETECT_TESTCASE_RESULT.search(line)
-        if search_result and search_result.groups():
-            result = TEST_RESULT_MAPPING[search_result.groups(0)[0]]
-            break
-    return result
+    re_detect = re.compile(r"\{result;([\w+_]*)\}")
+
+    for line in output.split():
+        search_result = re_detect.search(line)
+        if search_result:
+            if search_result.group(1) in TEST_RESULT_MAPPING:
+                return TEST_RESULT_MAPPING[search_result.group(1)]
+            else:
+                return TEST_RESULT_UNDEF
+    return TEST_RESULT_TIMEOUT
 
 
 def run_host_test(image_path,
@@ -98,7 +100,7 @@ def run_host_test(image_path,
                   enum_host_tests_path=None,
                   run_app=None):
     """! This function runs host test supervisor (executes mbedhtrun) and checks output from host test process.
-    @return Tuple with test results, test output and test duration times
+    @return Tuple with test results, test output, test duration times and test case results
     @param image_path Path to binary file for flashing
     @param disk Currently mounted mbed-enabled devices disk (mount point)
     @param port Currently mounted mbed-enabled devices serial port (console)
@@ -118,119 +120,16 @@ def run_host_test(image_path,
                            file name was given as switch option)
     """
 
-    class StdInObserver(Thread):
-        """ Process used to read stdin only as console input from MUT
-        """
-        def __init__(self):
-            Thread.__init__(self)
-            self.queue = Queue()
-            self.daemon = True
-            self.active = True
-            self.start()
-
-        def run(self):
-            while self.active:
-                c = sys.stdin.read(1)
-                self.queue.put(c)
-
-        def stop(self):
-            self.active = False
-
-    class FileObserver(Thread):
-        """ process used to read file content as console input from MUT
-        """
-        def __init__(self, filename):
-            Thread.__init__(self)
-            self.filename = filename
-            self.queue = Queue()
-            self.daemon = True
-            self.active = True
-            self.start()
-
-        def run(self):
-            with open(self.filename) as f:
-                while self.active:
-                    c = f.read(1)
-                    self.queue.put(c)
-
-        def stop(self):
-            self.active = False
-
-    class ProcessObserver(Thread):
-        """ Default process used to observe stdout of another process as console input from MUT
-        """
-        def __init__(self, proc):
-            Thread.__init__(self)
-            self.proc = proc
-            self.queue = Queue()
-            self.daemon = True
-            self.active = True
-            self.start()
-
-        def run(self):
-            while self.active:
-                c = self.proc.stdout.read(1)
-                self.queue.put(c)
-
-        def stop(self):
-            self.active = False
-
-            # Try stopping mbed-host-test
-            try:
-                self.proc.stdin.close()
-            finally:
-                pass
-
-            # Give 5 sec for mbedhtrun to exit
-            ret_code = None
-            for i in range(5):
-                ret_code = self.proc.poll()
-                # A None value indicates that the process hasn't terminated yet.
-                if ret_code is not None:
-                    break
-                sleep(1)
-
-            if ret_code is None:            # Kill it
-                print 'Terminating mbed-host-test(mbedhtrun) process (PID %s)' % self.proc.pid
-                try:
-                    self.proc.terminate()
-                except Exception as e:
-                    print "ProcessObserver.stop(): %s" % str(e)
-
-    def get_char_from_queue(obs):
-        """ Get character from queue safe way
-        """
+    def run_command(cmd):
+        """! Runs command and prints proc stdout on screen """
         try:
-            c = obs.queue.get(block=True, timeout=0.5)
-            # signals to queue job is done
-            obs.queue.task_done()
-        except Empty:
-            c = None
-        except:
-            raise
-        return c
-
-    def filter_queue_char(c):
-        """ Filters out non ASCII characters from serial port
-        """
-        if ord(c) not in range(128):
-            c = ' '
-        return c
-
-    def get_auto_property_value(property_name, line):
-        """! Scans auto detection line from MUT and returns scanned parameter 'property_name'
-        @details Host test case has to print additional properties for test to be set up
-        @return Returns string or None if property search failed
-        """
-        result = None
-        if re.search("HOST: Property '%s'"% property_name, line) is not None:
-            property = re.search("HOST: Property '%s' = '([\w\d _]+)'"% property_name, line)
-            if property is not None and len(property.groups()) == 1:
-                result = property.groups()[0]
-        return result
-
-    # Detect from where input should be taken, if no --digest switch is specified
-    # normal test execution can be performed
+            p = Popen(cmd,
+                    stdout=PIPE,
+                    stderr=STDOUT)
+        except OSError as e:
+            print "mbedgt: run_command(%s) ret= %d failed: %s"% (str(cmd),
+                str(e), e.child_traceback)
+        return iter(p.stdout.readline, b'')
 
     if verbose:
         gt_logger.gt_log("selecting test case observer...")
@@ -240,124 +139,186 @@ def run_host_test(image_path,
     # Select who will digest test case serial port data
     if digest_source == 'stdin':
         # When we want to scan stdin for test results
-        obs = StdInObserver()
+        raise NotImplementedError
     elif digest_source is not None:
         # When we want to open file to scan for test results
-        obs = FileObserver(digest_source)
-    else:
-        # Command executing CLI for host test supervisor (in detect-mode)
-        cmd = ["mbedhtrun",
-                '-d', disk,
-                '-p', port,
-                '-f', '"%s"'% image_path,
-                ]
+        raise NotImplementedError
 
-        # Add extra parameters to host_test
-        if program_cycle_s is not None:
-            cmd += ["-C", str(program_cycle_s)]
-        if copy_method is not None:
-            cmd += ["-c", copy_method]
-        if micro is not None:
-            cmd += ["-m", micro]
-        if reset is not None:
-            cmd += ["-r", reset]
-        if reset_tout is not None:
-            cmd += ["-R", str(reset_tout)]
-        if json_test_cfg is not None:
-            cmd += ["--test-cfg", '"%s"' % str(json_test_cfg)]
-        if run_app is not None:
-            cmd += ["--run"]    # -f stores binary name!
-        if enum_host_tests_path:
-            cmd += ["-e", '"%s"'% enum_host_tests_path]
+    # Command executing CLI for host test supervisor (in detect-mode)
+    cmd = ["mbedhtrun",
+            '-d', disk,
+            '-p', port,
+            '-f', '"%s"'% image_path,
+            ]
 
-        if verbose:
-            gt_logger.gt_log_tab("calling mbedhtrun: %s"% " ".join(cmd))
-            gt_logger.gt_log("mbed-host-test-runner: started")
-        proc = Popen(cmd, stdin=PIPE, stdout=PIPE)
-        obs = ProcessObserver(proc)
+    # Add extra parameters to host_test
+    if program_cycle_s is not None:
+        cmd += ["-C", str(program_cycle_s)]
+    if copy_method is not None:
+        cmd += ["-c", copy_method]
+    if micro is not None:
+        cmd += ["-m", micro]
+    if reset is not None:
+        cmd += ["-r", reset]
+    if reset_tout is not None:
+        cmd += ["-R", str(reset_tout)]
+    if json_test_cfg is not None:
+        cmd += ["--test-cfg", '"%s"' % str(json_test_cfg)]
+    if run_app is not None:
+        cmd += ["--run"]    # -f stores binary name!
+    if enum_host_tests_path:
+        cmd += ["-e", '"%s"'% enum_host_tests_path]
 
-    result = None
-    update_once_flag = {}   # Stores flags checking if some auto-parameter was already set
-    unknown_property_count = 0
-    total_duration = 20     # This for flashing, reset and other serial port operations
-    line = ''
-    output = []
+    if verbose:
+        gt_logger.gt_log_tab("calling mbedhtrun: %s"% " ".join(cmd))
+    gt_logger.gt_log("mbed-host-test-runner: started")
+
+    htrun_output = ''
     start_time = time()
-    while (time() - start_time) < (total_duration):
-        try:
-            c = get_char_from_queue(obs)
-        except Exception as e:
-            output.append('get_char_from_queue(obs): %s'% str(e))
-            break
-        if c:
-            if verbose:
-                sys.stdout.write(c)
-            c = filter_queue_char(c)
-            output.append(c)
-            # Give the mbed under test a way to communicate the end of the test
-            if c in ['\n', '\r']:
 
-                # Check for unknown property prints
-                # If there are too many we will stop test execution and assume test is not ported
-                if "HOST: Unknown property" in line:
-                    unknown_property_count += 1
-                    if unknown_property_count >= max_failed_properties:
-                        output.append('{{error}}')
-                        break
-
-                # Checking for auto-detection information from the test about MUT reset moment
-                if 'reset_target' not in update_once_flag and "HOST: Reset target..." in line:
-                    # We will update this marker only once to prevent multiple time resets
-                    update_once_flag['reset_target'] = True
-                    start_time = time()
-                    total_duration = duration   # After reset we gonna use real test case duration
-
-                # Checking for auto-detection information from the test about timeout
-                auto_timeout_val = get_auto_property_value('timeout', line)
-                if 'timeout' not in update_once_flag and auto_timeout_val is not None:
-                    # We will update this marker only once to prevent multiple time resets
-                    update_once_flag['timeout'] = True
-                    total_duration = int(auto_timeout_val)
-
-                # Detect mbed assert:
-                if 'mbed assertation failed: ' in line:
-                    output.append('{{mbed_assert}}')
-                    break
-
-                # Check for test end. Only a '{{end}}' in the start of line indicates a test end.
-                # A sub string '{{end}}' may also appear in an error message.
-                if re.search('^\{\{end\}\}', line, re.I):
-                    break
-                line = ''
-            else:
-                line += c
-    else:
-        result = TEST_RESULT_TIMEOUT
-
-    if not '{end}' in line:
-        output.append('{{end}}')
-
-    c = get_char_from_queue(obs)
-
-    if c:
+    for line in run_command(cmd):
+        htrun_output += line
+        # When dumping output to file both \r and \n will be a new line
+        # To avoid this "extra new-line" we only use \n at the end
         if verbose:
-            sys.stdout.write(c)
-        c = filter_queue_char(c)
-        output.append(c)
-
-    # Stop test process
-    obs.stop()
+            sys.stdout.write(line.rstrip() + '\n')
+            sys.stdout.flush()
 
     end_time = time()
     testcase_duration = end_time - start_time   # Test case duration from reset to {end}
 
+    result = get_test_result(htrun_output)
+    result_test_cases = get_testcase_result(htrun_output)
+    test_cases_summary = get_testcase_summary(htrun_output)
+    get_coverage_data(htrun_output)
+
     if verbose:
         gt_logger.gt_log("mbed-host-test-runner: stopped")
-    if not result:
-        result = get_test_result(output)
-    if verbose:
         gt_logger.gt_log("mbed-host-test-runner: returned '%s'"% result)
-    return (result, "".join(output), testcase_duration, duration)
+    return (result, htrun_output, testcase_duration, duration, result_test_cases, test_cases_summary)
+
+def get_testcase_utest(output, test_case_name):
+    """ Example test case prints
+    [1455553765.52][CONN][RXD] >>> Running case #1: 'Simple Test'...
+    [1455553765.52][CONN][RXD] {{__testcase_start;Simple Test}}
+    [1455553765.52][CONN][INF] found KV pair in stream: {{__testcase_start;Simple Test}}, queued...
+    [1455553765.58][CONN][RXD] Simple test called
+    [1455553765.58][CONN][RXD] {{__testcase_finish;Simple Test;1;0}}
+    [1455553765.58][CONN][INF] found KV pair in stream: {{__testcase_finish;Simple Test;1;0}}, queued...
+    [1455553765.70][CONN][RXD] >>> 'Simple Test': 1 passed, 0 failed
+    """
+
+    # Return string with all non-alphanumerics backslashed;
+    # this is useful if you want to match an arbitrary literal
+    # string that may have regular expression metacharacters in it.
+    escaped_test_case_name = re.escape(test_case_name)
+
+    re_tc_utest_log_start  = re.compile(r"^\[(\d+\.\d+)\]\[(\w+)\]\[(\w+)\] >>> Running case #(\d)+: '(%s)'"% escaped_test_case_name)
+    re_tc_utest_log_finish = re.compile(r"^\[(\d+\.\d+)\]\[(\w+)\]\[(\w+)\] >>> '(%s)': (\d+) passed, (\d+) failed"% escaped_test_case_name)
+
+    tc_log_lines = []
+    for line in output.splitlines():
+
+        # utest test case start string search
+        m = re_tc_utest_log_start.search(line)
+        if m:
+            tc_log_lines.append(line)
+            continue
+
+        # If utest test case end string found
+        m = re_tc_utest_log_finish.search(line)
+        if m:
+            tc_log_lines.append(line)
+            break
+
+        # Continue adding utest log lines
+        if tc_log_lines:
+            tc_log_lines.append(line)
+
+    return tc_log_lines
+
+def get_coverage_data(output):
+    # Example GCOV output
+    # [1456840876.73][CONN][RXD] {{__coverage_start;c:\Work\core-util/source/PoolAllocator.cpp.gcda;6164636772393034c2733f32...a33e...b9}}
+    gt_logger.gt_log("checking for GCOV data...")
+    re_gcov = re.compile(r"^\[(\d+\.\d+)\][^\{]+\{\{(__coverage_start);([^;]+);([^}]+)\}\}$")
+    for line in output.splitlines():
+        m = re_gcov.search(line)
+        if m:
+            timestamp, _, gcov_path, gcov_payload = m.groups()
+            try:
+                bin_gcov_payload = coverage_pack_hex_payload(gcov_payload)
+                coverage_dump_file(gcov_path, bin_gcov_payload)
+            except Exception as e:
+                gt_logger.gt_log_err("error while handling GCOV data: " + str(e))
+            gt_logger.gt_log_tab("storing %d bytes in '%s'"% (len(bin_gcov_payload), gcov_path))
+
+def get_testcase_summary(output):
+    re_tc_summary = re.compile(r"^\[(\d+\.\d+)\][^\{]+\{\{(__testcase_summary);(\d+);(\d+)\}\}")
+    for line in output.splitlines():
+        m = re_tc_summary.search(line)
+        if m:
+            timestamp, _, passes, failures = m.groups()
+            return int(passes), int(failures)
+    return None
+
+def get_testcase_result(output):
+    result_test_cases = {}  # Test cases results
+    re_tc_start = re.compile(r"^\[(\d+\.\d+)\][^\{]+\{\{(__testcase_start);([^;]+)\}\}")
+    re_tc_finish = re.compile(r"^\[(\d+\.\d+)\][^\{]+\{\{(__testcase_finish);([^;]+);(\d+);(\d+)\}\}")
+
+    for line in output.splitlines():
+        m = re_tc_start.search(line)
+        if m:
+            timestamp, _, testcase_id = m.groups()
+            if testcase_id not in result_test_cases:
+                result_test_cases[testcase_id] = {}
+
+            # Data collected when __testcase_start is fetched
+            result_test_cases[testcase_id]['time_start'] = float(timestamp)
+            result_test_cases[testcase_id]['utest_log'] = get_testcase_utest(output, testcase_id)
+
+            # Data collected when __testcase_finish is fetched
+            result_test_cases[testcase_id]['duration'] = 0.0
+            result_test_cases[testcase_id]['result_text'] = 'ERROR'
+            result_test_cases[testcase_id]['time_end'] = float(timestamp)
+            result_test_cases[testcase_id]['passed'] = 0
+            result_test_cases[testcase_id]['failed'] = 0
+            result_test_cases[testcase_id]['result'] = -4096
+            continue
+
+        m = re_tc_finish.search(line)
+        if m:
+            timestamp, _, testcase_id, testcase_passed, testcase_failed = m.groups()
+
+            testcase_passed = int(testcase_passed)
+            testcase_failed = int(testcase_failed)
+
+            testcase_result = 0 # OK case
+            if testcase_failed != 0:
+                testcase_result = testcase_failed   # testcase_result > 0 is FAILure
+
+            if testcase_id not in result_test_cases:
+                result_test_cases[testcase_id] = {}
+            # Setting some info about test case itself
+            result_test_cases[testcase_id]['duration'] = 0.0
+            result_test_cases[testcase_id]['result_text'] = 'OK'
+            result_test_cases[testcase_id]['time_end'] = float(timestamp)
+            result_test_cases[testcase_id]['passed'] = testcase_passed
+            result_test_cases[testcase_id]['failed'] = testcase_failed
+            result_test_cases[testcase_id]['result'] = testcase_result
+            # Assign human readable test case result
+            if testcase_result > 0:
+                result_test_cases[testcase_id]['result_text'] = 'FAIL'
+            elif testcase_result < 0:
+                result_test_cases[testcase_id]['result_text'] = 'ERROR'
+
+            if 'time_start' in result_test_cases[testcase_id]:
+                result_test_cases[testcase_id]['duration'] = result_test_cases[testcase_id]['time_end'] - result_test_cases[testcase_id]['time_start']
+            else:
+                result_test_cases[testcase_id]['duration'] = 0.0
+
+    return result_test_cases
 
 def run_cli_command(cmd, shell=True, verbose=False):
     """! Runs command from command line
@@ -373,11 +334,13 @@ def run_cli_command(cmd, shell=True, verbose=False):
             result = False
             if verbose:
                 print "mbedgt: [ret=%d] Command: %s"% (int(ret), cmd)
-    except Exception as e:
+    except OSError as e:
         result = False
         if verbose:
             print "mbedgt: [ret=%d] Command: %s"% (int(ret), cmd)
             print str(e)
+            print "mbedgt: traceback..."
+            print e.child_traceback
     return (result, ret)
 
 def run_cli_process(cmd):
