@@ -25,7 +25,7 @@ class MbedLsToolsDarwin(MbedLsToolsBase):
     """ MbedLsToolsDarwin supports mbed-enabled platforms detection on Mac OS X
     """
 
-    mbed_volume_name_match = re.compile(r'\bmbed\b', re.I)
+    mbed_volume_name_match = re.compile(r'(\bmbed\b|\bSEGGER MSD\b)', re.I)
 
     def list_mbeds(self):
         """ returns mbed list with platform names if possible
