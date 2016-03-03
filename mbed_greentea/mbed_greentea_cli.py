@@ -371,6 +371,7 @@ def run_test_thread(test_result_queue, test_queue, opts, mut, mut_info, yotta_ta
         host_test_result = run_host_test(test['image_path'],
                                          disk,
                                          port,
+                                         yotta_target_name,
                                          micro=micro,
                                          copy_method=copy_method,
                                          program_cycle_s=program_cycle_s,
