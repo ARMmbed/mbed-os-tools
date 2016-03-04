@@ -840,13 +840,18 @@ def main_cli(opts, args, gt_instance_uuid=None):
     for t in execute_threads:
         t.daemon = True
         t.start()
-    while test_result_queue.qsize() != len(execute_threads):
-        sleep(1)
 
     # merge partial test reports from diffrent threads to final test report
     for t in execute_threads:
-        t.join()
-        test_return_data = test_result_queue.get(False)
+        try:
+            t.join() #blocking
+            test_return_data = test_result_queue.get(False)
+        except Exception as e:
+            # No test report generated
+            gt_logger.gt_log_err("could not generate test report" + str(e))
+            test_exec_retcode += -1000
+            return test_exec_retcode
+            
         test_platforms_match += test_return_data['test_platforms_match']
         test_exec_retcode += test_return_data['test_exec_retcode']
         partial_test_report = test_return_data['test_report']
