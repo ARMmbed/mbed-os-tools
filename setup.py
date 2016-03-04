@@ -37,7 +37,7 @@ def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
 setup(name='mbed-greentea',
-      version='0.2.0',
+      version='0.2.1',
       description=DESCRIPTION,
       long_description=read('README.md'),
       author=OWNER_NAMES,
