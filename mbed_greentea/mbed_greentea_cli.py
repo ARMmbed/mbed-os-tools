@@ -845,7 +845,7 @@ def main_cli(opts, args, gt_instance_uuid=None):
             test_return_data = test_result_queue.get(False)
         except Exception as e:
             # No test report generated
-            gt_logger.gt_log_err("could not generate test report")
+            gt_logger.gt_log_err("could not generate test report" + str(e))
             test_exec_retcode += -1000
             return test_exec_retcode
             
