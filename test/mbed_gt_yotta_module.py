@@ -65,6 +65,9 @@ class YOttaConfigurationParse(unittest.TestCase):
     def test_get_dict_items(self):
         self.assertEqual('Simple test harness with unity and greentea integration.', self.yotta_module.get_data().get('description'))
         self.assertEqual('Apache-2.0', self.yotta_module.get_data().get('license'))
+        
+    def test_check_greentea_client(self):
+        self.assertTrue(self.yotta_module.check_greentea_client())
 
 if __name__ == '__main__':
     unittest.main()

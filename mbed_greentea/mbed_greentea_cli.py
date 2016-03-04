@@ -565,7 +565,18 @@ def main_cli(opts, args, gt_instance_uuid=None):
     ### Read yotta module basic information
     yotta_module = YottaModule()
     yotta_module.init() # Read actual yotta module data
-
+    
+    # Check if greentea-client is in module.json of repo to test, otherwise abort
+    if not yotta_module.check_greentea_client():
+        gt_logger.gt_log("""
+        *****************************************************************************************
+        * Please downgrade to Greentea before v0.2.0: pip install mbed-greentea<0.2.0 --upgrade *
+        * or                                                                                    *
+        * port your tests to new async model: https://github.com/ARMmbed/greentea/pull/78       *
+        *****************************************************************************************
+        """)
+        return (0)
+        
     ### Selecting yotta targets to process
     yt_targets = [] # List of yotta targets specified by user used to process during this run
     if opts.list_of_targets:
