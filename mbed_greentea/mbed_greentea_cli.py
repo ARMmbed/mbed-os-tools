@@ -371,6 +371,7 @@ def run_test_thread(test_result_queue, test_queue, opts, mut, mut_info, yotta_ta
         host_test_result = run_host_test(test['image_path'],
                                          disk,
                                          port,
+                                         yotta_target_name,
                                          micro=micro,
                                          copy_method=copy_method,
                                          program_cycle_s=program_cycle_s,
@@ -550,9 +551,10 @@ def main_cli(opts, args, gt_instance_uuid=None):
     # Capture alternative test console inputs, used e.g. in 'yotta test command'
     if opts.digest_source:
         enum_host_tests_path = get_local_host_tests_dir(opts.enum_host_tests)
-        host_test_result = run_host_test(image_path=None,
-                                         disk=None,
-                                         port=None,
+        host_test_result = run_host_test(None,
+                                         None,
+                                         None,
+                                         None,
                                          hooks=greentea_hooks,
                                          digest_source=opts.digest_source,
                                          enum_host_tests_path=enum_host_tests_path,
@@ -755,6 +757,7 @@ def main_cli(opts, args, gt_instance_uuid=None):
                     host_test_result = run_host_test(opts.run_app,
                                                      disk,
                                                      port,
+                                                     yotta_target_name,
                                                      micro=micro,
                                                      copy_method=copy_method,
                                                      program_cycle_s=program_cycle_s,
