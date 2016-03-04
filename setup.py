@@ -27,8 +27,8 @@ from distutils.core import setup
 from setuptools import find_packages
 
 DESCRIPTION = "mbed tools used to flash, reset and supervise test execution for mbed-enabled devices"
-OWNER_NAMES = 'Przemyslaw Wirkus'
-OWNER_EMAILS = 'Przemyslaw.Wirkus@arm.com'
+OWNER_NAMES = 'Przemyslaw Wirkus, Azim Khan, Stefan Gutmann'
+OWNER_EMAILS = 'Przemyslaw.Wirkus@arm.com, Azim.Khan@arm.com, Stefan.Gutmann@arm.com'
 
 
 # Utility function to cat in a file (used for the README)
