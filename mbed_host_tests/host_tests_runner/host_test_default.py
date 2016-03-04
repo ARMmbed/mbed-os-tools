@@ -208,7 +208,9 @@ class DefaultTestSelector(DefaultTestSelectorBase):
         time_duration = time() - start_time
         self.logger.prn_inf("test suite run finished after %.2f sec..."% time_duration)
 
-        p.terminate()
+        # Force conn_proxy process to return
+        dut_event_queue.put(('__host_test_finished', True, time()))
+        p.join()
         self.logger.prn_inf("CONN exited with code: %s"% str(p.exitcode))
 
         # Callbacks...

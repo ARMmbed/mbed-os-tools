@@ -179,6 +179,10 @@ def conn_process(event_queue, dut_event_queue, prn_lock, config):
                 (key, value, _) = dut_event_queue.get(timeout=1)
             except QueueEmpty:
                 continue
+            # Return if state machine in host_test_default has finished to end process
+            if key == '__host_test_finished' and value == True:
+                connector.finish()
+                return 0
             connector.write_kv(key, value)
 
         data = connector.read(2048)
