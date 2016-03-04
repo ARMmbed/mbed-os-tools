@@ -566,13 +566,19 @@ def main_cli(opts, args, gt_instance_uuid=None):
     yotta_module = YottaModule()
     yotta_module.init() # Read actual yotta module data
     
-    # Check if greentea-client is in module.json of repo to test, otherwise abort
+    # Check if NO greentea-client is in module.json of repo to test, if so abort
     if not yotta_module.check_greentea_client():
         gt_logger.gt_log("""
         *****************************************************************************************
-        * Please downgrade to Greentea before v0.2.0: pip install mbed-greentea<0.2.0 --upgrade *
-        * or                                                                                    *
-        * port your tests to new async model: https://github.com/ARMmbed/greentea/pull/78       *
+        * We've noticed that NO 'greentea-client' module is specified in                        *
+        * dependency/testDependency section of this module's 'module.json' file.                *
+        *                                                                                       *
+        * This version of Greentea requires 'greentea-client' module.                           *
+        * Please downgrade to Greentea before v0.2.0:                                           *
+        *                                                                                       *
+        * $ pip install "mbed-greentea<0.2.0" --upgrade                                         *
+        *                                                                                       *
+        * or port your tests to new Async model: https://github.com/ARMmbed/greentea/pull/78    *
         *****************************************************************************************
         """)
         return (0)
