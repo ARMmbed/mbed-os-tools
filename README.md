@@ -1,3 +1,6 @@
+[![Circle CI](https://circleci.com/gh/ARMmbed/htrun.svg?style=svg)](https://circleci.com/gh/ARMmbed/htrun)
+[![Coverage Status](https://coveralls.io/repos/github/ARMmbed/htrun/badge.svg?branch=master)](https://coveralls.io/github/ARMmbed/htrun?branch=master)
+
 # Table of contents
 * [mbed-host-tests](#mbed-host-tests)
   * [Interaction between the test runner and the host test](#interaction-between-the-test-runner-and-the-host-test)
@@ -16,7 +19,6 @@
   * [mbedflsh command line switches](#mbedflsh-command-line-switches)
 
 # mbed-host-tests
-[![Circle CI](https://circleci.com/gh/ARMmbed/htrun.svg?style=svg)](https://circleci.com/gh/ARMmbed/htrun)
 
 mbed's test suite (codenamed Greentea) supports the *test supervisor* concept. This concept is realised by a separate Python script called "host test", which is executed in parallel with the test runner (a binary running on the target hardware) to monitor the test execution's progress or to control the test flow (interaction with the mbed device under test - MUT). The host test is also responsible for grabbing the test result, or deducing it from the test runner's behaviour.
 
