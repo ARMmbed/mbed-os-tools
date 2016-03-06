@@ -32,6 +32,7 @@ class MbedLsToolsLinuxGeneric(MbedLsToolsBase):
         # Since Ubuntu 15 DAplink serial port device can have pci- prefix, not only usb- one
         self.name_link_pattern = '((%s)-[0-9a-zA-Z_-]*_[0-9a-zA-Z]*-.*$)'% ('|'.join(["pci", "usb"]))
         self.mount_media_pattern = "^/[a-zA-Z0-9/]* on (/[a-zA-Z0-9/]*) "
+        self.list_unmounted = kwargs.get("list_unmounted", False)
 
         self.nlp = re.compile(self.name_link_pattern)
         self.hup = re.compile(self.hex_uuid_pattern)
@@ -102,7 +103,7 @@ class MbedLsToolsLinuxGeneric(MbedLsToolsBase):
 
             # Deducing mbed-enabled TargetID based on available targetID definition DB.
             # If TargetID from USBID is not recognized we will try to check URL in mbed.htm
-            mbed_htm_target_id = self.get_mbed_htm_target_id(device[2]) # device[2] is a 'mount_point'
+            mbed_htm_target_id = self.get_mbed_htm_target_id(device[2]) if device[2] else None # device[2] is a 'mount_point'
             if mbed_htm_target_id is not None:
                 mbed_htm_target_id_prefix = mbed_htm_target_id[0:4]
                 if mbed_htm_target_id_prefix in tids:
@@ -111,7 +112,12 @@ class MbedLsToolsLinuxGeneric(MbedLsToolsBase):
                     mbed['target_id'] = mbed_htm_target_id
             mbed['target_id_usb_id'] = tid
             mbed['target_id_mbed_htm'] = mbed_htm_target_id
-            result.append(mbed)
+            if mbed['mount_point'] != None or self.list_unmounted:
+                result.append(mbed)
+            else:
+                self.debug(self.list_mbeds.__name__,
+                    "MBED with target id '%s' is connected, but not mounted. "
+                    "Use the '-u' flag to include it in the list." % mbed['target_id'])
 
             if None in mbed:
                 self.ERRORLEVEL_FLAG = -1
@@ -230,8 +236,7 @@ class MbedLsToolsLinuxGeneric(MbedLsToolsBase):
                     mbed_dev_serial = self.get_mbed_serial(serial_list, dhi)
                     # Print detected device
                     mbed_mount_point = self.get_mount_point(mbed_dev_disk, mount_list)
-                    if mbed_mount_point:
-                        result.append([mbed_name, mbed_dev_disk, mbed_mount_point, mbed_dev_serial, disk_hex_ids[dhi]])
+                    result.append([mbed_name, mbed_dev_disk, mbed_mount_point, mbed_dev_serial, disk_hex_ids[dhi]])
         return result
 
     def get_not_detected(self, tids, disk_list, serial_list, mount_list):

@@ -135,6 +135,12 @@ def cmd_parser_setup():
                       action="store_true",
                       help='Ignores file ./mbedls.json with retarget data')
 
+    parser.add_option('-u', '--list-unmounted',
+                      dest='list_unmounted',
+                      default=False,
+                      action='store_true',
+                      help='List unmounted mbeds in addition to ones that are mounted.')
+
     parser.add_option('-d', '--debug',
                       dest='debug',
                       default=False,
@@ -164,7 +170,8 @@ def mbedls_main():
         return version
 
     (opts, args) = cmd_parser_setup()
-    mbeds = create(skip_retarget=opts.skip_retarget)
+    mbeds = create(skip_retarget=opts.skip_retarget,
+                   list_unmounted=opts.list_unmounted)
 
     if mbeds is None:
         sys.stderr.write('This platform is not supported! Pull requests welcome at github.com/ARMmbed/mbed-ls\n')
