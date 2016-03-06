@@ -1,9 +1,6 @@
 [![Circle CI](https://circleci.com/gh/ARMmbed/greentea.svg?style=svg)](https://circleci.com/gh/ARMmbed/greentea)
 [![Coverage Status](https://coveralls.io/repos/github/ARMmbed/greentea/badge.svg?branch=master)](https://coveralls.io/github/ARMmbed/greentea?branch=master)
 
-[![Circle CI](https://circleci.com/gh/ARMmbed/greentea/tree/master_v0_1_x.svg?style=svg)](https://circleci.com/gh/ARMmbed/greentea/tree/master_v0_1_x)
-[![Coverage Status](https://coveralls.io/repos/github/ARMmbed/greentea/badge.svg?branch=master_v0_1_x)](https://coveralls.io/github/ARMmbed/greentea?branch=master_v0_1_x)
-
 # Table of contents
 
 * [Introduction](#introduction)
