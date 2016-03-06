@@ -82,6 +82,7 @@ class YottaConfig():
 class YottaModule():
 
     __yotta_module = None
+    __greentea_client = 'greentea-client'
 
     def __init__(self):
         self.MODULE_PATH = '.'
@@ -108,14 +109,17 @@ class YottaModule():
 
     def get_name(self):
         return self.__yotta_module.get('name', 'unknown')
-        
+
     def check_greentea_client(self):
+        if self.get_name() == self.__greentea_client:
+            return True
+
         dependencies = self.__yotta_module.get('dependencies', False)
         testDependencies = self.__yotta_module.get('testDependencies', False)
         if dependencies:
-            if dependencies.get('greentea-client', False):
+            if dependencies.get(self.__greentea_client, False):
                 return True
         if testDependencies:
-            if testDependencies.get('greentea-client', False):
+            if testDependencies.get(self.__greentea_client, False):
                 return True
         return False

@@ -567,7 +567,7 @@ def main_cli(opts, args, gt_instance_uuid=None):
     ### Read yotta module basic information
     yotta_module = YottaModule()
     yotta_module.init() # Read actual yotta module data
-    
+
     # Check if NO greentea-client is in module.json of repo to test, if so abort
     if not yotta_module.check_greentea_client():
         gt_logger.gt_log("""
@@ -584,7 +584,7 @@ def main_cli(opts, args, gt_instance_uuid=None):
         *****************************************************************************************
         """)
         return (0)
-        
+
     ### Selecting yotta targets to process
     yt_targets = [] # List of yotta targets specified by user used to process during this run
     if opts.list_of_targets:
@@ -868,7 +868,7 @@ def main_cli(opts, args, gt_instance_uuid=None):
             gt_logger.gt_log_err("could not generate test report" + str(e))
             test_exec_retcode += -1000
             return test_exec_retcode
-            
+
         test_platforms_match += test_return_data['test_platforms_match']
         test_exec_retcode += test_return_data['test_exec_retcode']
         partial_test_report = test_return_data['test_report']
