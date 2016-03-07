@@ -174,7 +174,7 @@ def conn_process(event_queue, dut_event_queue, prn_lock, config):
             break
 
         # Send data to DUT
-        if dut_event_queue.qsize():
+        if not dut_event_queue.empty():
             try:
                 (key, value, _) = dut_event_queue.get(timeout=1)
             except QueueEmpty:

@@ -117,7 +117,7 @@ class DefaultTestSelector(DefaultTestSelectorBase):
             consume_preamble_events = True
             while (time() - start_time) < timeout_duration:
                 # Handle default events like timeout, host_test_name, ...
-                if event_queue.qsize():
+                if not event_queue.empty():
                     try:
                         (key, value, timestamp) = event_queue.get(timeout=1)
                     except QueueEmpty:
@@ -214,7 +214,7 @@ class DefaultTestSelector(DefaultTestSelectorBase):
         self.logger.prn_inf("CONN exited with code: %s"% str(p.exitcode))
 
         # Callbacks...
-        self.logger.prn_inf("%d events in queue"% event_queue.qsize())
+        self.logger.prn_inf("No events in queue" if event_queue.empty() else "Some events in queue")
 
         # If host test was used we will:
         # 1. Consume all existing events in queue if consume=True
@@ -222,7 +222,7 @@ class DefaultTestSelector(DefaultTestSelectorBase):
 
         if callbacks_consume:
             # We are consuming all remaining events if requested
-            while event_queue.qsize():
+            while not event_queue.empty():
                 try:
                     (key, value, timestamp) = event_queue.get(timeout=1)
                 except QueueEmpty:
