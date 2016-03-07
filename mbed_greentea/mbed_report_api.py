@@ -200,7 +200,10 @@ def exporter_testcase_junit(test_result_ext, test_suite_properties=None):
 
             # tc_elapsed_sec = test['elapsed_time']
             tc_stdout = ''  #test['single_test_output']
-            tc_stderr = test['single_test_output'].decode('unicode_escape').encode('ascii','ignore')
+            try:
+                tc_stderr = test['single_test_output'].decode('unicode_escape').encode('ascii','ignore')
+            except UnicodeDecodeError as e:
+                print "exporter_testcase_junit:", str(e)
 
             # testcase_result stores info about test case results
             testcase_result = test['testcase_result']
@@ -222,7 +225,11 @@ def exporter_testcase_junit(test_result_ext, test_suite_properties=None):
                 utest_log = testcase_result[tc_name].get('utest_log', '')
                 result_text = testcase_result[tc_name].get('result_text', "UNDEF")
 
-                tc_stdout = '\n'.join(utest_log).decode('unicode_escape').encode('ascii','ignore')
+                try:
+                    tc_stdout = '\n'.join(utest_log).decode('unicode_escape').encode('ascii','ignore')
+                except UnicodeDecodeError as e:
+                    print "exporter_testcase_junit:", str(e)
+
                 tc_class = ym_name + '.' + target_name + '.' + test_suite_name
                 tc = TestCase(tc_name, tc_class, duration, tc_stdout, tc_stderr)
 
