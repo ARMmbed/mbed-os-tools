@@ -1,5 +1,6 @@
 [![Circle CI](https://circleci.com/gh/ARMmbed/htrun.svg?style=svg)](https://circleci.com/gh/ARMmbed/htrun)
 [![Coverage Status](https://coveralls.io/repos/github/ARMmbed/htrun/badge.svg?branch=master)](https://coveralls.io/github/ARMmbed/htrun?branch=master)
+[![PyPI version](https://badge.fury.io/py/mbed-host-tests.svg)](https://badge.fury.io/py/mbed-host-tests)
 
 # Table of contents
 * [mbed-host-tests](#mbed-host-tests)
