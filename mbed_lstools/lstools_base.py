@@ -481,15 +481,16 @@ class MbedLsToolsBase:
 
     def get_mbed_htm_lines(self, mount_point):
         result = []
-        for mount_point_file in [f for f in listdir(mount_point) if isfile(join(mount_point, f))]:
-            if mount_point_file.lower() == self.MBED_HTM_NAME:
-                mbed_htm_path = os.path.join(mount_point, mount_point_file)
-                try:
-                    with open(mbed_htm_path, 'r') as f:
-                        result = f.readlines()
-                except IOError:
-                    if self.DEBUG_FLAG:
-                        self.debug(self.get_mbed_htm_target_id.__name__, ('Failed to open file', mbed_htm_path))
+        if mount_point:
+            for mount_point_file in [f for f in listdir(mount_point) if isfile(join(mount_point, f))]:
+                if mount_point_file.lower() == self.MBED_HTM_NAME:
+                    mbed_htm_path = os.path.join(mount_point, mount_point_file)
+                    try:
+                        with open(mbed_htm_path, 'r') as f:
+                            result = f.readlines()
+                    except IOError:
+                        if self.DEBUG_FLAG:
+                            self.debug(self.get_mbed_htm_target_id.__name__, ('Failed to open file', mbed_htm_path))
         return result
 
     def get_details_txt(self, mount_point):
@@ -515,14 +516,15 @@ class MbedLsToolsBase:
             Interface CRC: 0x26764ebf
         """
         result = {}
-        path_to_details_txt = os.path.join(mount_point, self.DETAILS_TXT_NAME)
-        if os.path.exists(path_to_details_txt):
-            try:
-                with open(path_to_details_txt, 'r') as f:
-                    result = self.parse_details_txt(f.readlines())
-            except IOError:
-                if self.DEBUG_FLAG:
-                    self.debug(self.get_mbed_fw_version.get_details_txt.__name__, ('Failed to open file', path_to_details_txt))
+        if mount_point:
+            path_to_details_txt = os.path.join(mount_point, self.DETAILS_TXT_NAME)
+            if os.path.exists(path_to_details_txt):
+                try:
+                    with open(path_to_details_txt, 'r') as f:
+                        result = self.parse_details_txt(f.readlines())
+                except IOError:
+                    if self.DEBUG_FLAG:
+                        self.debug(self.get_mbed_fw_version.get_details_txt.__name__, ('Failed to open file', path_to_details_txt))
         return result if result else None
 
     def parse_details_txt(self, lines):
