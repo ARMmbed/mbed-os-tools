@@ -95,6 +95,8 @@ class DefaultTestSelector(DefaultTestSelectorBase):
         callbacks__exit = False
         # Handle to dynamically loaded host test object
         self.test_supervisor = None
+        # Version: greentea-client version from DUT
+        self.client_version = None
 
         config = {
             "digest" : "serial",
@@ -129,6 +131,9 @@ class DefaultTestSelector(DefaultTestSelectorBase):
                             start_time = time()
                             timeout_duration = int(value) # New timeout
                             self.logger.prn_inf("setting timeout to: %d sec"% int(value))
+                        elif key == '__version':
+                            self.client_version = value
+                            self.logger.prn_inf("DUT greentea-client version: " + self.client_version)
                         elif key == '__host_test_name':
                             # Load dynamically requested host test
                             self.test_supervisor = get_host_test(value)
