@@ -380,6 +380,10 @@ def run_test_thread(test_result_queue, test_queue, opts, mut, mut_info, yotta_ta
                                          enum_host_tests_path=enum_host_tests_path,
                                          verbose=verbose)
 
+        # Some error in htrun, abort test execution
+        if host_test_result < 0:
+            break
+        
         single_test_result, single_test_output, single_testduration, single_timeout, result_test_cases, test_cases_summary = host_test_result
         test_result = single_test_result
 
