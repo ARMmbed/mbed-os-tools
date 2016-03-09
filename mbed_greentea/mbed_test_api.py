@@ -130,7 +130,7 @@ def run_host_test(image_path,
         except OSError as e:
             print "mbedgt: run_command(%s) ret= %d failed: %s"% (str(cmd),
                 str(e), e.child_traceback)
-        return iter(p.stdout.readline, b'')
+        return p
 
     if verbose:
         gt_logger.gt_log("selecting test case observer...")
@@ -177,13 +177,19 @@ def run_host_test(image_path,
     htrun_output = ''
     start_time = time()
 
-    for line in run_command(cmd):
+    p = run_command(cmd)
+    for line in iter(p.stdout.readline, b''):
         htrun_output += line
         # When dumping output to file both \r and \n will be a new line
         # To avoid this "extra new-line" we only use \n at the end
         if verbose:
             sys.stdout.write(line.rstrip() + '\n')
             sys.stdout.flush()
+    
+    # Check if process was terminated by signal
+    returncode = p.wait()
+    if returncode < 0:
+        return returncode
 
     end_time = time()
     testcase_duration = end_time - start_time   # Test case duration from reset to {end}
