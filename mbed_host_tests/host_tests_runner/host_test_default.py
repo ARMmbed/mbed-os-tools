@@ -284,28 +284,32 @@ class DefaultTestSelector(DefaultTestSelectorBase):
         """
         result = self.RESULT_UNDEF
 
-        # Copy image to device
-        if self.options.skip_flashing:
-            self.logger.prn_inf("copy image onto target... SKIPPED!")
-        else:
-            self.logger.prn_inf("copy image onto target...")
-            result = self.mbed.copy_image()
-            if not result:
-                result = self.RESULT_IOERR_COPY
-                return self.get_test_result_int(result)
+        try:
+            # Copy image to device
+            if self.options.skip_flashing:
+                self.logger.prn_inf("copy image onto target... SKIPPED!")
+            else:
+                self.logger.prn_inf("copy image onto target...")
+                result = self.mbed.copy_image()
+                if not result:
+                    result = self.RESULT_IOERR_COPY
+                    return self.get_test_result_int(result)
 
-        # Execute test if flashing was successful or skipped
-        test_result = self.run_test()
+            # Execute test if flashing was successful or skipped
+            test_result = self.run_test()
 
-        if test_result == True:
-            result = self.RESULT_SUCCESS
-        elif test_result == False:
-            result = self.RESULT_FAILURE
-        elif test_result is None:
-            result = self.RESULT_ERROR
-        else:
-            result = test_result
+            if test_result == True:
+                result = self.RESULT_SUCCESS
+            elif test_result == False:
+                result = self.RESULT_FAILURE
+            elif test_result is None:
+                result = self.RESULT_ERROR
+            else:
+                result = test_result
 
-        # This will be captured by Greentea
-        self.logger.prn_inf("{{result;%s}}"% result)
-        return self.get_test_result_int(result)
+            # This will be captured by Greentea
+            self.logger.prn_inf("{{result;%s}}"% result)
+            return self.get_test_result_int(result)
+
+        except KeyboardInterrupt:
+            return(-3)    # Keyboard interrupt
