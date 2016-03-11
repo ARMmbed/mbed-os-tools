@@ -89,7 +89,7 @@ $ source venv/bin/activate
 * Install packages as usual, for example:
 ```
 $ pip install yotta
-$ pip install greentea
+$ pip install mbed-greentea
   pip ...
 ```
 
