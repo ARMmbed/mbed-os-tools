@@ -75,7 +75,7 @@ To use the mbed test suite you must:
 * Install the dependencies.
 * Download and install the mbed test suite.
 * Build the mbed project sources.
-* (Optional) you can take advantage of Python's [virtualenv]() to install and run our test tools in virtual environment.
+* (Optional) you can take advantage of Python's [virtualenv](#virtual-environments-python) to install and run our test tools in virtual environment.
 
 ## End to end example
 This end to end example shows how to install and use Greentea with an example mbed repository.
