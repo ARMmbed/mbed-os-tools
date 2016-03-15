@@ -18,6 +18,8 @@ Author: Przemyslaw Wirkus <Przemyslaw.Wirkus@arm.com>
 """
 
 import json
+import time
+import mbed_lstools
 from time import sleep
 
 import mbed_host_tests.host_tests_plugins as ht_plugins
@@ -38,6 +40,7 @@ class Mbed:
         # Options related to copy / reset mbed device
         self.port = self.options.port
         self.disk = self.options.disk
+        self.target_id = self.options.target_id
         self.image_path = self.options.image_path.strip('"') if self.options.image_path is not None else ''
         self.copy_method = self.options.copy_method
         self.program_cycle_s = float(self.options.program_cycle_s if self.options.program_cycle_s is not None else 2.0)
@@ -111,4 +114,22 @@ class Mbed:
                                         image_path=image_path,
                                         serial=port,
                                         destination_disk=disk)
-        return result;
+        return result
+
+    def update_device_info(self):
+        """
+        Updates device's port and disk using mbedls. Typically used after reset.
+
+        :return:
+        """
+        for i in range(3):
+            mbed_list = mbed_lstools.create().list_mbeds_ext()
+            if mbed_list:
+                for mut in mbed_list:
+                    if mut['target_id'] == self.target_id:
+                        self.port = mut['serial_port']
+                        self.disk = mut['mount_point']
+                        return True
+            print "HOST: Failed to find target after reset. Retrying (%d)" % i
+            time.sleep(1)
+        return False

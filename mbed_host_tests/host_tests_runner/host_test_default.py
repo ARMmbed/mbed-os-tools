@@ -98,22 +98,26 @@ class DefaultTestSelector(DefaultTestSelectorBase):
         # Version: greentea-client version from DUT
         self.client_version = None
 
-        config = {
-            "digest" : "serial",
-            "port" : self.mbed.port,
-            "baudrate" : self.mbed.serial_baud,
-            "program_cycle_s" : self.options.program_cycle_s,
-            "reset_type" : self.options.forced_reset_type
-        }
-
         self.logger.prn_inf("starting host test process...")
-        start_time = time()
 
-        # DUT-host communication process
-        args = (event_queue, dut_event_queue, self.prn_lock, config)
-        p = Process(target=conn_process, args=args)
-        p.deamon = True
-        p.start()
+        def start_conn_process():
+            # Create device info here as it may change after restart.
+            config = {
+                "digest" : "serial",
+                "port" : self.mbed.port,
+                "baudrate" : self.mbed.serial_baud,
+                "program_cycle_s" : self.options.program_cycle_s,
+                "reset_type" : self.options.forced_reset_type
+            }
+            # DUT-host communication process
+            args = (event_queue, dut_event_queue, self.prn_lock, config)
+            p = Process(target=conn_process, args=args)
+            p.deamon = True
+            p.start()
+            return p
+        p = start_conn_process()
+
+        start_time = time()
 
         try:
             consume_preamble_events = True
@@ -185,6 +189,12 @@ class DefaultTestSelector(DefaultTestSelectorBase):
                             self.logger.prn_inf("%s(%s)"% (key, str(value)))
                             result = value
                             break
+                        elif key == '__reset_dut':
+                            # Disconnecting and re-connecting comm process will reset DUT
+                            dut_event_queue.put(('__host_test_finished', True, time()))
+                            p.join()
+                            self.mbed.update_device_info()
+                            p = start_conn_process()
                         elif key == '__notify_conn_lost':
                             # This event is sent by conn_process, DUT connection was lost
                             self.logger.prn_err(value)

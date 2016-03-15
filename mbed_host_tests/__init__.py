@@ -168,6 +168,11 @@ def init_host_test_cli_params():
                       help="Target disk (mount point) path",
                       metavar="DISK_PATH")
 
+    parser.add_option("-t", "--target-id",
+                      dest="target_id",
+                      help="Unique Target Id or mbed platform",
+                      metavar="TARGET_ID")
+
     parser.add_option("-f", "--image-path",
                       dest="image_path",
                       help="Path with target's binary image",
