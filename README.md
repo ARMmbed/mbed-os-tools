@@ -22,8 +22,7 @@
   * [Mocking example with Freescale K64F platform](#mocking-example-with-freescale-k64f-platform)
 * [mbed-ls unit testing](#mbed-ls-unit-testing)
 * [Configure mbed-enabled device to work with your host](#configure-mbed-enabled-device-to-work-with-your-host)
-  * [Serial port configuration](#serial-port-configuration)
-    * [Windows serial port configuration](#windows-serial-port-configuration)
+  * [Windows serial port configuration](#windows-serial-port-configuration)
   * [Mounting with sync](#mounting-with-sync)
     * [Ubuntu](#ubuntu)
 * [Known issues](#known-issues)
@@ -531,9 +530,7 @@ OK
 
 # Configure mbed-enabled device to work with your host
 
-## Serial port configuration
-
-### Windows serial port configuration
+## Windows serial port configuration
 
 The mbed serial port works by default on Mac and Linux, but Windows needs a driver. Check [here](https://developer.mbed.org/handbook/Windows-serial-configuration) for more details.
 
@@ -543,19 +540,19 @@ While working under Ubuntu/Linux/OSX OSs you will have to mount your mbed-enable
 ### Ubuntu
 We recommend you use ```usbmount``` package to auto-mount mbed devices plugged to your host system:
 
-1. Install ```usbmount```:
+* Install ```usbmount```:
 
 ```
 $ sudo apt-get install usbmount
 ```
 
-2. Make copy of ```/etc/usbmount/usbmount.conf```:
+* Make copy of ```/etc/usbmount/usbmount.conf```:
 
 ```
 $ sudo cp /etc/usbmount/usbmount.conf /etc/usbmount/usbmount.conf.bak
 ```
 
-3. Modify ```/etc/usbmount/usbmount.conf``` file as follows:
+* Modify ```/etc/usbmount/usbmount.conf``` file as follows:
 
 ```
 ENABLED=1
