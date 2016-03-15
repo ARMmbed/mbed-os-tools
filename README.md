@@ -4,6 +4,7 @@
 
 # Table of contents
 
+* [Table of contents](#table-of-contents)
 * [Description](#description)
 * [Rationale](#rationale)
 * [Installation](#installation)
@@ -20,6 +21,10 @@
   * [Mock command line examples](#mock-command-line-examples)
   * [Mocking example with Freescale K64F platform](#mocking-example-with-freescale-k64f-platform)
 * [mbed-ls unit testing](#mbed-ls-unit-testing)
+* [Configure mbed-enabled device to work with your host](#configure-mbed-enabled-device-to-work-with-your-host)
+  * [Windows serial port configuration](#windows-serial-port-configuration)
+  * [Mounting with sync](#mounting-with-sync)
+    * [Ubuntu](#ubuntu)
 * [Known issues](#known-issues)
 
 # Description
@@ -33,19 +38,15 @@ Currently supported operating system:
 * Linux (generic).
 * Mac OS X (Darwin).
 
-The stand-alone mbed-lstools Python package is still under development, but it's already delivered as part of the mbed SDK's test suite and a command line tool (see below).
-
 # Rationale
 
 When connecting more than one mbed-enabled device to the host computer, it takes time to manually check the platforms' binds:
 
-* Mount point (disk).
-* Virtual serial port.
+* Mount point (MSD / disk).
+* Virtual serial port (CDC).
 * mbed's TargetID and generic platform name.
 
-mbedls provides these points of information for all connected boards at once in a simple console (terminal) output.
-
-**Tip:** Because we are all automation fanatics, the ```mbedls``` command will also output mbed-enabled auto-detection data in JSON format (see below).
+```mbed-ls``` provides these points of information for all connected boards at once in a simple console (terminal) output.
 
 # Installation
 
@@ -55,12 +56,7 @@ mbed-ls module is redistributed via PyPI. We recommend you use the [application 
 
 **Note:** Python 2.7.9 and later (on the Python 2 series), and Python 3.4 and later include pip by default, so you may have pip already.
 
-To install mbed-ls from Python Package Index use command:
-```
-$ pip install mbed-ls
-```
-
-To install latest version use command:
+To install mbed-ls from [PyPI](https://pypi.python.org/pypi/mbed-ls) use command:
 ```
 $ pip install mbed-ls --upgrade
 ```
@@ -76,7 +72,7 @@ To install the mbed-ls module:
 Clone the mbed-ls repository. The following example uses the GitHub command line tools, but you can do this directly from the website:
 
 ```
-$ git clone <link-to-mbed-ls-repo>
+$ git clone https://github.com/ARMmbed/mbed-ls.git
 
 ```
 Change the directory to the mbed-ls repository directory:
@@ -531,6 +527,63 @@ Ran 18 tests in 0.302s
 
 OK
 ```
+
+# Configure mbed-enabled device to work with your host
+
+## Windows serial port configuration
+
+The mbed serial port works by default on Mac and Linux, but Windows needs a driver. Check [here](https://developer.mbed.org/handbook/Windows-serial-configuration) for more details.
+
+## Mounting with sync
+While working under Ubuntu/Linux/OSX OSs you will have to mount your mbed-enabled device. You can follow instructions how to do it [here](https://developer.mbed.org/handbook/Mounting-with-sync).
+
+### Ubuntu
+We recommend you use ```usbmount``` package to auto-mount mbed devices plugged to your host system:
+
+* Install ```usbmount```:
+
+```
+$ sudo apt-get install usbmount
+```
+
+* Make copy of ```/etc/usbmount/usbmount.conf```:
+
+```
+$ sudo cp /etc/usbmount/usbmount.conf /etc/usbmount/usbmount.conf.bak
+```
+
+* Modify ```/etc/usbmount/usbmount.conf``` file as follows:
+
+```
+ENABLED=1
+
+MOUNTPOINTS="/media/usb0 /media/usb1 /media/usb2 /media/usb3
+             /media/usb4 /media/usb5 /media/usb6 /media/usb7
+             /media/usb8 /media/usb9 /media/usb10 /media/usb11
+             /media/usb12 /media/usb13 /media/usb14 /media/usb15
+             /media/usb16 /media/usb17 /media/usb18 /media/usb19"
+
+FILESYSTEMS="vfat ext2 ext3 ext4 hfsplus"
+
+MOUNTOPTIONS="sync,noexec,nodev,noatime,nodiratime"
+
+FS_MOUNTOPTIONS="-fstype=vfat,gid=USERGROUP,uid=USERNAME,dmask=000,fmask=000"
+
+VERBOSE=no
+```
+
+*Note*: In line:
+```
+FS_MOUNTOPTIONS="-fstype=vfat,gid=USERGROUP,uid=USERNAME,dmask=000,fmask=000"
+```
+change ```USERGROUP``` and ```USERNAME``` to your user and group names.
+
+You can check user "USERNAME" group by typing:
+```
+$ groups USERNAME
+```
+
+This ```usbmount``` configuration will auto-mount your mbed devices without need to type ```mount``` commands each time you plug your mbeds!
 
 # Known issues
 * Users reported issues while using ```mbed-ls``` on VM (Virtual Machines).
