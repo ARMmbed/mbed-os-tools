@@ -535,3 +535,4 @@ OK
 # Known issues
 * Users reported issues while using ```mbed-ls``` on VM (Virtual Machines).
 * [mbedls fails to list devices on OS X El Capitan](https://github.com/ARMmbed/mbed-ls/issues/38).
+* ```mbed-ls``` doesn't list not mounted devices (Ubuntu/Linux).
