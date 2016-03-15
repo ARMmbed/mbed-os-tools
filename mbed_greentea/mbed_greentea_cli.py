@@ -335,6 +335,7 @@ def main():
 
     return(cli_ret)
 
+
 def run_test_thread(test_result_queue, test_queue, opts, mut, mut_info, yotta_target_name, greentea_hooks):
     test_exec_retcode = 0
     test_platforms_match = 0
@@ -372,6 +373,7 @@ def run_test_thread(test_result_queue, test_queue, opts, mut, mut_info, yotta_ta
                                          disk,
                                          port,
                                          yotta_target_name,
+                                         mut['target_id'],
                                          micro=micro,
                                          copy_method=copy_method,
                                          program_cycle_s=program_cycle_s,
@@ -556,6 +558,7 @@ def main_cli(opts, args, gt_instance_uuid=None):
     if opts.digest_source:
         enum_host_tests_path = get_local_host_tests_dir(opts.enum_host_tests)
         host_test_result = run_host_test(None,
+                                         None,
                                          None,
                                          None,
                                          None,
@@ -779,6 +782,7 @@ def main_cli(opts, args, gt_instance_uuid=None):
                                                      disk,
                                                      port,
                                                      yotta_target_name,
+                                                     mut['target_id'],
                                                      micro=micro,
                                                      copy_method=copy_method,
                                                      program_cycle_s=program_cycle_s,
