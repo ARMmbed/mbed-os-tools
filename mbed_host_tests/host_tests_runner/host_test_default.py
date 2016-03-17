@@ -193,7 +193,7 @@ class DefaultTestSelector(DefaultTestSelectorBase):
                             # Disconnecting and re-connecting comm process will reset DUT
                             dut_event_queue.put(('__host_test_finished', True, time()))
                             p.join()
-                            self.mbed.update_device_info()
+                            # self.mbed.update_device_info() - This call is commented but left as it would be required in hard reset.
                             p = start_conn_process()
                         elif key == '__notify_conn_lost':
                             # This event is sent by conn_process, DUT connection was lost
