@@ -4,39 +4,41 @@
 
 # Table of contents
 
+* [Table of contents](#table-of-contents)
+* [Quickstart document](#quickstart-document)
 * [Introduction](#introduction)
-* [Supported operating systems](#supported-operating-systems)
-  * [Virtual Environments (Python)](#virtual-environments-python)
-    * [How to get and install](#how-to-get-and-install)
-    * [Basic Usage](#basic-usage)
-    * [Basic usage - Windows example](#basic-usage---windows-example)
+  * [mbed test tools collection](#mbed-test-tools-collection)
+  * [Additional documentation:](#additional-documentation)
+  * [Supported operating systems](#supported-operating-systems)
 * [Getting started](#getting-started)
   * [End to end example](#end-to-end-example)
-  * [Dependencies](#dependencies)
+    * [Dependencies installation procedure](#dependencies-installation-procedure)
+    * [Example test procedure walk-through](#example-test-procedure-walk-through)
+  * [mbed test tools detailed list of dependencies](#mbed-test-tools-detailed-list-of-dependencies)
   * [Installing Greentea](#installing-greentea)
     * [Installation from PyPI (Python Package Index)](#installation-from-pypi-python-package-index)
     * [Installation from Python sources](#installation-from-python-sources)
+    * [Virtual Environments (Python)](#virtual-environments-python)
+      * [How to get and install virtualenv](#how-to-get-and-install-virtualenv)
+      * [Basic Usage](#basic-usage)
+      * [virtualenv example usage - Windows environment](#virtualenv-example-usage---windows-environment)
   * [Environment check](#environment-check)
-  * [Building the mbed-drivers for the target](#building-the-mbed-drivers-for-the-target)
+  * [Building the mbed-drivers for yotta target target](#building-the-mbed-drivers-for-yotta-target-target)
 * [Testing](#testing)
 * [Using Greentea with new targets](#using-greentea-with-new-targets)
   * [Greentea and yotta targets](#greentea-and-yotta-targets)
   * [Prototyping support](#prototyping-support)
     * [How to add board-target bindings for Greentea](#how-to-add-board-target-bindings-for-greentea)
-    * [Prototyping or porting sample workflow](#prototyping-or-porting-sample-workflow)
+    * [Prototyping or porting - sample workflow](#prototyping-or-porting---sample-workflow)
 * [Selecting boards for test running](#selecting-boards-for-test-running)
-  * [Switch --use-tids example](#switch---use-tids-example)
-* [Digesting test output](#digesting-test-output)
-  * [Example 1 - digest the default mbed host test runner](#example-1---digest-the-default-mbed-host-test-runner)
-  * [Example 2 - digest directly from file](#example-2---digest-directly-from-file)
-  * [Example 3 - pipe test.txt file content (as in example 2)](#example-3---pipe-testtxt-file-content-as-in-example-2)
+  * [Option --use-tids example](#option---use-tids-example)
 * [Additional features](#additional-features)
   * [Dynamic host test loader](#dynamic-host-test-loader)
   * [yotta config parse](#yotta-config-parse)
   * [Local yotta targets scan for mbed-target keywords](#local-yotta-targets-scan-for-mbed-target-keywords)
 * [Common Issues](#common-issues)
   * [Uninstalling Greentea](#uninstalling-greentea)
-* [Commissioning mbed platforms (Linux)](#commissioning-mbed-platforms-linux)
+* [Commissioning mbed platforms](#commissioning-mbed-platforms)
 
 # Introduction
 
@@ -44,87 +46,32 @@ Hello and welcome to the mbed SDK test suite, codename *Greentea*. The test suit
 
 In its current configuration, the mbed test suite can automatically detect most of the popular mbed-enabled boards connected to the host over USB. The test suite uses the ```mbed-ls``` module to check for connected devices. A separate module called ```mbed-host-tests``` is used to flash and supervise each board's test. This decoupling allows us to make better software and maintain each of the functionalities as a separate domain.
 
-Additional documentation:
+# Quickstart document
+
+Please read [QUICKSTART.md](https://github.com/ARMmbed/greentea/blob/master/docs/QUICKSTART.md) document if you want to familiarize yourself with top level features of ```Greentea`` mbed test tools.
+
+## mbed test tools collection
+
+```mbed ```  test tools set:
+* [Greentea](https://github.com/ARMmbed/greentea) - mbed test automation framework, instrument test suite execution inside your yotta module.
+  * This application is also distributed as Python Package: [mbed-greentea in PyPI](https://pypi.python.org/pypi/mbed-greentea).
+* [greentea-client](https://github.com/ARMmbed/greentea-client) - ```Greentea``'s device side, C++ library.
+  * This application is also distributed as yotta module: [greentea-client](https://yotta.mbed.com/#/module/greentea-client/0.1.8).
+* [htrun](https://github.com/ARMmbed/htrun) - test runner for mbed test suite.
+  * This application is also distributed as Python Package: [mbed-host-tests in PyPI](https://pypi.python.org/pypi/mbed-host-tests).
+* [mbed-ls](https://github.com/ARMmbed/mbed-ls) - list all connected to host mbed compatible devices.
+  * This application is also distributed as Python Package: [mbed-ls in PyPI](https://pypi.python.org/pypi/mbed-ls).
+
+## Additional documentation:
+
 * [Quickstart document](https://github.com/ARMmbed/greentea/blob/master/docs/QUICKSTART.md)
 * Things you need to know [when you contribute](https://github.com/ARMmbed/greentea/blob/master/docs/CONTRIBUTING.md) to open source mbed test tools repositories.
 
-# Supported operating systems
+## Supported operating systems
 
 * Windows
 * Linux (experimental)
 * OS X 10.10 (experimental)
-
-## Virtual Environments (Python)
-You may already recognize that out test tools are mainly written in Python (2.7).
-If your project / CI job etc. is using Python tools and Python packages extensively you may find that installing our test tools may cause Python dependencies collision.
-To avoid unnecessary hassle and separate packages used by tools and your system you can use virtual environment!
-
-*A Virtual Environment is a tool to keep Python package dependencies required by different projects in separate places, by creating virtual Python environments for them.*
-
-For more details check [Virtual Environments](http://docs.python-guide.org/en/latest/dev/virtualenvs/).
-
-### How to get and install
-The simplest way is to just install ```virtualenv``` via ```pip```:
-```
-$ pip install virtualenv
-```
-
-### Basic Usage
-* Create a virtual environment for your project:
-```
-$ cd my_project
-$ virtualenv venv
-```
-
-* To begin using the virtual environment (On Windows), it needs to be activated:
-```
-$ venv\Scripts\activate.bat
-```
-
-* To begin using the virtual environment (On Linux), it needs to be activated:
-```
-$ source venv/bin/activate
-```
-
-* Install packages as usual, for example:
-```
-$ pip install yotta
-$ pip install mbed-greentea
-  pip ...
-```
-
-* If you are done working in the virtual environment (On Windows) for the moment, you can deactivate it:
-```
-$ venv/script/deactivate.bat
-```
-
-* If you are done working in the virtual environment (On Windows) for the moment, you can deactivate it:
-```
-$ source venv/bin/deactivate
-```
-
-### Basic usage - Windows example
-Setup virtual environment and install all dependencies:
-```
-$ cd my_project
-$ virtualenv venv
-$ venv/script/activate.bat
-
-$ pip install yotta
-$ pip install greentea
-```
-
-Call your test procedures and tools using active environment, for example:
-```
-$ cd yotta_module/
-$ mbedgt -V t frdom-k64f-gcc
-```
-
-Finally deactivate environment and go back to original Python module dependency settings:
-
-```
-$ venv/script/deactivate.bat
-```
 
 # Getting started
 
@@ -133,171 +80,180 @@ To use the mbed test suite you must:
 * Install the dependencies.
 * Download and install the mbed test suite.
 * Build the mbed project sources.
+* (Optional) you can take advantage of Python's [virtualenv](#virtual-environments-python) to install and run our test tools in virtual environment.
 
 ## End to end example
 This end to end example shows how to install and use Greentea with an example mbed repository.
 Example will assume that you:
-* Have one mbed board connected to your PC over USB. In our case it will be one Freescale [```K64F```](https://developer.mbed.org/platforms/FRDM-K64F/) board.
-* Installed [GNU toolchain for ARM Cortex-M](https://launchpad.net/gcc-arm-embedded).
-* Installed [Git](https://git-scm.com/downloads)
-* Installed [Python 2.7](https://www.python.org/download/releases/2.7/).
+* Have one mbed board connected to your PC over USB. In our case it will be one [Freescale K64F](https://developer.mbed.org/platforms/FRDM-K64F/) board.
+* Installed toolchain for ARM Cortex-M: [GCC ARM Embedded v4.9.3](https://launchpad.net/gcc-arm-embedded).
+* Installed source control client: [Git](https://git-scm.com/downloads).
+* Installed Python: [Python 2.7.11](https://www.python.org/download/releases/2.7/).
+* Installed build tools: [yotta](https://github.com/ARMmbed/yotta):
+* You will need connection to Internet.
 
-Install [```yotta```](https://github.com/ARMmbed/yotta):
+### Dependencies installation procedure
+
+* Installing ```yotta``` build system:
 ```
 $ pip install yotta --upgrade
 ```
-Installing Greentea tools:
+* Installing ```Greentea``` test automation tools:
 ```
 $ pip install mbed-greentea --upgrade
 ```
-Create a local clone of the [```mbed-drivers```](https://github.com/ARMmbed/mbed-drivers) repository.
+* Create a local clone of the GitHub [mbed-drivers](https://github.com/ARMmbed/mbed-drivers) repository.
+
+### Example test procedure walk-through
+
+Test tools installation should be completed already. Now we will show how we can test ```mbed-drivers``` repository using ```Greentea``` automates test tools:
+
+* Go to your working directory and clone ```mbed-drivers``` repository:
 ```
-$ cd some_dir
 $ git clone https://github.com/ARMmbed/mbed-drivers.git
 $ cd mbed-drivers
 ```
-Make sure your board is compatible with ```K64F``` yotta targets:
-```
+* (Optional) Make sure your mbed device is compatible with available ```K64F``` yotta targets:
+```bash
 $ yotta --plain search -k mbed-target:k64f target --short
 frdm-k64f-gcc 0.2.0: Official mbed build target for the mbed frdm-k64f development board.
 frdm-k64f-armcc 0.1.4: Official mbed build target for the mbed frdm-k64f development board, using the armcc toolchain.
-
-additional results from https://yotta-private.herokuapp.com:
 ```
-Set the yotta build target to ```frdm-k64f-gcc```:
+
+* Set the ```yotta``` build [target](http://yottadocs.mbed.com/tutorial/targets.html) to ```frdm-k64f-gcc```:
 ```
 $ yotta target frdm-k64f-gcc
 ```
-Build the ```mbed-drivers``` module with yotta (note that Greentea can do this for you also automatically):
+* Build the ```mbed-drivers``` module with yotta (note that ```Greentea``` can do this for you also automatically):
 ```
 $ yotta build
 ```
-List the built test cases:
-```
+* List the built test cases:
+```bash
 $ mbedgt --list
-mbedgt: available tests for built targets, location '/home/some_dir/'
+mbedgt: available tests for built targets, location 'c:\Work\mbed-drivers\build'
         target 'frdm-k64f-gcc':
-        test 'mbed-drivers-test-serial_interrupt'
-        test 'mbed-drivers-test-blinky'
-        test 'mbed-drivers-test-div'
-...
-        test 'mbed-drivers-test-sleep_timeout'
+        test 'mbed-drivers-test-c_strings'
+        test 'mbed-drivers-test-dev_null'
+        test 'mbed-drivers-test-echo'
+        test 'mbed-drivers-test-generic_tests'
+        test 'mbed-drivers-test-rtc'
+        test 'mbed-drivers-test-stl_features'
+        test 'mbed-drivers-test-ticker'
+        test 'mbed-drivers-test-ticker_2'
         test 'mbed-drivers-test-ticker_3'
-        test 'mbed-drivers-test-detect'
+        test 'mbed-drivers-test-timeout'
+        test 'mbed-drivers-test-wait_us'
 ```
-And finally - test (```-V``` is used to activate test case verbose mode):
+* And finally - test (```-V``` is used to activate test case verbose mode):
 ```
-$ mbedgt -V
-
-mbedgt: checking for yotta target in current directory
-        reason: no --target switch set
-mbedgt: checking yotta target in current directory
-        calling yotta: yotta --plain target
-mbedgt: assuming default target as 'frdm-k64f-gcc'
-mbedgt: detecting connected mbed-enabled devices...
-mbedgt: detected 3 devices
-        detected 'K64F' -> 'K64F[0]', console at 'COM160', mounted at 'E:', target id '024002031E031E6AE3FFE3D2'
+$ mbedgt -VS
 ...
-mbedgt: running 20 tests for target 'frdm-k64f-gcc' and platform 'K64F'
-        running host test...
-        test 'mbed-drivers-test-serial_interrupt' .............................................. OK in 6.16 sec
-        running host test...
-        test 'mbed-drivers-test-blinky' ........................................................ OK in 4.42 sec
-        running host test...
-        test 'mbed-drivers-test-div' ........................................................... OK in 1.41 sec
-...
-mbedgt: test report:
-+---------------+---------------+------------------------------------+--------+--------------------+-------------+
-| target        | platform_name | test                               | result | elapsed_time (sec) | copy_method |
-+---------------+---------------+------------------------------------+--------+--------------------+-------------+
-| frdm-k64f-gcc | K64F          | mbed-drivers-test-serial_interrupt | OK     | 6.16               | shell       |
-| frdm-k64f-gcc | K64F          | mbed-drivers-test-blinky           | OK     | 4.42               | shell       |
-| frdm-k64f-gcc | K64F          | mbed-drivers-test-div              | OK     | 1.41               | shell       |
-| frdm-k64f-gcc | K64F          | mbed-drivers-test-dev_null         | OK     | 3.5                | shell       |
-| frdm-k64f-gcc | K64F          | mbed-drivers-test-stdio            | OK     | 0.74               | shell       |
-| frdm-k64f-gcc | K64F          | mbed-drivers-test-sleep_timeout    | OK     | 3.38               | shell       |
-| frdm-k64f-gcc | K64F          | mbed-drivers-test-ticker           | OK     | 11.38              | shell       |
-| frdm-k64f-gcc | K64F          | mbed-drivers-test-rtc              | OK     | 4.55               | shell       |
-| frdm-k64f-gcc | K64F          | mbed-drivers-test-cstring          | FAIL   | 1.39               | shell       |
-| frdm-k64f-gcc | K64F          | mbed-drivers-test-cpp              | OK     | 1.34               | shell       |
-| frdm-k64f-gcc | K64F          | mbed-drivers-test-timeout          | OK     | 11.55              | shell       |
-| frdm-k64f-gcc | K64F          | mbed-drivers-test-basic            | OK     | 1.37               | shell       |
-| frdm-k64f-gcc | K64F          | mbed-drivers-test-ticker_3         | OK     | 11.38              | shell       |
-| frdm-k64f-gcc | K64F          | mbed-drivers-test-ticker_2         | OK     | 11.38              | shell       |
-| frdm-k64f-gcc | K64F          | mbed-drivers-test-heap_and_stack   | OK     | 1.39               | shell       |
-| frdm-k64f-gcc | K64F          | mbed-drivers-test-hello            | OK     | 0.37               | shell       |
-| frdm-k64f-gcc | K64F          | mbed-drivers-test-time_us          | OK     | 11.37              | shell       |
-| frdm-k64f-gcc | K64F          | mbed-drivers-test-stl              | OK     | 1.36               | shell       |
-| frdm-k64f-gcc | K64F          | mbed-drivers-test-echo             | OK     | 6.33               | shell       |
-| frdm-k64f-gcc | K64F          | mbed-drivers-test-detect           | OK     | 0.47               | shell       |
-+---------------+---------------+------------------------------------+--------+--------------------+-------------+
-
-Result: 1 FAIL / 19 OK
-Completed in 269.49 sec
+[1458047568.17][HTST][INF] No events in queue
+[1458047568.17][HTST][INF] stopped consuming events
+[1458047568.17][HTST][INF] host test result() call skipped, received: True
+[1458047568.17][HTST][WRN] missing __exit event from DUT
+[1458047568.17][HTST][INF] calling blocking teardown()
+[1458047568.17][HTST][INF] teardown() finished
+[1458047568.17][HTST][INF] {{result;success}}
+mbedgt: checking for GCOV data...
+mbedgt: mbed-host-test-runner: stopped
+mbedgt: mbed-host-test-runner: returned 'OK'
+mbedgt: test on hardware with target id: 0240000033514e450041500585d40043e981000097969900
+mbedgt: test suite 'mbed-drivers-test-ticker' ........................................................ OK in 21.20 sec
+        test case: 'Timers: 2 x tickers' ............................................................. OK in 11.03 sec
+mbedgt: test case summary: 1 pass, 0 failures
+mbedgt: all tests finished!
+mbedgt: shuffle seed: 0.3028454009
+mbedgt: test suite report:
++---------------+---------------+---------------------------------+--------+--------------------+-------------+
+| target        | platform_name | test suite                      | result | elapsed_time (sec) | copy_method |
++---------------+---------------+---------------------------------+--------+--------------------+-------------+
+| frdm-k64f-gcc | K64F          | mbed-drivers-test-c_strings     | FAIL   | 12.77              | shell       |
+| frdm-k64f-gcc | K64F          | mbed-drivers-test-dev_null      | OK     | 11.58              | shell       |
+| frdm-k64f-gcc | K64F          | mbed-drivers-test-echo          | FAIL   | 19.96              | shell       |
+| frdm-k64f-gcc | K64F          | mbed-drivers-test-generic_tests | OK     | 10.99              | shell       |
+| frdm-k64f-gcc | K64F          | mbed-drivers-test-rtc           | OK     | 21.0               | shell       |
+| frdm-k64f-gcc | K64F          | mbed-drivers-test-stl_features  | OK     | 11.73              | shell       |
+| frdm-k64f-gcc | K64F          | mbed-drivers-test-ticker        | OK     | 21.2               | shell       |
+| frdm-k64f-gcc | K64F          | mbed-drivers-test-ticker_2      | OK     | 21.18              | shell       |
+| frdm-k64f-gcc | K64F          | mbed-drivers-test-ticker_3      | OK     | 21.21              | shell       |
+| frdm-k64f-gcc | K64F          | mbed-drivers-test-timeout       | OK     | 21.49              | shell       |
+| frdm-k64f-gcc | K64F          | mbed-drivers-test-wait_us       | OK     | 20.14              | shell       |
++---------------+---------------+---------------------------------+--------+--------------------+-------------+
+mbedgt: test suite results: 2 FAIL / 9 OK
+mbedgt: test case report:
++---------------+---------------+---------------------------------+-------------------------------------+--------+--------+--------+--------------------+
+| target        | platform_name | test suite                      | test case                           | passed | failed | result | elapsed_time (sec) |
++---------------+---------------+---------------------------------+-------------------------------------+--------+--------+--------+--------------------+
+| frdm-k64f-gcc | K64F          | mbed-drivers-test-c_strings     | C strings: %e %E float formatting   | 1      | 0      | OK     | 0.07               |
+| frdm-k64f-gcc | K64F          | mbed-drivers-test-c_strings     | C strings: %f %f float formatting   | 0      | 1      | FAIL   | 0.3                |
+| frdm-k64f-gcc | K64F          | mbed-drivers-test-c_strings     | C strings: %g %g float formatting   | 1      | 0      | OK     | 0.06               |
+| frdm-k64f-gcc | K64F          | mbed-drivers-test-c_strings     | C strings: %i %d integer formatting | 1      | 0      | OK     | 0.06               |
+| frdm-k64f-gcc | K64F          | mbed-drivers-test-c_strings     | C strings: %u %d integer formatting | 1      | 0      | OK     | 0.06               |
+| frdm-k64f-gcc | K64F          | mbed-drivers-test-c_strings     | C strings: %x %E integer formatting | 1      | 0      | OK     | 0.07               |
+| frdm-k64f-gcc | K64F          | mbed-drivers-test-c_strings     | C strings: strpbrk                  | 1      | 0      | OK     | 0.04               |
+| frdm-k64f-gcc | K64F          | mbed-drivers-test-c_strings     | C strings: strtok                   | 1      | 0      | OK     | 0.05               |
+| frdm-k64f-gcc | K64F          | mbed-drivers-test-dev_null      | dev_null                            | 1      | 0      | OK     | 11.58              |
+| frdm-k64f-gcc | K64F          | mbed-drivers-test-echo          | Echo server: x16                    | 1      | 0      | OK     | 1.6                |
+| frdm-k64f-gcc | K64F          | mbed-drivers-test-echo          | Echo server: x32                    | 0      | 0      | ERROR  | 0.0                |
+| frdm-k64f-gcc | K64F          | mbed-drivers-test-generic_tests | Basic                               | 1      | 0      | OK     | 0.03               |
+| frdm-k64f-gcc | K64F          | mbed-drivers-test-generic_tests | Blinky                              | 1      | 0      | OK     | 0.04               |
+| frdm-k64f-gcc | K64F          | mbed-drivers-test-generic_tests | C++ heap                            | 1      | 0      | OK     | 0.1                |
+| frdm-k64f-gcc | K64F          | mbed-drivers-test-generic_tests | C++ stack                           | 1      | 0      | OK     | 0.15               |
+| frdm-k64f-gcc | K64F          | mbed-drivers-test-rtc           | RTC strftime                        | 1      | 0      | OK     | 10.43              |
+| frdm-k64f-gcc | K64F          | mbed-drivers-test-stl_features  | STL std::equal                      | 1      | 0      | OK     | 0.04               |
+| frdm-k64f-gcc | K64F          | mbed-drivers-test-stl_features  | STL std::sort abs                   | 1      | 0      | OK     | 0.03               |
+| frdm-k64f-gcc | K64F          | mbed-drivers-test-stl_features  | STL std::sort greater               | 1      | 0      | OK     | 0.05               |
+| frdm-k64f-gcc | K64F          | mbed-drivers-test-stl_features  | STL std::transform                  | 1      | 0      | OK     | 0.05               |
+| frdm-k64f-gcc | K64F          | mbed-drivers-test-ticker        | Timers: 2 x tickers                 | 1      | 0      | OK     | 11.03              |
+| frdm-k64f-gcc | K64F          | mbed-drivers-test-ticker_2      | Timers: 1x ticker                   | 1      | 0      | OK     | 11.04              |
+| frdm-k64f-gcc | K64F          | mbed-drivers-test-ticker_3      | Timers: 2x callbacks                | 1      | 0      | OK     | 11.04              |
+| frdm-k64f-gcc | K64F          | mbed-drivers-test-timeout       | Timers: toggle on/off               | 1      | 0      | OK     | 11.25              |
+| frdm-k64f-gcc | K64F          | mbed-drivers-test-wait_us       | Timers: wait_us                     | 1      | 0      | OK     | 10.05              |
++---------------+---------------+---------------------------------+-------------------------------------+--------+--------+--------+--------------------+
+mbedgt: test case results: 1 FAIL / 23 OK / 1 ERROR
+mbedgt: completed in 194.37 sec
+mbedgt: exited with code 2
 ```
 
-## Dependencies
+## mbed test tools detailed list of dependencies
 
-Please install the following:
-
-* [Python](https://www.python.org/downloads/). If you do not have Python installed already, we recommend [version 2.7.9](https://www.python.org/downloads/release/python-279/). You'll need to add the following modules:
-
-	* [Pip](https://pypi.python.org/pypi/pip). Pip comes bundled with some Python versions; run ``$ pip --version`` to see if you already have it.
-
-	* [setuptools](https://pythonhosted.org/an_example_pypi_project/setuptools.html) to install dependencies.
-
-	* cryptography (install using ``pip``).
-
-	* hgapi (install using ``pip``).
-
-	* colorama (install using ``pip``).
-
-	* PyGithub (install using ``pip``).
-
-	* semantic_version==2.4.1 (install using ``pip``) - note that it requires [Microsoft Visual C++ 9.0](http://www.microsoft.com/en-gb/download/details.aspx?id=44266).
-
-	* project-generator==0.5.7 (install using ``pip``).
-
-	* pyOCD (install using ``pip``).
-
-* The ``cp`` shell command must be available to flash certain boards. It is sometimes available by default, for example on Linux, or you can install the [Git command line tools](https://github.com/github/hub).
-
-* [Grep](http://gnuwin32.sourceforge.net/packages/grep.htm) and [cat](http://gnuwin32.sourceforge.net/packages/coreutils.htm).
-
+* [Python](https://www.python.org/downloads/). If you do not have Python installed already, we recommend [version 2.7.11](https://www.python.org/downloads/release/python-2711/). You'll need to add the following modules:
+  * [Pip](https://pypi.python.org/pypi/pip). Pip comes bundled with some Python versions; run ``$ pip --version`` to see if you already have it.
+  * [setuptools](https://pythonhosted.org/an_example_pypi_project/setuptools.html) to install dependencies.
 * [yotta](https://github.com/ARMmbed/yotta): used to build tests from the mbed SDK. Please note that **yotta has its own set of dependencies**, listed in the [installation instructions](http://armmbed.github.io/yotta/#installing-on-windows).
-
 * If your OS is Windows, please follow the installation instructions [for the serial port driver](https://developer.mbed.org/handbook/Windows-serial-configuration).
-
 * The mbed OS module ```mbed-drivers```. It is available [on GitHub](https://github.com/ARMmbed/mbed-drivers) but you can use yotta to grab it - we’ll see how later.
+* (Optional) The ``cp`` shell command must be available to flash certain boards. It is sometimes available by default, for example on Linux, or you can install the [Git command line tools](https://github.com/github/hub).
 
-* mbed-ls: installation instructions can be found [in the repository](https://github.com/ARMmbed/mbed-ls#installation-from-python-sources).
-
-* mbed-host-tests: installation instructions can be found [in the respository](https://github.com/ARMmbed/mbed-host-tests#installation-from-python-sources).
-
-To check whether the mbed dependencies exist on your machine:
+To check whether the mbed test tools dependencies exist on your machine:
 
 ```
-pip freeze | grep mbed
-mbed-host-tests==0.1.4
-mbed-ls==0.1.5
+$ pip freeze | grep mbed
+mbed-greentea==0.2.6
+mbed-host-tests==0.2.4
+mbed-ls==0.2.1
 ```
 
 ## Installing Greentea
+
 ### Installation from PyPI (Python Package Index)
 
 The ```mbed-greentea``` module is redistributed via PyPI. We recommend you use install it with [application pip](https://pip.pypa.io/en/latest/installing.html#install-pip).
 
 ```
-$ pip install mbed-greentea
+$ pip install mbed-greentea --upgrade
 ```
 
 **Note:** Python 2.7.9 and later (on the Python 2 series), and Python 3.4 and later include pip by default, so you may have pip already.
 
 ### Installation from Python sources
+
 To install the mbed test suite, first clone the `greentea` repository:
 
 ```
-$ git clone <link-to-greentea-repo>
+$ git clone https://github.com/ARMmbed/greentea.git
 ```
 
 Change the directory to the `greentea` directory:
@@ -325,19 +281,89 @@ $ mbedgt --help
 Usage: mbedgt-script.py [options]
 
 This automated test script is used to test mbed SDK 3.0 on mbed-enabled
-deviecs with support from yotta build tool
+devices with support from yotta build tool
 
 Options:
   -h, --help            show this help message and exit
-.
-.
+```
+
+### Virtual Environments (Python)
+
+You may already recognize that out test tools are mainly written in Python (2.7). If your project / Continuous Integration job is using Python tools and Python packages extensively you may find that installing our test tools may cause Python dependencies collision. To avoid unnecessary hassle and separate packages used by tools and your system you can use virtual environment!
+
+*A Virtual Environment is a tool to keep Python package dependencies required by different projects in separate places, by creating virtual Python environments for them.*
+
+For more details check [Virtual Environments](http://docs.python-guide.org/en/latest/dev/virtualenvs/).
+
+#### How to get and install virtualenv
+
+The simplest way is to just install ```virtualenv``` via ```pip```:
+```
+$ pip install virtualenv
+```
+
+#### Basic Usage
+
+* Create a virtual environment for your project:
+```
+$ cd my_project
+$ virtualenv venv
+```
+
+* To begin using the virtual environment (On Windows), it needs to be activated:
+```bash
+$ venv\Scripts\activate.bat
+```
+
+* To begin using the virtual environment (On Linux), it needs to be activated:
+```bash
+$ source venv/bin/activate
+```
+
+* Install packages as usual, for example:
+```bash
+$ pip install yotta
+$ pip install mbed-greentea
+  pip ...
+```
+
+* If you are done working in the virtual environment (On Windows) for the moment, you can deactivate it:
+```
+$ venv/script/deactivate.bat
+```
+
+* If you are done working in the virtual environment (On Windows) for the moment, you can deactivate it:
+```
+$ source venv/bin/deactivate
+```
+
+#### virtualenv example usage - Windows environment
+Setup virtual environment and install all dependencies:
+```bash
+$ cd my_project
+$ virtualenv venv
+$ venv/script/activate.bat
+
+$ pip install yotta
+$ pip install mbed-greentea
+```
+Call your test procedures and tools using active environment, for example:
+```bash
+$ git clone  https://github.com/ARMmbed/mbed-drivers.git
+$ cd mbed-drivers
+$ yotta target frdm-k64f-gcc
+$ yotta build
+$ mbedgt -VS
+```
+
+Finally deactivate environment and go back to original Python module dependency settings:
+```
+$ venv/script/deactivate.bat
 ```
 
 ## Environment check
 
-At this point you should have all the dependencies and be ready to build the ```mbed-drivers``` and perform automated testing.
-
-Make sure you have installed all of the tools. For example you can list all mbed devices connected to your host computer.
+At this point you should have all the dependencies and be ready to build the ```mbed-drivers``` and perform automated testing. Make sure you have installed all of the tools. For example you can list all mbed devices connected to your host computer.
 Run command
 ```
 $ mbedls
@@ -345,14 +371,14 @@ $ mbedls
 and you'll get:
 
 ```
-+---------------------+-------------------+-------------------+--------------------------------+
-|platform_name        |mount_point        |serial_port        |target_id                       |
-+---------------------+-------------------+-------------------+--------------------------------+
-|K64F                 |E:                 |COM61              |02400203D94B0E7724B7F3CF        |
-+---------------------+-------------------+-------------------+--------------------------------+
++---------------+----------------------+-------------+-------------+-------------------------------+-----------------+
+| platform_name | platform_name_unique | mount_point | serial_port | target_id                     | daplink_version |
++---------------+----------------------+-------------+-------------+-------------------------------+-----------------+
+| K64F          | K64F[0]              | E:          | COM201      | 024002265f1b1e5400000a2c2e3ec | 0226            |
++---------------+----------------------+-------------+-------------+-------------------------------+-----------------+
 ```
 
-## Building the mbed-drivers for the target
+## Building the mbed-drivers for yotta target target
 
 You need to build the ```mbed-drivers``` for the target you're testing. We'll use the **Freescale FRDM-K64F** as an example.
 
@@ -380,28 +406,51 @@ Start by examining the current configuration using ``mbedgt`` (which itself uses
 
 ```
 $ mbedgt --config
+Usage: mbedls-script.py [options]
+
+mbedls-script.py: error: no such option: --config
+
+[master] C:\Work\mbed-drivers> mbedgt --config
+mbedgt: checking for yotta target in current directory
+        reason: no --target switch set
+mbedgt: checking yotta target in current directory
+        calling yotta: yotta --plain target
+mbedgt: assuming default target as 'frdm-k64f-gcc'
+mbedgt: detecting connected mbed-enabled devices...
+mbedgt: detected 1 device
+        detected 'K64F' -> 'K64F[0]', console at 'COM201', mounted at 'E:', target id '024002265f1b1e54000000000000000000000000a2c2e3ec'
+mbedgt: local yotta target search in './yotta_targets' for compatible mbed-target 'k64f'
+        inside './yotta_targets\frdm-k64f-gcc' found compatible target 'frdm-k64f-gcc'
+mbedgt: processing 'frdm-k64f-gcc' yotta target compatible platforms...
+mbedgt: processing 'K64F' platform...
+mbedgt: using platform 'K64F' for test:
+        target_id_mbed_htm = '024002265f1b1e54000000000000000000000000a2c2e3ec'
+        daplink_url = 'http://mbed.org/device/?code=024002265f1b1e54000000000000000000000000a2c2e3ec'
+        mount_point = 'E:'
+        daplink_version = '0226'
+        target_id = '024002265f1b1e54000000000000000000000000a2c2e3ec'
+        serial_port = 'COM201'
+        target_id_usb_id = '024002265f1b1e54000000000000000000000000a2c2e3ec'
+        platform_name = 'K64F'
+        platform_name_unique = 'K64F[0]'
+        daplink_build = 'Aug 24 2015 17:06:30'
+        daplink_git_local_mods = 'Yes'
+        daplink_git_commit_sha = '27a236b9fe39c674a703c5c89655fbd26b8e27e1'
+        use 0 instances for testing
+
+Example: execute 'mbedgt --target=TARGET_NAME' to start testing for TARGET_NAME target
+mbedgt: completed in 1.05 sec
 ```
 
-You'll see:
+There are at least two compatible with yotta Freescale K64F platform targets:
+* ```frdm-k64f-gcc``` - Target for Freescale K64F platform compiled with the GCC cross-compiler, see [here](http://yotta.mbed.com/#/target/frdm-k64f-gcc/2.0.0).
+* ```frdm-k64f-armcc``` - Target for Freescale K64F platform compiled with the Keil armcc cross-compiler, see [here](http://yotta.mbed.com/#/target/frdm-k64f-armcc/2.0.0).
 
-```
-mbed-ls: detecting connected mbed-enabled devices...
-mbed-ls: detected K64F, console at: COM61, mounted at: E:
-        got yotta target 'frdm-k64f-gcc'
-        got yotta target 'frdm-k64f-armcc'
-```
+For simplicity, only the [GCC ARM Embedded](https://launchpad.net/gcc-arm-embedded) compatible targets are described below.
 
-```mbedgt``` proposed a few supported yotta targets:
-
-* ```frdm-k64f-gcc``` - Freescale K64F platform compiled with the GCC cross-compiler.
-* ```frdm-k64f-armcc``` - Freescale K64F platform compiled with the Keil armcc cross-compiler.
-
-For simplicity, only the GCC targets are described below.
-
-You can invoke yotta from the test suite to build the targets. In this example:
-
-* ```--target``` is used to specify the targets that the test suite will interact with.
-* The option ```-O``` is used to tell the test suite to *build* sources and tests, but not to *run* the tests.
+You can invoke ```yotta``` from within ```mbedgt``` (Greentea) to build the targets. In this example:
+* ```--target``` option is used to specify the targets that the test suite will interact with.
+* The option ```-S``` is used to tell the test suite to *build* sources and tests, but not to *run* the tests.
 
 ```
 $ mbedgt --target=frdm-k64f-gcc -O
@@ -410,24 +459,39 @@ $ mbedgt --target=frdm-k64f-gcc -O
 You'll get:
 
 ```
-mbed-ls: detecting connected mbed-enabled devices...
-mbed-ls: detected K64F, console at: COM61, mounted at: E:
-        got yotta target 'frdm-k64f-gcc'
-mbed-ls: calling yotta to build your sources and tests
-warning: uvisor-lib has invalid module.json:
-info: generate for target: frdm-k64f-gcc 0.0.10 at c:\temp\xxx\mbed-sdk-private\yotta_targets\frdm-k64f-gcc
-mbedOS.cmake included
-GCC-C.cmake included
-mbedOS-GNU-C.cmake included
-GCC-GXX.cmake included
-mbedOS-GNU-CXX.cmake included
-GCC version is: 4.8.4
-GNU-ASM.cmake included
-GNU-ASM.cmake included
+mbedgt: detecting connected mbed-enabled devices...
+mbedgt: detected 1 device
+        detected 'K64F' -> 'K64F[0]', console at 'COM201', mounted at 'E:', target id '024002265f1b1e54000000000000000000000000a2c2e3ec'
+mbedgt: local yotta target search in './yotta_targets' for compatible mbed-target 'k64f'
+        inside './yotta_targets\frdm-k64f-gcc' found compatible target 'frdm-k64f-gcc'
+mbedgt: processing 'frdm-k64f-gcc' yotta target compatible platforms...
+mbedgt: processing 'K64F' platform...
+mbedgt: using platform 'K64F' for test:
+        target_id_mbed_htm = '024002265f1b1e54000000000000000000000000a2c2e3ec'
+        daplink_url = 'http://mbed.org/device/?code=024002265f1b1e54000000000000000000000000a2c2e3ec'
+        mount_point = 'E:'
+        daplink_version = '0226'
+        target_id = '024002265f1b1e54000000000000000000000000a2c2e3ec'
+        serial_port = 'COM201'
+        target_id_usb_id = '024002265f1b1e54000000000000000000000000a2c2e3ec'
+        platform_name = 'K64F'
+        platform_name_unique = 'K64F[0]'
+        daplink_build = 'Aug 24 2015 17:06:30'
+        daplink_git_local_mods = 'Yes'
+        daplink_git_commit_sha = '27a236b9fe39c674a703c5c89655fbd26b8e27e1'
+mbedgt: building your sources and tests with yotta...
+        calling yotta: yotta --target=frdm-k64f-gcc,* build
+info: generate for target: frdm-k64f-gcc 2.0.0 at c:\Work\mbed-drivers\yotta_targets\frdm-k64f-gcc
+
+GCC version is: 4.9.3
 -- Configuring done
 -- Generating done
--- Build files have been written to: C:/temp/xxx/mbed-sdk-private/build/frdm-k64f-gcc
+-- Build files have been written to: C:/Work/mbed-drivers/build/frdm-k64f-gcc
 ninja: no work to do.
+mbedgt: yotta build for target 'frdm-k64f-gcc' was successful
+        use 0 instances for testing
+mbedgt: all tests finished!
+mbedgt: completed in 5.92 sec
 ```
 
 Now that the tests are built, the test suite can be called again to run the tests. From the same directory, invoke ```mbedgt``` again as shown below (this is the same command, but without the -O option):
@@ -435,48 +499,12 @@ Now that the tests are built, the test suite can be called again to run the test
 ```
 $ mbedgt --target=frdm-k64f-gcc
 ```
-or if you want to be more verbose:
+or if you want to be more verbose (use verbose option ```-V```):
 ```
 $ mbedgt -V --target=frdm-k64f-gcc
 ```
 
-You'll see:
-
-```
-mbed-ls: detecting connected mbed-enabled devices...
-mbed-ls: detected K64F, console at: COM61, mounted at: E:
-        got yotta target 'frdm-k64f-gcc'
-mbed-ls: calling yotta to build your sources and tests
-info: generate for target: frdm-k64f-gcc 0.0.10 at c:\temp\xxx\mbed-sdk-private\yotta_targets\frdm-k64f-gcc
-mbedOS.cmake included
-GCC-C.cmake included
-mbedOS-GNU-C.cmake included
-GCC-GXX.cmake included
-mbedOS-GNU-CXX.cmake included
-GCC version is: 4.8.4
-GNU-ASM.cmake included
-GNU-ASM.cmake included
--- Configuring done
--- Generating done
--- Build files have been written to: C:/temp/xxx/mbed-sdk-private/build/frdm-k64f-gcc
-ninja: no work to do.
-mbedgt: running tests...
-        test 'mbed-test-dev_null' .................................................... OK
-        test 'mbed-test-cpp' ......................................................... OK
-        test 'mbed-test-time_us' ..................................................... OK
-        test 'mbed-test-ticker' ...................................................... OK
-        test 'mbed-test-div' ......................................................... OK
-        test 'mbed-test-detect' ...................................................... SKIPPED
-        test 'mbed-test-call_before_main' ............................................ OK
-        test 'mbed-test-basic' ....................................................... OK
-        test 'mbed-test-stdio' ....................................................... OK
-        test 'mbed-test-ticker_3' .................................................... OK
-        test 'mbed-test-ticker_2' .................................................... OK
-        test 'mbed-test-timeout' ..................................................... OK
-        test 'mbed-test-rtc' ......................................................... OK
-        test 'mbed-test-echo' ........................................................ OK
-        test 'mbed-test-hello' ....................................................... OK
-```
+Above command will execute all tests for yotta module you are in, e.g. ```mbed-drivers```.
 
 # Using Greentea with new targets
 When prototyping or developing new port you will find yourself in a situation where your yotta modules are not published (especially targets) and you still want to use Greentea.
@@ -501,6 +529,7 @@ Here two targets are officially compatible with the ```K64F``` target: ``` frdm-
 If you’re working with a target that isn’t officially supported, you’ll have to follow the steps below.
 
 ## Prototyping support
+
 Greentea by default will only allow tests for boards officially supported by a yotta target. This contradicts prototyping and porting workflow. Your workflow may include use of [```yotta link```](http://yottadocs.mbed.com/reference/commands.html#yotta-link) and [```yotta link-target```](http://yottadocs.mbed.com/reference/commands.html#yotta-link-target) commands.
 
 To support these workflows, we’ve created a command line switch ```--map-target``` was added. It adds an extra mapping between mbed board names and supported yotta targets.
@@ -515,7 +544,6 @@ Note:
 
 See example of official yotta target's [target.json]( https://github.com/ARMmbed/target-frdm-k64f-gcc/blob/master/target.json):
 ```json
-...
 "keywords": [
     "mbed-target:k64f",
     "mbed-official",
@@ -523,14 +551,14 @@ See example of official yotta target's [target.json]( https://github.com/ARMmbed
     "frdm-k64f",
     "gcc"
 ],
-...
 ```
 Note that the value ```"mbed-target:k64f"``` is added to mark that this yotta target supports the ```K64F``` board.
 
 ### How to add board-target bindings for Greentea
+
 In your yotta target ```target.json``` file, in the section ```keywords```, add the value: ```mbed-target:<PLATFORM>``` where ```<PLATFORM>``` is the platform’s name in lowercase.
 
-You can check the platform’s name using the ```mbedls``` command:
+* Check the platform’s name using the ```mbedls``` command:
 ```
 $ mbedls
 +--------------+ ...
@@ -540,12 +568,34 @@ $ mbedls
 |LPC1768       | ...
 +--------------+ ...
 ```
-### Prototyping or porting sample workflow
+
+* Search for ```mbed-target``` keyword values in yotta registry from command line:
+
+```bash
+$ $ yotta --plain search -k mbed-target:k64f target
+frdm-k64f-gcc 2.0.0:
+    Official mbed build target for the mbed frdm-k64f development board.
+    mbed-target:k64f, mbed-official, mbed, k64f, frdm-k64f, gcc
+frdm-k64f-armcc 2.0.0:
+    Official mbed build target for the mbed frdm-k64f development board, using the armcc toolchain.
+    mbed-target:k64f, mbed-official, mbed, k64f, frdm-k64f, armcc
+my-target 0.1.4:
+    my target
+target-onsemi-ncs36510-gcc 0.1.0:
+    Official mbed build target for .
+    mbed-official, mbed, onsemi, ncs36510, gcc
+test-target-dep 0.0.2:
+    Test Target Test Dependencies
+    autopulated
+
+additional results from https://yotta-private.herokuapp.com:
+```
+
+### Prototyping or porting - sample workflow
 
 **Note:** This is an example workflow; you may need to add or remove steps for your own workflow.
 
 This example creates a new mbed yotta target, then runs ```mbed-drivers``` tests on it to check that it was ported correctly.
-
 
 * Clone the [```mbed-drivers```](https://github.com/ARMmbed/mbed-drivers) repository
 * Create your new target locally (have a look at [```frdm-k64f-gcc```](https://github.com/ARMmbed/target-frdm-k64f-gcc) as an example, or read the [```target docs here```](http://yottadocs.mbed.com/tutorial/targets.html))
@@ -561,6 +611,7 @@ This example creates a new mbed yotta target, then runs ```mbed-drivers``` tests
 Note that we're now using [config.html](http://yottadocs.mbed.com/reference/config.html) for pin definitions. mbed-hal has a script that processes config definitions into pin definitions, see frdm-k64f targets for an example of how to define these: [target.json](https://github.com/ARMmbed/target-frdm-k64f-gcc/blob/master/target.json#L38))
 
 # Selecting boards for test running
+
 You and tell Greentea which board it can use for test. To do so prepare list of allowed Target IDs and specify this list using ```--use-tids``` command line switch.  The list should be comma separated.
 ```
 $ mbedgt --use-tids 02400203C3423E603EBEC3D8,024002031E031E6AE3FFE3D2
@@ -579,7 +630,7 @@ $ mbedls
 ```
 In this case, one target - the LPC1768 - won’t be tested.
 
-## Switch --use-tids example
+## Option --use-tids example
 We want to run two instances of Greentea and perform test sessions that won’t interfere with each other using two ```K64F``` boards:
 My resources (2 x ```K64F``` boards):
 ```
@@ -606,112 +657,11 @@ $ mbedgt –use-tids 02400203C3423E603EBEC3D8
 ```
 The two instances of Greentea are called at the same time, but since we provide two mutually exclusive subsets of allowed target IDs with switch ```--use-tids``` the two instances will not collide and will not try to access the same ```K64F``` board when testing.
 
-# Digesting test output
-
-We've added a feature for digesting input, which is activated with the ```--digest``` command line switch. Now you can pipe your proprietary test runner’s console output to the test suite or just ```cat``` a file with the test runner’s console output. You can also specify a file name that will be digested as the test runner's console input.
-
-This option allows you to write your own automation where you execute the test runner or just feed the test suite with the test runner’s console output. The test suite parses the console output to determine whether it indicates success or failure, then returns that status to the test environment.
-
-**Note:**
-
-* ```--digest=stdin``` will force ```stdin``` to be the default test suite input.
-
-* ```--digest=filename.txt``` will force ```filename.txt``` file content to be the default test suite input.
-
-The examples below demonstrate the use of the ```--digest``` option. Assume that you have written a test runner in ```bash``` shell scripting, or just collected a bunch of test results in a database and the test console output is available.
-
-To get the mbed test suite's predefined test results, you must scan the console output from the tests.
-
-**Note:** test suite results and tags are encoded between double curly braces. For example, a typical success code looks like this: ```{{success}}{{end}}```.
-
-## Example 1 - digest the default mbed host test runner
-
-You can run mbed host tests with the ```mbed-host-tests``` module, using ```mbedhtrun``` to evaluate the existing test cases' test results (test results are returned to the environment as ```mbedgt``` return codes; the success code is ```0```).
-
-Run:
-
-**Note:**  You may need to change "E" to the correct mount point and "COM61" to the correct serial port mapping for your system. Run the ``mbedls`` command to see the correct values.
-
-```
-$ mbedhtrun -d E: -f ".\build\frdm-k64f-gcc\test\mbed-drivers-test-hello.bin" -p COM61 -C 4 -c default -m K64F | mbedgt --digest=stdin -V
-```
-
-And you'll get:
-
-```
-MBED: Instrumentation: "COM61" and disk: "E:"
-HOST: Copy image onto target...
-HOST: Initialize serial port...
-HOST: Reset target...
-HOST: Property 'timeout' = '5'
-HOST: Property 'host_test_name' = 'hello_auto'
-HOST: Property 'description' = 'Hello World'
-HOST: Property 'test_id' = 'MBED_10'
-HOST: Start test...
-Read 13 bytes:
-Hello World
-
-{{success}}
-{{end}}
-```
-
-```
-$ echo error level is %ERRORLEVEL%
-error level is 0
-```
-
-Note: the test suite detected strings ```{{success}}``` and ```{{end}}``` and concluded that the test result was a success.
-
-## Example 2 - digest directly from file
-
-Create file ```test.txt``` with the below contents.  Make sure the file ends with a newline.
-```
-MBED: Instrumentation: "COM61" and disk: "E:"
-HOST: Copy image onto target...
-HOST: Initialize serial port...
-HOST: Reset target...
-HOST: Property 'timeout' = '5'
-HOST: Property 'host_test_name' = 'hello_auto'
-HOST: Property 'description' = 'Hello World'
-HOST: Property 'test_id' = 'MBED_10'
-HOST: Start test...
-Read 13 bytes:
-Hello World
-
-{{ioerr_disk}}
-{{end}}
-```
-
-Run the ```cat``` command and verify the contents contents above are printed:
-```
-$ cat test.txt
-```
-
-
-And scan for error codes inside the file:
-
-```
-$ mbedgt --digest=./test.txt
-```
-```
-$ echo error level is %ERRORLEVEL%
-error level is 5
-```
-Note: error level ```5``` stands for ```TEST_RESULT_IOERR_DISK```.
-
-## Example 3 - pipe test.txt file content (as in example 2)
-
-```
-$ cat test.txt | mbedgt --digest=stdin
-```
-```
-$ echo error level is %ERRORLEVEL%
-error level is 5
-```
 
 # Additional features
 
 ## Dynamic host test loader
+
 * This feature allows users to point ```greentea``` and (indirectly ```mbedhtrun```) to arbitrary directory (switch ```-e <dir>``` containing new/proprietary host test scripts. Host tests script files are enumerated in ```<dir>``` and registered so they can be used with local module test cases.
 * Not all host tests can be stored with ```mbedhtrun``` package. Some of them may and will be only used locally, for prototyping. Some host tests may just be very module dependent and should not be stored with ``mbedhtrun```.
 * In many cases users will add host tests to their yotta modules preferably under ```/test/host_tests/```module directory.
@@ -720,12 +670,14 @@ error level is 5
 * Feature implementation is [here](https://github.com/ARMmbed/greentea/pull/33)
 
 ## yotta config parse
+
 * Greentea reads ```yotta_config.json``` file to get information regarding current yotta module configuration.
 * Currently ```yotta_config::mbed-os::stdio::default-baud``` setting is read to determine default (interface chip) serial port baudrate. Note that this serial port is usually hooked to mbed's ```stdio```.
 * This feature changes dafault yotta connfiguration baudrate (default-baud) to 115200. All test tool follow this change.
 * Feature implementation is [here](https://github.com/ARMmbed/greentea/pull/41)
 
 ## Local yotta targets scan for mbed-target keywords
+
 * ```yotta search``` command was used to check for compatibility between connected mbed devices and specified (available) yotta targets.
 * New functionality uses locally stored yotta targets (```mymodule/yotta_targets``` directory) to do so and allows user to add yotta registry results with new command line switch ```--yotta-registry```.
 * This method is much faster than yotta registry queries and allows users to work and test off-line.
@@ -746,14 +698,14 @@ error level is 5
 
 You can uninstall the test suite package using ```pip```. List installed packages and filter for the test suite's package name:
 
-```
+```bash
 $ pip freeze | grep mbed-greentea
 mbed-greentea==0.0.5
 ```
 
 Uninstall the test suite package:
 
-```
+```bash
 $ pip uninstall mbed-greentea
 Uninstalling mbed-greentea:
   c:\python27\lib\site-packages\greentea-0.0.5-py2.7.egg
@@ -764,16 +716,6 @@ Proceed (y/n)? Y
   Successfully uninstalled mbed-greentea
 ```
 
-# Commissioning mbed platforms (Linux)
-On Ubuntu/Linux target serial device nodes are created with root permissions by default. Forcing user to run mbedgt as root.
-Create a udev rules file to change permission of the device nodes when they are created.
+# Commissioning mbed platforms
 
-```sh
-$ vi /etc/udev/rules.d/10-mbed-platforms.rules
-```
-
-```sh
-SUBSYSTEMS=="usb", ATTRS{idVendor}=="<target Vendor Id>", ATTRS{idProduct}=="<target Product Id>", MODE:="0666"
-```
-
-Create a line for each type of platform based on their vendor and platform Ids. With this change mbed devices can be used with any user account.
+Please check [Configure mbed-enabled device to work with your host](https://github.com/ARMmbed/mbed-ls#configure-mbed-enabled-device-to-work-with-your-host) if you have problems with mbed device mounting / serial port installation.
