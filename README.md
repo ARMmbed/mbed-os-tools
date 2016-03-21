@@ -515,7 +515,140 @@ mbedgt: test suite report:
 mbedgt: test suite results: 1 OK
 ```
 
-# Writing host tests
+# Writing DUT test suite (slave side)
+
+## DUT test suite - single test case idiom
+
+We can use few methods to structure out test suite and test cases. Simpliest would be to use ```greentea-client``` API and wrap one test case inside out test suite. This way of creating test suite is useful when you want to:
+* write only one test case inside test suite,
+* make example application (example as a test) or
+* when your test suite is calling blocking forever function. For example all types of UDP/TCP servers which run in forever loop are in this category. In this case we do not expect from DUT ```__exit``` event at all and host test should be designed in such a way that it always return result.
+
+### DUT always return
+
+In this example DUT code uses ```greentea-client``` to sync (```GREENTEA_SETUP```) and pass result (```GREENTEA_TESTSUITE_RESULT```) to ```Greentea```. This is very simple example of how you can write tests. Note that in this example test suite only implements one test case. Actually test suite is test case at the same time. Result passed to ```GREENTEA_TESTSUITE_RESULT``` will be at the same time test case result.
+
+* DUT implementation:
+```c++
+#include "greentea-client/test_env.h"
+#include "unity/unity.h"
+
+int main(int, char*[]) {
+
+    bool result = true;
+    GREENTEA_SETUP(15, "default_auto");
+
+    // test case execution + assertions
+
+    GREENTEA_TESTSUITE_RESULT(result);
+    return 0;
+}
+```
+
+### DUT never return
+
+In this example DUT code uses ```greentea-client``` to sync (```GREENTEA_SETUP```) with ```Greentea```. We are not calling ```GREENTEA_TESTSUITE_RESULT(result)``` at any time. In this example host test is responsible for providing test suite result using ```self.notify_complete()``` API or ```self.result()``` function.
+
+You need to write and specify by name your custom host test:
+* DUT side uses second argument of ```GREENTEA_SETUP(timeout, host_test_name)``` function:
+```c++
+GREENTEA_SETUP(15, "wait_us_auto");
+```
+* You need to place your custom host test in ```<module>/test/host_tests``` directory.
+
+
+* DUT implementation using ```my_host_test``` custom host test:
+```c++
+#include "greentea-client/test_env.h"
+#include "unity/unity.h"
+
+void recv() {
+    // receive from client
+}
+
+int main(int, char*[]) {
+
+    Ethernet eth(TCP_SERVER, PORT, recv);
+    GREENTEA_SETUP(15, "my_host_test");
+
+    eth.listen();   // Blocking forever
+
+    return 0;
+}
+```
+
+* Example host test template:
+```python
+from mbed_host_tests import BaseHostTest
+
+class YourCustomHostTest(BaseHostTest):
+
+    name = "my_host_test"   # Host test names used by GREENTEA_CLIENT(..., host_test_name)
+
+    __result = False    # Result in case of timeout!
+
+    def _callback_for_event(self, key, value, timestamp):
+        #
+        # Host test API:
+        #
+        # self.notify_complete(result : bool)
+        #
+        # """! Notify main even loop that host test finished processing
+        #      @param result True for success, False failure. If None - no action in main even loop
+        # """
+        #
+        # self.send_kv(key : string, value : string)
+        #
+        # """! Send Key-Value data to DUT
+        #      @param key Event key
+        #      @param value Event payload
+        # """
+        #
+        # self.log(text : string)
+        #
+        # """! Send log message to main event loop
+        #      @param text log message
+        # """
+
+    def setup(self):
+        # TODO:
+        # * Initialize your resources
+        # * Register callbacks:
+        #
+        # Host test API:
+        #
+        # self.register_callback(event_name, callable, force=False)
+        #
+        # """! Register callback for a specific event (key: event name)
+        #     @param key String with name of the event
+        #     @param callback Callable which will be registered for event "key"
+        #     @param force God mode, if set to True you can add callback on any system event
+        # """
+        pass
+
+    def teardown(self):
+        # Destroy all resources used by host test.
+        # For example open sockets, open files, auxiliary threads and processes.
+        pass
+
+    def result(self):
+        # Returns host test result (True, False or None)
+        # This function will be called when test suite ends (also timeout).
+        # Use when you want to pass result after host state machine stops.
+        return __result
+```
+
+### DUT test suite - using utest (multiple test cases idiom)
+
+* DUT implementation:
+```c++
+#include "greentea-client/test_env.h"
+#include "unity/unity.h"
+#include "utest/utest.h"
+
+```
+
+# Writing host tests (master side)
 When writing a new host test for your module please bear in mind that:
 * You own the host test and you should write it the way so it can coexist with the same host tests ran by other processes such as Continuous Integration systems or other host users.
   * Note: If you work in isolation and your test environment if fully controlled by you (for example you queue all tasks calling host tests, or use global host unique socket port numbers) this rule doesn’t apply to you.
