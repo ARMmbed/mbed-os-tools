@@ -531,14 +531,14 @@ In this example DUT code uses ```greentea-client``` to sync (```GREENTEA_SETUP``
 * DUT implementation:
 ```c++
 #include "greentea-client/test_env.h"
-#include "unity/unity.h"
+#include "unity/unity.h"    // Optional: unity ASSERTs
 
-int main(int, char*[]) {
+int app_start(int, char*[]) {
 
     bool result = true;
     GREENTEA_SETUP(15, "default_auto");
 
-    // test case execution + assertions
+    // test case execution and assertions
 
     GREENTEA_TESTSUITE_RESULT(result);
     return 0;
@@ -555,7 +555,7 @@ You need to write and specify by name your custom host test:
 GREENTEA_SETUP(15, "wait_us_auto");
 ```
 * You need to place your custom host test in ```<module>/test/host_tests``` directory.
-
+  * Do not forget to name host test accordingly. See below example host test ```name``` class member.
 
 * DUT implementation using ```my_host_test``` custom host test:
 ```c++
@@ -566,7 +566,7 @@ void recv() {
     // receive from client
 }
 
-int main(int, char*[]) {
+int app_start(int, char*[]) {
 
     Ethernet eth(TCP_SERVER, PORT, recv);
     GREENTEA_SETUP(15, "my_host_test");
@@ -609,6 +609,7 @@ class YourCustomHostTest(BaseHostTest):
         # """! Send log message to main event loop
         #      @param text log message
         # """
+        pass
 
     def setup(self):
         # TODO:
@@ -646,6 +647,41 @@ class YourCustomHostTest(BaseHostTest):
 #include "unity/unity.h"
 #include "utest/utest.h"
 
+status_t greentea_failure_handler(const Case *const source, const failure_t reason) {
+    // Continue with next test case if it fails
+    greentea_case_failure_abort_handler(source, reason);
+    return STATUS_CONTINUE;
+}
+
+void test_uninitialised_array() {
+    // TEst case code...
+}
+
+void test_repeated_init() {
+    // TEst case code...
+}
+
+void test_data_types() {
+    // TEst case code...
+}
+
+const Case cases[] = {
+    Case("Test uninitialised array", test_uninitialised_array, greentea_failure_handler),
+    Case("Test repeated array initialisation", test_repeated_init, greentea_failure_handler),
+    Case("Test basic data type arrays", test_data_types, greentea_failure_handler)
+    // ...
+};
+
+status_t greentea_setup(const size_t number_of_cases) {
+    GREENTEA_SETUP(5, "default_auto");
+    return greentea_test_setup_handler(number_of_cases);
+}
+
+int app_start(int, char*[]) {
+
+   // Run the test cases
+    Harness::run(specification);
+}
 ```
 
 # Writing host tests (master side)
