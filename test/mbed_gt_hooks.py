@@ -14,12 +14,15 @@ limitations under the License.
 """
 
 import unittest
+from mock import patch
 from mbed_greentea.mbed_greentea_hooks import GreenteaCliTestHook
+from mbed_greentea.mbed_greentea_hooks import LcovHook
 
 class GreenteaCliTestHookTest(unittest.TestCase):
 
     def setUp(self):
         self.cli_hooks = GreenteaCliTestHook('test_hook', 'some command')
+        self.lcov_hooks = LcovHook('test_hook', 'some command')
 
     def tearDown(self):
         pass
@@ -100,6 +103,29 @@ class GreenteaCliTestHookTest(unittest.TestCase):
                 "yotta_target_name" : 'frdm-k64f-gcc',
             }))
 
+    @patch('os.path.exists')
+    @patch('os.path.getsize')
+    def test_check_if_file_exists(self, pathGetsize_mock, pathExists_mock):
+        pathExists_mock.return_value = True
+        self.assertEqual('-a ./build/frdm-k64f-gcc.info',
+            self.lcov_hooks.check_if_file_exists_or_is_empty('(-a <<./build/frdm-k64f-gcc.info>>)'))
+
+        pathExists_mock.return_value = False
+        self.assertEqual('',
+            self.lcov_hooks.check_if_file_exists_or_is_empty('(-a <<./build/frdm-k64f-gcc.info>>)'))
+
+    @patch('os.path.exists')
+    @patch('os.path.getsize')
+    def test_check_if_file_is_empty(self, pathGetsize_mock, pathExists_mock):
+        pathExists_mock.return_value = True
+        pathGetsize_mock.return_value = 1
+        self.assertEqual('-a ./build/frdm-k64f-gcc.info',
+            self.lcov_hooks.check_if_file_exists_or_is_empty('(-a <<./build/frdm-k64f-gcc.info>>)'))
+
+        pathExists_mock.return_value = True
+        pathGetsize_mock.return_value = 0
+        self.assertEqual('',
+            self.lcov_hooks.check_if_file_exists_or_is_empty('(-a <<./build/frdm-k64f-gcc.info>>)'))
 
 if __name__ == '__main__':
     unittest.main()
