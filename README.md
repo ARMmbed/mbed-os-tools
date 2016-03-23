@@ -3,457 +3,824 @@
 [![PyPI version](https://badge.fury.io/py/mbed-host-tests.svg)](https://badge.fury.io/py/mbed-host-tests)
 
 # Table of contents
+
+* [Table of contents](#table-of-contents)
 * [mbed-host-tests](#mbed-host-tests)
-  * [Interaction between the test runner and the host test](#interaction-between-the-test-runner-and-the-host-test)
+  * [Key-value protocol overview](#key-value-protocol-overview)
+  * [Design draft](#design-draft)
+* [Greentea client API](#greentea-client-api)
+* [Key-value transport protocol sequence](#key-value-transport-protocol-sequence)
+  * [Handshake](#handshake)
+  * [Preamble exchange](#preamble-exchange)
+  * [Event exchange](#event-exchange)
+* [DUT - host test case workflow](#dut---host-test-case-workflow)
+  * [DUT implementation](#dut-implementation)
+  * [Example of corresponding host test](#example-of-corresponding-host-test)
+* [Host test examples](#host-test-examples)
+  * [Return result after __exit](#return-result-after-__exit)
 * [Writing host tests](#writing-host-tests)
-* [The decoupled module](#the-decoupled-module)
-  * [Module responsibilities](#module-responsibilities)
-  * [Module structure](#module-structure)
-  * [Host test class structure](#host-test-class-structure)
-* [Enumeration of host tests](#enumeration-of-host-tests)
-* [Example of the CLI version of the host test's DefaultTestSelector supervisor](#example-of-the-cli-version-of-the-host-tests-defaulttestselector-supervisor)
-  * [Installation from PyPI (Python Package Index)](#installation-from-pypi-python-package-index)
-  * [Installation from Python sources](#installation-from-python-sources)
-* [mbedflsh - supporting command line tool for mbed flashing](#mbedflsh---supporting-command-line-tool-for-mbed-flashing)
-  * [Example - Default copy method (shell)](#example---default-copy-method-shell)
-  * [Example - selecting other available copy method](#example---selecting-other-available-copy-method)
-  * [mbedflsh command line switches](#mbedflsh-command-line-switches)
+  * [Callbacks](#callbacks)
+    * [Callback registration in setup() method](#callback-registration-in-setup-method)
+    * [Callback decorator definition](#callback-decorator-definition)
+    * [Parsing text received from DUT (line by line)](#parsing-text-received-from-dut-line-by-line)
+      * [Before Greentea v0.2.0](#before-greentea-v020)
+      * [Using __rdx_line event](#using-__rdx_line-event)
+  * [ ```htrun``` new log format:](#-htrun-new-log-format)
+    * [Log example](#log-example)
 
 # mbed-host-tests
 
-mbed's test suite (codenamed Greentea) supports the *test supervisor* concept. This concept is realised by a separate Python script called "host test", which is executed in parallel with the test runner (a binary running on the target hardware) to monitor the test execution's progress or to control the test flow (interaction with the mbed device under test - MUT). The host test is also responsible for grabbing the test result, or deducing it from the test runner's behaviour.
+mbed's test suite (codenamed ```Greentea```) supports the *test supervisor* concept. This concept is realized by this module. ```mbed-host-tests``` is a collection of host tests. Host test is script written in Python, which is executed in parallel with the test suite runner (a binary running on the target hardware / device under test) to monitor the test execution's progress or to control the test flow (interaction with the mbed device under test - DUT). The host test is also responsible for grabbing the test result, or deducing it from the test runner's behavior.
 
-The basic host test only monitors the device's default serial port (the serial console or - in the future - console communication channel) for test result prints returned by the test runner in a specific and unique format. In other cases, a host test can, for example, judge from the test runner's console output if the test passed or failed. It all depends on the test itself: In some cases the host test can be a TCP server echoing packets from the test runner and judging packet loss. In other cases it can just check whether values returned from an accelerometer are actually valid (sane).
+Key-value protocol was developed and is used to provide communication layer between DUT (device under test) and host computer. Key-value protocol defined host computer as master and DUT as slave.
+* Slave side APIs and key-value protocol implementation is encapsulated in [greentea-client](https://github.com/ARMmbed/greentea-client) module. ```greentea-client``` is also available as [yotta module](https://yotta.mbed.com/#/module/greentea-client/1.0.0).
+* Master side APIs and key-value protocol is encapsulated in  ```mbed-host-tests```.
 
-# Writing host tests
-When writing a new host test for your module please bear in mind that:
-* You own the host test and you should write it the way so it can coexist with the same host tests ran by other processes such as Continuous Integration  systems, other host users etc.
-  * Note: If you work in isolation and your test environment if fully controlled by you (for example you queue all tasks calling host tests, or use global host unique socket port numbers) this rule doesn’t apply to you.
-* When writing host test using OS resources such as sockets, files, serial ports, peripheral devices like multi-meters /scopes etc. remember that those resources are indivisible!
-  * For example if you hardcode in your host test UDP port 32123 and use it for UDP server implementation  of your host test bear in mind that this port may be already used. It is your responsibility to react for this event and implement means to overcome it (if possible).
-So you would rather do somethins like this in your host test:
-```python
-import socket
+```mbed-host-tests``` responsibilities are:
+* Flash mbed device with given binary.
+* Reset mbed device after flashing to start test suite execution.
+* Use key-value protocol to handshake with device and make sure correct host test script is executed to supervise test suite execution.
+* Run key-value protocol state machine and execute event callbacks.
+* Monitor serial port traffic to parse valid key-value protocol events.
+* Make decision if test test suite passed / failed / returned error.
+* Provide command line tool interface, command: ```mbedhtrun``` after module installation (on host).
+* Provide few basic host test implementations which can be used out of the box for test development. For example the basic host test (called ```default``` or ```default_auto```) just parses events from DUT and finished host test execution when ```end``` event is received. Other included in this module host tests can help you to test timers or RTC.
 
-for port in range(32000, 32100):
-    try:
-        s.connect((HOSTNAME, PORT))
-        ...
-        # Got connection on 'port' let's conitnue
-        ...
-        self.sendToDUTIPandPORT(IP, PORT)
-        ...
-    except socket.timeout:   
-        ...
-        continue
-else:
-    ... 
-    # Oh my, none of 3200-32099 ports if available! Let me return an ERROR
-    print "No free socket ports available"
-    return selftest.RESULT_ERRROR
+## Key-value protocol overview
+
+* Text based protocol, format ```{{KEY;VALUE}}}```.
+* Master-slave mode where host is master and DUT is slave.
+
+## Design draft
+* Simple key-value protocol is introduced. It is used to communicate between DUT and host. Protocol main features:
+* Protocol introduced is master-slave protocol, where master is host and slave is device under test.
+* Transport layer consist of simple ```{{KEY;VALUE}}}``` messages sent by slave (DUT). Both key and value are strings with allowed character set limitations (to simplify parsing and protocol parser itself).
+* DUT always (except for handshake phase) initializes communication by sending key-value message to host.
+* To avoid miscommunication between master and slave simple handshake protocol is introduces:
+    * Master (host) sends sync packet: ```{{__sync;UUID-STRING}}}``` with message value containing random UUID string.
+    * DUT waits for ```{{__sync;...}}``` message in input stream and replies with the same packer ```{{__sync;...}}```.
+    * After correct sync packet is received by master, messages ```{{__timeout;%d}}``` and ```{{__host_test_name}}``` are expected.
+  * Host parses DUTs tx stream and generates events sent to host test.
+  * Each event is a tuple of ```(key, value, timestamp)```, where key and value are extracted from message and
+* Host tests are now driven by simple async feature. Event state machine on master side is used to process events from DUT. Each host test is capable of registering callbacks, functions which will be executed when event occur. Event name is identical with KEY in key-value pair send as event from/to DUT.
+* DUT slave side uses simple parser to parse key-value pairs from stream. All non key-value data will be ignored. Blocking wait for an event API is provided: This implies usage of master-slave exchange between DUT and host where DUT uses non-blocking send event API to send to host (master) event and can wait for response. Master implements corresponding response after receiving event and processing data.
+  * Message parsing transforms key-value string message to Python event in this order:
+    * ```{{key;value}}``` string captured on DUT output.
+   * key-value data becomes a recognizable message with key (string) and value (string) payload.
+   * Event is formed in host test, a tuple of ```key``` (string), ```value``` (string), ```timestamp``` where ```timestamp``` is time of message reception in Python [time.time()](https://docs.python.org/2/library/time.html#time.time) format (float, time in seconds since the epoch as a floating point number.).
+* Each host test registers callbacks for available events.
+* Few keys' names in key-value messaging protocol are promoted to be considered "system events". Their names are used by event loop mechanism to communicate between DUT, host and various internal components. Please do not use restricted even names for your own private events. What's more:
+    * User can't register callbacks to "system events" with few exceptions.
+    * Reserved event/message keys have leading ```__``` in name:
+      * ```__sync``` - sync message, used by master and DUT to handshake.
+      * ```__timeout``` - timeout in sec, sent by DUT after ```{{sync;UUID}}``` is received.
+      * ```__version``` - ```greentea-client``` version send from DUT to host.
+      * ```__host_test_name``` - host test name, sent by DUT after ```{{sync;UUID}}``` is received.
+      * ```__notify_prn``` - sent by host test to print log message.
+      * ```__notify_conn_lost``` - sent by host test's connection process to notify serial port connection lost.
+      * ```__notify_complete``` - sent by DUT, async notificaion about test case result (true, false, none).
+      * ```__coverage_start``` - sent by DUT, coverage data.
+      * ```__testcase_start``` - sent by DUT, test case start data.
+      * ```__testcase_finish``` - sent by DUT, test case result.
+      * ```__exit``` - sent by DUT, test suite execution finished.
+  * Non-Reserved event/message keys have leading ```__``` in name:
+    * ```__rxd_line``` - Event triggered when ```\n``` was found on DUT RXD channel. It can be overridden (```self.register_callback('__rxd_line', <callback_function>)```) and used by user. Event is sent by host test to notify a new line of text was received on RXD channel. ```__rxd_line``` event payload (value) in a line of text received from DUT over RXD.
+* Each host test (master side) has four functions used by async framework:
+  * ```setup()``` used to initialize host test and register callbacks.
+  * ```result()``` used to return test case result when ```notify_complete()``` is not called.
+  * ```teardown()``` used to finalize and resource freeing. It is guaranteed that ```teardown()``` will be always called after timeout or async test completion().
+  * ```notify_complete(result : bool)``` used by host test to notify test case result. This result will be read after test suite ```TIMEOUT```s or after DUT send ```__exit``` message (test suite execution finished event).
+  * ```self.send_kv(key : string, value : string)``` - send key-value message to DUT.
+  * ```self.log(text : string)``` - send event ```__notify_prn``` with text as payload (value). Your message will be printed in log.
+* Result returned from host test is a test suite result. Test cases results are reported by DUT, usually using modified ```utest``` framework.
+
+# Greentea client API
+
+DUT test API was first introduced in ```mbedmicro/mbed``` project [here](https://github.com/mbedmicro/mbed/tree/master/libraries/tests/mbed/env). After refactoring this functionality was copied and improved in [greentea-client](https://github.com/ARMmbed/greentea-client) module.
+
+* Slave side key-value protocol API, see [here](https://github.com/ARMmbed/greentea-client/blob/master/greentea-client/test_env.h) for details.
+```c++
+// Send key-value pairs from slave to master
+void greentea_send_kv(const char *, const char *);
+void greentea_send_kv(const char *, const int);
+void greentea_send_kv(const char *, const int, const int);
+void greentea_send_kv(const char *, const char *, const int);
+void greentea_send_kv(const char *, const char *, const int, const int);
+
+// Blocking, receive key-value message from master
+int greentea_parse_kv(char *, char *, const int, const int);
 ```
-than:
-```python
-    
-PORT = 32123
-s.connect((HOSTNAME, PORT))
-...
-# Got connection on 'port' let's conitnue
-...
-self.sendToDUTIPandPORT(IP, PORT)
+Functions are used to send key-string or key-integer value messages to master. This functions should replace typical ```printf()``` calls with payload/control data to host.
+
+* **Blocking** wait for key-value pair message in input stream:
+```c++
+int greentea_parse_kv(char *out_key, char *out_value, const int out_key_len, const int out_value_len);
 ```
-  
-* Final notes:
-  * We do not provide serial port abstraction other that one used for mbed-host test connection. 
-  * We do not provide socket abstraction or isolation in host tests and I do not think we will.
+This function should replace ```scanf()``` used to check for incoming messages from master.
+Function parses input and if key-value message is found load to ```out_key```, ```out_value``` key-value pair. Use ```out_key_size``` and ```out_value_size```` to define out buffers max size (including trailing zero).
 
-## Interaction between the test runner and the host test
+# Key-value transport protocol sequence
 
-```
-   <<Target MCU>>                                       <<Host computer>>
-+------------------+                               +-------------------------+
-|                  |<--- test runner binary copy --|                         |
-|  [test runner]...|<--- console communication --->|....[host test runner]   |
-|                  |                               |                         |
-+------------------+                               +-------------------------+
-```
+Key-value protocol has few parts:
+* **Handshake** - synchronize master and slave.
+* **Preamble exchange** - DUT informs host about test parameters such as client version, test suite timeout, requested host test name etc. After this part is finished master will create requested host test and attach callbacks to user events.
+* **Event exchange** - key-value event exchange between slave and master. In this exchange in general slave (DUT) will initialize communication. This part may end with ending pair of events ```end``` and ```__exit``` where ```end``` event carries test suite result returned by DUT and ```__exit``` event marks test suite ended and exited. After ```__exit``` event is received there will be no more communication between DUT and host test.
 
-Test runner on the target writes the test case properties like timeout, host test name, description and test_id on the serial port. This helps host test runner to find the required python module in the host tests store for executing the host side of the test.
+## Handshake
+Hanshake between DUT and host is a sequence of ```__sync``` events send between host (master) and DUT (slave). This is currently only situation when master initiates communication first. Handshake should provide synchronization point where master and slave are starting the same session.
 
-# The decoupled module
+After reset:
+* DUT calls function ```GREENTEA_SETUP(timeout, "host test name");``` which
+* calls immediately ```greentea_parse_kv``` (blocking parse of input serial port for event ```{{__sync;UUID}}```).
+* When ```__sync``` packet is parsed in the stream DUT sends back (echoes) ```__sync``` event with the same [UUID](https://en.wikipedia.org/wiki/Universally_unique_identifier#Version_3_.28MD5_hash_.26_namespace.29) as payload. UUID is a random value e.g.  ```5f8dbbd2-199a-449c-b286-343a57da7a37```.
 
-The mbed-host-tests package is a decoupled functionality, originally implemented for [mbedmicro/mbed workspace_tools](https://github.com/mbedmicro/mbed). The original host tests implementation is [available on GitHub](https://github.com/mbedmicro/mbed/tree/master/workspace_tools/host_tests).
-
-With the announcement of mbed OS, the existing mbed SDK and test framework will no longer be supported: the monolithic model will be replaced with a set of tools and supporting an ecosystem that will provide generic and comprehensive services to mbed users, both individual and commercial (partners).
-
-## Module responsibilities
-
-mbed ecosystem tools, implemented by mbed users or third party companies, can take advantage of the existing supplementary module called *mbed-host-tests*. This module defines classes of host tests that can be reused with new or user defined tests. Host tests should also be shared between the mbed classic and mbed OS ecosystems.
-
-## Module structure
-
-```
-mbed_host_tests/
-    host_tests/             - Supervising host test scripts used for instrumentation.
-    host_tests_plugins/     - Plugins used by host test to flash test runner binary and reset device.
-    host_tests_registry/    - Registry, used to store 'host test name' to 'host test class' mapping.
-    host_tests_runner/      - Classes implementing basic host test functionality (like test flow control).
-```
-
-## Host test class structure
-
-```
-+-------------------------+
-|   DefaultTestSelector   |
-+-------------------------+
-| run()                   |
-+-------------------------+
-           _|_
-           \_/
-+-------------------------+
-| DefaultTestSelectorBase |
-+-------------------------+
-|                         |
-+-------------------------+
-           _|_
-           \_/
-+-------------------------+
-|          Test           |
-+-------------------------+
-| Mbed                    |
-| host_tests_plugins      |
-+-------------------------+
-| detect_test_config()    |
-| setup()                 |
-| run()                   |
-+-------------------------+
-           _|_
-           \_/
-+-------------------------+
-|     HostTestResults     |
-+-------------------------+
-| RESULT_SUCCESS          |
-| RESULT_FAILURE          |
-| RESULT_ERROR            |
-| RESULT_IO_SERIAL        |
-| RESULT_NO_IMAGE         |
-| RESULT_IOERR_COPY       |
-| RESULT_PASSIVE          |
-| RESULT_NOT_DETECTED     |
-+-------------------------+
-```
-
-* ```HostTestResults```: defines the generic test result enumeration.
-* ```Test```: class encapsulating the ``Mbed``` class and implementing functionalities like host test detection, host test setup and the default ```run()``` function.
-* ```Mbed```: implements ways of communicating with an mbed device. It uses the serial port as a standard console communication channel and calls the flash and reset plugins to copy the test runner's binary and reset the mbed device, respectively.
-* ```DefaultTestSelectorBase```: base class for the ```DefaultTestSelector``` functionality. Available explicitly in the mbed-host-tests module so users can derive their own ```DefaultTestSelector```s from this base class.
-* ```DefaultTestSelector``` : class configured with external options (e.g. input from command line parameters) responsible for test execution flow:
-** Copy a given test runner binary to the target MCU (a proper plugin is selected based on your input).
-** Reset the target MCU (a proper plugin is selected based on your input).
-** Execute the test runner’s test-case-parameters auto-detection process (detects the host test, timeout, test name, test description etc).
-** Execute the host test ```test()``` procedure as requested by the test runner.
-** Supervise test runner execution (test case flow) with a timeout watchdog.
-** Conclude the test case's result. The result can be grabbed from the test runner console output or independently determined by the host test.
-** Inform the test suite environment that the test's execution finished.
-
-# Enumeration of host tests
-
-A host test is the implementation derived from the BaseHostTest base class. These classes are looked inside the files in the directory passed with -e or --enum-host-tests= command line argument. One python file may contain multiple host test classes. Found host test classes are stored by their name. If the host test class has an attribute ```name``` then that is used as the host test name. Otherwise python file name is used as the host test name.
-
-In case a host test python file fails to load because of syntax or other error. Following behavior is expected:
-
-* Host test class(es) in the failed file are ignored.
-* mbed host test continues to load test classes from other files.
-* Test binaries requiring those host test(s) are still flashed and executed. As only binary tells the required host test name.
-* The tests will fail with error ```HOST: Error! Unknown host test name 'failed_to_load_module'...```.
-
-Above behavior has an overhead of flashing binaries that will not run. May be in the future a meta data file can be added to help mbed host test to know the test properties before flashing the binary.
-
-# Example of the CLI version of the host test's DefaultTestSelector supervisor
-
-We can use mbed-host-tests in two ways: in our own Python implementation (creating lots of host test variations), or as a predefined and prebuilt default command line tool called ```mbedhtrun``` (**mbed** **h**ost **t**est **run**ner). This default implementation gives us flexibility: we can now use external tools and call the ```mbehtrun``` application without providing extra command line parameters.  This CLI application will do the heavy lifting for modules like ```mbed-greentea```, which will use ```mbehtrun``` to drive each host test session with a given platform.
-
-This is the host test script (```mbedhtrun.py```) used to supervise the test runner execution from the command line:
-
-```python
-#!/usr/bin/env python
-
-from mbed_host_tests import DefaultTestSelector         # Default adapter for DefaultTestSelectorBase
-from mbed_host_tests import init_host_test_cli_params   # Provided command line options
-
-if __name__ == '__main__':
-    # 1. Create DefaultTestSelector object and pass command line parameters
-    # 2. Call default test execution function run() to start test instrumentation
-    DefaultTestSelector(init_host_test_cli_params()).run()
+```plain
+                           DUT (slave)        host (master)
+                             -----               -----
+                               |                   |
+                DUT reset ---> |                   |
+                               |                   |
+greentea_parse_kv(key,value)   |                   |
+-------[ blocking ]----------->|                   |
+                               |                   |
+                               .                   .
+                               .                   .
+                               |                   |  self.send_kv("__sync", UUID)
+                               |  {{__sync;UUID}}  |<-----------------------------
+                               |<------------------|
+                               |                   |
+                               |                   |
+greentea_parse_kv              |  {{__sync;UUID}}  |
+echoes __sync event with       |------------------>|
+the same UUID to master        |                   |
+                               |                   |
 ```
 
-Example of a console call for the above script (```mbedhtrun.py```):
+Example of handshake from ```htrun``` log:
+
+* DUT code:
+```c
+// GREENTEA_SETUP pseudo-code
+void GREENTEA_SETUP(const int timeout, const char *host_test_name) {
+	// Wait for SYNC and echo it back
+        char _key[8] = {0};
+	char _value[48] = {0};
+	while (1) {
+        greentea_parse_kv(_key, _value, sizeof(_key), sizeof(_value));
+        if (strcmp(_key, GREENTEA_TEST_ENV_SYNC) == 0) {
+            // Found correct __sunc message
+            greentea_send_kv(_key, _value);
+            break;
+        }
+    }
+
+    // Send PREAMBLE: client version, test suite timeout and requested host test
+    greentea_send_kv(GREENTEA_TEST_ENV_HOST_TEST_VERSION, "0.1.8");
+    greentea_send_kv(GREENTEA_TEST_ENV_TIMEOUT, timeout);
+    greentea_send_kv(GREENTEA_TEST_ENV_HOST_TEST_NAME, host_test_name);
+}
 
 ```
-$ mbedhtrun.py -d E: -f "C:\Work\mbed\build\test\K64F\ARM\RTOS_7\timer.bin" -p COM61 -C 4 -m K64F
+* Corresponding log:
+```
+[1458565465.35][SERI][INF] reset device using 'default' plugin...
+[1458565465.60][SERI][INF] wait for it...
+[1458565466.60][CONN][INF] sending preamble '2f554b1c-bbbf-4b1b-b1f0-f45493282f2c'
+[1458565466.60][SERI][TXD] mbedmbedmbedmbedmbedmbedmbedmbedmbedmbed
+[1458565466.60][SERI][TXD] {{__sync;2f554b1c-bbbf-4b1b-b1f0-f45493282f2c}}
+[1458565466.74][CONN][INF] found SYNC in stream: {{__sync;2f554b1c-bbbf-4b1b-b1f0-f45493282f2c}}, queued...
+[1458565466.74][HTST][INF] sync KV found, uuid=2f554b1c-bbbf-4b1b-b1f0-f45493282f2c, timestamp=1458565466.743000
+[1458565466.74][CONN][RXD] {{__sync;2f554b1c-bbbf-4b1b-b1f0-f45493282f2c}}
 ```
 
-Output (real-time console output from the test runner, captured by the host test supervisor over the serial port):
+## Preamble exchange
+
+This phase comes just after handshake phase. DUT informs host about test parameters such as client version, timeout, requested host test name etc. After this part is finished master will create requested host test and attach callbacks to user events.
+This phase is ended with ```__host_test_name``` being received by host. After ```__host_test_name``` event is received
 
 ```
-MBED: Instrumentation: "COM61" and disk: "E:"
-HOST: Copy image onto target...
-HOST: Initialize serial port...
-HOST: Reset target...
-HOST: Property 'timeout' = '15'
-HOST: Property 'host_test_name' = 'wait_us_auto'
-HOST: Property 'description' = 'Timer'
-HOST: Property 'test_id' = 'RTOS_7'
-HOST: Start test...
-* in 1.00 sec (0.00) [OK]
-* in 1.00 sec (0.00) [OK]
-* in 1.00 sec (0.00) [OK]
-* in 1.00 sec (0.00) [OK]
-* in 1.00 sec (0.00) [OK]
-* in 1.00 sec (0.00) [OK]
-* in 1.00 sec (0.00) [OK]
-* in 1.00 sec (0.00) [OK]
-* in 1.00 sec (0.00) [OK]
-* in 1.00 sec (0.00) [OK]
-Consecutive OK timer reads: 10
-Completed in 10.00 sec
-
-{{success}}
-{{end}}
-```
-**Note:**
-
-* MUT (mbed under test) is K64F: ```-m K64F```.
-* The test runner binary is located at ```C:\Work\mbed\build\test\K64F\ARM\RTOS_7\timer.bin```.
-* The K64F virtual serial port (USB CDC) is mounted at ```-p COM61```.
-* The K64F virtual serial port (USB MSC) is mounted at ```-d E:```.
-* Test result: SUCCESS ```{{success}}}```.
-* The test ended after the success code was received: ```{{end}}}```.
-
-##Command line parameters
-
-The default command line parameters deployed with the ```mbed_host_tests``` module are:
-
-```
-c:\temp\mbed_host_test_example>mbedhtrun.py --help
-Usage: mbedhtrun.py [options]
-
-Options:
-  -h, --help            show this help message and exit
-  -m MICRO, --micro=MICRO
-                        Target microcontroller name
-  -p PORT, --port=PORT  Serial port of the target
-  -d DISK_PATH, --disk=DISK_PATH
-                        Target disk (mount point) path
-  -f IMAGE_PATH, --image-path=IMAGE_PATH
-                        Path with target's binary image
-  -c COPY_METHOD, --copy=COPY_METHOD
-                        Copy method selector. Define which copy method (from
-                        plugins) should be used
-  -C COPY_METHOD, --program_cycle_s=COPY_METHOD
-                        Program cycle sleep. Define how many seconds you want
-                        wait after copying binary onto target
-  -r FORCED_RESET_TYPE, --reset=FORCED_RESET_TYPE
-                        Forces different type of reset
-  -R NUMBER, --reset-timeout=NUMBER
-                        When forcing a reset using option -r you can set up
-                        after reset idle delay in seconds
+DUT (slave)              host (master)
+  -----                     -----
+    |                         |
+    |    {{__version;%s}}     |
+    |------------------------>|
+    |                         |
+    |    {{__timeout;%d}}     |
+    |------------------------>|
+    |                         |
+    | {{__host_test_name;%s}} |
+    |------------------------>|
+    |                         |
 ```
 
-#Installation
+Example of handshake from ```htrun``` log:
 
-You can install ```mbed host tests``` using its ```setup.py``` file or using PyPl.
-
-##Prerequisites
-
-Please install:
-
-* [Python 2.7.x](https://www.python.org/download/releases/2.7).
-* [The pySerial module for Python 2.7](https://pypi.python.org/pypi/pyserial).
-
-**Note:** if your OS is Windows, please follow the installation instructions [for the serial port driver](https://developer.mbed.org/handbook/Windows-serial-configuration).
-
-## Installation from PyPI (Python Package Index)
-
-mbed-host-tests module is redistributed via PyPI. We recommend you use the [application pip](https://pip.pypa.io/en/latest/installing.html#install-pip).
-
-To install mbed-host-tests from Python Package Index use command:
-```
-$ pip install mbed-host-tests
-```
-
-**Note:** Python 2.7.9 and later (on the Python 2 series), and Python 3.4 and later include pip by default, so you may have pip already.
-
-## Installation from Python sources
-
-Clone the mbed-host-tests GitHub repository:
-```
-$ git clone <link-to-mbed-ls-repo>
-```
-Change the directory to the mbed-host-tests's repository directory:
-```
-$ cd mbed-host-tests
-```
-Run the setup file:
-```
-$ python setup.py install
-```
-**Note:** On Linux, if you have a problem with permissions please try to use ```sudo```:
-```
-$ sudo python setup.py install
-```
-To test if your installation succeeded you can use the Python interpreter and import ```mbed_host_tests```:
-```
-$ python
->>> import mbed_host_tests
->>> dir(mbed_host_tests)
-['DefaultAuto', 'DefaultTestSelector', 'DefaultTestSelectorBase', 'DetectPlatformTest',
-'DevNullTest', 'EchoTest', 'HOSTREGISTRY', 'HelloTest', 'HostRegistry', 'LWM2MClientAutoTest',
-'OptionParser', 'RTCTest', 'RunBinaryOnlyAuto', 'StdioTest', 'TCPEchoClientTest',
-'TCPEchoServerTest', 'TCPSocketServerEchoExtTest', 'UDPEchoClientTest', 'UDPEchoServerTest',
-'UDPSocketServerEchoExtTest', 'WaitusTest', '__builtins__', '__doc__', '__file__', '__name__',
-'__package__', '__path__', 'flash_dev', 'get_host_test', 'get_host_test_list', 'get_plugin_caps',
-'host_tests', 'host_tests_plugins', 'host_tests_registry', 'host_tests_runner',
-'init_host_test_cli_params', 'is_host_test', 'json', 'reset_dev', 'sleep', 'sys']
-```
-To start working with ```mbedhtrun``` Python APIs you can experiment with ```flash_dev()``` and ```reset_dev()``` functions.
-We can list available mbed devices with ```mbedls``` command:
-```
-$ mbedls
-+--------------+---------------------+------------+------------+---------------------------+
-|platform_name |platform_name_unique |mount_point |serial_port |target_id                  |
-+--------------+---------------------+------------+------------+---------------------------+
-|K64F          |K64F[0]              |F:          |COM4        |0240022648cb1e7700b512e3cf |
-+--------------+---------------------+------------+------------+---------------------------+
-```
-And use Python APIs to flash and reset this device accordingly.
-```
-$ python
-import mbed_host_tests as htrun
->>> htrun.flash_dev(disk='F:',
-                    image_path=r'c:\Work\mbed-drivers\build\frdm-k64f-gcc\test\mbed-drivers-test-basic.bin')
-        1 file(s) copied.
-True
->>> htrun.reset_dev(port='COM4')
-True
-```
-Note: ```c:\Work\mbed-drivers\build\frdm-k64f-gcc\test\mbed-drivers-test-basic.bin``` is valid path to ```K64F``` device's compatible binary.
-
-Example Python API fetch for available plugin capabilities. Note that ```json``` module was used here to pretty print of ```get_plugin_caps``` function.
-```
-$ python
->>> import mbed_host_tests as htrun
->>> import json
->>> print json.dumps(htrun.get_plugin_caps(), indent=4)
-{
-    "ResetMethod": [
-        "default",
-        "eACommander",
-        "eACommander-usb",
-        "stlink"
-    ],
-    "CopyMethod": [
-        "copy",
-        "cp",
-        "default",
-        "eACommander",
-        "eACommander-usb",
-        "shell",
-        "shutil",
-        "stlink",
-        "xcopy"
-    ]
+* DUT code:
+```c
+void main() {
+    GREENTEA_CLIENT(5, "default_auto");
+    // ...
 }
 ```
-You can also check whether ```mbedhtrun``` is correctly installed in your system:
+* Corresponding log:
 ```
-mbedhtrun --help
-Usage: mbedhtrun-script.py [options]
-
-Options:
-  -h, --help            show this help message and exit
-  --target=LIST_OF_TARGETS
-                        You can specify list of targets you want to build. Use
-                        comma to sepatate them
-  -n TEST_BY_NAMES, --test-by-names=TEST_BY_NAMES
-                        Runs only test enumerated it this switch. Use comma to
-                        separate test case names.
-  -O, --only-build      Only build repository and tests, skips actual test
-                        procedures (flashing etc.)
-  -c COPY_METHOD, --copy=COPY_METHOD
-                        Copy (flash the target) method selector. Plugin
-                        support: copy, cp, default, eACommander, eACommander-
-                        usb, shell, xcopy
-  --config              Displays connected boards and detected targets and
-                        exits.
-  --release             If possible force build in release mode (yotta -r).
-  --debug               If possible force build in debug mode (yotta -d).
-  --digest=DIGEST_SOURCE
-                        Redirect input from where test suite should take
-                        console input. You can use stdin or file name to get
-                        test case console output
-  -V, --verbose-test-result
-                        Prints test serial output
-  -v, --verbose         Verbose mode (prints some extra information)
-
-Example: mbedgt --auto --target frdm-k64f-gcc
+[1458565466.76][CONN][INF] found KV pair in stream: {{__version;0.1.8}}, queued...
+[1458565466.76][CONN][RXD] {{__version;0.1.8}}
+[1458565466.76][HTST][INF] DUT greentea-client version: 0.1.8
+[1458565466.77][CONN][INF] found KV pair in stream: {{__timeout;5}}, queued...
+[1458565466.77][HTST][INF] setting timeout to: 5 sec
+[1458565466.78][CONN][RXD] {{__timeout;5}}
+[1458565466.81][CONN][INF] found KV pair in stream: {{__host_test_name;default_auto}}, queued...
+[1458565466.81][HTST][INF] host test setup() call...
+[1458565466.81][HTST][INF] CALLBACKs updated
+[1458565466.81][HTST][INF] host test detected: default_auto
+[1458565466.81][CONN][RXD] {{__host_test_name;default_auto}}
 ```
 
-# mbedflsh - supporting command line tool for mbed flashing
-Simple command line tool ```mbedflsh``` is added to help flashing devices from command line. The same functionality can be achieved using ```mbedhtrun``` command line but multiple additional switches may blur way we do it.
-This tools will be installed together with ```mbedhtrun``` command line tool.
+## Event exchange
 
-## Example - Default copy method (shell)
-When called without additional switch ```-c``` ```mbedflsh``` will call shell copy command:
-* For Windows ```copy``` command and
-* for Linux/Mac flavours we will use ```cp``` command.
-
-In this example we will copy file
+In this phase DUT and host exchange events and host side is calling callbacks registered to each of the events sent from DUT. DUT can use function ```greentea_parse_kv``` to parse input stream for next incoming key-value event.
+After ```__host_test_name``` event is received and before any event is consumed during this stage:
+* Host state machine loads host test object by name provided in payload of ```__host_test_name``` event.E.g. event ```{{____host_test_name;default_auto}} will load host test named "*default_auto*".
+* Host state machine loads callbacks registered by user in host test setup phase and hooks them to event machine.
+Now host is ready to handle test suite test execution. From this moment each event sent from DUT will be handled by corresponding callback registered by user in host test setup. Unknown events will not be handled and warning will be printed in log.
 
 ```
-$ mbedflsh -f mbed-drivers-test-echo.bin -d F:
-mbedflsh: opening file mbed-drivers-test-echo.bin (...
+
+DUT (slave)      host (master)
+  -----             -----
+    |                 |
+    |                 |        Host Test
+    |                 |         -----
+    |                 |  create   |
+    |                 |---------->|
+    |                 |           |
+    |                 |           |
+    | {{key1;value}}  |           |
+    |---------------->|           |          ht.setup()
+    |       .         |           |<---[ user register callbacks ]---
+    |       .         |           |
+    |       .         |           |  host.callbacks.update(ht.get_callbacks())
+    |       .         |           |<---[ host state machine ]------------------
+    | {{key2;value}}  |           |
+    |---------------->|           |
+    |                 |           |
+    |                 |           |
+    |                 |           | ht.callbacks[key1](key, value, timestamp)
+    |                 |           |<------------------------------------------
+    |                 |           | ht.callbacks[key2](key, value, timestamp)
+    |                 |           |<------------------------------------------
+    |                 |           |
+    |                 |           |
+    -  - - - - - - - -  - - - -     - -
+          TEST CASE FLOW CONTINUES
+    -  - - - - - - - -  - - - -     - -
+    |                 |           |
+    |                 |           | ht.notify_complete(true)
+    |                 |           | (sets test suite 'result' to true
+    |                 |           |<----------------
+    |                 |           |
+    |                 |           |
+    | {{end;success}} |           |
+    |---------------->|           |
+    |                 |           |
+    | {{__exit;%d}}   |           |
+    |---------------->|           |
+    |                 |           |
+    |                 |           | result = ht.result()
+    |                 |           |<----------------
+    |                 |           |
+    |                 |           | ht.teardown()
+    |                 |           |<----------------
+    |                 |           |
+    |                 |           |
+
+```
+* After DUT send ```__exit``` or after timeout it is guaranteed that host test ```teardown()``` function will be called. This call is blocking, please make sure your tear down function finishes.
+
+# DUT - host test case workflow
+## DUT implementation
+```c++
+int main() {
+    // 1. Handshake between DUT and host and
+    // 2. Send test case related data
+    GREENTEA_SETUP(15, "gimme_auto");  // __timeout, __host_test_name
+
+    // ...
+    // Send to master {{gimme_something; some_stuff}}
+    greentea_send_kv("gimme_something", "some_stuff");
+
+    char key[16] = {0};
+    char value[32] = {0};
+    // Blocking wait for master response for {{gimme_something; some_stuff}}
+    greentea_parse_kv(key, value, sizeof(key), sizeof(value));
+    // ...
+    fprintf(stderr, "Received from master %s, %s", key, value);
+    // ...
+
+    GREENTEA_TSUITE_RESULT(true);    // __exit
+}
+```
+## Example of corresponding host test
+```python
+class GimmeAuto(BaseHostTest):
+    """ Simple, basic host test's test runner waiting for serial port
+        output from MUT, no supervision over test running in MUT is executed.
+    """
+
+    __result = None
+    name = "gimme_auto"
+
+    def _callback_gimme_something(self, key, value, timestamp):
+        # You've received {{gimme_something;*}}
+
+        # We will send DUT some data back...
+        # And now decide about test case result
+        if value == 'some_stuff':
+            # Message payload/value was 'some_stuff'
+            # We can for example return true from test
+            self.send_kv("print_this", "This is what I wanted %s"% value)
+            self.notify_complete(True)
+        else:
+            self.send_kv("print_this", "This not what I wanted :(")
+            self.notify_complete(False)
+
+    def setup(self):
+        # Register callback for message 'gimme_something' from DUT
+        self.register_callback("gimme_something", self._callback_gimme_something)
+
+        # Initialize your host test here
+        # ...
+
+    def result(self):
+        # Define your test result here
+        # Or use self.notify_complete(bool) to pass result anytime!
+        return self.__result
+
+    def teardown(self):
+        # Release resources here after test is completed
+        pass
+```
+Log:
+```
+[1454926794.22][HTST][INF] copy image onto target...
         1 file(s) copied.
+[1454926801.48][HTST][INF] starting host test process...
+[1454926802.01][CONN][INF] starting connection process...
+[1454926802.01][CONN][INF] initializing serial port listener...
+[1454926802.01][SERI][INF] serial(port=COM188, baudrate=9600)
+[1454926802.02][SERI][INF] reset device using 'default' plugin...
+[1454926802.27][SERI][INF] wait for it...
+[1454926803.27][CONN][INF] sending preamble '9caa42a0-28a0-4b80-ba1d-befb4e43a4c1'...
+[1454926803.27][SERI][TXD] mbedmbedmbedmbedmbedmbedmbedmbedmbedmbed
+[1454926803.27][SERI][TXD] {{__sync;9caa42a0-28a0-4b80-ba1d-befb4e43a4c1}}
+[1454926803.40][CONN][RXD] {{__sync;9caa42a0-28a0-4b80-ba1d-befb4e43a4c1}}
+[1454926803.40][CONN][INF] found SYNC in stream: {{__sync;9caa42a0-28a0-4b80-ba1d-befb4e43a4c1}}, queued...
+[1454926803.40][HTST][INF] sync KV found, uuid=9caa42a0-28a0-4b80-ba1d-befb4e43a4c1, timestamp=1454926803.405000
+[1454926803.42][CONN][RXD] {{__timeout;15}}
+[1454926803.42][CONN][INF] found KV pair in stream: {{__timeout;15}}, queued...
+[1454926803.42][HTST][INF] setting timeout to: 15 sec
+[1454926803.45][CONN][RXD] {{__host_test_name;gimme_auto}}
+[1454926803.45][CONN][INF] found KV pair in stream: {{__host_test_name;gimme_auto}}, queued...
+[1454926803.45][HTST][INF] host test setup() call...
+[1454926803.45][HTST][INF] CALLBACKs updated
+[1454926803.45][HTST][INF] host test detected: gimme_auto
+[1454926803.48][CONN][RXD] {{gimme_something;some_stuff}}
+[1454926803.48][CONN][INF] found KV pair in stream: {{gimme_something;some_stuff}}, queued...
+[1454926803.48][SERI][TXD] {{print_this;This is what I wanted some_stuff}}
+[1454926803.48][HTST][INF] __notify_complete(True)
+[1454926803.62][CONN][RXD] Received from master print_this, This is what I wanted some_stuf
+[1454926803.62][CONN][RXD] {{end;success}}
+[1454926803.62][CONN][INF] found KV pair in stream: {{end;success}}, queued...
+[1454926803.62][HTST][ERR] orphan event in main phase: {{end;success}}, timestamp=1454926803.625000
+[1454926803.63][CONN][RXD] {{__exit;0}}
+[1454926803.63][CONN][INF] found KV pair in stream: {{__exit;0}}, queued...
+[1454926803.63][HTST][INF] __exit(0)
+[1454926803.63][HTST][INF] test suite run finished after 0.21 sec...
+[1454926803.63][HTST][INF] exited with code: None
+[1454926803.63][HTST][INF] 0 events in queue
+[1454926803.63][HTST][INF] stopped consuming events
+[1454926803.63][HTST][INF] host test result() skipped, received: True
+[1454926803.63][HTST][INF] calling blocking teardown()
+[1454926803.63][HTST][INF] teardown() finished
+[1454926803.63][HTST][INF] {{result;success}}
+mbedgt: mbed-host-test-runner: stopped
+mbedgt: mbed-host-test-runner: returned 'OK'
+mbedgt: test on hardware with target id: 02400226d94b0e770000000000000000000000002492f3cf
+mbedgt: test suite 'mbed-drivers-test-gimme' ......................................................... OK in 10.02 sec
+mbedgt: shuffle seed: 0.3631708941
+mbedgt: test suite report:
++---------------+---------------+-------------------------+--------+--------------------+-------------+
+| target        | platform_name | test suite              | result | elapsed_time (sec) | copy_method |
++---------------+---------------+-------------------------+--------+--------------------+-------------+
+| frdm-k64f-gcc | K64F          | mbed-drivers-test-gimme | OK     | 10.02              | shell       |
++---------------+---------------+-------------------------+--------+--------------------+-------------+
+mbedgt: test suite results: 1 OK
 ```
 
-## Example - selecting other available copy method
+# Host test examples
+## Return result after __exit
+```python
+class GimmeAuto(BaseHostTest):
+    """ Simple, basic host test's test runner waiting for serial port
+        output from MUT, no supervision over test running in MUT is executed.
+    """
 
-We can force a supported copy method by using ```-c <method>``` switch.
+    __result = None
+    name = "gimme_auto"
 
+    def _callback_gimme_something(self, key, value, timestamp):
+        # You've received {{gimme_something;*}}
+
+        # We will send DUT some data back...
+        # And now decide about test case result
+        if value == 'some_stuff':
+            # Message payload/value was 'some_stuff'
+            # We can for example return true from test
+            self.send_kv("print_this", "This is what I wanted %s"% value)
+            self.__result = True
+        else:
+            self.send_kv("print_this", "This not what I wanted :(")
+            self.__result = False
+
+    def setup(self):
+        # Register callback for message 'gimme_something' from DUT
+        self.register_callback("gimme_something", self._callback_gimme_something)
+
+        # Initialize your host test here
+        # ...
+
+    def result(self):
+        # Define your test result here
+        # Or use self.notify_complete(bool) to pass result anytime!
+        return self.__result
+
+    def teardown(self):
+        # Release resources here after test is completed
+        pass
 ```
-$ mbedflsh -f mbed-drivers-test-echo.bin -d F: -c cp
-mbedflsh: opening file mbed-drivers-test-echo.bin...
+Corresponding log:
+```
+[1454926627.11][HTST][INF] copy image onto target...
+        1 file(s) copied.
+[1454926634.38][HTST][INF] starting host test process...
+[1454926634.93][CONN][INF] starting connection process...
+[1454926634.93][CONN][INF] initializing serial port listener...
+[1454926634.93][SERI][INF] serial(port=COM188, baudrate=9600)
+[1454926634.94][SERI][INF] reset device using 'default' plugin...
+[1454926635.19][SERI][INF] wait for it...
+[1454926636.19][CONN][INF] sending preamble '9a743ff3-45e6-44cf-9e2a-9a83e6205184'...
+[1454926636.19][SERI][TXD] mbedmbedmbedmbedmbedmbedmbedmbedmbedmbed
+[1454926636.19][SERI][TXD] {{__sync;9a743ff3-45e6-44cf-9e2a-9a83e6205184}}
+[1454926636.33][CONN][RXD] {{__sync;9a743ff3-45e6-44cf-9e2a-9a83e6205184}}
+[1454926636.33][CONN][INF] found SYNC in stream: {{__sync;9a743ff3-45e6-44cf-9e2a-9a83e6205184}}, queued...
+[1454926636.33][HTST][INF] sync KV found, uuid=9a743ff3-45e6-44cf-9e2a-9a83e6205184, timestamp=1454926636.331000
+[1454926636.34][CONN][RXD] {{__timeout;15}}
+[1454926636.34][CONN][INF] found KV pair in stream: {{__timeout;15}}, queued...
+[1454926636.34][HTST][INF] setting timeout to: 15 sec
+[1454926636.38][CONN][RXD] {{__host_test_name;gimme_auto}}
+[1454926636.38][CONN][INF] found KV pair in stream: {{__host_test_name;gimme_auto}}, queued...
+[1454926636.38][HTST][INF] host test setup() call...
+[1454926636.38][HTST][INF] CALLBACKs updated
+[1454926636.38][HTST][INF] host test detected: gimme_auto
+[1454926636.41][CONN][RXD] {{gimme_something;some_stuff}}
+[1454926636.41][CONN][INF] found KV pair in stream: {{gimme_something;some_stuff}}, queued...
+[1454926636.41][SERI][TXD] {{print_this;This is what I wanted some_stuff}}
+[1454926636.54][CONN][RXD] Received from master print_this, This is what I wanted some_stuf
+[1454926636.54][CONN][RXD] {{end;success}}
+[1454926636.54][CONN][INF] found KV pair in stream: {{end;success}}, queued...
+[1454926636.55][HTST][ERR] orphan event in main phase: {{end;success}}, timestamp=1454926636.541000
+[1454926636.56][CONN][RXD] {{__exit;0}}
+[1454926636.56][CONN][INF] found KV pair in stream: {{__exit;0}}, queued...
+[1454926636.56][HTST][INF] __exit(0)
+[1454926636.56][HTST][INF] test suite run finished after 0.22 sec...
+[1454926636.56][HTST][INF] exited with code: None
+[1454926636.56][HTST][INF] 0 events in queue
+[1454926636.56][HTST][INF] stopped consuming events
+[1454926636.56][HTST][INF] host test result(): True
+[1454926636.56][HTST][INF] calling blocking teardown()
+[1454926636.56][HTST][INF] teardown() finished
+[1454926636.56][HTST][INF] {{result;success}}
+mbedgt: mbed-host-test-runner: stopped
+mbedgt: mbed-host-test-runner: returned 'OK'
+mbedgt: test on hardware with target id: 02400226d94b0e770000000000000000000000002492f3cf
+mbedgt: test suite 'mbed-drivers-test-gimme' ......................................................... OK in 10.04 sec
+mbedgt: shuffle seed: 0.3866075474
+mbedgt: test suite report:
++---------------+---------------+-------------------------+--------+--------------------+-------------+
+| target        | platform_name | test suite              | result | elapsed_time (sec) | copy_method |
++---------------+---------------+-------------------------+--------+--------------------+-------------+
+| frdm-k64f-gcc | K64F          | mbed-drivers-test-gimme | OK     | 10.04              | shell       |
++---------------+---------------+-------------------------+--------+--------------------+-------------+
+mbedgt: test suite results: 1 OK
 ```
 
-See ```mbedflsh -h``` for more details:
+# Writing DUT test suite (slave side)
+
+## DUT test suite - single test case idiom
+
+We can use few methods to structure out test suite and test cases. Simpliest would be to use ```greentea-client``` API and wrap one test case inside out test suite. This way of creating test suite is useful when you want to:
+* write only one test case inside test suite,
+* make example application (example as a test) or
+* when your test suite is calling blocking forever function. For example all types of UDP/TCP servers which run in forever loop are in this category. In this case we do not expect from DUT ```__exit``` event at all and host test should be designed in such a way that it always return result.
+
+### DUT always return
+
+In this example DUT code uses ```greentea-client``` to sync (```GREENTEA_SETUP```) and pass result (```GREENTEA_TESTSUITE_RESULT```) to ```Greentea```. This is very simple example of how you can write tests. Note that in this example test suite only implements one test case. Actually test suite is test case at the same time. Result passed to ```GREENTEA_TESTSUITE_RESULT``` will be at the same time test case result.
+
+* DUT implementation:
+```c++
+#include "greentea-client/test_env.h"
+#include "unity/unity.h"    // Optional: unity ASSERTs
+
+int app_start(int, char*[]) {
+
+    bool result = true;
+    GREENTEA_SETUP(15, "default_auto");
+
+    // test case execution and assertions
+
+    GREENTEA_TESTSUITE_RESULT(result);
+    return 0;
+}
 ```
--c COPY_METHOD, --copy=COPY_METHOD
-                    Copy (flash the target) method selector. Plugin
-                    support: copy, cp, default, eACommander, eACommander-
-                    usb, shell, shutil, stlink, xcopy
+
+### DUT never return
+
+In this example DUT code uses ```greentea-client``` to sync (```GREENTEA_SETUP```) with ```Greentea```. We are not calling ```GREENTEA_TESTSUITE_RESULT(result)``` at any time. In this example host test is responsible for providing test suite result using ```self.notify_complete()``` API or ```self.result()``` function.
+
+You need to write and specify by name your custom host test:
+* DUT side uses second argument of ```GREENTEA_SETUP(timeout, host_test_name)``` function:
+```c++
+GREENTEA_SETUP(15, "wait_us_auto");
+```
+* You need to place your custom host test in ```<module>/test/host_tests``` directory.
+  * Do not forget to name host test accordingly. See below example host test ```name``` class member.
+
+* DUT implementation using ```my_host_test``` custom host test:
+```c++
+#include "greentea-client/test_env.h"
+#include "unity/unity.h"
+
+void recv() {
+    // receive from client
+}
+
+int app_start(int, char*[]) {
+
+    Ethernet eth(TCP_SERVER, PORT, recv);
+    GREENTEA_SETUP(15, "my_host_test");
+
+    eth.listen();   // Blocking forever
+
+    return 0;
+}
 ```
 
-## mbedflsh command line switches
+* Example host test template:
+```python
+from mbed_host_tests import BaseHostTest
 
+class YourCustomHostTest(BaseHostTest):
+
+    name = "my_host_test"   # Host test names used by GREENTEA_CLIENT(..., host_test_name)
+
+    __result = False    # Result in case of timeout!
+
+    def _callback_for_event(self, key, value, timestamp):
+        #
+        # Host test API:
+        #
+        # self.notify_complete(result : bool)
+        #
+        # """! Notify main even loop that host test finished processing
+        #      @param result True for success, False failure. If None - no action in main even loop
+        # """
+        #
+        # self.send_kv(key : string, value : string)
+        #
+        # """! Send Key-Value data to DUT
+        #      @param key Event key
+        #      @param value Event payload
+        # """
+        #
+        # self.log(text : string)
+        #
+        # """! Send log message to main event loop
+        #      @param text log message
+        # """
+        pass
+
+    def setup(self):
+        # TODO:
+        # * Initialize your resources
+        # * Register callbacks:
+        #
+        # Host test API:
+        #
+        # self.register_callback(event_name, callable, force=False)
+        #
+        # """! Register callback for a specific event (key: event name)
+        #     @param key String with name of the event
+        #     @param callback Callable which will be registered for event "key"
+        #     @param force God mode, if set to True you can add callback on any system event
+        # """
+        pass
+
+    def teardown(self):
+        # Destroy all resources used by host test.
+        # For example open sockets, open files, auxiliary threads and processes.
+        pass
+
+    def result(self):
+        # Returns host test result (True, False or None)
+        # This function will be called when test suite ends (also timeout).
+        # Use when you want to pass result after host state machine stops.
+        return __result
 ```
-$ mbedflsh -h
-Usage: mbedflsh-script.py [options]
 
-Flash mbed devices from command line.This module is using build in to mbed-
-host-tests plugins used for flashing mbed devices
+### DUT test suite - using utest (multiple test cases idiom)
 
-Options:
-  -h, --help            show this help message and exit
-  -f FILENAME, --file=FILENAME
-                        File to flash onto mbed device
-  -d DISK_PATH, --disk=DISK_PATH
-                        Target disk (mount point) path. Example: F:, /mnt/MBED
-  -c COPY_METHOD, --copy=COPY_METHOD
-                        Copy (flash the target) method selector. Plugin
-                        support: copy, cp, default, eACommander, eACommander-
-                        usb, shell, shutil, stlink, xcopy
-  --plugins             Prints registered plugins and exits
-  --version             Prints package version and exits
+* DUT implementation:
+```c++
+#include "greentea-client/test_env.h"
+#include "unity/unity.h"
+#include "utest/utest.h"
 
-Example: mbedflsh -d E: -f /path/to/file.bin
+status_t greentea_failure_handler(const Case *const source, const failure_t reason) {
+    // Continue with next test case if it fails
+    greentea_case_failure_abort_handler(source, reason);
+    return STATUS_CONTINUE;
+}
+
+void test_uninitialised_array() {
+    // TEst case code...
+}
+
+void test_repeated_init() {
+    // TEst case code...
+}
+
+void test_data_types() {
+    // TEst case code...
+}
+
+const Case cases[] = {
+    Case("Test uninitialised array", test_uninitialised_array, greentea_failure_handler),
+    Case("Test repeated array initialisation", test_repeated_init, greentea_failure_handler),
+    Case("Test basic data type arrays", test_data_types, greentea_failure_handler)
+    // ...
+};
+
+status_t greentea_setup(const size_t number_of_cases) {
+    GREENTEA_SETUP(5, "default_auto");
+    return greentea_test_setup_handler(number_of_cases);
+}
+
+int app_start(int, char*[]) {
+
+   // Run the test cases
+    Harness::run(specification);
+}
 ```
+
+# Writing host tests (master side)
+When writing a new host test for your module please bear in mind that:
+* You own the host test and you should write it the way so it can coexist with the same host tests ran by other processes such as Continuous Integration systems or other host users.
+  * Note: If you work in isolation and your test environment if fully controlled by you (for example you queue all tasks calling host tests, or use global host unique socket port numbers) this rule doesn’t apply to you.
+* When writing host test using OS resources such as sockets, files, serial ports, peripheral devices like for example multi-meters / scopes. remember that those resources are indivisible!
+  * For example if you hardcode in your host test UDP port 32123 and use it for UDP server implementation  of your host test bear in mind that this port may be already used. It is your responsibility to react for this event and implement means to overcome it (if possible).
+
+## Callbacks
+You can register callbacks in ```setup()``` phase or decorate callback functions using ```@event_callback``` decorator.
+
+### Callback registration in setup() method
+```python
+from mbed_host_tests import BaseHostTest
+
+class DetectRuntimeError(BaseHostTest):
+
+    __result = False
+
+    def callback_some_event(self, key, value, timeout):
+        # Do something with 'some_event'
+        pass
+
+    def setup(self):
+        # Reagister call back for 'some_event' event
+        self.register_callback('some_event', self.callback_some_event)
+
+    def result(self):
+        # Do some return calculations
+        return self.__result
+```
+Below the same callback registered using decorator:
+
+### Callback decorator definition
+```python
+from mbed_host_tests import BaseHostTest
+
+class DetectRuntimeError(BaseHostTest):
+
+    __result = False
+
+    @event_callback('some_event')
+    def callback_some_event(self, key, value, timeout):
+        # Do something with 'some_event'
+        pass
+
+    def setup(self):
+        # Do some extra setup if required
+        # You can also register here callbacks using self.register_callback(...) method
+        pass
+
+    def result(self):
+        # Do some return calculations
+        return self.__result
+```
+
+### Parsing text received from DUT (line by line)
+Example of host test expecting ```Runtime error ... CallbackNode ... ``` string in DUT output.
+We will use allowed to override ```__rxd_line``` event to hook to DUT RXD channel lines of text.
+
+#### Before Greentea v0.2.0
+```python
+from sys import stdout
+from mbed_host_tests import BaseHostTest
+
+class DetectRuntimeError(BaseHostTest):
+
+    name = 'detect_runtime_error'
+
+    def test(self, selftest):
+        result = selftest.RESULT_FAILURE
+        try:
+            while True:
+                line = selftest.mbed.serial_readline()
+
+                if line is None:
+                    return selftest.RESULT_IO_SERIAL
+
+                stdout.write(line)
+                stdout.flush()
+
+                line = line.strip()
+
+                if line.startswith("Runtime error") and line.find("CallbackNode") != -1:
+                    result = selftest.RESULT_SUCCESS
+                    break
+
+        except KeyboardInterrupt, _:
+            selftest.notify("\r\n[CTRL+C] exit")
+            result = selftest.RESULT_ERROR
+
+        return result
+```
+
+#### Using __rdx_line event
+```python
+from mbed_host_tests import BaseHostTest
+
+class DetectRuntimeError(BaseHostTest):
+    """! We __expect__ to detect 'Runtime error' """
+
+    __result = False
+
+    def callback__rxd_line(self, key, value, timeout):
+        # Parse line of text received over e.g. serial from DUT
+        line = value.strip()
+        if line.startswith("Runtime error") and "CallbackNode" in line:
+            # We've found exepcted "Runtime error" string in DUTs output stream
+            self.notify_complete(True)
+
+    def setup(self):
+        # Force, we force callback registration even it is a restricted one (starts with '__')
+        self.register_callback('__rxd_line', self.callback__rxd_line, force=True)
+
+    def result(self):
+        # We will return here (False) when we reach timeout of the test
+        return self.__result
+
+    def teardown(self):
+        pass
+```
+
+##  ```htrun``` new log format:
+  * ```[timestamp][source][level]``` - new log format, where:
+    * ```timestamp``` - returned by Python's ```time.time()```.
+    * ```source``` - log source.
+      * ```CONN``` - connection process (pooling for connection source e.g. serial port),
+      * ```SERI``` - serial port wrapper with standard read, write, flush interface,
+      * ```HTST``` - host test object, HostTestBase derived object,
+    * ```level``` - logging level:
+      * ```INF``` (info),
+      * ```WRN``` (warning) and
+      * ```ERR``` (error).
+      * ```TXD``` (host's TX channel, to DUT).
+      * ```RXD``` (host's RX channel, from DUT).
+
+### Log example
+* ```[1455218713.87][CONN][RXD] {{__sync;a7ace3a2-4025-4950-b9fc-a3671103387a}}``:
+* Logged from ```CONN``` (connection process).
+* ```RXD``` channel emitted ```{{__sync;a7ace3a2-4025-4950-b9fc-a3671103387a}}```.
+* Time stamp: ```2016-02-11 19:53:27```, see below:
