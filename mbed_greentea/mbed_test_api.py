@@ -88,6 +88,7 @@ def run_host_test(image_path,
                   disk,
                   port,
                   yotta_target,
+                  target_id,
                   duration=10,
                   micro=None,
                   reset=None,
@@ -159,6 +160,8 @@ def run_host_test(image_path,
         cmd += ["-c", copy_method]
     if micro is not None:
         cmd += ["-m", micro]
+    if target_id is not None:
+        cmd += ["-t", target_id]
     if reset is not None:
         cmd += ["-r", reset]
     if reset_tout is not None:
