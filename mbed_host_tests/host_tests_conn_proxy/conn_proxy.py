@@ -35,7 +35,7 @@ class SerialConnectorPrimitive(object):
         self.logger = HtrunLogger(prn_lock, 'SERI')
         self.LAST_ERROR = None
 
-        self.logger.prn_inf("serial(port=%s, baudrate=%d)"% (self.port, self.baudrate))
+        self.logger.prn_inf("serial(port=%s, baudrate=%d, timeout=%s)"% (self.port, self.baudrate, self.timeout))
         try:
             self.serial = Serial(port, baudrate=baudrate, timeout=self.timeout)
         except SerialException as e:
@@ -93,7 +93,8 @@ class SerialConnectorPrimitive(object):
     def write_kv(self, key, value):
         kv_buff = "{{%s;%s}}\n"% (key, value)
         self.write(kv_buff)
-        self.logger.prn_txd(kv_buff)
+        print "Written: %s" % kv_buff
+        #self.logger.prn_txd(kv_buff)
         return kv_buff
 
     def flush(self):
@@ -174,11 +175,11 @@ def conn_process(event_queue, dut_event_queue, prn_lock, config):
             break
 
         # Send data to DUT
-        if not dut_event_queue.empty():
-            try:
-                (key, value, _) = dut_event_queue.get(timeout=1)
-            except QueueEmpty:
-                continue
+        try:
+            (key, value, _) = dut_event_queue.get(timeout=0)
+        except QueueEmpty:
+            pass # Check if target sent something
+        else:
             # Return if state machine in host_test_default has finished to end process
             if key == '__host_test_finished' and value == True:
                 connector.finish()

@@ -17,11 +17,14 @@ limitations under the License.
 Author: Przemyslaw Wirkus <Przemyslaw.Wirkus@arm.com>
 """
 
+import os
 import json
 import time
+import requests
 import mbed_lstools
 from time import sleep
-
+#from mbed_tas_rm.requests import SwitchRequest
+#from mbed_tas_rm.client.client import MbedTasRmClient
 import mbed_host_tests.host_tests_plugins as ht_plugins
 
 
@@ -116,20 +119,97 @@ class Mbed:
                                         destination_disk=disk)
         return result
 
-    def update_device_info(self):
+    def hw_reset(self):
         """
-        Updates device's port and disk using mbedls. Typically used after reset.
+        Performs hardware reset of target ned device.
 
         :return:
         """
-        for i in range(3):
-            mbed_list = mbed_lstools.create().list_mbeds_ext()
-            if mbed_list:
-                for mut in mbed_list:
-                    if mut['target_id'] == self.target_id:
-                        self.port = mut['serial_port']
-                        self.disk = mut['mount_point']
-                        return True
-            print "HOST: Failed to find target after reset. Retrying (%d)" % i
-            time.sleep(1)
-        return False
+        try:
+            ip = os.environ['MBED_TAS_RM_IP']
+            port = os.environ['MBED_TAS_RM_PORT']
+        except KeyError, e:
+            print "HOST: Failed read environment variable (" + str(e) + "). Can't perform hardware reset."
+        else:
+            self.reset_target(ip, port)
+
+    def reset_target(self, ip, port):
+        """
+        Reset target device using TAS RM API
+
+        :param client:
+        :param target_info:
+        :return:
+        """
+
+        switch_off_req = {
+            "name": "switchResource",
+            "sub_requests": [
+                {
+                    "resource_type": "mbed_platform",
+                    "resource_id": self.target_id,
+                    "switch_command": "OFF"
+                }
+            ]
+        }
+
+        switch_state_req = {
+            "name": "switchResource",
+            "sub_requests": [
+                {
+                    "resource_type": "mbed_platform",
+                    "resource_id": self.target_id,
+                    "switch_command": "STATE"
+                }
+            ]
+        }
+
+        switch_on_req = {
+            "name": "switchResource",
+            "sub_requests": [
+                {
+                    "resource_type": "mbed_platform",
+                    "resource_id": self.target_id,
+                    "switch_command": "ON"
+                }
+            ]
+        }
+
+        # reset target
+        switch_off_req = self.run_request(ip, port, switch_off_req)
+        if "error" in switch_off_req['sub_requests'][0]:
+            print "HOST: Failed to reset target. error = %s" % switch_off_req['sub_requests'][0]['error']
+            return
+        switch_state_req = self.run_request(ip, port, switch_state_req)
+
+        start = time.time()
+        while switch_state_req['sub_requests'][0]['state'] != 'OFF' and (time.time() - start) < 300:
+            time.sleep(2)
+            switch_state_req = self.run_request(ip, port, switch_state_req)
+
+        start = time.time()
+        switch_on_req = self.run_request(ip, port, switch_on_req)
+        while (switch_on_req['sub_requests'][0]['state'] != 'ON' or
+                       switch_on_req['sub_requests'][0]["mount_point"] == "Not Connected") and \
+                        (time.time() - start) < 300:
+            time.sleep(2)
+            switch_on_req = self.run_request(ip, port, switch_on_req)
+
+        self.port = switch_on_req['sub_requests'][0]['serial_port']
+        self.disk = switch_on_req['sub_requests'][0]['mount_point']
+
+    def run_request(self, ip, port, request):
+        """
+
+        :param request:
+        :return:
+        """
+        headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
+        get_resp = requests.get("http://%s:%s/" % (ip, port),
+                       data=json.dumps(request),
+                       headers=headers)
+        resp = get_resp.json()
+        if get_resp.status_code == 200:
+            return resp
+        else:
+            return None

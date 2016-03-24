@@ -40,6 +40,7 @@ class BaseHostTestAbstract(object):
     def __notify_dut(self, key, value):
         """! Send data over serial to DUT """
         if self.__event_queue:
+            print "adding to dut event queue %s %s" % (key, value)
             self.__dut_event_queue.put((key, value, time()))
 
     def notify_complete(self, result=None):
@@ -49,13 +50,13 @@ class BaseHostTestAbstract(object):
         if self.__event_queue:
             self.__event_queue.put(('__notify_complete', result, time()))
 
-    def reset_dut(self):
+    def reset_dut(self, value):
         """
         Reset device under test
         :return:
         """
         if self.__event_queue:
-            self.__event_queue.put(('__reset_dut', True, time()))
+            self.__event_queue.put(('__reset_dut', value, time()))
 
     def notify_conn_lost(self, text):
         """! Notify main even loop that there was a DUT-host test connection error
