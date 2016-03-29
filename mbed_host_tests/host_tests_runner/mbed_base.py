@@ -188,15 +188,20 @@ class Mbed:
             switch_state_req = self.run_request(ip, port, switch_state_req)
 
         start = time.time()
-        switch_on_req = self.run_request(ip, port, switch_on_req)
-        while (switch_on_req['sub_requests'][0]['state'] != 'ON' or
-                       switch_on_req['sub_requests'][0]["mount_point"] == "Not Connected") and \
+        self.run_request(ip, port, switch_on_req)
+        switch_state_req = self.run_request(ip, port, switch_state_req)
+        while (switch_state_req['sub_requests'][0]['state'] != 'ON' or
+                       switch_state_req['sub_requests'][0]["mount_point"] == "Not Connected") and \
                         (time.time() - start) < 300:
             time.sleep(2)
-            switch_on_req = self.run_request(ip, port, switch_on_req)
+            switch_state_req = self.run_request(ip, port, switch_state_req)
 
-        self.port = switch_on_req['sub_requests'][0]['serial_port']
-        self.disk = switch_on_req['sub_requests'][0]['mount_point']
+        if (switch_state_req['sub_requests'][0]['state'] == 'ON' and
+                       switch_state_req['sub_requests'][0]["mount_point"] != "Not Connected"):
+            self.port = switch_state_req['sub_requests'][0]['serial_port']
+            self.disk = switch_state_req['sub_requests'][0]['mount_point']
+	else:
+	    print "HOST: Failed to reset device %s" % self.target_id
 
     def run_request(self, ip, port, request):
         """
