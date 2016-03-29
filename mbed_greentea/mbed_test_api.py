@@ -188,7 +188,7 @@ def run_host_test(image_path,
         if verbose:
             sys.stdout.write(line.rstrip() + '\n')
             sys.stdout.flush()
-    
+
     # Check if process was terminated by signal
     returncode = p.wait()
     if returncode < 0:
@@ -208,14 +208,19 @@ def run_host_test(image_path,
     return (result, htrun_output, testcase_duration, duration, result_test_cases, test_cases_summary)
 
 def get_testcase_utest(output, test_case_name):
-    """ Example test case prints
-    [1455553765.52][CONN][RXD] >>> Running case #1: 'Simple Test'...
-    [1455553765.52][CONN][RXD] {{__testcase_start;Simple Test}}
-    [1455553765.52][CONN][INF] found KV pair in stream: {{__testcase_start;Simple Test}}, queued...
-    [1455553765.58][CONN][RXD] Simple test called
-    [1455553765.58][CONN][RXD] {{__testcase_finish;Simple Test;1;0}}
-    [1455553765.58][CONN][INF] found KV pair in stream: {{__testcase_finish;Simple Test;1;0}}, queued...
-    [1455553765.70][CONN][RXD] >>> 'Simple Test': 1 passed, 0 failed
+    """ Fetches from log all prints for given utest test case (from being print to end print)
+
+        @details
+        Example test case prints
+        [1455553765.52][CONN][RXD] >>> Running case #1: 'Simple Test'...
+        [1455553765.52][CONN][RXD] {{__testcase_start;Simple Test}}
+        [1455553765.52][CONN][INF] found KV pair in stream: {{__testcase_start;Simple Test}}, queued...
+        [1455553765.58][CONN][RXD] Simple test called
+        [1455553765.58][CONN][RXD] {{__testcase_finish;Simple Test;1;0}}
+        [1455553765.58][CONN][INF] found KV pair in stream: {{__testcase_finish;Simple Test;1;0}}, queued...
+        [1455553765.70][CONN][RXD] >>> 'Simple Test': 1 passed, 0 failed
+
+        @return log lines between start and end test case print
     """
 
     # Return string with all non-alphanumerics backslashed;
@@ -264,6 +269,13 @@ def get_coverage_data(yotta_target, output):
             gt_logger.gt_log_tab("storing %d bytes in '%s'"% (len(bin_gcov_payload), gcov_path))
 
 def get_testcase_summary(output):
+    """! Searches for test case summary
+
+        String to find:
+        [1459246276.95][CONN][INF] found KV pair in stream: {{__testcase_summary;7;1}}, queued...
+
+        @return Tuple of (passed, failed) or None if no summary found
+    """
     re_tc_summary = re.compile(r"^\[(\d+\.\d+)\][^\{]+\{\{(__testcase_summary);(\d+);(\d+)\}\}")
     for line in output.splitlines():
         m = re_tc_summary.search(line)

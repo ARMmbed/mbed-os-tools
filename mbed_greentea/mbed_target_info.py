@@ -124,15 +124,19 @@ NOT_SUPPORTED_TESTS = [
     "mbed-test-cstring",
 ]
 
+def get_mbed_target_call_yotta_target():
+    cmd = ['yotta', '--plain', 'target']
+    gt_logger.gt_log("checking yotta target in current directory")
+    gt_logger.gt_log_tab("calling yotta: %s"% " ".join(cmd))
+    _stdout, _stderr, _ret = run_cli_process(cmd)
+    return _stdout, _stderr, _ret
+
 def get_mbed_target_from_current_dir():
     """! Function uses yotta target command to check current target
     @return Returns current target or None if target not found (e.g. not yotta package)
     """
     result = None
-    cmd = ['yotta', '--plain', 'target']
-    gt_logger.gt_log("checking yotta target in current directory")
-    gt_logger.gt_log_tab("calling yotta: %s"% " ".join(cmd))
-    _stdout, _stderr, _ret = run_cli_process(cmd)
+    _stdout, _stderr, _ret = get_mbed_target_call_yotta_target()
     if not _ret:
         for line in _stdout.splitlines():
             target = parse_yotta_target_cmd_output(line)

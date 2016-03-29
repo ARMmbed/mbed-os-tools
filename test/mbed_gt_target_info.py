@@ -17,7 +17,9 @@ limitations under the License.
 """
 
 import unittest
+from mock import patch
 from mbed_greentea import mbed_target_info
+
 
 class GreenteaTargetInfo(unittest.TestCase):
 
@@ -88,6 +90,14 @@ frdm-k64f-armcc 0.0.16: Official mbed build target for the mbed frdm-k64f develo
         self.assertIn("frdm-k64f-armcc", mbed_target_info.parse_yotta_target_cmd_output("frdm-k64f-armcc 1.12.3 \r\n"))
         self.assertIn("mbed-gcc", mbed_target_info.parse_yotta_target_cmd_output("mbed-gcc 0.0.14 \r\n"))
         self.assertIn("stm32f429i-disco-gcc", mbed_target_info.parse_yotta_target_cmd_output("stm32f429i-disco-gcc 0.0.14 \r\n"))
+
+    def test_parse_yotta_target_cmd_output_fail(self):
+        self.assertEqual(None, mbed_target_info.parse_yotta_target_cmd_output(""))
+        self.assertEqual(None, mbed_target_info.parse_yotta_target_cmd_output("stm32f429i-disco-gcc 1"))
+        self.assertEqual(None, mbed_target_info.parse_yotta_target_cmd_output("stm32f429i-disco-gcc 1."))
+        self.assertEqual(None, mbed_target_info.parse_yotta_target_cmd_output("stm32f429i-disco-gcc 1.0"))
+        self.assertEqual(None, mbed_target_info.parse_yotta_target_cmd_output("stm32f429i-disco-gcc 1.0."))
+        self.assertEqual(None, mbed_target_info.parse_yotta_target_cmd_output("stm32f429i-disco-gcc 1.0.x"))
 
     def test_parse_yotta_search_cmd_output(self):
         self.assertIn("frdm-k64f-gcc", mbed_target_info.parse_yotta_search_cmd_output("frdm-k64f-gcc 0.0.24: Official mbed build target for the mbed frdm-k64f development board."))
@@ -218,6 +228,31 @@ additional results from https://yotta-private.herokuapp.com:
         self.assertNotEqual('frdm-k64f-gcc', mbed_target_info.parse_mbed_target_from_target_json('frdm-k64f', target_json_data))
         self.assertNotEqual('frdm-k64f-gcc', mbed_target_info.parse_mbed_target_from_target_json('K64F', target_json_data))
         self.assertNotEqual('frdm-k64f-gcc', mbed_target_info.parse_mbed_target_from_target_json('FRDM-K64F', target_json_data))
+
+    @patch('mbed_greentea.mbed_target_info.get_mbed_target_call_yotta_target')
+    def test_get_mbed_target_from_current_dir_ok(self, callYtTarget_mock):
+
+        yotta_target_cmd = """frdm-k64f-gcc 2.0.0
+kinetis-k64-gcc 2.0.2
+mbed-gcc 1.1.0
+"""
+
+        callYtTarget_mock.return_value = ('', '',  0)
+        r = mbed_target_info.get_mbed_target_from_current_dir()
+        self.assertEqual(None, r)
+
+        callYtTarget_mock.return_value = ('', '',  1)
+        r = mbed_target_info.get_mbed_target_from_current_dir()
+        self.assertEqual(None, r)
+
+        callYtTarget_mock.return_value = (yotta_target_cmd, '',  1)
+        r = mbed_target_info.get_mbed_target_from_current_dir()
+        self.assertEqual(None, r)
+
+        callYtTarget_mock.return_value = (yotta_target_cmd, '',  0)
+        r = mbed_target_info.get_mbed_target_from_current_dir()
+        self.assertEqual('frdm-k64f-gcc', r)
+
 
 if __name__ == '__main__':
     unittest.main()
