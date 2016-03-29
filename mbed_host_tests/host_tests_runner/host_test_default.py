@@ -196,18 +196,21 @@ class DefaultTestSelector(DefaultTestSelectorBase):
                             dut_event_queue.put(('__host_test_finished', True, time()))
                             p.join()
 
-                            assert value in \
-                                   [DefaultTestSelector.RESET_TYPE_SW_RST, DefaultTestSelector.RESET_TYPE_HW_RST], \
-                                "Unknown reset type (%s). Supported types 'software_reset' and 'hardware_reset'" % value
-
                             if value == DefaultTestSelector.RESET_TYPE_SW_RST:
-                                # Disconnecting and re-connecting comm process will reset DUT
-                                p = start_conn_process()
+                                self.logger.prn_inf("Performing software reset.")
+                                # Just disconnecting and re-connecting comm process will soft reset DUT
                             elif value == DefaultTestSelector.RESET_TYPE_HW_RST:
+                                self.logger.prn_inf("Performing hard reset.")
                                 # request hardware reset
                                 self.mbed.hw_reset()
-                                # connect to the device
-                                p = start_conn_process()
+                            else:
+                                self.logger.prn_err("Invalid reset type (%s). Supported types [%s]." %
+                                                    (value, ", ".join([DefaultTestSelector.RESET_TYPE_HW_RST,
+                                                                       DefaultTestSelector.RESET_TYPE_SW_RST])))
+                                self.logger.prn_inf("Software reset will be performed.")
+
+                            # connect to the device
+                            p = start_conn_process()
                         elif key == '__notify_conn_lost':
                             # This event is sent by conn_process, DUT connection was lost
                             self.logger.prn_err(value)
