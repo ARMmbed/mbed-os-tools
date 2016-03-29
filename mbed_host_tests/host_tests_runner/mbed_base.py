@@ -188,10 +188,8 @@ class Mbed:
             }
             resp = self.run_request(ip, port, switch_state_req)
             start = time.time()
-            while resp and resp['sub_requests'][0]['state'] != required_state and \
-                    (required_state == 'OFF' or (required_state == 'ON' and
-                                                         resp['sub_requests'][0]["mount_point"] != "Not Connected")) and \
-                            (time.time() - start) < 300:
+            while resp and (resp['sub_requests'][0]['state'] != required_state or (required_state == 'ON' and
+                            resp['sub_requests'][0]["mount_point"] == "Not Connected")) and (time.time() - start) < 300:
                 time.sleep(2)
                 resp = self.run_request(ip, port, resp)
             return resp
@@ -221,3 +219,4 @@ class Mbed:
             return resp
         else:
             return None
+
