@@ -153,16 +153,6 @@ class Mbed:
             ]
         }
 
-        switch_state_req = {
-            "name": "switchResource",
-            "sub_requests": [
-                {
-                    "resource_type": "mbed_platform",
-                    "resource_id": self.target_id,
-                    "switch_command": "STATE"
-                }
-            ]
-        }
 
         switch_on_req = {
             "name": "switchResource",
@@ -177,31 +167,44 @@ class Mbed:
 
         # reset target
         switch_off_req = self.run_request(ip, port, switch_off_req)
+        if switch_off_req is None:
+            print "HOST: Failed to communicate with TAS RM!"
+            return
+
         if "error" in switch_off_req['sub_requests'][0]:
             print "HOST: Failed to reset target. error = %s" % switch_off_req['sub_requests'][0]['error']
             return
-        switch_state_req = self.run_request(ip, port, switch_state_req)
 
-        start = time.time()
-        while switch_state_req['sub_requests'][0]['state'] != 'OFF' and (time.time() - start) < 300:
-            time.sleep(2)
-            switch_state_req = self.run_request(ip, port, switch_state_req)
+        def poll_state(required_state):
+            switch_state_req = {
+                "name": "switchResource",
+                "sub_requests": [
+                    {
+                        "resource_type": "mbed_platform",
+                        "resource_id": self.target_id,
+                        "switch_command": "STATE"
+                    }
+                ]
+            }
+            resp = self.run_request(ip, port, switch_state_req)
+            start = time.time()
+            while resp and resp['sub_requests'][0]['state'] != required_state and \
+                    (required_state == 'OFF' or (required_state == 'ON' and
+                                                         resp['sub_requests'][0]["mount_point"] != "Not Connected")) and \
+                            (time.time() - start) < 300:
+                time.sleep(2)
+                resp = self.run_request(ip, port, resp)
+            return resp
 
-        start = time.time()
+        poll_state("OFF")
+
         self.run_request(ip, port, switch_on_req)
-        switch_state_req = self.run_request(ip, port, switch_state_req)
-        while (switch_state_req['sub_requests'][0]['state'] != 'ON' or
-                       switch_state_req['sub_requests'][0]["mount_point"] == "Not Connected") and \
-                        (time.time() - start) < 300:
-            time.sleep(2)
-            switch_state_req = self.run_request(ip, port, switch_state_req)
-
-        if (switch_state_req['sub_requests'][0]['state'] == 'ON' and
-                       switch_state_req['sub_requests'][0]["mount_point"] != "Not Connected"):
-            self.port = switch_state_req['sub_requests'][0]['serial_port']
-            self.disk = switch_state_req['sub_requests'][0]['mount_point']
-	else:
-	    print "HOST: Failed to reset device %s" % self.target_id
+        resp = poll_state("ON")
+        if resp and resp['sub_requests'][0]['state'] == 'ON' and resp['sub_requests'][0]["mount_point"] != "Not Connected":
+            self.port = resp['sub_requests'][0]['serial_port']
+            self.disk = resp['sub_requests'][0]['mount_point']
+        else:
+            print "HOST: Failed to reset device %s" % self.target_id
 
     def run_request(self, ip, port, request):
         """
