@@ -221,7 +221,6 @@ class DefaultTestSelector(DefaultTestSelectorBase):
                             callbacks__exit = True
                             break
                         elif key in callbacks:
-                            print 'received key value = %s %s ' % (key, value)
                             # Handle callback
                             callbacks[key](key, value, timestamp)
                         else:

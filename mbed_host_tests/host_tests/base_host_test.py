@@ -40,7 +40,6 @@ class BaseHostTestAbstract(object):
     def __notify_dut(self, key, value):
         """! Send data over serial to DUT """
         if self.__event_queue:
-            print "adding to dut event queue %s %s" % (key, value)
             self.__dut_event_queue.put((key, value, time()))
 
     def notify_complete(self, result=None):
