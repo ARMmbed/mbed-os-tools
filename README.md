@@ -19,10 +19,10 @@
 * [Host test examples](#host-test-examples)
   * [Return result after __exit](#return-result-after-__exit)
 * [Writing DUT test suite (slave side)](#writing-dut-test-suite-slave-side)
-  * [DUT test suite - single test case idiom](#dut-test-suite---single-test-case-idiom)
-    * [DUT always return](#dut-always-return)
-    * [DUT never return](#dut-never-return)
-    * [DUT test suite - using utest (multiple test cases idiom)](#dut-test-suite---using-utest-multiple-test-cases-idiom)
+  * [DUT test suite with single test case](#dut-test-suite-with-single-test-case)
+    * [DUT always finishes execution](#dut-always-finishes-execution)
+    * [DUT test suite never finishes execution](#dut-test-suite-never-finishes-execution)
+    * [DUT test suite with ```utest``` harness](#dut-test-suite-with-utest-harness)
 * [Writing host tests (master side)](#writing-host-tests-master-side)
   * [Callbacks](#callbacks)
     * [Callback registration in setup() method](#callback-registration-in-setup-method)
@@ -32,6 +32,7 @@
       * [Using __rdx_line event](#using-__rdx_line-event)
   * [ ```htrun``` new log format:](#-htrun-new-log-format)
     * [Log example](#log-example)
+* [End-to-end examples](#end-to-end-examples)
 
 # mbed-host-tests
 
@@ -522,14 +523,14 @@ mbedgt: test suite results: 1 OK
 
 # Writing DUT test suite (slave side)
 
-## DUT test suite - single test case idiom
+## DUT test suite with single test case
 
 We can use few methods to structure out test suite and test cases. Simpliest would be to use ```greentea-client``` API and wrap one test case inside out test suite. This way of creating test suite is useful when you want to:
 * write only one test case inside test suite,
 * make example application (example as a test) or
 * when your test suite is calling blocking forever function. For example all types of UDP/TCP servers which run in forever loop are in this category. In this case we do not expect from DUT ```__exit``` event at all and host test should be designed in such a way that it always return result.
 
-### DUT always return
+### DUT always finishes execution
 
 In this example DUT code uses ```greentea-client``` to sync (```GREENTEA_SETUP```) and pass result (```GREENTEA_TESTSUITE_RESULT```) to ```Greentea```. This is very simple example of how you can write tests. Note that in this example test suite only implements one test case. Actually test suite is test case at the same time. Result passed to ```GREENTEA_TESTSUITE_RESULT``` will be at the same time test case result.
 
@@ -550,7 +551,9 @@ int app_start(int, char*[]) {
 }
 ```
 
-### DUT never return
+### DUT test suite never finishes execution
+
+Test suite is implemented so that it will never exit / finish its execution. For example ```main()``` or ```app_start()``` functions are implemented using infinite (endless) loop. This property have for example UDP/TCP servers (listening forever), all sorts of echo servers etc.
 
 In this example DUT code uses ```greentea-client``` to sync (```GREENTEA_SETUP```) with ```Greentea```. We are not calling ```GREENTEA_TESTSUITE_RESULT(result)``` at any time. In this example host test is responsible for providing test suite result using ```self.notify_complete()``` API or ```self.result()``` function.
 
@@ -644,7 +647,9 @@ class YourCustomHostTest(BaseHostTest):
         return __result
 ```
 
-### DUT test suite - using utest (multiple test cases idiom)
+### DUT test suite with ```utest``` harness
+
+```utest``` harness allows you to define multiple test cases inside your test suite. This feature is supported by ```Greentea``` test tools.
 
 * DUT implementation:
 ```c++
@@ -787,12 +792,14 @@ class DetectRuntimeError(BaseHostTest):
 from mbed_host_tests import BaseHostTest
 
 class DetectRuntimeError(BaseHostTest):
-    """! We __expect__ to detect 'Runtime error' """
+    """! We _expect_ to detect 'Runtime error' """
 
     __result = False
 
     def callback__rxd_line(self, key, value, timeout):
+        #
         # Parse line of text received over e.g. serial from DUT
+        #
         line = value.strip()
         if line.startswith("Runtime error") and "CallbackNode" in line:
             # We've found exepcted "Runtime error" string in DUTs output stream
@@ -819,13 +826,21 @@ class DetectRuntimeError(BaseHostTest):
       * ```HTST``` - host test object, HostTestBase derived object,
     * ```level``` - logging level:
       * ```INF``` (info),
-      * ```WRN``` (warning) and
+      * ```WRN``` (warning),
       * ```ERR``` (error).
       * ```TXD``` (host's TX channel, to DUT).
       * ```RXD``` (host's RX channel, from DUT).
 
 ### Log example
-* ```[1455218713.87][CONN][RXD] {{__sync;a7ace3a2-4025-4950-b9fc-a3671103387a}}``:
+* ```[1455218713.87][CONN][RXD] {{__sync;a7ace3a2-4025-4950-b9fc-a3671103387a}}```:
 * Logged from ```CONN``` (connection process).
 * ```RXD``` channel emitted ```{{__sync;a7ace3a2-4025-4950-b9fc-a3671103387a}}```.
 * Time stamp: ```2016-02-11 19:53:27```, see below:
+
+# End-to-end examples
+
+Here you can find references to modules and repositories contain examples of test suites and test cases written using ```greentea-client```, ```utest``` and ```unity```:
+* ```utest``` module contains [test cases](https://github.com/ARMmbed/utest/tree/master/test) written using ```utest``` itself.
+* ```minar``` module contains [test cases](https://github.com/ARMmbed/minar/tree/master/test) written without ```utest```. Note: ```utest``` may use ```minar``` for callback scheduling and can't be use to test ```minar``` itself.
+* ```mbed-drivers``` module contains [test cases](https://github.com/ARMmbed/mbed-drivers/tree/master/test) written with and without ```utest``` harness. Currently all ```mbed-drivers``` tests are using [build-in to ```htrun``` host tests](https://github.com/ARMmbed/htrun/tree/master/mbed_host_tests/host_tests).
+* And finally ```sockets``` module contains [test cases](https://github.com/ARMmbed/sockets/tree/master/test) with [custom host tests](https://github.com/ARMmbed/sockets/tree/master/test/host_tests).
