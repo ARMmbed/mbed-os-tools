@@ -62,8 +62,7 @@ class HostTestPluginPowerCycleResetMethod(HostTestPluginBase):
                 device_info = kwargs['device_info']
                 ret = self.__get_mbed_tas_rm_addr()
                 if ret:
-                    ip = ret[0]
-                    port = ret[1]
+                    ip, port = ret
                     result = self.__hw_reset(ip, port, target_id, device_info)
         return result
 
