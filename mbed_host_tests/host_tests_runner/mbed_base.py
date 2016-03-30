@@ -17,10 +17,7 @@ limitations under the License.
 Author: Przemyslaw Wirkus <Przemyslaw.Wirkus@arm.com>
 """
 
-import os
 import json
-import time
-import requests
 from time import sleep
 import mbed_host_tests.host_tests_plugins as ht_plugins
 

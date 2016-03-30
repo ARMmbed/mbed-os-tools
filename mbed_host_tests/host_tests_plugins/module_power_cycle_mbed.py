@@ -27,7 +27,7 @@ from host_test_plugins import HostTestPluginBase
 class HostTestPluginPowerCycleResetMethod(HostTestPluginBase):
 
     # Plugin interface
-    name = 'HostTestPluginHwResetMethod_Mbed'
+    name = 'HostTestPluginPowerCycleResetMethod'
     type = 'ResetMethod'
     stable = True
     capabilities = ['power_cycle']
@@ -60,7 +60,7 @@ class HostTestPluginPowerCycleResetMethod(HostTestPluginBase):
             if capability in HostTestPluginPowerCycleResetMethod.capabilities:
                 target_id = kwargs['target_id']
                 device_info = kwargs['device_info']
-                self.__hw_reset(target_id, device_info)
+                result = self.__hw_reset(target_id, device_info)
         return result
 
     def __hw_reset(self, target_id, device_info):
@@ -69,13 +69,15 @@ class HostTestPluginPowerCycleResetMethod(HostTestPluginBase):
 
         :return:
         """
+        result = False
         try:
             ip = os.environ['MBED_TAS_RM_IP']
             port = os.environ['MBED_TAS_RM_PORT']
         except KeyError, e:
             print "HOST: Failed read environment variable (" + str(e) + "). Can't perform hardware reset."
         else:
-            self.__reset_target(ip, port, target_id, device_info)
+            result = self.__reset_target(ip, port, target_id, device_info)
+        return result
 
     def __reset_target(self, ip, port, target_id, device_info):
         """
@@ -111,15 +113,17 @@ class HostTestPluginPowerCycleResetMethod(HostTestPluginBase):
             ]
         }
 
+        result = False
+
         # reset target
         switch_off_req = self.__run_request(ip, port, switch_off_req)
         if switch_off_req is None:
             print "HOST: Failed to communicate with TAS RM!"
-            return
+            return result
 
         if "error" in switch_off_req['sub_requests'][0]:
             print "HOST: Failed to reset target. error = %s" % switch_off_req['sub_requests'][0]['error']
-            return
+            return result
 
         def poll_state(required_state):
             switch_state_req = {
@@ -147,8 +151,11 @@ class HostTestPluginPowerCycleResetMethod(HostTestPluginBase):
         if resp and resp['sub_requests'][0]['state'] == 'ON' and resp['sub_requests'][0]["mount_point"] != "Not Connected":
             for k, v in resp['sub_requests'][0].iteritems():
                 device_info[k] = v
+            result = True
         else:
             print "HOST: Failed to reset device %s" % target_id
+
+        return result
 
     @staticmethod
     def __run_request(ip, port, request):
