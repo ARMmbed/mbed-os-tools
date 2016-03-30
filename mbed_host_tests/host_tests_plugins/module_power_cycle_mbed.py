@@ -65,7 +65,7 @@ class HostTestPluginPowerCycleResetMethod(HostTestPluginBase):
 
     def __hw_reset(self, target_id, device_info):
         """
-        Performs hardware reset of target ned device.
+        Performs hardware reset of target mbed device.
 
         :return:
         """
