@@ -487,15 +487,20 @@ class MbedLsToolsBase:
     def get_mbed_htm_lines(self, mount_point):
         result = []
         if mount_point:
-            for mount_point_file in [f for f in listdir(mount_point) if isfile(join(mount_point, f))]:
-                if mount_point_file.lower() == self.MBED_HTM_NAME:
-                    mbed_htm_path = os.path.join(mount_point, mount_point_file)
-                    try:
-                        with open(mbed_htm_path, 'r') as f:
-                            result = f.readlines()
-                    except IOError:
-                        if self.DEBUG_FLAG:
-                            self.debug(self.get_mbed_htm_target_id.__name__, ('Failed to open file', mbed_htm_path))
+            try:
+                for mount_point_file in [f for f in listdir(mount_point) if isfile(join(mount_point, f))]:
+                    if mount_point_file.lower() == self.MBED_HTM_NAME:
+                        mbed_htm_path = os.path.join(mount_point, mount_point_file)
+                        try:
+                            with open(mbed_htm_path, 'r') as f:
+                                result = f.readlines()
+                        except IOError:
+                            if self.DEBUG_FLAG:
+                                self.debug(self.get_mbed_htm_target_id.__name__, ('Failed to open file', mbed_htm_path))
+            except OSError:
+                if self.DEBUG_FLAG:
+                    self.debug(self.get_mbed_htm_target_id.__name__, ('Failed to list mount point', mount_point))
+
         return result
 
     def get_details_txt(self, mount_point):
