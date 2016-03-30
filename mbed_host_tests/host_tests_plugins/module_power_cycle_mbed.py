@@ -1,0 +1,172 @@
+"""
+mbed SDK
+Copyright (c) 2011-2015 ARM Limited
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+Author: Przemyslaw Wirkus <Przemyslaw.Wirkus@arm.com>
+"""
+
+import os
+import json
+import time
+import requests
+from host_test_plugins import HostTestPluginBase
+
+
+class HostTestPluginPowerCycleResetMethod(HostTestPluginBase):
+
+    # Plugin interface
+    name = 'HostTestPluginHwResetMethod_Mbed'
+    type = 'ResetMethod'
+    stable = True
+    capabilities = ['power_cycle']
+    required_parameters = ['target_id', 'device_info']
+
+    def setup(self, *args, **kwargs):
+        """! Configure plugin, this function should be called before plugin execute() method is used.
+        """
+        return True
+
+    def execute(self, capability, *args, **kwargs):
+        """! Executes capability by name
+
+        @param capability Capability name
+        @param args Additional arguments
+        @param kwargs Additional arguments
+        @details Each capability e.g. may directly just call some command line program or execute building pythonic function
+        @return Capability call return value
+        """
+        if 'target_id' not in kwargs or not kwargs['target_id']:
+            self.print_plugin_error("Error: This plugin requires mbed target_id")
+            return False
+
+        if 'device_info' not in kwargs or type(kwargs['device_info']) is not dict:
+            self.print_plugin_error("Error: This plugin requires dict parameter 'device_info' passed by the caller.")
+            return False
+
+        result = False
+        if self.check_parameters(capability, *args, **kwargs) is True:
+            if capability in HostTestPluginPowerCycleResetMethod.capabilities:
+                target_id = kwargs['target_id']
+                device_info = kwargs['device_info']
+                self.__hw_reset(target_id, device_info)
+        return result
+
+    def __hw_reset(self, target_id, device_info):
+        """
+        Performs hardware reset of target ned device.
+
+        :return:
+        """
+        try:
+            ip = os.environ['MBED_TAS_RM_IP']
+            port = os.environ['MBED_TAS_RM_PORT']
+        except KeyError, e:
+            print "HOST: Failed read environment variable (" + str(e) + "). Can't perform hardware reset."
+        else:
+            self.__reset_target(ip, port, target_id, device_info)
+
+    def __reset_target(self, ip, port, target_id, device_info):
+        """
+        Reset target device using TAS RM API
+
+        :param ip:
+        :param port:
+        :param target_id:
+        :param device_info:
+        :return:
+        """
+
+        switch_off_req = {
+            "name": "switchResource",
+            "sub_requests": [
+                {
+                    "resource_type": "mbed_platform",
+                    "resource_id": target_id,
+                    "switch_command": "OFF"
+                }
+            ]
+        }
+
+
+        switch_on_req = {
+            "name": "switchResource",
+            "sub_requests": [
+                {
+                    "resource_type": "mbed_platform",
+                    "resource_id": target_id,
+                    "switch_command": "ON"
+                }
+            ]
+        }
+
+        # reset target
+        switch_off_req = self.__run_request(ip, port, switch_off_req)
+        if switch_off_req is None:
+            print "HOST: Failed to communicate with TAS RM!"
+            return
+
+        if "error" in switch_off_req['sub_requests'][0]:
+            print "HOST: Failed to reset target. error = %s" % switch_off_req['sub_requests'][0]['error']
+            return
+
+        def poll_state(required_state):
+            switch_state_req = {
+                "name": "switchResource",
+                "sub_requests": [
+                    {
+                        "resource_type": "mbed_platform",
+                        "resource_id": target_id,
+                        "switch_command": "STATE"
+                    }
+                ]
+            }
+            resp = self.__run_request(ip, port, switch_state_req)
+            start = time.time()
+            while resp and (resp['sub_requests'][0]['state'] != required_state or (required_state == 'ON' and
+                            resp['sub_requests'][0]["mount_point"] == "Not Connected")) and (time.time() - start) < 300:
+                time.sleep(2)
+                resp = self.__run_request(ip, port, resp)
+            return resp
+
+        poll_state("OFF")
+
+        self.__run_request(ip, port, switch_on_req)
+        resp = poll_state("ON")
+        if resp and resp['sub_requests'][0]['state'] == 'ON' and resp['sub_requests'][0]["mount_point"] != "Not Connected":
+            for k, v in resp['sub_requests'][0].iteritems():
+                device_info[k] = v
+        else:
+            print "HOST: Failed to reset device %s" % target_id
+
+    @staticmethod
+    def __run_request(ip, port, request):
+        """
+
+        :param request:
+        :return:
+        """
+        headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
+        get_resp = requests.get("http://%s:%s/" % (ip, port), data=json.dumps(request), headers=headers)
+        resp = get_resp.json()
+        if get_resp.status_code == 200:
+            return resp
+        else:
+            return None
+
+
+def load_plugin():
+    """! Returns plugin available in this module
+    """
+    return HostTestPluginPowerCycleResetMethod()

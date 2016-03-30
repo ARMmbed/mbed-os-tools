@@ -21,10 +21,7 @@ import os
 import json
 import time
 import requests
-import mbed_lstools
 from time import sleep
-#from mbed_tas_rm.requests import SwitchRequest
-#from mbed_tas_rm.client.client import MbedTasRmClient
 import mbed_host_tests.host_tests_plugins as ht_plugins
 
 
@@ -125,98 +122,13 @@ class Mbed:
 
         :return:
         """
-        try:
-            ip = os.environ['MBED_TAS_RM_IP']
-            port = os.environ['MBED_TAS_RM_PORT']
-        except KeyError, e:
-            print "HOST: Failed read environment variable (" + str(e) + "). Can't perform hardware reset."
-        else:
-            self.reset_target(ip, port)
-
-    def reset_target(self, ip, port):
-        """
-        Reset target device using TAS RM API
-
-        :param client:
-        :param target_info:
-        :return:
-        """
-
-        switch_off_req = {
-            "name": "switchResource",
-            "sub_requests": [
-                {
-                    "resource_type": "mbed_platform",
-                    "resource_id": self.target_id,
-                    "switch_command": "OFF"
-                }
-            ]
-        }
-
-
-        switch_on_req = {
-            "name": "switchResource",
-            "sub_requests": [
-                {
-                    "resource_type": "mbed_platform",
-                    "resource_id": self.target_id,
-                    "switch_command": "ON"
-                }
-            ]
-        }
-
-        # reset target
-        switch_off_req = self.run_request(ip, port, switch_off_req)
-        if switch_off_req is None:
-            print "HOST: Failed to communicate with TAS RM!"
-            return
-
-        if "error" in switch_off_req['sub_requests'][0]:
-            print "HOST: Failed to reset target. error = %s" % switch_off_req['sub_requests'][0]['error']
-            return
-
-        def poll_state(required_state):
-            switch_state_req = {
-                "name": "switchResource",
-                "sub_requests": [
-                    {
-                        "resource_type": "mbed_platform",
-                        "resource_id": self.target_id,
-                        "switch_command": "STATE"
-                    }
-                ]
-            }
-            resp = self.run_request(ip, port, switch_state_req)
-            start = time.time()
-            while resp and (resp['sub_requests'][0]['state'] != required_state or (required_state == 'ON' and
-                            resp['sub_requests'][0]["mount_point"] == "Not Connected")) and (time.time() - start) < 300:
-                time.sleep(2)
-                resp = self.run_request(ip, port, resp)
-            return resp
-
-        poll_state("OFF")
-
-        self.run_request(ip, port, switch_on_req)
-        resp = poll_state("ON")
-        if resp and resp['sub_requests'][0]['state'] == 'ON' and resp['sub_requests'][0]["mount_point"] != "Not Connected":
-            self.port = resp['sub_requests'][0]['serial_port']
-            self.disk = resp['sub_requests'][0]['mount_point']
-        else:
-            print "HOST: Failed to reset device %s" % self.target_id
-
-    def run_request(self, ip, port, request):
-        """
-
-        :param request:
-        :return:
-        """
-        headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
-        get_resp = requests.get("http://%s:%s/" % (ip, port),
-                       data=json.dumps(request),
-                       headers=headers)
-        resp = get_resp.json()
-        if get_resp.status_code == 200:
-            return resp
-        else:
-            return None
+        device_info = {}
+        result = ht_plugins.call_plugin('ResetMethod',
+                                        'power_cycle',
+                                        target_id=self.target_id,
+                                        device_info=device_info)
+        if result:
+            self.port = device_info['serial_port']
+            self.disk = device_info['mount_point']
+        return result
 
