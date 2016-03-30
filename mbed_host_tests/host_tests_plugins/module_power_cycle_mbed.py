@@ -60,26 +60,28 @@ class HostTestPluginPowerCycleResetMethod(HostTestPluginBase):
             if capability in HostTestPluginPowerCycleResetMethod.capabilities:
                 target_id = kwargs['target_id']
                 device_info = kwargs['device_info']
-                result = self.__hw_reset(target_id, device_info)
+                ret = self.__get_mbed_tas_rm_addr()
+                if ret:
+                    ip = ret[0]
+                    port = ret[1]
+                    result = self.__hw_reset(ip, port, target_id, device_info)
         return result
 
-    def __hw_reset(self, target_id, device_info):
+    def __get_mbed_tas_rm_addr(self):
         """
-        Performs hardware reset of target mbed device.
-
+        Get IP and Port of mbed tas rm service.
         :return:
         """
-        result = False
         try:
             ip = os.environ['MBED_TAS_RM_IP']
             port = os.environ['MBED_TAS_RM_PORT']
+            return ip, port
         except KeyError, e:
-            self.print_plugin_error("HOST: Failed read environment variable (" + str(e) + "). Can't perform hardware reset.")
-        else:
-            result = self.__reset_target(ip, port, target_id, device_info)
-        return result
+            self.print_plugin_error("HOST: Failed to read environment variable (" + str(e) + "). Can't perform hardware reset.")
 
-    def __reset_target(self, ip, port, target_id, device_info):
+        return None
+
+    def __hw_reset(self, ip, port, target_id, device_info):
         """
         Reset target device using TAS RM API
 
