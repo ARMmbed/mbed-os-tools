@@ -93,8 +93,7 @@ class SerialConnectorPrimitive(object):
     def write_kv(self, key, value):
         kv_buff = "{{%s;%s}}\n"% (key, value)
         self.write(kv_buff)
-        print "Written: %s" % kv_buff
-        #self.logger.prn_txd(kv_buff)
+        self.logger.prn_txd(kv_buff)
         return kv_buff
 
     def flush(self):
