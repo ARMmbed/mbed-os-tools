@@ -74,7 +74,7 @@ class HostTestPluginPowerCycleResetMethod(HostTestPluginBase):
             ip = os.environ['MBED_TAS_RM_IP']
             port = os.environ['MBED_TAS_RM_PORT']
         except KeyError, e:
-            print "HOST: Failed read environment variable (" + str(e) + "). Can't perform hardware reset."
+            self.print_plugin_error("HOST: Failed read environment variable (" + str(e) + "). Can't perform hardware reset.")
         else:
             result = self.__reset_target(ip, port, target_id, device_info)
         return result
@@ -118,11 +118,11 @@ class HostTestPluginPowerCycleResetMethod(HostTestPluginBase):
         # reset target
         switch_off_req = self.__run_request(ip, port, switch_off_req)
         if switch_off_req is None:
-            print "HOST: Failed to communicate with TAS RM!"
+            self.print_plugin_error("HOST: Failed to communicate with TAS RM!")
             return result
 
         if "error" in switch_off_req['sub_requests'][0]:
-            print "HOST: Failed to reset target. error = %s" % switch_off_req['sub_requests'][0]['error']
+            self.print_plugin_error("HOST: Failed to reset target. error = %s" % switch_off_req['sub_requests'][0]['error'])
             return result
 
         def poll_state(required_state):
@@ -153,7 +153,7 @@ class HostTestPluginPowerCycleResetMethod(HostTestPluginBase):
                 device_info[k] = v
             result = True
         else:
-            print "HOST: Failed to reset device %s" % target_id
+            self.print_plugin_error("HOST: Failed to reset device %s" % target_id)
 
         return result
 
