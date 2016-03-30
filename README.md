@@ -21,6 +21,7 @@
   * [Mock command line examples](#mock-command-line-examples)
   * [Mocking example with Freescale K64F platform](#mocking-example-with-freescale-k64f-platform)
 * [mbed-ls unit testing](#mbed-ls-unit-testing)
+  * [Code coverage](#code-coverage)
 * [Configure mbed-enabled device to work with your host](#configure-mbed-enabled-device-to-work-with-your-host)
   * [Windows serial port configuration](#windows-serial-port-configuration)
   * [Mounting with sync](#mounting-with-sync)
@@ -526,6 +527,37 @@ test_porting_mbed_os_support (test.detect_os.DetectOSTestCase) ... ok
 Ran 18 tests in 0.302s
 
 OK
+```
+
+## Code coverage
+
+We can measure code coverage for unit tests deployed together with ```mbed-ls```. To do so we can use popular Python ```coverage``` tools.
+First install ```coverage``` tool on your system:
+```
+$ pip install coverage --upgrade
+```
+
+Next go to ```mbed-ls``` local directory and execute coverage for unit tests:
+```
+$ cd mbed-ls
+$ coverage run setup.py test
+```
+
+Above command will execute test cases and will grab code coverage numbers. Now we are ready to print code coverage for all tests we've run:
+
+```
+$ coverage report
+Name                                    Stmts   Miss  Cover
+-----------------------------------------------------------
+mbed_lstools\__init__.py                    2      0   100%
+mbed_lstools\lstools_base.py              246    169    31%
+mbed_lstools\lstools_darwin.py             88     77    13%
+mbed_lstools\lstools_linux_generic.py     148     51    66%
+mbed_lstools\lstools_ubuntu.py              5      0   100%
+mbed_lstools\lstools_win7.py              112     60    46%
+mbed_lstools\main.py                       90     63    30%
+-----------------------------------------------------------
+TOTAL                                     691    420    39%
 ```
 
 # Configure mbed-enabled device to work with your host
