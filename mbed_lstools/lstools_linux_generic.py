@@ -30,7 +30,8 @@ class MbedLsToolsLinuxGeneric(MbedLsToolsBase):
         MbedLsToolsBase.__init__(self)
         self.os_supported.append('LinuxGeneric')
         self.hex_uuid_pattern = "usb-[0-9a-zA-Z_-]*_([0-9a-zA-Z]*)-.*"
-        self.name_link_pattern = "(usb-[0-9a-zA-Z_-]*_[0-9a-zA-Z]*-.*$)"
+        # Since Ubuntu 15 DAplink serial port device can have pci- prefix, not only usb- one
+        self.name_link_pattern = '((%s)-[0-9a-zA-Z_-]*_[0-9a-zA-Z]*-.*$)'% ('|'.join(["pci", "usb"]))
         self.mount_media_pattern = "^/[a-zA-Z0-9/]* on (/[a-zA-Z0-9/]*) "
 
         self.nlp = re.compile(self.name_link_pattern)
