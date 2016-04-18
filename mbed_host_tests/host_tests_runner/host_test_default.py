@@ -142,6 +142,14 @@ class DefaultTestSelector(DefaultTestSelectorBase):
                             # Load dynamically requested host test
                             self.test_supervisor = get_host_test(value)
                             if self.test_supervisor:
+                                if not self.test_supervisor.base_host_test_inited():
+                                    self.logger.prn_err("==== host test script '%s' error ===="% value)
+                                    self.logger.prn_err("* host test doesn't inherit from mbed_host_tests.BaseHostTest() class or")
+                                    self.logger.prn_err("* BaseHostTest.__init__(self) not called in host test script constructor")
+                                    self.logger.prn_err("==== host test script error ====")
+                                    result = self.RESULT_ERROR
+                                    break
+
                                 # Pass communication queues and setup() host test
                                 self.test_supervisor.setup_communication(event_queue, dut_event_queue)
                                 try:
