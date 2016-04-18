@@ -100,12 +100,17 @@ def print_ht_list():
     """! Prints list of registered host test classes (by name)
         @Detail For devel & debug purposes
     """
+
+    # Opiortunistic apporach
+    # If in yotta module top level dir try to list all
+    # tests in standard test/host_tests path
+    enum_host_tests('./test/host_tests')
+
     str_len = 0
     for ht in HOSTREGISTRY.HOST_TESTS:
         if len(ht) > str_len: str_len = len(ht)
     for ht in sorted(HOSTREGISTRY.HOST_TESTS.keys()):
         print "'%s'%s : %s()" % (ht, ' '*(str_len - len(ht)), HOSTREGISTRY.HOST_TESTS[ht].__class__)
-
 
 def enum_host_tests(path, verbose=False):
     """ Enumerates and registers locally stored host tests
