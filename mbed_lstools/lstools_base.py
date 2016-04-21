@@ -89,7 +89,7 @@ class MbedLsToolsBase:
         "0777": "NUCLEO_F446RE",
         "0780": "ST_PLACEHOLDER",
         "0785": "ST_PLACEHOLDER",
-        "0790": "ST_PLACEHOLDER",
+        "0790": "NUCLEO_L031K6",
         "0791": "NUCLEO_F031K6",
         "0795": "DISCOVERY-F429ZI",
         "0799": "ST_PLACEHOLDER",
