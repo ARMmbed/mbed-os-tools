@@ -631,15 +631,15 @@ $ sudo make install
 
 Add LDM configuration file and configuration itself. Remember to change the ```your_own_user_name``` to valid username.
 ```
-sudo touch /etc/ldm.conf
-echo 'MOUNT_OWNER=your_own_user_name' >> /etc/ldm.conf
-echo 'BASE_MOUNTPOINT=/mnt' >> /etc/ldm.conf
+$ sudo touch /etc/ldm.conf
+$ echo 'MOUNT_OWNER=your_own_user_name' >> /etc/ldm.conf
+$ echo 'BASE_MOUNTPOINT=/mnt' >> /etc/ldm.conf
 ```
 
 Enable LDM:
 ```
-systemctl status ldm
-sudo systemctl enable ldm
+$ systemctl status ldm
+$ sudo systemctl enable ldm
 ```
 
 Now you probably have to reboot and enjoy more stable ```mbed-ls``` queries with your Raspberry Pi (Raspbian Jessie Lite).
