@@ -30,7 +30,7 @@
 
 # Description
 
-mbed-lstools is a Python module that detects and lists mbed-enabled devices connected to the host computer. It will be delivered as a redistributable Python module (package) and command line tool.
+```mbed-ls``` is a _Python 2.7_ module that detects and lists mbed-enabled devices connected to the host computer. It will be delivered as a redistributable Python module (package) and command line tool.
 
 Currently supported operating system:
 
@@ -55,7 +55,7 @@ When connecting more than one mbed-enabled device to the host computer, it takes
 
 mbed-ls module is redistributed via PyPI. We recommend you use the [application pip](https://pip.pypa.io/en/latest/installing.html#install-pip).
 
-**Note:** Python 2.7.9 and later (on the Python 2 series), and Python 3.4 and later include pip by default, so you may have pip already.
+**Note:** Python 2.7.9 and later, so you may have pip already.
 
 To install mbed-ls from [PyPI](https://pypi.python.org/pypi/mbed-ls) use command:
 ```
