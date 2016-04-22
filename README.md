@@ -55,7 +55,7 @@ When connecting more than one mbed-enabled device to the host computer, it takes
 
 mbed-ls module is redistributed via PyPI. We recommend you use the [application pip](https://pip.pypa.io/en/latest/installing.html#install-pip).
 
-**Note:** Python 2.7.9 and later, so you may have pip already.
+**Note:** Python 2.7.9 onwards include ```pip``` by default, so you may have ```pip``` already.
 
 To install mbed-ls from [PyPI](https://pypi.python.org/pypi/mbed-ls) use command:
 ```
