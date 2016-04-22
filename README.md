@@ -4,7 +4,6 @@
 
 # Table of contents
 
-* [Table of contents](#table-of-contents)
 * [Description](#description)
 * [Rationale](#rationale)
 * [Installation](#installation)
@@ -26,6 +25,7 @@
   * [Windows serial port configuration](#windows-serial-port-configuration)
   * [Mounting with sync](#mounting-with-sync)
     * [Ubuntu](#ubuntu)
+  * [Raspberry Pi - Raspbian Jessie Lite](#raspberry-pi---raspbian-jessie-lite)
 * [Known issues](#known-issues)
 
 # Description
@@ -616,6 +616,34 @@ $ groups USERNAME
 ```
 
 This ```usbmount``` configuration will auto-mount your mbed devices without need to type ```mount``` commands each time you plug your mbeds!
+
+## Raspberry Pi - Raspbian Jessie Lite
+For Raspberry Pi you can use [LDM](https://github.com/LemonBoy/ldm): A lightweight device mounter. This should improve stability of your mounts when using mbed-ls on Raspberry Pi. Currently we are using it with _Raspbian Jessie Lite_.
+
+How to install and use LDM on your Raspberry Pi in three easy steps:
+
+Install LDM:
+```
+$ git clone git@github.com:LemonBoy/ldm.git
+$ cd ldm
+$ sudo make install
+```
+
+Add LDM configuration file and configuration itself. Remember to change the ```your_own_user_name``` to valid username.
+```
+$ sudo touch /etc/ldm.conf
+$ echo 'MOUNT_OWNER=your_own_user_name' >> /etc/ldm.conf
+$ echo 'BASE_MOUNTPOINT=/mnt' >> /etc/ldm.conf
+```
+
+Enable LDM:
+```
+$ systemctl status ldm
+$ sudo systemctl enable ldm
+```
+
+Now you probably have to reboot and enjoy more stable ```mbed-ls``` queries with your Raspberry Pi (Raspbian Jessie Lite).
+
 
 # Known issues
 * Users reported issues while using ```mbed-ls``` on VM (Virtual Machines).
