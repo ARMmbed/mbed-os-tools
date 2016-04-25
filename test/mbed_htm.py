@@ -34,6 +34,7 @@ class ParseMbedHTMTestCase(unittest.TestCase):
     test_mbed_htm_k64f_url_str = '<meta http-equiv="refresh" content="0; url=http://mbed.org/device/?code=02400203D94B0E7724B7F3CF"/>'
     test_mbed_htm_l152re_url_str = '<meta http-equiv="refresh" content="0; url=http://mbed.org/device/?code=07100200656A9A955A0F0CB8"/>'
     test_mbed_htm_lpc1768_url_str = '<meta http-equiv="refresh" content="0; url=http://mbed.org/start?auth=101000000000000000000002F7F1869557200730298d254d3ff3509e3fe4722d&loader=11972&firmware=16457&configuration=4" />'
+    test_mbed_htm_nucleo_l031k6_str = '<meta http-equiv="refresh" content="0; url=http://mbed.org/device/?code=07900221461663077952F5AA"/>'
 
     # DAPLink 0240
     test_daplink_240_mbed_html_str = 'window.location.replace("https://mbed.org/device/?code=0240000029164e45002f0012706e0006f301000097969900?version=0240?target_id=0007ffffffffffff4e45315450090023");'
@@ -55,6 +56,10 @@ class ParseMbedHTMTestCase(unittest.TestCase):
     def test_mbed_htm_lpc1768_url(self):
         target_id = self.mbeds.scan_html_line_for_target_id(self.test_mbed_htm_lpc1768_url_str)
         self.assertEqual('101000000000000000000002F7F1869557200730298d254d3ff3509e3fe4722d', target_id)
+
+    def test_daplink_nucleo_l031k6_url(self):
+        target_id = self.mbeds.scan_html_line_for_target_id(self.test_mbed_htm_nucleo_l031k6_str)
+        self.assertEqual('07900221461663077952F5AA', target_id)
 
     def test_daplink_240_mbed_html(self):
         target_id = self.mbeds.scan_html_line_for_target_id(self.test_daplink_240_mbed_html_str)
