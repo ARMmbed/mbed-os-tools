@@ -87,7 +87,7 @@ def get_test_result(output):
 def run_host_test(image_path,
                   disk,
                   port,
-                  yotta_target,
+                  build_path,
                   target_id,
                   duration=10,
                   micro=None,
@@ -200,7 +200,7 @@ def run_host_test(image_path,
     result = get_test_result(htrun_output)
     result_test_cases = get_testcase_result(htrun_output)
     test_cases_summary = get_testcase_summary(htrun_output)
-    get_coverage_data(yotta_target, htrun_output)
+    get_coverage_data(build_path, htrun_output)
 
     if verbose:
         gt_logger.gt_log("mbed-host-test-runner: stopped")
@@ -252,7 +252,7 @@ def get_testcase_utest(output, test_case_name):
 
     return tc_log_lines
 
-def get_coverage_data(yotta_target, output):
+def get_coverage_data(build_path, output):
     # Example GCOV output
     # [1456840876.73][CONN][RXD] {{__coverage_start;c:\Work\core-util/source/PoolAllocator.cpp.gcda;6164636772393034c2733f32...a33e...b9}}
     gt_logger.gt_log("checking for GCOV data...")
@@ -263,7 +263,7 @@ def get_coverage_data(yotta_target, output):
             timestamp, _, gcov_path, gcov_payload = m.groups()
             try:
                 bin_gcov_payload = coverage_pack_hex_payload(gcov_payload)
-                coverage_dump_file(yotta_target, gcov_path, bin_gcov_payload)
+                coverage_dump_file(build_path, gcov_path, bin_gcov_payload)
             except Exception as e:
                 gt_logger.gt_log_err("error while handling GCOV data: " + str(e))
             gt_logger.gt_log_tab("storing %d bytes in '%s'"% (len(bin_gcov_payload), gcov_path))

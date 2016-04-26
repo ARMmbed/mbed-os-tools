@@ -47,7 +47,7 @@ def coverage_pack_hex_payload(payload):
     return bin_payload
 
 
-def coverage_dump_file(yotta_target, path, payload):
+def coverage_dump_file(build_path, path, payload):
     """! Creates file and dumps payload to it on specified path (even if path doesn't exist)
     @param path Path to file
     @param payload Binary data to store in a file
@@ -58,7 +58,7 @@ def coverage_dump_file(yotta_target, path, payload):
         d, filename = os.path.split(path)
         if not os.path.isabs(d) and not os.path.exists(d):
             # For a relative path that do not exist. Try adding ./build/<yotta target> prefix
-            d = os.path.join('build', yotta_target, d)
+            d = build_path
             path = os.path.join(d, filename)
         if not os.path.exists(d):
             os.makedirs(d)
