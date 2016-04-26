@@ -297,3 +297,52 @@ def get_mbed_supported_test(mbed_test_case_name):
     @return Returns true if test case name from mbed SDK can be automated with mbed-greentea
     """
     return mbed_test_case_name not in NOT_SUPPORTED_TESTS
+
+
+def get_platform_name_from_yotta_target(target):
+    """
+    Parses target string and gives platform name and toolchain
+
+    :param target:
+    :return:
+    """
+    target_json_path = os.path.join('yotta_targets', target, 'target.json')
+
+    if not os.path.exists(target_json_path):
+        gt_logger.gt_log_err('Target json does not exist [%s].\n' % target_json_path +
+                             'mbed TAS Executor {greentea} must be run inside a pre built yotta module!')
+        return None
+
+    with open(target_json_path, 'r') as f:
+        data = f.read()
+        try:
+            target_json = json.loads(data)
+        except (TypeError, ValueError), e:
+            gt_logger.gt_log_err('Failed to load json data from target.json! error [%s]\n' % str(e) +
+                                 'Can not determine required mbed platform name!')
+            return None
+
+    if 'keywords' not in target_json:
+        gt_logger.gt_log_err("No 'keywords' in target.json! Can not determine required mbed platform name!")
+        return None
+
+    platform_name = None
+    for keyword in target_json['keywords']:
+        m = re.search('mbed-target:(.*)', keyword)
+        if m is not None:
+            platform_name = m.group(1).upper()
+
+    if platform_name is None:
+        gt_logger.gt_log_err('No keyword with format "mbed-target:<platform name>" found in target.json!\n' +
+                                       'Can not determine required mbed platform name!')
+        return None
+    return platform_name
+
+
+def get_binary_type_for_platform(platform):
+    """
+
+    :param platform:
+    :return:
+    """
+    return TARGET_INFO_MAPPING[platform]['properties']["binary_type"]

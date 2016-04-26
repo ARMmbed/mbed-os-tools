@@ -40,7 +40,7 @@ class Test:
         :return:
         """
         self.name = name
-        self.binaries = []
+        self.binaries = {}
 
     def get_name(self):
         """
@@ -56,6 +56,14 @@ class Test:
         """
         return self.binaries
 
+    def get_binary(self, type):
+        """
+
+        :param type:
+        :return:
+        """
+        return self.binaries[type]
+
     def parse(self, test_json):
         """
 
@@ -65,7 +73,17 @@ class Test:
         print test_json
         for _, binary in test_json['binaries'].iteritems():
             tb = TestBinary(binary['path'], binary['flash_method'])
-            self.binaries.append(tb)
+            self.binaries[binary['flash_method']] = tb
+
+    def add_binary(self, name, path, flash_method):
+        """
+
+        :param name:
+        :param path:
+        :param flash_method:
+        :return:
+        """
+        self.binaries[name] = TestBinary(path, flash_method)
 
 
 class TestBuild:
@@ -138,6 +156,15 @@ class TestBuild:
             test.parse(test_json)
             self.tests[name] = test
 
+    def add_test(self, name, test):
+        """
+
+        :param name:
+        :param test:
+        :return:
+        """
+        self.tests[name] = test
+
 
 class TestSpec:
 
@@ -157,7 +184,10 @@ class TestSpec:
         for _, build in spec['builds'].iteritems():
             ts = TestBuild(build['platform'], build['toolchain'], build['baud_rate'], build['base_path'])
             ts.parse(build)
-            self.target_test_spec["%s-%s" % (build['platform'], build['toolchain'])] = ts
+            if 'name' in build:
+                self.target_test_spec[build['name']] = ts
+            else:
+                self.target_test_spec["%s-%s" % (build['platform'], build['toolchain'])] = ts
 
     def get_test_builds(self):
         """
@@ -165,3 +195,12 @@ class TestSpec:
         :return:
         """
         return self.target_test_spec.values()
+
+    def add_test_builds(self, name, test_build):
+        """
+
+        :param name:
+        :param test_build:
+        :return:
+        """
+        self.target_test_spec[name] = test_build

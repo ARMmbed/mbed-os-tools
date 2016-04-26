@@ -17,10 +17,15 @@ limitations under the License.
 Author: Przemyslaw Wirkus <Przemyslaw.wirkus@arm.com>
 """
 
+import os
+
 from mbed_greentea.mbed_test_api import run_cli_command
 from mbed_greentea.mbed_greentea_log import gt_logger
-from mbed_greentea.mbed_yotta_module_parse import YottaModule
+from mbed_greentea.mbed_yotta_module_parse import YottaModule, YottaConfig
 from mbed_greentea.mbed_target_info import get_mbed_target_from_current_dir
+from mbed_greentea.mbed_target_info import get_platform_name_from_yotta_target, get_binary_type_for_platform
+from mbed_greentea.cmake_handlers import load_ctest_testsuite
+from mbed_greentea.tests_spec import TestSpec, TestBuild, Test, TestBinary
 
 
 def build_with_yotta(yotta_target_name, verbose = False, build_to_release = False, build_to_debug = False):
@@ -70,6 +75,8 @@ def get_test_spec_from_yt_module(opts):
         """)
         return (0)
 
+    test_spec = TestSpec()
+
     ### Selecting yotta targets to process
     yt_targets = [] # List of yotta targets specified by user used to process during this run
     if opts.list_of_targets:
@@ -94,20 +101,42 @@ def get_test_spec_from_yt_module(opts):
 
     ### Use yotta to search mapping between platform names and available platforms
     # Convert platform:target, ... mapping to data structure
-    map_platform_to_yt_target = {}
+    yt_target_to_map_platform = {}
     if opts.map_platform_to_yt_target:
         gt_logger.gt_log("user defined platform -> target supported mapping definition (specified with --map-target switch)")
-        p_to_t_mappings = opts.map_platform_to_yt_target.split(',')
-        for mapping in p_to_t_mappings:
+        for mapping in opts.map_platform_to_yt_target.split(','):
             if len(mapping.split(':')) == 2:
-                platform, yt_target = mapping.split(':')
-                if platform not in map_platform_to_yt_target:
-                    map_platform_to_yt_target[platform] = []
-                map_platform_to_yt_target[platform].append(yt_target)
-                gt_logger.gt_log_tab("mapped platform '%s' to be compatible with '%s'"% (
-                    gt_logger.gt_bright(platform),
-                    gt_logger.gt_bright(yt_target)
+                yt_target, platform = mapping.split(':')
+                yt_target_to_map_platform[yt_target] = platform
+                gt_logger.gt_log_tab("mapped yotta target '%s' to be compatible with platform '%s'"% (
+                    gt_logger.gt_bright(yt_target),
+                    gt_logger.gt_bright(platform)
                 ))
             else:
-                gt_logger.gt_log_tab("unknown format '%s', use 'platform:target' format"% mapping)
+                gt_logger.gt_log_tab("unknown format '%s', use 'target:platform' format"% mapping)
 
+    for yt_target in yt_targets:
+        if yt_target in yt_target_to_map_platform:
+            platform = yt_target_to_map_platform[yt_target]
+        else:
+            # get it from local Yotta target
+            platform = get_platform_name_from_yotta_target(yt_target)
+
+        # Toolchain doesn't matter as Greentea does not have to do any selection for it unlike platform
+        toolchain = yt_target
+        yotta_config = YottaConfig()
+        yotta_config.init(yt_target)
+        baud_rate = yotta_config.get_baudrate()
+        base_path = os.path.join('.', 'build', yt_target)
+        tb = TestBuild(platform, toolchain, baud_rate, base_path)
+        test_spec.add_test_builds(yt_target, tb)
+
+        # Find tests
+        ctest_test_list = load_ctest_testsuite(base_path,
+                                               binary_type=get_binary_type_for_platform(platform))
+        for name, path in ctest_test_list.iteritems():
+            t = Test(name)
+            t.add_binary("usb", path, "usb")
+            tb.add_test(name, t)
+
+    return test_spec

@@ -32,13 +32,11 @@ from threading import Thread
 from mbed_greentea.mbed_test_api import run_host_test
 from mbed_greentea.mbed_test_api import TEST_RESULTS
 from mbed_greentea.mbed_test_api import TEST_RESULT_OK, TEST_RESULT_FAIL
-from mbed_greentea.cmake_handlers import load_ctest_testsuite
 from mbed_greentea.cmake_handlers import list_binaries_for_targets
 from mbed_greentea.mbed_report_api import exporter_text
 from mbed_greentea.mbed_report_api import exporter_testcase_text
 from mbed_greentea.mbed_report_api import exporter_json
 from mbed_greentea.mbed_report_api import exporter_testcase_junit
-from mbed_greentea.mbed_target_info import get_mbed_clasic_target_info
 from mbed_greentea.mbed_greentea_log import gt_logger
 from mbed_greentea.mbed_greentea_dlm import GREENTEA_KETTLE_PATH
 from mbed_greentea.mbed_greentea_dlm import greentea_get_app_sem
@@ -608,18 +606,6 @@ def main_cli(opts, args, gt_instance_uuid=None):
         gt_logger.gt_log_err("no devices detected")
         return (RET_NO_DEVICES)
 
-    # Check if mbed classic target name can be translated to yotta target name
-    # mut_info_map = {}   # platform_name : mut_info_dict, extract yt_targets with e.g. [k["yotta_target"] for k in d['K64F']["yotta_targets"]]
-    #
-    # for mut in ready_mbed_devices:
-    #     platfrom_name = mut['platform_name']
-    #     if platfrom_name not in mut_info_map:
-    #         mut_info = get_mbed_clasic_target_info(platfrom_name,
-    #                                                map_platform_to_yt_target,
-    #                                                use_yotta_registry=opts.yotta_search_for_mbed_target)
-    #         if mut_info:
-    #             mut_info_map[platfrom_name] = mut_info
-
     ### We can filter in only specific target ids
     accepted_target_ids = None
     if opts.use_target_ids:
@@ -749,7 +735,7 @@ def main_cli(opts, args, gt_instance_uuid=None):
                     random.shuffle(filtered_ctest_test_list_keys, lambda: shuffle_random_seed)
 
                 for test_name in filtered_ctest_test_list_keys:
-                    image_path = filtered_ctest_test_list[test_name].get_binaries()[0].get_path()
+                    image_path = filtered_ctest_test_list[test_name].get_binary('usb').get_path()
                     test = {"test_bin":test_name, "image_path":image_path}
                     test_queue.put(test)
 
