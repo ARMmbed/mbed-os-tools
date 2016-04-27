@@ -18,14 +18,23 @@ Author: Przemyslaw Wirkus <Przemyslaw.wirkus@arm.com>
 """
 
 import os
+import re
+import json
 
 from mbed_greentea.mbed_test_api import run_cli_command
 from mbed_greentea.mbed_greentea_log import gt_logger
 from mbed_greentea.mbed_yotta_module_parse import YottaModule, YottaConfig
 from mbed_greentea.mbed_target_info import get_mbed_target_from_current_dir
-from mbed_greentea.mbed_target_info import get_platform_name_from_yotta_target, get_binary_type_for_platform
+from mbed_greentea.mbed_target_info import get_binary_type_for_platform
 from mbed_greentea.cmake_handlers import load_ctest_testsuite
-from mbed_greentea.tests_spec import TestSpec, TestBuild, Test, TestBinary
+from mbed_greentea.tests_spec import TestSpec, TestBuild, Test
+
+
+class YottaError(Exception):
+    """
+    Exception raised by this module when it fails to gather test information.
+    """
+    pass
 
 
 def build_with_yotta(yotta_target_name, verbose = False, build_to_release = False, build_to_debug = False):
@@ -49,10 +58,51 @@ def build_with_yotta(yotta_target_name, verbose = False, build_to_release = Fals
     return yotta_result, yotta_ret
 
 
+def get_platform_name_from_yotta_target(target):
+    """
+    Parses target string and gives platform name and toolchain
+
+    :param target:
+    :return:
+    """
+    target_json_path = os.path.join('yotta_targets', target, 'target.json')
+
+    if not os.path.exists(target_json_path):
+        gt_logger.gt_log_err('Target json does not exist [%s].\n' % target_json_path +
+                             'mbed TAS Executor {greentea} must be run inside a pre built yotta module!')
+        return None
+
+    with open(target_json_path, 'r') as f:
+        data = f.read()
+        try:
+            target_json = json.loads(data)
+        except (TypeError, ValueError), e:
+            gt_logger.gt_log_err('Failed to load json data from target.json! error [%s]\n' % str(e) +
+                                 'Can not determine required mbed platform name!')
+            return None
+
+    if 'keywords' not in target_json:
+        gt_logger.gt_log_err("No 'keywords' in target.json! Can not determine required mbed platform name!")
+        return None
+
+    platform_name = None
+    for keyword in target_json['keywords']:
+        m = re.search('mbed-target:(.*)', keyword)
+        if m is not None:
+            platform_name = m.group(1).upper()
+
+    if platform_name is None:
+        gt_logger.gt_log_err('No keyword with format "mbed-target:<platform name>" found in target.json!\n' +
+                                       'Can not determine required mbed platform name!')
+        return None
+    return platform_name
+
+
 def get_test_spec_from_yt_module(opts):
     """
+    Gives test specification created from yotta module environment.
 
-    :return:
+    :return TestSpec:
     """
     ### Read yotta module basic information
     yotta_module = YottaModule()
@@ -60,7 +110,7 @@ def get_test_spec_from_yt_module(opts):
 
     # Check if NO greentea-client is in module.json of repo to test, if so abort
     if not yotta_module.check_greentea_client():
-        gt_logger.gt_log("""
+        error = """
         *****************************************************************************************
         * We've noticed that NO 'greentea-client' module is specified in                        *
         * dependency/testDependency section of this module's 'module.json' file.                *
@@ -72,8 +122,8 @@ def get_test_spec_from_yt_module(opts):
         *                                                                                       *
         * or port your tests to new Async model: https://github.com/ARMmbed/greentea/pull/78    *
         *****************************************************************************************
-        """)
-        return (0)
+        """
+        raise YottaError(error)
 
     test_spec = TestSpec()
 
@@ -97,7 +147,7 @@ def get_test_spec_from_yt_module(opts):
                 gt_logger.gt_bright('mbedgt -t <yotta_target>'),
                 gt_logger.gt_bright('yotta target <yotta_target>')
             ))
-            return (-1)
+            raise YottaError("Yotta target not set in current directory!")
 
     ### Use yotta to search mapping between platform names and available platforms
     # Convert platform:target, ... mapping to data structure
@@ -128,7 +178,7 @@ def get_test_spec_from_yt_module(opts):
         yotta_config.init(yt_target)
         baud_rate = yotta_config.get_baudrate()
         base_path = os.path.join('.', 'build', yt_target)
-        tb = TestBuild(platform, toolchain, baud_rate, base_path)
+        tb = TestBuild(yt_target, platform, toolchain, baud_rate, base_path)
         test_spec.add_test_builds(yt_target, tb)
 
         # Find tests

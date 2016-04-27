@@ -24,7 +24,7 @@ import sys
 import json
 import random
 import optparse
-from time import time, sleep
+from time import time
 from Queue import Queue
 from threading import Thread
 
@@ -42,10 +42,10 @@ from mbed_greentea.mbed_greentea_dlm import GREENTEA_KETTLE_PATH
 from mbed_greentea.mbed_greentea_dlm import greentea_get_app_sem
 from mbed_greentea.mbed_greentea_dlm import greentea_update_kettle
 from mbed_greentea.mbed_greentea_dlm import greentea_clean_kettle
-from mbed_greentea.mbed_yotta_api import build_with_yotta, get_test_spec_from_yt_module
+from mbed_greentea.mbed_yotta_api import get_test_spec_from_yt_module
 from mbed_greentea.mbed_greentea_hooks import GreenteaHooks
-from mbed_greentea.mbed_yotta_module_parse import YottaConfig
 from mbed_greentea.tests_spec import TestSpec
+from mbed_greentea.mbed_target_info import get_platform_property
 
 try:
     import mbed_lstools
@@ -359,7 +359,7 @@ def run_test_thread(test_result_queue, test_queue, opts, mut, build, build_path,
         disk = mut['mount_point']
         port = mut['serial_port']
         micro = mut['platform_name']
-        program_cycle_s = 1 # TBD mut_info['properties']['program_cycle_s']
+        program_cycle_s = get_platform_property(micro, "program_cycle_s")
         copy_method = opts.copy_method if opts.copy_method else 'shell'
         verbose = opts.verbose_test_result_only
         enum_host_tests_path = get_local_host_tests_dir(opts.enum_host_tests)
@@ -400,7 +400,7 @@ def run_test_thread(test_result_queue, test_queue, opts, mut, build, build_path,
                     "image_path": test['image_path'],
                     "build_path": build_path,
                     "build_path_abs": build_path_abs,
-                    "yotta_target_name": build,
+                    "build_name": build,
                 }
                 greentea_hooks.run_hook_ext('hook_test_end', format)
 
@@ -553,8 +553,11 @@ def main_cli(opts, args, gt_instance_uuid=None):
         test_spec = TestSpec()
         with open(opts.tests_spec, "r") as f:
             test_spec.parse(json.load(f))
-    else:
+    elif os.path.exists('module.json'): # If yotta module
         test_spec = get_test_spec_from_yt_module(opts)
+    else:
+        gt_logger.gt_log_err("Greentea should be run inside a Yotta module or --test-spec switch should be used.")
+        return (-1)
 
     # We will load hooks from JSON file to support extra behaviour during test execution
     greentea_hooks = GreenteaHooks(opts.hooks_json) if opts.hooks_json else None
@@ -648,111 +651,110 @@ def main_cli(opts, args, gt_instance_uuid=None):
                                              gt_logger.gt_bright(test_build.get_toolchain())))
 
         platform_name = test_build.get_platform()
-        if True:
-            baudrate = test_build.get_baudrate()
-            gt_logger.gt_log("processing '%s' platform..."% gt_logger.gt_bright(platform_name))
+        baudrate = test_build.get_baudrate()
+        gt_logger.gt_log("processing '%s' platform..."% gt_logger.gt_bright(platform_name))
 
-            ### Select MUTS to test from list of available MUTS to start testing
-            mut = None
-            number_of_parallel_instances = 1
-            for mbed_dev in ready_mbed_devices:
-                if accepted_target_ids and mbed_dev['target_id'] not in accepted_target_ids:
-                    continue
-
-                if mbed_dev['platform_name'] == platform_name:
-                    # We will force configuration specific baudrate
-                    if mbed_dev['serial_port']:
-                        mbed_dev['serial_port'] = "%s:%d" % (mbed_dev['serial_port'], baudrate)
-                    mut = mbed_dev
-                    muts_to_test.append(mbed_dev)
-                    gt_logger.gt_log("using platform '%s' for test:"% gt_logger.gt_bright(platform_name))
-                    for k in mbed_dev:
-                        gt_logger.gt_log_tab("%s = '%s'"% (k, mbed_dev[k]))
-                    if number_of_parallel_instances < parallel_test_exec:
-                        number_of_parallel_instances += 1
-                    else:
-                        break
-
-            # Configuration print mode:
-            if opts.verbose_test_configuration_only:
+        ### Select MUTS to test from list of available MUTS to start testing
+        mut = None
+        number_of_parallel_instances = 1
+        for mbed_dev in ready_mbed_devices:
+            if accepted_target_ids and mbed_dev['target_id'] not in accepted_target_ids:
                 continue
 
-            if mut:
-                target_platforms_match += 1
+            if mbed_dev['platform_name'] == platform_name:
+                # We will force configuration specific baudrate
+                if mbed_dev['serial_port']:
+                    mbed_dev['serial_port'] = "%s:%d" % (mbed_dev['serial_port'], baudrate)
+                mut = mbed_dev
+                muts_to_test.append(mbed_dev)
+                gt_logger.gt_log("using platform '%s' for test:"% gt_logger.gt_bright(platform_name))
+                for k in mbed_dev:
+                    gt_logger.gt_log_tab("%s = '%s'"% (k, mbed_dev[k]))
+                if number_of_parallel_instances < parallel_test_exec:
+                    number_of_parallel_instances += 1
+                else:
+                    break
 
-                build = test_build.get_name()
-                build_path = test_build.get_path()
+        # Configuration print mode:
+        if opts.verbose_test_configuration_only:
+            continue
 
-                # Demo mode: --run implementation (already added --run to mbedhtrun)
-                # We want to pass file name to mbedhtrun (--run NAME  =>  -f NAME_ and run only one binary
-                if opts.run_app:
-                    gt_logger.gt_log("running '%s' for '%s'-'%s'" % (gt_logger.gt_bright(opts.run_app),
-                                                                     gt_logger.gt_bright(platform_name),
-                                                                     gt_logger.gt_bright(test_build.get_toolchain())))
-                    disk = mut['mount_point']
-                    port = mut['serial_port']
-                    micro = mut['platform_name']
-                    program_cycle_s = 1 # TBD: mut_info_map[platfrom_name]['properties']['program_cycle_s']
-                    copy_method = opts.copy_method if opts.copy_method else 'shell'
-                    enum_host_tests_path = get_local_host_tests_dir(opts.enum_host_tests)
+        if mut:
+            target_platforms_match += 1
 
-                    test_platforms_match += 1
-                    host_test_result = run_host_test(opts.run_app,
-                                                     disk,
-                                                     port,
-                                                     build_path,
-                                                     mut['target_id'],
-                                                     micro=micro,
-                                                     copy_method=copy_method,
-                                                     program_cycle_s=program_cycle_s,
-                                                     digest_source=opts.digest_source,
-                                                     json_test_cfg=opts.json_test_configuration,
-                                                     run_app=opts.run_app,
-                                                     enum_host_tests_path=enum_host_tests_path,
-                                                     verbose=True)
+            build = test_build.get_name()
+            build_path = test_build.get_path()
 
-                    single_test_result, single_test_output, single_testduration, single_timeout, result_test_cases, test_cases_summary = host_test_result
-                    status = TEST_RESULTS.index(single_test_result) if single_test_result in TEST_RESULTS else -1
-                    if single_test_result != TEST_RESULT_OK:
-                        test_exec_retcode += 1
-                    continue
+            # Demo mode: --run implementation (already added --run to mbedhtrun)
+            # We want to pass file name to mbedhtrun (--run NAME  =>  -f NAME_ and run only one binary
+            if opts.run_app:
+                gt_logger.gt_log("running '%s' for '%s'-'%s'" % (gt_logger.gt_bright(opts.run_app),
+                                                                 gt_logger.gt_bright(platform_name),
+                                                                 gt_logger.gt_bright(test_build.get_toolchain())))
+                disk = mut['mount_point']
+                port = mut['serial_port']
+                micro = mut['platform_name']
+                program_cycle_s = get_platform_property(micro, "program_cycle_s")
+                copy_method = opts.copy_method if opts.copy_method else 'shell'
+                enum_host_tests_path = get_local_host_tests_dir(opts.enum_host_tests)
 
-                test_list = test_build.get_tests()
-                filtered_ctest_test_list = create_filtered_test_list(test_list, opts.test_by_names, opts.skip_test)
+                test_platforms_match += 1
+                host_test_result = run_host_test(opts.run_app,
+                                                 disk,
+                                                 port,
+                                                 build_path,
+                                                 mut['target_id'],
+                                                 micro=micro,
+                                                 copy_method=copy_method,
+                                                 program_cycle_s=program_cycle_s,
+                                                 digest_source=opts.digest_source,
+                                                 json_test_cfg=opts.json_test_configuration,
+                                                 run_app=opts.run_app,
+                                                 enum_host_tests_path=enum_host_tests_path,
+                                                 verbose=True)
 
-                gt_logger.gt_log("running %d test%s for platform '%s' and toolchain '%s'"% (
-                    len(filtered_ctest_test_list),
-                    "s" if len(filtered_ctest_test_list) != 1 else "",
-                    gt_logger.gt_bright(platform_name),
-                    gt_logger.gt_bright(test_build.get_toolchain())
-                ))
+                single_test_result, single_test_output, single_testduration, single_timeout, result_test_cases, test_cases_summary = host_test_result
+                status = TEST_RESULTS.index(single_test_result) if single_test_result in TEST_RESULTS else -1
+                if single_test_result != TEST_RESULT_OK:
+                    test_exec_retcode += 1
+                continue
 
-                # Test execution order can be shuffled (also with provided random seed)
-                # for test execution reproduction.
-                filtered_ctest_test_list_keys = filtered_ctest_test_list.keys()
-                if opts.shuffle_test_order:
-                    # We want to shuffle test names randomly
-                    random.shuffle(filtered_ctest_test_list_keys, lambda: shuffle_random_seed)
+            test_list = test_build.get_tests()
+            filtered_ctest_test_list = create_filtered_test_list(test_list, opts.test_by_names, opts.skip_test)
 
-                for test_name in filtered_ctest_test_list_keys:
-                    image_path = filtered_ctest_test_list[test_name].get_binary('usb').get_path()
-                    test = {"test_bin":test_name, "image_path":image_path}
-                    test_queue.put(test)
+            gt_logger.gt_log("running %d test%s for platform '%s' and toolchain '%s'"% (
+                len(filtered_ctest_test_list),
+                "s" if len(filtered_ctest_test_list) != 1 else "",
+                gt_logger.gt_bright(platform_name),
+                gt_logger.gt_bright(test_build.get_toolchain())
+            ))
 
-                #for test_bin, image_path in filtered_ctest_test_list.iteritems():
-                #    test = {"test_bin":test_bin, "image_path":image_path}
-                #    test_queue.put(test)
+            # Test execution order can be shuffled (also with provided random seed)
+            # for test execution reproduction.
+            filtered_ctest_test_list_keys = filtered_ctest_test_list.keys()
+            if opts.shuffle_test_order:
+                # We want to shuffle test names randomly
+                random.shuffle(filtered_ctest_test_list_keys, lambda: shuffle_random_seed)
 
-                number_of_threads = 0
-                for mut in muts_to_test:
-                    #################################################################
-                    # Experimental, parallel test execution
-                    #################################################################
-                    if number_of_threads < parallel_test_exec:
-                        args = (test_result_queue, test_queue, opts, mut, build, build_path, greentea_hooks)
-                        t = Thread(target=run_test_thread, args=args)
-                        execute_threads.append(t)
-                        number_of_threads += 1
+            for test_name in filtered_ctest_test_list_keys:
+                image_path = filtered_ctest_test_list[test_name].get_binary('usb').get_path()
+                test = {"test_bin":test_name, "image_path":image_path}
+                test_queue.put(test)
+
+            #for test_bin, image_path in filtered_ctest_test_list.iteritems():
+            #    test = {"test_bin":test_bin, "image_path":image_path}
+            #    test_queue.put(test)
+
+            number_of_threads = 0
+            for mut in muts_to_test:
+                #################################################################
+                # Experimental, parallel test execution
+                #################################################################
+                if number_of_threads < parallel_test_exec:
+                    args = (test_result_queue, test_queue, opts, mut, build, build_path, greentea_hooks)
+                    t = Thread(target=run_test_thread, args=args)
+                    execute_threads.append(t)
+                    number_of_threads += 1
 
     gt_logger.gt_log_tab("use %s instance%s for testing" % (len(execute_threads), 's' if len(execute_threads) != 1 else ''))
     for t in execute_threads:
@@ -789,10 +791,10 @@ def main_cli(opts, args, gt_instance_uuid=None):
     gt_logger.gt_log("all tests finished!")
 
     # We will execute post test hooks on tests
-    for yotta_target in test_report:
+    for build_name in test_report:
         test_name_list = []    # All test case names for particular yotta target
-        for test_name in test_report[yotta_target]:
-            test = test_report[yotta_target][test_name]
+        for test_name in test_report[build_name]:
+            test = test_report[build_name][test_name]
             # Test was successful
             if test['single_test_result'] in [TEST_RESULT_OK, TEST_RESULT_FAIL]:
                 test_name_list.append(test_name)
@@ -805,19 +807,19 @@ def main_cli(opts, args, gt_instance_uuid=None):
                         "image_path": test['image_path'],
                         "build_path": test['build_path'],
                         "build_path_abs": test['build_path_abs'],
-                        "yotta_target_name": yotta_target,
                     }
                     greentea_hooks.run_hook_ext('hook_post_test_end', format)
         if greentea_hooks:
+            build = test_spec.get_test_build(build_name)
+
             # Call hook executed for each yotta target, just after all tests are finished
-            build_path = os.path.join("./build", yotta_target)
+            build_path = build.get_path()
             build_path_abs = os.path.abspath(build_path)
             # We can execute this test hook just after all tests are finished ('hook_post_test_end')
             format = {
                 "build_path": build_path,
                 "build_path_abs": build_path_abs,
                 "test_name_list": test_name_list,
-                "yotta_target_name": yotta_target,
             }
             greentea_hooks.run_hook_ext('hook_post_all_test_end', format)
 
