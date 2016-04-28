@@ -44,7 +44,7 @@ from mbed_greentea.mbed_greentea_dlm import greentea_update_kettle
 from mbed_greentea.mbed_greentea_dlm import greentea_clean_kettle
 from mbed_greentea.mbed_yotta_api import get_test_spec_from_yt_module
 from mbed_greentea.mbed_greentea_hooks import GreenteaHooks
-from mbed_greentea.tests_spec import TestSpec
+from mbed_greentea.tests_spec import TestSpec, TestBinary
 from mbed_greentea.mbed_target_info import get_platform_property
 
 try:
@@ -737,13 +737,12 @@ def main_cli(opts, args, gt_instance_uuid=None):
                 random.shuffle(filtered_ctest_test_list_keys, lambda: shuffle_random_seed)
 
             for test_name in filtered_ctest_test_list_keys:
-                image_path = filtered_ctest_test_list[test_name].get_binary('usb').get_path()
-                test = {"test_bin":test_name, "image_path":image_path}
-                test_queue.put(test)
-
-            #for test_bin, image_path in filtered_ctest_test_list.iteritems():
-            #    test = {"test_bin":test_bin, "image_path":image_path}
-            #    test_queue.put(test)
+                image_path = filtered_ctest_test_list[test_name].get_binary(flash_method=TestBinary.FLASH_METHOD_CP).get_path()
+                if image_path is None:
+                    gt_logger.gt_log_err("Failed to find test binary for test %s flash method %s" % (test_name, 'usb'))
+                else:
+                    test = {"test_bin": test_name, "image_path": image_path}
+                    test_queue.put(test)
 
             number_of_threads = 0
             for mut in muts_to_test:
@@ -811,6 +810,7 @@ def main_cli(opts, args, gt_instance_uuid=None):
                     greentea_hooks.run_hook_ext('hook_post_test_end', format)
         if greentea_hooks:
             build = test_spec.get_test_build(build_name)
+            assert build is not None, "Failed to find build info for build %s" % build_name
 
             # Call hook executed for each yotta target, just after all tests are finished
             build_path = build.get_path()

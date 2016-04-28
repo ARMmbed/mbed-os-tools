@@ -22,37 +22,50 @@ class TestBinary:
     """
     Class representing a Test Binary.
     """
+    KW_FLASH_METHOD = "flash_method"
+    KW_BIN_PATH = "path"
+
+    FLASH_METHOD_CP = "cp"
+    FLASH_METHOD_DEFAULT = FLASH_METHOD_CP
+    SUPPORTED_FLASH_METHODS = [FLASH_METHOD_CP]
+
     def __init__(self, path, flash_method):
         """
         ctor.
 
         :return:
         """
-        self.path = path
-        # attributes
-        self.flash_method = flash_method
+        assert flash_method in TestBinary.SUPPORTED_FLASH_METHODS, \
+            "Flash method %s not supported. Supported types [%s]" % \
+            (flash_method, ", ".join(TestBinary.SUPPORTED_FLASH_METHODS))
+        self.__path = path
+        self.__flash_method = flash_method
 
     def get_path(self):
         """
         Gives binary path.
         :return:
         """
-        return self.path
+        return self.__path
 
 
 class Test:
     """
     class representing a Test artifact that may contain more than one test binaries.
     """
-    def __init__(self, name):
+    KW_TEST_NAME = "name"
+    KW_TEST_BINS = "binaries"
+
+    def __init__(self, name, default_flash_method=None):
         """
         ctor.
 
         :param name:
         :return:
         """
-        self.name = name
-        self.binaries = {}
+        self.__name = name
+        self.__default_flash_method = default_flash_method
+        self.__binaries_by_flash_method = {}
 
     def get_name(self):
         """
@@ -60,23 +73,16 @@ class Test:
 
         :return:
         """
-        return self.name
+        return self.__name
 
-    def get_binaries(self):
-        """
-        Gives test binaries.
-        :return:
-        """
-        return self.binaries
-
-    def get_binary(self, type):
+    def get_binary(self, flash_method=TestBinary.FLASH_METHOD_DEFAULT):
         """
         Gives a test binary of specific flash type.
 
-        :param type:
+        :param flash_method:
         :return:
         """
-        return self.binaries[type]
+        return self.__binaries_by_flash_method.get(flash_method, None)
 
     def parse(self, test_json):
         """
@@ -85,10 +91,14 @@ class Test:
         :param test_json:
         :return:
         """
-        print test_json
-        for _, binary in test_json['binaries'].iteritems():
-            tb = TestBinary(binary['path'], binary['flash_method'])
-            self.binaries[binary['flash_method']] = tb
+        assert Test.KW_TEST_BINS in test_json, "Test spec should contain key `binaries`"
+        for binary in test_json[Test.KW_TEST_BINS]:
+            mandatory_keys = [TestBinary.KW_BIN_PATH]
+            assert set(mandatory_keys).issubset(set(binary.keys())), \
+                "Binary spec should contain key [%s]" % ",".join(mandatory_keys)
+            fm = binary.get(TestBinary.KW_FLASH_METHOD, self.__default_flash_method)
+            tb = TestBinary(binary[TestBinary.KW_BIN_PATH], fm)
+            self.__binaries_by_flash_method[fm] = tb
 
     def add_binary(self, name, path, flash_method):
         """
@@ -99,15 +109,22 @@ class Test:
         :param flash_method:
         :return:
         """
-        self.binaries[name] = TestBinary(path, flash_method)
+        self.__binaries_by_flash_method[name] = TestBinary(path, flash_method)
 
 
 class TestBuild:
     """
     class for Test build.
     """
+    KW_TEST_BUILD_NAME = "name"
+    KW_PLATFORM = "platform"
+    KW_TOOLCHAIN = "toolchain"
+    KW_BAUD_RATE = "baud_rate"
+    KW_BUILD_BASE_PATH = "base_path"
+    KW_TESTS = "tests"
+    KW_FLASH_METHOD = "flash_method"
 
-    def __init__(self, name, platform, toolchain, baud_rate, base_path):
+    def __init__(self, name, platform, toolchain, baud_rate, base_path, default_flash_method=None):
         """
         ctor.
 
@@ -115,12 +132,13 @@ class TestBuild:
         :param toolchain:
         :return:
         """
-        self.name = name
-        self.platform = platform
-        self.toolchain = toolchain
-        self.baud_rate = baud_rate
-        self.base_path = base_path
-        self.tests = {}
+        self.__name = name
+        self.__platform = platform
+        self.__toolchain = toolchain
+        self.__baud_rate = baud_rate
+        self.__base_path = base_path
+        self.__default_flash_method = default_flash_method
+        self.__tests = {}
 
     def get_name(self):
         """
@@ -128,7 +146,7 @@ class TestBuild:
 
         :return:
         """
-        return self.name
+        return self.__name
 
     def get_platform(self):
         """
@@ -136,7 +154,7 @@ class TestBuild:
 
         :return:
         """
-        return self.platform
+        return self.__platform
 
     def get_toolchain(self):
         """
@@ -144,7 +162,7 @@ class TestBuild:
 
         :return:
         """
-        return self.toolchain
+        return self.__toolchain
 
     def get_baudrate(self):
         """
@@ -152,7 +170,7 @@ class TestBuild:
 
         :return:
         """
-        return self.baud_rate
+        return self.__baud_rate
 
     def get_path(self):
         """
@@ -160,7 +178,7 @@ class TestBuild:
 
         :return:
         """
-        return self.base_path
+        return self.__base_path
 
     def get_tests(self):
         """
@@ -168,21 +186,20 @@ class TestBuild:
 
         :return:
         """
-        return self.tests
+        return self.__tests
 
-    def parse(self, target_spec):
+    def parse(self, build_spec):
         """
         Parse Test build json.
 
-        :param target_spec:
+        :param build_spec:
         :return:
         """
-        import json
-        print json.dumps(target_spec['tests'], indent=4)
-        for name, test_json in target_spec['tests'].iteritems():
-            test = Test(name)
+        assert TestBuild.KW_TESTS in build_spec, "Build spec should contain key '%s'" % TestBuild.KW_TESTS
+        for name, test_json in build_spec[TestBuild.KW_TESTS].iteritems():
+            test = Test(name, default_flash_method=self.__default_flash_method)
             test.parse(test_json)
-            self.tests[name] = test
+            self.__tests[name] = test
 
     def add_test(self, name, test):
         """
@@ -192,20 +209,22 @@ class TestBuild:
         :param test:
         :return:
         """
-        self.tests[name] = test
+        self.__tests[name] = test
 
 
 class TestSpec:
     """
     Test specification. Contains Builds.
     """
+    KW_BUILDS = "builds"
+
     def __init__(self):
         """
         ctor.
 
         :return:
         """
-        self.target_test_spec = {}
+        self.__target_test_spec = {}
 
     def parse(self, spec):
         """
@@ -214,21 +233,34 @@ class TestSpec:
         :param spec:
         :return:
         """
-        for _, build in spec['builds'].iteritems():
-            if 'name' in build:
-                build_name = build['name']
-            else:
-                build_name = "%s-%s" % (build['platform'], build['toolchain'])
-            tb= TestBuild(build_name, build['platform'], build['toolchain'], build['baud_rate'], build['base_path'])
+        assert TestSpec.KW_BUILDS, "Test spec should contain key '%s'" % TestSpec.KW_BUILDS
+        for _, build in spec[TestSpec.KW_BUILDS].iteritems():
+            mandatory_keys = [TestBuild.KW_PLATFORM, TestBuild.KW_TOOLCHAIN,
+                              TestBuild.KW_BAUD_RATE,
+                              TestBuild.KW_BUILD_BASE_PATH]
+            print set(mandatory_keys)
+            print set(build.keys())
+            print set(mandatory_keys).issubset(set(build.keys()))
+            assert set(mandatory_keys).issubset(set(build.keys())), \
+                "Build spec should contain keys [%s]. It has [%s]" % (",".join(mandatory_keys), ",".join(build.keys()))
+            platform = build[TestBuild.KW_PLATFORM]
+            toolchain = build[TestBuild.KW_TOOLCHAIN]
+
+            build_name = build.get(TestBuild.KW_TEST_BUILD_NAME, "%s-%s" % (platform, toolchain))
+
+            tb = TestBuild(build_name, platform, toolchain,
+                           build[TestBuild.KW_BAUD_RATE],
+                           build[TestBuild.KW_BUILD_BASE_PATH],
+                           build.get(TestBuild.KW_FLASH_METHOD, None))
             tb.parse(build)
-            self.target_test_spec[build_name] = tb
+            self.__target_test_spec[build_name] = tb
 
     def get_test_builds(self):
         """
         Gives test builds.
         :return:
         """
-        return self.target_test_spec.values()
+        return self.__target_test_spec.values()
 
     def get_test_build(self, build_name):
         """
@@ -237,7 +269,7 @@ class TestSpec:
         :param build_name:
         :return:
         """
-        return self.target_test_spec[build_name]
+        return self.__target_test_spec.get(build_name, None)
 
     def add_test_builds(self, name, test_build):
         """
@@ -247,4 +279,4 @@ class TestSpec:
         :param test_build:
         :return:
         """
-        self.target_test_spec[name] = test_build
+        self.__target_test_spec[name] = test_build
