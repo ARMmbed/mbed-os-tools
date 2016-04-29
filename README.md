@@ -26,6 +26,10 @@
   * [Mounting with sync](#mounting-with-sync)
     * [Ubuntu](#ubuntu)
   * [Raspberry Pi - Raspbian Jessie Lite](#raspberry-pi---raspbian-jessie-lite)
+    * [Prerequisites](#prerequisites)
+    * [Install LDM](#install-ldm)
+    * [Enable LDM](#enable-ldm)
+    * [Making sure LDM is active (running)](#making-sure-ldm-is-active-running)
 * [Known issues](#known-issues)
 
 # Description
@@ -38,6 +42,7 @@ Currently supported operating system:
 * Ubuntu.
 * Linux (generic).
 * Mac OS X (Darwin).
+* Raspbian Jessie Lite.
 
 # Rationale
 
@@ -622,7 +627,24 @@ For Raspberry Pi you can use [LDM](https://github.com/LemonBoy/ldm): A lightweig
 
 How to install and use LDM on your Raspberry Pi in three easy steps:
 
-Install LDM:
+### Prerequisites
+LDM requires additional packages installed (libudev, mount and glib-2.0). You can use below command to check if all requirements are fulfilled:
+```
+$ pkg-config --cflags libudev mount glib-2.0
+```
+
+You may need to install additional packages:
+
+```
+$ sudo apt-get install libudev1
+$ sudo apt-get install libudev-dev
+$ sudo apt-get install libmount-dev
+$ sudo apt-get install libglib2.0-dev
+```
+
+Note: You may want to issue ```$ sudo apt-get update``` to make sure that you have access to latest packages via apt-get.
+
+### Install LDM
 ```
 $ git clone git@github.com:LemonBoy/ldm.git
 $ cd ldm
@@ -636,14 +658,27 @@ $ echo 'MOUNT_OWNER=your_own_user_name' >> /etc/ldm.conf
 $ echo 'BASE_MOUNTPOINT=/mnt' >> /etc/ldm.conf
 ```
 
-Enable LDM:
+### Enable LDM
 ```
 $ systemctl status ldm
 $ sudo systemctl enable ldm
 ```
 
-Now you probably have to reboot and enjoy more stable ```mbed-ls``` queries with your Raspberry Pi (Raspbian Jessie Lite).
+Now you probably have to safely reboot to make sure changes will take place ```$sudo shutdown -r now (or sudo reboot)``` and enjoy more stable ```mbed-ls``` queries with your Raspberry Pi (Raspbian Jessie Lite).
 
+### Making sure LDM is active (running)
+
+```
+$ systemctl status ldm
+```
+```
+ldm.service - lightweight device mounter
+  Loaded: loaded (/usr/lib/systemd/system/ldm.service; enabled)
+  Active: active (running) since Fri 2016-04-29 12:54:23 UTC; 48min ago
+Main PID: 389 (ldm)
+  CGroup: /system.slice/ldm.service
+          └─389 /usr/bin/ldm -u jenkins -p /mnt
+```
 
 # Known issues
 * Users reported issues while using ```mbed-ls``` on VM (Virtual Machines).
