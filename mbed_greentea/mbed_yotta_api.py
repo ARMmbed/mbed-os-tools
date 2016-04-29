@@ -186,7 +186,7 @@ def get_test_spec_from_yt_module(opts):
                                                binary_type=get_binary_type_for_platform(platform))
         for name, path in ctest_test_list.iteritems():
             t = Test(name)
-            t.add_binary(path, TestBinary.BIN_TYPE_CP)
+            t.add_binary(path, TestBinary.BIN_TYPE_BOOTABLE)
             tb.add_test(name, t)
 
     return test_spec

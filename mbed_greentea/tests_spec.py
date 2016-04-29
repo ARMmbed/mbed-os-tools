@@ -25,9 +25,9 @@ class TestBinary:
     KW_BIN_TYPE = "binary_type"
     KW_BIN_PATH = "path"
 
-    BIN_TYPE_CP = "cp"
-    BIN_TYPE_DEFAULT = BIN_TYPE_CP
-    SUPPORTED_BIN_TYPES = [BIN_TYPE_CP]
+    BIN_TYPE_BOOTABLE = "bootable"
+    BIN_TYPE_DEFAULT = BIN_TYPE_BOOTABLE
+    SUPPORTED_BIN_TYPES = [BIN_TYPE_BOOTABLE]
 
     def __init__(self, path, binary_type):
         """
