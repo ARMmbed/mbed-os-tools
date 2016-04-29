@@ -26,6 +26,9 @@
   * [Mounting with sync](#mounting-with-sync)
     * [Ubuntu](#ubuntu)
   * [Raspberry Pi - Raspbian Jessie Lite](#raspberry-pi---raspbian-jessie-lite)
+    * [Prerequisites](#prerequisites)
+    * [Install LDM](#install-ldm)
+    * [Enable LDM](#enable-ldm)
 * [Known issues](#known-issues)
 
 # Description
