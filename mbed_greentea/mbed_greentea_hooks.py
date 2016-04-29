@@ -146,8 +146,8 @@ class LcovHook(GreenteaCliTestHook):
     """
     lcov_hooks = {
         "hooks": {
-            "hook_test_end": "$lcov --gcov-tool gcov  --capture --directory ./build --output-file ./build/{yotta_target_name}/{test_name}.info",
-            "hook_post_all_test_end": "$lcov --gcov-tool gcov [(-a <<./build/{yotta_target_name}/{test_name_list}.info>>)] --output-file result.info"
+            "hook_test_end": "$lcov --gcov-tool gcov  --capture --directory ./build --output-file {build_path}/{test_name}.info",
+            "hook_post_all_test_end": "$lcov --gcov-tool gcov [(-a << {build_path}/{test_name_list}.info>>)] --output-file result.info"
         }
     }
 

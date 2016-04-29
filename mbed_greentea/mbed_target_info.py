@@ -297,3 +297,29 @@ def get_mbed_supported_test(mbed_test_case_name):
     @return Returns true if test case name from mbed SDK can be automated with mbed-greentea
     """
     return mbed_test_case_name not in NOT_SUPPORTED_TESTS
+
+
+def get_binary_type_for_platform(platform):
+    """
+    Gives binary type for the given platform.
+
+    :param platform:
+    :return:
+    """
+    return TARGET_INFO_MAPPING[platform]['properties']["binary_type"]
+
+
+def get_platform_property(platform, property):
+    """
+    Gives platform property.
+
+    :param platform:
+    :return:
+    """
+    if platform in TARGET_INFO_MAPPING:
+        if property in TARGET_INFO_MAPPING[platform]['properties']:
+            return TARGET_INFO_MAPPING[platform]['properties'][property]
+        else:
+            raise Exception("Property %s not found in platform %s" % (property, platform))
+    else:
+        raise Exception("Platform %s not in target info store." % platform)
