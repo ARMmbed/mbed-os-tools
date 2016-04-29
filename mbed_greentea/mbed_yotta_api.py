@@ -27,7 +27,7 @@ from mbed_greentea.mbed_yotta_module_parse import YottaModule, YottaConfig
 from mbed_greentea.mbed_target_info import get_mbed_target_from_current_dir
 from mbed_greentea.mbed_target_info import get_binary_type_for_platform
 from mbed_greentea.cmake_handlers import load_ctest_testsuite
-from mbed_greentea.tests_spec import TestSpec, TestBuild, Test
+from mbed_greentea.tests_spec import TestSpec, TestBuild, Test, TestBinary
 
 
 class YottaError(Exception):
@@ -186,7 +186,7 @@ def get_test_spec_from_yt_module(opts):
                                                binary_type=get_binary_type_for_platform(platform))
         for name, path in ctest_test_list.iteritems():
             t = Test(name)
-            t.add_binary("usb", path, "usb")
+            t.add_binary(path, TestBinary.BIN_TYPE_CP)
             tb.add_test(name, t)
 
     return test_spec

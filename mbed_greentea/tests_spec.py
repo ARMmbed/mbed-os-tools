@@ -22,24 +22,24 @@ class TestBinary:
     """
     Class representing a Test Binary.
     """
-    KW_FLASH_METHOD = "flash_method"
+    KW_BIN_TYPE = "binary_type"
     KW_BIN_PATH = "path"
 
-    FLASH_METHOD_CP = "cp"
-    FLASH_METHOD_DEFAULT = FLASH_METHOD_CP
-    SUPPORTED_FLASH_METHODS = [FLASH_METHOD_CP]
+    BIN_TYPE_CP = "cp"
+    BIN_TYPE_DEFAULT = BIN_TYPE_CP
+    SUPPORTED_BIN_TYPES = [BIN_TYPE_CP]
 
-    def __init__(self, path, flash_method):
+    def __init__(self, path, binary_type):
         """
         ctor.
 
         :return:
         """
-        assert flash_method in TestBinary.SUPPORTED_FLASH_METHODS, \
-            "Flash method %s not supported. Supported types [%s]" % \
-            (flash_method, ", ".join(TestBinary.SUPPORTED_FLASH_METHODS))
+        assert binary_type in TestBinary.SUPPORTED_BIN_TYPES, \
+            "Binary type %s not supported. Supported types [%s]" % \
+            (binary_type, ", ".join(TestBinary.SUPPORTED_BIN_TYPES))
         self.__path = path
-        self.__flash_method = flash_method
+        self.__flash_method = binary_type
 
     def get_path(self):
         """
@@ -75,14 +75,14 @@ class Test:
         """
         return self.__name
 
-    def get_binary(self, flash_method=TestBinary.FLASH_METHOD_DEFAULT):
+    def get_binary(self, binary_type=TestBinary.BIN_TYPE_DEFAULT):
         """
         Gives a test binary of specific flash type.
 
-        :param flash_method:
+        :param binary_type:
         :return:
         """
-        return self.__binaries_by_flash_method.get(flash_method, None)
+        return self.__binaries_by_flash_method.get(binary_type, None)
 
     def parse(self, test_json):
         """
@@ -96,20 +96,20 @@ class Test:
             mandatory_keys = [TestBinary.KW_BIN_PATH]
             assert set(mandatory_keys).issubset(set(binary.keys())), \
                 "Binary spec should contain key [%s]" % ",".join(mandatory_keys)
-            fm = binary.get(TestBinary.KW_FLASH_METHOD, self.__default_flash_method)
+            fm = binary.get(TestBinary.KW_BIN_TYPE, self.__default_flash_method)
+            assert fm is not None, "Binary type not specified in build and binary spec."
             tb = TestBinary(binary[TestBinary.KW_BIN_PATH], fm)
             self.__binaries_by_flash_method[fm] = tb
 
-    def add_binary(self, name, path, flash_method):
+    def add_binary(self, path, binary_type):
         """
         Add binary to the test.
 
-        :param name:
         :param path:
-        :param flash_method:
+        :param binary_type:
         :return:
         """
-        self.__binaries_by_flash_method[name] = TestBinary(path, flash_method)
+        self.__binaries_by_flash_method[binary_type] = TestBinary(path, binary_type)
 
 
 class TestBuild:
@@ -122,14 +122,18 @@ class TestBuild:
     KW_BAUD_RATE = "baud_rate"
     KW_BUILD_BASE_PATH = "base_path"
     KW_TESTS = "tests"
-    KW_FLASH_METHOD = "flash_method"
+    KW_BIN_TYPE = "binary_type"
 
     def __init__(self, name, platform, toolchain, baud_rate, base_path, default_flash_method=None):
         """
         ctor.
 
+        :param name:
         :param platform:
         :param toolchain:
+        :param baud_rate:
+        :param base_path:
+        :param default_flash_method:
         :return:
         """
         self.__name = name
@@ -251,7 +255,7 @@ class TestSpec:
             tb = TestBuild(build_name, platform, toolchain,
                            build[TestBuild.KW_BAUD_RATE],
                            build[TestBuild.KW_BUILD_BASE_PATH],
-                           build.get(TestBuild.KW_FLASH_METHOD, None))
+                           build.get(TestBuild.KW_BIN_TYPE, None))
             tb.parse(build)
             self.__target_test_spec[build_name] = tb
 
