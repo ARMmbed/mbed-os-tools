@@ -33,6 +33,8 @@ class TestBinary:
         """
         ctor.
 
+        :param path:
+        :param binary_type:
         :return:
         """
         assert binary_type in TestBinary.SUPPORTED_BIN_TYPES, \
@@ -61,6 +63,7 @@ class Test:
         ctor.
 
         :param name:
+        :param default_flash_method:
         :return:
         """
         self.__name = name
