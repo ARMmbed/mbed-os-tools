@@ -42,6 +42,7 @@ Currently supported operating system:
 * Ubuntu.
 * Linux (generic).
 * Mac OS X (Darwin).
+* Raspbian Jessie Lite.
 
 # Rationale
 
