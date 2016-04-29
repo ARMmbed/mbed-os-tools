@@ -29,6 +29,7 @@
     * [Prerequisites](#prerequisites)
     * [Install LDM](#install-ldm)
     * [Enable LDM](#enable-ldm)
+    * [Making sure LDM is active (running)](#making-sure-ldm-is-active-running)
 * [Known issues](#known-issues)
 
 # Description
@@ -662,7 +663,21 @@ $ systemctl status ldm
 $ sudo systemctl enable ldm
 ```
 
-Now you probably have to reboot and enjoy more stable ```mbed-ls``` queries with your Raspberry Pi (Raspbian Jessie Lite).
+Now you probably have to safely reboot to make sure changes will take place ```$sudo shutdown -r now (or sudo reboot)``` and enjoy more stable ```mbed-ls``` queries with your Raspberry Pi (Raspbian Jessie Lite).
+
+### Making sure LDM is active (running)
+
+```
+$ systemctl status ldm
+```
+```
+ldm.service - lightweight device mounter
+  Loaded: loaded (/usr/lib/systemd/system/ldm.service; enabled)
+  Active: active (running) since Fri 2016-04-29 12:54:23 UTC; 48min ago
+Main PID: 389 (ldm)
+  CGroup: /system.slice/ldm.service
+          └─389 /usr/bin/ldm -u jenkins -p /mnt
+```
 
 # Known issues
 * Users reported issues while using ```mbed-ls``` on VM (Virtual Machines).
