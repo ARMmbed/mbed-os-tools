@@ -189,7 +189,10 @@ def exporter_testcase_junit(test_result_ext, test_suite_properties=None):
     """
     from junit_xml import TestSuite, TestCase
 
-    ym_name = test_suite_properties.get('name', 'unknown')
+    # Only check test suite properties if argument is valid
+    ym_name = 'unknown'
+    if test_suite_properties:
+        ym_name = test_suite_properties.get('name', 'unknown')
 
     test_suites = []
 
