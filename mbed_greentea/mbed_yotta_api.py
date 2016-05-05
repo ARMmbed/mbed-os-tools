@@ -190,3 +190,15 @@ def get_test_spec_from_yt_module(opts):
             tb.add_test(name, t)
 
     return test_spec
+
+def get_test_suite_properties():
+    """ Read data from module.json to help reporter do its job
+
+    @return Stuff in format of yotta module.json
+    """
+
+    ### Read yotta module basic information
+    yotta_module = YottaModule()
+    if yotta_module.init():
+        return yotta_module.get_data()
+    return None
