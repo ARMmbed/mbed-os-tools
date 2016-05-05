@@ -38,7 +38,13 @@ class LinuxPortTestCase(unittest.TestCase):
             "/dev/sdb on /media/MBED_xxx type vfat (rw,noexec,nodev,sync,noatime,nodiratime,gid=1000,uid=1000,dmask=000,fmask=000)",
             "/dev/sdd on /media/MBED___x type vfat (rw,noexec,nodev,sync,noatime,nodiratime,gid=1000,uid=1000,dmask=000,fmask=000)",
             "/dev/sde on /media/MBED-xxx type vfat (rw,noexec,nodev,sync,noatime,nodiratime,gid=1000,uid=1000,dmask=000,fmask=000)",
-            "/dev/sdc on /media/MBED_x-x type vfat (rw,noexec,nodev,sync,noatime,nodiratime,gid=1000,uid=1000,dmask=000,fmask=000)"
+            "/dev/sdc on /media/MBED_x-x type vfat (rw,noexec,nodev,sync,noatime,nodiratime,gid=1000,uid=1000,dmask=000,fmask=000)",
+
+            "/dev/sda on /mnt/NUCLEO type vfat (rw,relatime,uid=999,fmask=0133,dmask=0022,codepage=437,iocharset=ascii,shortname=mixed,utf8,flush,errors=remount-ro,uhelper=ldm)",
+            "/dev/sdf on /mnt/NUCLEO_ type vfat (rw,relatime,uid=999,fmask=0133,dmask=0022,codepage=437,iocharset=ascii,shortname=mixed,utf8,flush,errors=remount-ro,uhelper=ldm)",
+            "/dev/sdg on /mnt/DAPLINK type vfat (rw,relatime,sync,uid=999,fmask=0022,dmask=0022,codepage=437,iocharset=ascii,shortname=mixed,errors=remount-ro,uhelper=ldm)",
+            "/dev/sdh on /mnt/DAPLINK_ type vfat (rw,relatime,sync,uid=999,fmask=0022,dmask=0022,codepage=437,iocharset=ascii,shortname=mixed,errors=remount-ro,uhelper=ldm)",
+            "/dev/sdi on /mnt/DAPLINK__ type vfat (rw,relatime,sync,uid=999,fmask=0022,dmask=0022,codepage=437,iocharset=ascii,shortname=mixed,errors=remount-ro,uhelper=ldm)",
         ]
 
         # get_detected / get_not_detected (1 missing lpc1768)
@@ -218,6 +224,12 @@ class LinuxPortTestCase(unittest.TestCase):
         self.assertEqual('/media/MBED___x', self.linux_generic.get_mount_point('sdd', self.vfat_devices_ext))
         self.assertEqual('/media/MBED-xxx', self.linux_generic.get_mount_point('sde', self.vfat_devices_ext))
         self.assertEqual('/media/MBED_x-x', self.linux_generic.get_mount_point('sdc', self.vfat_devices_ext))
+
+        self.assertEqual('/mnt/NUCLEO', self.linux_generic.get_mount_point('sda', self.vfat_devices_ext))
+        self.assertEqual('/mnt/NUCLEO_', self.linux_generic.get_mount_point('sdf', self.vfat_devices_ext))
+        self.assertEqual('/mnt/DAPLINK', self.linux_generic.get_mount_point('sdg', self.vfat_devices_ext))
+        self.assertEqual('/mnt/DAPLINK_', self.linux_generic.get_mount_point('sdh', self.vfat_devices_ext))
+        self.assertEqual('/mnt/DAPLINK__', self.linux_generic.get_mount_point('sdi', self.vfat_devices_ext))
 
     def test_get_dev_name(self):
         # With USB- prefix
