@@ -20,6 +20,7 @@ Author: Przemyslaw Wirkus <Przemyslaw.Wirkus@arm.com>
 import os
 import sys
 import platform
+import mbed_lstools
 
 from os import access, F_OK
 from sys import stdout
@@ -128,6 +129,31 @@ class HostTestPluginBase:
                 sleep(loop_delay)
                 self.print_plugin_char('.')
         return result
+
+    def check_serial_port_ready(self, serial_port, target_id=None):
+        result = True
+
+        if target_id:
+            mbeds = mbed_lstools.create()
+            mbeds_by_tid = mbeds.list_mbeds_by_targetid()   # key: target_id, value mbedls_dict()
+
+            # Wait for mount point to appear with mbed-ls
+            # and if it does check if mount point for target_id changed
+            # If mount point changed, use new mount point and check if its ready (os.access)
+            new_serial_port = serial_port
+            for i in range(25): # 25x 200ms = 5sec
+                if target_id in mbeds_by_tid:
+                    if 'serial_port' in mbeds_by_tid[target_id]:
+                        new_serial_port = mbeds_by_tid[target_id]['serial_port']
+                        break
+                sleep(200)
+
+            if new_serial_port != serial_port:
+                # Mount point changed, update to new mount point from mbed-ls
+                self.print_plugin_info("Serial port for tid='%s' changed from '%s' to '%s'..."% (target_id, serial_port, new_serial_port))
+                serial_port = new_serial_port
+
+        return (result, serial_port)
 
     def check_parameters(self, capability, *args, **kwargs):
         """! This function should be ran each time we call execute() to check if none of the required parameters is missing
