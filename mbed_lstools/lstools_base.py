@@ -576,3 +576,14 @@ class MbedLsToolsBase:
                     self.debug(self.scan_html_line_for_target_id.__name__, (m.groups(), result))
                 return result
         return None
+
+    def run_cli_process(cmd, shell=True):
+        """! Runs command as a process and return stdout, stderr and ret code
+        @param cmd Command to execute
+        @return Tuple of (stdout, stderr, returncode)
+        """
+        from subprocess import Popen, PIPE
+
+        p = Popen(cmd, shell=shell, stdout=PIPE, stderr=PIPE)
+        _stdout, _stderr = p.communicate()
+        return _stdout, _stderr, p.returncode
