@@ -127,7 +127,7 @@ class MbedLsToolsLinuxGeneric(MbedLsToolsBase):
         """
         cmd = 'ls -oA /dev/' + subdir + '/by-id/'
         _stdout, _, retval = self.run_cli_process(cmd)
-        return (_stdout, retval)
+        return (_stdout.splitlines(), retval)
 
     def get_dev_by_id_process(self, lines, retval):
         """! Remove unnecessary lines from command line output
@@ -163,7 +163,7 @@ class MbedLsToolsLinuxGeneric(MbedLsToolsBase):
         _stdout, _, retval = self.run_cli_process(cmd)
 
         if not retval:
-            for line in _stdout.readlines():
+            for line in _stdout.splitlines():
                 line = line.rstrip()
                 result.append(line)
                 if self.DEBUG_FLAG:

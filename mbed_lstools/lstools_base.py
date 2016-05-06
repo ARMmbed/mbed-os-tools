@@ -577,6 +577,7 @@ class MbedLsToolsBase:
                 return result
         return None
 
+    @staticmethod
     def run_cli_process(cmd, shell=True):
         """! Runs command as a process and return stdout, stderr and ret code
         @param cmd Command to execute
