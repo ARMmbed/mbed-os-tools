@@ -79,8 +79,8 @@ Clone the mbed-ls repository. The following example uses the GitHub command line
 
 ```
 $ git clone https://github.com/ARMmbed/mbed-ls.git
-
 ```
+
 Change the directory to the mbed-ls repository directory:
 
 ```
