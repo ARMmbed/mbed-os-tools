@@ -113,7 +113,8 @@ class Mbed:
                                         copy_method,
                                         image_path=image_path,
                                         serial=port,
-                                        destination_disk=disk)
+                                        destination_disk=disk,
+                                        target_id=self.target_id)
         return result
 
     def update_device_info(self):
