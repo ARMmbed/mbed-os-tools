@@ -43,6 +43,7 @@ from mbed_greentea.mbed_greentea_dlm import greentea_get_app_sem
 from mbed_greentea.mbed_greentea_dlm import greentea_update_kettle
 from mbed_greentea.mbed_greentea_dlm import greentea_clean_kettle
 from mbed_greentea.mbed_yotta_api import get_test_spec_from_yt_module
+from mbed_greentea.mbed_yotta_api import get_test_suite_properties
 from mbed_greentea.mbed_greentea_hooks import GreenteaHooks
 from mbed_greentea.tests_spec import TestSpec, TestBinary
 from mbed_greentea.mbed_target_info import get_platform_property
@@ -832,7 +833,7 @@ def main_cli(opts, args, gt_instance_uuid=None):
         # Reports (to file)
         if opts.report_junit_file_name:
             gt_logger.gt_log("exporting to JUnit file '%s'..."% gt_logger.gt_bright(opts.report_junit_file_name))
-            junit_report = exporter_testcase_junit(test_report)
+            junit_report = exporter_testcase_junit(test_report, test_suite_properties = get_test_suite_properties())
             with open(opts.report_junit_file_name, 'w') as f:
                 f.write(junit_report)
         if opts.report_text_file_name:
