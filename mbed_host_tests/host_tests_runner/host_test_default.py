@@ -294,6 +294,9 @@ class DefaultTestSelector(DefaultTestSelectorBase):
         """
         result = self.RESULT_UNDEF
 
+        # hello sting with htrun version, for debug purposes
+        self.logger.prn_inf(self.get_hello_string())
+
         try:
             # Copy image to device
             if self.options.skip_flashing:
