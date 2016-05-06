@@ -20,6 +20,7 @@ Author: Przemyslaw Wirkus <Przemyslaw.Wirkus@arm.com>
 import os
 import sys
 import platform
+import mbed_lstools
 
 from os import access, F_OK
 from sys import stdout
@@ -107,16 +108,36 @@ class HostTestPluginBase:
         stdout.flush()
         return True
 
-    def check_mount_point_ready(self, destination_disk, init_delay=0.2, loop_delay=0.25):
+    def check_mount_point_ready(self, destination_disk, init_delay=0.2, loop_delay=0.25, target_id=None):
         """! Waits until destination_disk is ready and can be accessed by e.g. copy commands
-
         @return True if mount point was ready in given time, False otherwise
-
         @param destination_disk Mount point (disk) which will be checked for readiness
         @param init_delay - Initial delay time before first access check
         @param loop_delay - polling delay for access check
         """
+
+        if target_id:
+            mbeds = mbed_lstools.create()
+            mbeds_by_tid = mbeds.list_mbeds_by_targetid()   # key: target_id, value mbedls_dict()
+
+            # Wait for mount point to appear with mbed-ls
+            # and if it does check if mount point for target_id changed
+            # If mount point changed, use new mount point and check if its ready (os.access)
+            new_destination_disk = destination_disk
+            for i in range(25): # 25x 200ms = 5sec
+                if target_id in mbeds_by_tid:
+                    if 'mount_point' in mbeds_by_tid[target_id]:
+                        new_destination_disk = mbeds_by_tid[target_id]['mount_point']
+                        break
+                sleep(200)
+
+            if new_destination_disk != destination_disk:
+                # Mount point changed, update to new mount point from mbed-ls
+                self.print_plugin_info("Mount point for tid='%s' changed from '%s' to '%s'..."% (target_id, destination_disk, new_destination_disk))
+                destination_disk = new_destination_disk
+
         result = False
+        # Check if mount point we've promoted to be valid one (by optional target_id check above)
         # Let's wait for 30 * loop_delay + init_delay max
         if not access(destination_disk, F_OK):
             self.print_plugin_info("Waiting for mount point '%s' to be ready..."% destination_disk, NL=False)
@@ -127,7 +148,7 @@ class HostTestPluginBase:
                     break
                 sleep(loop_delay)
                 self.print_plugin_char('.')
-        return result
+        return (result, destination_disk)
 
     def check_parameters(self, capability, *args, **kwargs):
         """! This function should be ran each time we call execute() to check if none of the required parameters is missing
