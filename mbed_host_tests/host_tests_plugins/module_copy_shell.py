@@ -53,13 +53,18 @@ class HostTestPluginCopyMethod_Shell(HostTestPluginBase):
             self.print_plugin_error("Error: destination disk not specified")
             return False
 
+        # This optional parameter can be used if TargetID is provided (-t switch)
+        target_id = kwargs['target_id']
+
         result = False
         if self.check_parameters(capability, *args, **kwargs):
             if kwargs['image_path'] and kwargs['destination_disk']:
                 image_path = os.path.normpath(kwargs['image_path'])
                 destination_disk = os.path.normpath(kwargs['destination_disk'])
                 # Wait for mount point to be ready
-                self.check_mount_point_ready(destination_disk)  # Blocking
+                # if mount point changed according to target_id use new mount point
+                # available in result (_, destination_disk) of check_mount_point_ready
+                mount_res, destination_disk = self.check_mount_point_ready(destination_disk, target_id=target_id)  # Blocking
                 # Prepare correct command line parameter values
                 image_base_name = basename(image_path)
                 destination_path = join(destination_disk, image_base_name)
