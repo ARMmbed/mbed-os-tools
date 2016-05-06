@@ -16,7 +16,6 @@ limitations under the License.
 """
 
 import re
-import subprocess
 
 from lstools_base import MbedLsToolsBase
 
@@ -127,10 +126,8 @@ class MbedLsToolsLinuxGeneric(MbedLsToolsBase):
         @return tuple(stdout lines, retcode)
         """
         cmd = 'ls -oA /dev/' + subdir + '/by-id/'
-        if self.DEBUG_FLAG:
-            self.debug(self.get_dev_by_id_cmd.__name__, cmd)
-        p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        return (p.stdout.readlines(), p.wait())
+        _stdout, _, retval = self.run_cli_process(cmd)
+        return (_stdout.splitlines(), retval)
 
     def get_dev_by_id_process(self, lines, retval):
         """! Remove unnecessary lines from command line output
@@ -159,13 +156,14 @@ class MbedLsToolsLinuxGeneric(MbedLsToolsBase):
         """
         result = []
         cmd = 'mount | grep vfat'
+
         if self.DEBUG_FLAG:
             self.debug(self.get_mounts.__name__, cmd)
 
-        p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        retval = p.wait()
+        _stdout, _, retval = self.run_cli_process(cmd)
+
         if not retval:
-            for line in p.stdout.readlines():
+            for line in _stdout.splitlines():
                 line = line.rstrip()
                 result.append(line)
                 if self.DEBUG_FLAG:
