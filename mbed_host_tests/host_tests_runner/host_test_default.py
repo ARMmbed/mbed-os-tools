@@ -107,7 +107,8 @@ class DefaultTestSelector(DefaultTestSelectorBase):
                 "port" : self.mbed.port,
                 "baudrate" : self.mbed.serial_baud,
                 "program_cycle_s" : self.options.program_cycle_s,
-                "reset_type" : self.options.forced_reset_type
+                "reset_type" : self.options.forced_reset_type,
+                "target_id" : self.options.target_id
             }
             # DUT-host communication process
             args = (event_queue, dut_event_queue, self.prn_lock, config)
