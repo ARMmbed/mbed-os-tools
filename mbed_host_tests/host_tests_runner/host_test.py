@@ -17,6 +17,7 @@ limitations under the License.
 Author: Przemyslaw Wirkus <Przemyslaw.Wirkus@arm.com>
 """
 
+import pkg_resources  # part of setuptools
 from sys import stdout
 from mbed_host_tests.host_tests_runner.mbed_base import Mbed
 
@@ -120,6 +121,13 @@ class Test(HostTestResults):
         """ dctor for this class, finishes tasks and closes resources
         """
         pass
+
+    def get_hello_string(self):
+        """ Hello string used as first print
+        """
+        pkg = 'mbed-host-tests'
+        version = pkg_resources.require(pkg)[0].version
+        return "host test executor ver. " + version
 
 
 class DefaultTestSelectorBase(Test):

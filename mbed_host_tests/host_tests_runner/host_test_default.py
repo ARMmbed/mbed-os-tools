@@ -109,7 +109,8 @@ class DefaultTestSelector(DefaultTestSelectorBase):
                 "port" : self.mbed.port,
                 "baudrate" : self.mbed.serial_baud,
                 "program_cycle_s" : self.options.program_cycle_s,
-                "reset_type" : self.options.forced_reset_type
+                "reset_type" : self.options.forced_reset_type,
+                "target_id" : self.options.target_id
             }
             # DUT-host communication process
             args = (event_queue, dut_event_queue, self.prn_lock, config)
@@ -309,6 +310,9 @@ class DefaultTestSelector(DefaultTestSelectorBase):
                  and test execution timeout will be measured.
         """
         result = self.RESULT_UNDEF
+
+        # hello sting with htrun version, for debug purposes
+        self.logger.prn_inf(self.get_hello_string())
 
         try:
             # Copy image to device

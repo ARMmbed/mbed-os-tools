@@ -36,7 +36,7 @@ def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
 setup(name='mbed-host-tests',
-      version='0.2.4',
+      version='0.2.8',
       description=DESCRIPTION,
       long_description=read('README.md'),
       author=OWNER_NAMES,
@@ -54,4 +54,5 @@ setup(name='mbed-host-tests',
       },
       install_requires=["PySerial>=3.0",
                         "PrettyTable>=0.7.2",
-                        "requests"])
+                        "requests",
+                        "mbed-ls"])

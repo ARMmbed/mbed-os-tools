@@ -17,6 +17,7 @@ limitations under the License.
 Author: Przemyslaw Wirkus <Przemyslaw.Wirkus@arm.com>
 """
 
+from multiprocessing import freeze_support
 from mbed_host_tests import init_host_test_cli_params
 from mbed_host_tests.host_tests_runner.host_test_default import DefaultTestSelector
 
@@ -26,6 +27,7 @@ def main():
     @details 1. Create DefaultTestSelector object and pass command line parameters
              2. Call default test execution function run() to start test instrumentation
     """
+    freeze_support()
     result = -2
     test_selector = DefaultTestSelector(init_host_test_cli_params())
     try:

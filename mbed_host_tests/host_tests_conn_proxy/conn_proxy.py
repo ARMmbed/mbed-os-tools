@@ -22,6 +22,7 @@ from time import time, sleep
 from Queue import Empty as QueueEmpty   # Queue here refers to the module, not a class
 from serial import Serial, SerialException
 from mbed_host_tests import host_tests_plugins
+from mbed_host_tests.host_tests_plugins.host_test_plugins import HostTestPluginBase
 from conn_proxy_logger import HtrunLogger
 
 
@@ -34,10 +35,25 @@ class SerialConnectorPrimitive(object):
         self.config = config
         self.logger = HtrunLogger(prn_lock, 'SERI')
         self.LAST_ERROR = None
+        self.target_id = self.config.get('target_id', None)
 
+        # Values used to call serial port listener...
         self.logger.prn_inf("serial(port=%s, baudrate=%d, timeout=%s)"% (self.port, self.baudrate, self.timeout))
+
+        # Check if serial port for given target_id changed
+        # If it does we will use new port to open connections and make sure reset plugin
+        # later can reuse opened already serial port
+        #
+        # Note: This listener opens serial port and keeps connection so reset plugin uses
+        # serial port object not serial port name!
+        _, serial_port = HostTestPluginBase().check_serial_port_ready(self.port, target_id=self.target_id)
+        if serial_port != self.port:
+            # Serial port changed for given targetID
+            self.logger.prn_inf("serial port changed from '%s to '%s')"% (self.port, serial_port))
+            self.port = serial_port
+
         try:
-            self.serial = Serial(port, baudrate=baudrate, timeout=self.timeout)
+            self.serial = Serial(self.port, baudrate=self.baudrate, timeout=self.timeout)
         except SerialException as e:
             self.serial = None
             self.LAST_ERROR = "connection lost, serial.Serial(%s. %d, %d): %s"% (self.port,
@@ -59,7 +75,8 @@ class SerialConnectorPrimitive(object):
         result = host_tests_plugins.call_plugin('ResetMethod',
             reset_type,
             serial=self.serial,
-            disk=disk)
+            disk=disk,
+            target_id=self.target_id)
         # Post-reset sleep
         self.logger.prn_inf("wait for it...")
         sleep(delay)
@@ -67,7 +84,7 @@ class SerialConnectorPrimitive(object):
 
     def read(self, count):
         """! Read data from serial port RX buffer """
-        c = ''
+        c = str()
         try:
             if self.serial:
                 c = self.serial.read(count)
@@ -115,7 +132,7 @@ class KiViBufferWalker():
     """! Simple auxiliary class used to walk through a buffer and search for KV tokens """
     def __init__(self):
         self.KIVI_REGEX = r"\{\{([\w\d_-]+);([^\}]+)\}\}"
-        self.buff = ''
+        self.buff = str()
         self.buff_idx = 0
         self.re_kv = re.compile(self.KIVI_REGEX)
 
@@ -157,7 +174,7 @@ def conn_process(event_queue, dut_event_queue, prn_lock, config):
     sync_uuid_discovered = False
 
     # Some RXD data buffering so we can show more text per log line
-    print_data = ''
+    print_data = str()
 
     # Handshake, we will send {{sync;UUID}} preamble and wait for mirrored reply
     logger.prn_inf("sending preamble '%s'..."% sync_uuid)
@@ -197,7 +214,7 @@ def conn_process(event_queue, dut_event_queue, prn_lock, config):
                         if line:
                             logger.prn_rxd(line)
                             event_queue.put(('__rxd_line', line, time()))
-                    print_data = ''
+                    print_data = str()
                 else:
                     for line in print_data_lines[:-1]:
                         if line:
