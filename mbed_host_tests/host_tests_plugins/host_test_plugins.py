@@ -134,22 +134,22 @@ class HostTestPluginBase:
         result = True
 
         if target_id:
-            mbeds = mbed_lstools.create()
-            mbeds_by_tid = mbeds.list_mbeds_by_targetid()   # key: target_id, value mbedls_dict()
-
             # Wait for mount point to appear with mbed-ls
             # and if it does check if mount point for target_id changed
             # If mount point changed, use new mount point and check if its ready (os.access)
             new_serial_port = serial_port
             for i in range(25): # 25x 200ms = 5sec
+                # mbed_lstools.create() should be done inside the loop. Otherwise it will loop on same data.
+                mbeds = mbed_lstools.create()
+                mbeds_by_tid = mbeds.list_mbeds_by_targetid()   # key: target_id, value mbedls_dict()
                 if target_id in mbeds_by_tid:
                     if 'serial_port' in mbeds_by_tid[target_id]:
                         new_serial_port = mbeds_by_tid[target_id]['serial_port']
                         break
-                sleep(200)
+                sleep(0.2)
 
             if new_serial_port != serial_port:
-                # Mount point changed, update to new mount point from mbed-ls
+                # Serial port changed, update to new serial port from mbed-ls
                 self.print_plugin_info("Serial port for tid='%s' changed from '%s' to '%s'..."% (target_id, serial_port, new_serial_port))
                 serial_port = new_serial_port
 
