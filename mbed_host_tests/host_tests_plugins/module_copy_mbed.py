@@ -73,7 +73,7 @@ class HostTestPluginCopyMethod_Mbed(HostTestPluginBase):
             return False
 
         # This optional parameter can be used if TargetID is provided (-t switch)
-        target_id = kwargs['target_id']
+        target_id = kwargs.get('target_id', None)
 
         result = False
         if self.check_parameters(capability, *args, **kwargs):
