@@ -140,9 +140,7 @@ class HostTestPluginBase:
         result = True
 
         if target_id:
-            # Wait for mount point to appear with mbed-ls
-            # and if it does check if mount point for target_id changed
-            # If mount point changed, use new mount point and check if its ready (os.access)
+            # If serial port changed (check using mbed-ls), use new serial port
             new_serial_port = serial_port
             for i in range(25): # 25x 200ms = 5sec
                 # mbed_lstools.create() should be done inside the loop. Otherwise it will loop on same data.
