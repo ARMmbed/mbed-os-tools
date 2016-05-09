@@ -27,10 +27,8 @@ Write your own programs (import this package) or use 'mbedhtrun' command line to
 
 
 import os
-import sys
 import imp
 import inspect
-from time import time
 from os import listdir
 from os.path import isfile, join, abspath
 from optparse import OptionParser
