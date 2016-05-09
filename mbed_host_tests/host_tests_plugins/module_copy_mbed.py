@@ -72,6 +72,9 @@ class HostTestPluginCopyMethod_Mbed(HostTestPluginBase):
             self.print_plugin_error("Error: destination disk not specified")
             return False
 
+        # This optional parameter can be used if TargetID is provided (-t switch)
+        target_id = kwargs.get('target_id', None)
+
         result = False
         if self.check_parameters(capability, *args, **kwargs):
             # Capability 'default' is a dummy capability
@@ -80,7 +83,9 @@ class HostTestPluginCopyMethod_Mbed(HostTestPluginBase):
                     image_path = os.path.normpath(kwargs['image_path'])
                     destination_disk = os.path.normpath(kwargs['destination_disk'])
                     # Wait for mount point to be ready
-                    self.check_mount_point_ready(destination_disk)  # Blocking
+                    # if mount point changed according to target_id use new mount point
+                    # available in result (_, destination_disk) of check_mount_point_ready
+                    mount_res, destination_disk = self.check_mount_point_ready(destination_disk, target_id=self.target_id)  # Blocking
                     result = self.generic_mbed_copy(image_path, destination_disk)
         return result
 
