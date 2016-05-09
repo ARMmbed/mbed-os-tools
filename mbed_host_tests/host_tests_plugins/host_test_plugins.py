@@ -131,6 +131,12 @@ class HostTestPluginBase:
         return result
 
     def check_serial_port_ready(self, serial_port, target_id=None):
+        """! Function checks (using mbed-ls) and updates serial port name information for DUT with specified target_id.
+        If no target_id is specified function returns old serial port name.
+        @param serial_port Current serial port name
+        @param target_id Target ID of a device under test which serial port will be checked and updated if needed
+        @return Tuple with result (always True) and serial port read from mbed-ls
+        """
         result = True
 
         if target_id:
@@ -157,12 +163,10 @@ class HostTestPluginBase:
 
     def check_parameters(self, capability, *args, **kwargs):
         """! This function should be ran each time we call execute() to check if none of the required parameters is missing
-
-        @return Returns True if all parameters are passed to plugin, else return False
-
         @param capability Capability name
         @param args Additional parameters
         @param kwargs Additional parameters
+        @return Returns True if all parameters are passed to plugin, else return False
         """
         missing_parameters = []
         for parameter in self.required_parameters:
@@ -175,12 +179,9 @@ class HostTestPluginBase:
 
     def run_command(self, cmd, shell=True):
         """! Runs command from command line.
-
         @param cmd Command to execute
         @param shell True if shell command should be executed (eg. ls, ps)
-
         @details Function prints 'cmd' return code if execution failed
-
         @return True if command successfully executed
         """
         result = True
@@ -197,7 +198,6 @@ class HostTestPluginBase:
 
     def mbed_os_info(self):
         """! Returns information about host OS
-
         @return Returns tuple with information about OS and host platform
         """
         result = (os.name,
