@@ -49,13 +49,13 @@ class BaseHostTestAbstract(object):
         if self.__event_queue:
             self.__event_queue.put(('__notify_complete', result, time()))
 
-    def reset_dut(self):
+    def reset_dut(self, value):
         """
         Reset device under test
         :return:
         """
         if self.__event_queue:
-            self.__event_queue.put(('__reset_dut', True, time()))
+            self.__event_queue.put(('__reset_dut', value, time()))
 
     def notify_conn_lost(self, text):
         """! Notify main even loop that there was a DUT-host test connection error

@@ -38,7 +38,7 @@ class SerialConnectorPrimitive(object):
         self.target_id = self.config.get('target_id', None)
 
         # Values used to call serial port listener...
-        self.logger.prn_inf("serial(port=%s, baudrate=%d)"% (self.port, self.baudrate))
+        self.logger.prn_inf("serial(port=%s, baudrate=%d, timeout=%s)"% (self.port, self.baudrate, self.timeout))
 
         # Check if serial port for given target_id changed
         # If it does we will use new port to open connections and make sure reset plugin
@@ -191,11 +191,11 @@ def conn_process(event_queue, dut_event_queue, prn_lock, config):
             break
 
         # Send data to DUT
-        if not dut_event_queue.empty():
-            try:
-                (key, value, _) = dut_event_queue.get(timeout=1)
-            except QueueEmpty:
-                continue
+        try:
+            (key, value, _) = dut_event_queue.get(timeout=0)
+        except QueueEmpty:
+            pass # Check if target sent something
+        else:
             # Return if state machine in host_test_default has finished to end process
             if key == '__host_test_finished' and value == True:
                 connector.finish()

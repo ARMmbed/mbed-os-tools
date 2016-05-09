@@ -30,6 +30,7 @@ import host_test_registry
 import module_copy_shell
 import module_copy_mbed
 import module_reset_mbed
+import module_power_cycle_mbed
 
 # Additional, non standard platforms
 import module_copy_silabs
@@ -56,6 +57,7 @@ HOST_TEST_PLUGIN_REGISTRY.register_plugin(module_copy_silabs.load_plugin())
 HOST_TEST_PLUGIN_REGISTRY.register_plugin(module_reset_silabs.load_plugin())
 HOST_TEST_PLUGIN_REGISTRY.register_plugin(module_copy_stlink.load_plugin())
 HOST_TEST_PLUGIN_REGISTRY.register_plugin(module_reset_stlink.load_plugin())
+HOST_TEST_PLUGIN_REGISTRY.register_plugin(module_power_cycle_mbed.load_plugin())
 #HOST_TEST_PLUGIN_REGISTRY.register_plugin(module_copy_jn51xx.load_plugin())
 #HOST_TEST_PLUGIN_REGISTRY.register_plugin(module_reset_jn51xx.load_plugin())
 

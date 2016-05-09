@@ -54,4 +54,5 @@ setup(name='mbed-host-tests',
       },
       install_requires=["PySerial>=3.0",
                         "PrettyTable>=0.7.2",
+                        "requests",
                         "mbed-ls"])

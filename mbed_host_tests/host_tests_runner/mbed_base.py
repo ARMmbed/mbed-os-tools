@@ -18,10 +18,7 @@ Author: Przemyslaw Wirkus <Przemyslaw.Wirkus@arm.com>
 """
 
 import json
-import time
-import mbed_lstools
 from time import sleep
-
 import mbed_host_tests.host_tests_plugins as ht_plugins
 
 
@@ -117,20 +114,19 @@ class Mbed:
                                         target_id=self.target_id)
         return result
 
-    def update_device_info(self):
+    def hw_reset(self):
         """
-        Updates device's port and disk using mbedls. Typically used after reset.
+        Performs hardware reset of target ned device.
 
         :return:
         """
-        for i in range(3):
-            mbed_list = mbed_lstools.create().list_mbeds_ext()
-            if mbed_list:
-                for mut in mbed_list:
-                    if mut['target_id'] == self.target_id:
-                        self.port = mut['serial_port']
-                        self.disk = mut['mount_point']
-                        return True
-            print "HOST: Failed to find target after reset. Retrying (%d)" % i
-            time.sleep(1)
-        return False
+        device_info = {}
+        result = ht_plugins.call_plugin('ResetMethod',
+                                        'power_cycle',
+                                        target_id=self.target_id,
+                                        device_info=device_info)
+        if result:
+            self.port = device_info['serial_port']
+            self.disk = device_info['mount_point']
+        return result
+

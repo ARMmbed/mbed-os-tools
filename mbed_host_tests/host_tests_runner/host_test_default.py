@@ -36,6 +36,8 @@ from mbed_host_tests.host_tests_toolbox.host_functional import handle_send_break
 
 class DefaultTestSelector(DefaultTestSelectorBase):
     """! Select default host_test supervision (replaced after auto detection) """
+    RESET_TYPE_SW_RST   = "software_reset"
+    RESET_TYPE_HW_RST   = "hardware_reset"
 
     def __init__(self, options):
         """! ctor
@@ -191,10 +193,24 @@ class DefaultTestSelector(DefaultTestSelectorBase):
                             result = value
                             break
                         elif key == '__reset_dut':
-                            # Disconnecting and re-connecting comm process will reset DUT
+                            # Disconnect to avoid connection lost event
                             dut_event_queue.put(('__host_test_finished', True, time()))
                             p.join()
-                            # self.mbed.update_device_info() - This call is commented but left as it would be required in hard reset.
+
+                            if value == DefaultTestSelector.RESET_TYPE_SW_RST:
+                                self.logger.prn_inf("Performing software reset.")
+                                # Just disconnecting and re-connecting comm process will soft reset DUT
+                            elif value == DefaultTestSelector.RESET_TYPE_HW_RST:
+                                self.logger.prn_inf("Performing hard reset.")
+                                # request hardware reset
+                                self.mbed.hw_reset()
+                            else:
+                                self.logger.prn_err("Invalid reset type (%s). Supported types [%s]." %
+                                                    (value, ", ".join([DefaultTestSelector.RESET_TYPE_HW_RST,
+                                                                       DefaultTestSelector.RESET_TYPE_SW_RST])))
+                                self.logger.prn_inf("Software reset will be performed.")
+
+                            # connect to the device
                             p = start_conn_process()
                         elif key == '__notify_conn_lost':
                             # This event is sent by conn_process, DUT connection was lost
