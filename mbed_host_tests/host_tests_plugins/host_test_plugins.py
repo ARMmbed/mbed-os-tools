@@ -132,8 +132,10 @@ class HostTestPluginBase:
                 mbeds_by_tid = mbeds.list_mbeds_by_targetid()   # key: target_id, value mbedls_dict()
                 if target_id in mbeds_by_tid:
                     if 'mount_point' in mbeds_by_tid[target_id]:
-                        new_destination_disk = mbeds_by_tid[target_id]['mount_point']
-                        break
+                        if mbeds_by_tid[target_id]['mount_point']:
+                            # Only assign if mount point is known (not None)
+                            new_destination_disk = mbeds_by_tid[target_id]['mount_point']
+                            break
                 sleep(0.5)
 
             if new_destination_disk != destination_disk:
@@ -173,8 +175,10 @@ class HostTestPluginBase:
                 mbeds_by_tid = mbeds.list_mbeds_by_targetid()   # key: target_id, value mbedls_dict()
                 if target_id in mbeds_by_tid:
                     if 'serial_port' in mbeds_by_tid[target_id]:
-                        new_serial_port = mbeds_by_tid[target_id]['serial_port']
-                        break
+                        if mbeds_by_tid[target_id]['serial_port']:
+                            # Only assign if serial port is known (not None)
+                            new_serial_port = mbeds_by_tid[target_id]['serial_port']
+                            break
                 sleep(0.2)
 
             if new_serial_port != serial_port:
