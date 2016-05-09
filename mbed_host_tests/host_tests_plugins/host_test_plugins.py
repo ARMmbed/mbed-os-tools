@@ -124,6 +124,7 @@ class HostTestPluginBase:
 
             # Sometimes OSes take a long time to mount devices (up to one minute).
             # Current pooling time: 120x 500ms = 1 minute
+            self.print_plugin_info("Waiting for '%s' mount point (current is '%s')..."% (target_id, destination_disk))
             for i in range(120):
                 # mbed_lstools.create() should be done inside the loop.
                 # Otherwise it will loop on same data.
@@ -133,12 +134,11 @@ class HostTestPluginBase:
                     if 'mount_point' in mbeds_by_tid[target_id]:
                         new_destination_disk = mbeds_by_tid[target_id]['mount_point']
                         break
-                self.print_plugin_info("Waiting for '%s' mount point (current is '%s')..."% (target_id, destination_disk))
                 sleep(0.5)
 
             if new_destination_disk != destination_disk:
                 # Mount point changed, update to new mount point from mbed-ls
-                self.print_plugin_info("Mount point for tid='%s' changed from '%s' to '%s'..."% (target_id, destination_disk, new_destination_disk))
+                self.print_plugin_info("Mount point for '%s' changed from '%s' to '%s'..."% (target_id, destination_disk, new_destination_disk))
                 destination_disk = new_destination_disk
 
         result = False
