@@ -92,14 +92,17 @@ class YottaModule():
         """! Loads yotta_module.json as an object from local yotta build directory
         @return True if data was successfuly loaded from the file
         """
+        self.__yotta_module = dict()
+
         try:
             path = os.path.join(self.MODULE_PATH, self.YOTTA_CONFIG_NAME)
-            with open(path, 'r') as data_file:
-                self.__yotta_module = json.load(data_file)
+            if os.path.exists(path):
+                # Load module.json only if it exists
+                with open(path, 'r') as data_file:
+                    self.__yotta_module = json.load(data_file)
         except IOError as e:
             print "YottaModule: error - ", str(e)
-            self.__yotta_module = {}
-        return bool(len(self.__yotta_module))
+        return bool(self.__yotta_module)    # bool({}) == False
 
     def set_yotta_module(self, yotta_module):
         self.__yotta_module = yotta_module
