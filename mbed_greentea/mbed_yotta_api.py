@@ -208,6 +208,7 @@ def get_test_suite_properties(test_spec=None):
         first_test_spec = test_spec.get_test_builds()
         if first_test_spec:
             first_build = first_test_spec[0]
+            result['name'] = first_build.get_name()
             result['toolchain'] = first_build.get_toolchain()
             result['target'] = first_build.get_platform()
             return result
