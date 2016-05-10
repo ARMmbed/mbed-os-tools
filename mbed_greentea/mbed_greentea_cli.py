@@ -382,7 +382,7 @@ def run_test_thread(test_result_queue, test_queue, opts, mut, build, build_path,
         # Some error in htrun, abort test execution
         if host_test_result < 0:
             break
-        
+
         single_test_result, single_test_output, single_testduration, single_timeout, result_test_cases, test_cases_summary = host_test_result
         test_result = single_test_result
 
@@ -833,7 +833,9 @@ def main_cli(opts, args, gt_instance_uuid=None):
         # Reports (to file)
         if opts.report_junit_file_name:
             gt_logger.gt_log("exporting to JUnit file '%s'..."% gt_logger.gt_bright(opts.report_junit_file_name))
-            junit_report = exporter_testcase_junit(test_report, test_suite_properties = get_test_suite_properties())
+            # This test specification will be used by JUnit exporter to populate TestSuite.properties (useful meta-data for Viewer)
+            junit_test_spec = test_spec if opts.test_spec else None
+            junit_report = exporter_testcase_junit(test_report, test_suite_properties = get_test_suite_properties(test_spec=junit_test_spec))
             with open(opts.report_junit_file_name, 'w') as f:
                 f.write(junit_report)
         if opts.report_text_file_name:

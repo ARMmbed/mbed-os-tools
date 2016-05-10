@@ -191,14 +191,29 @@ def get_test_spec_from_yt_module(opts):
 
     return test_spec
 
-def get_test_suite_properties():
+def get_test_suite_properties(test_spec=None):
     """ Read data from module.json to help reporter do its job
 
+    If test_spec provided function will arrange JUNit test suite properties in a way report viewer can take advantage of it.
+    Test suite properties should be compatible with mbedmicro/mbed properties.
+    If no test_spec we will use module.json data as properties for Test Suite.
+
+    @param test_spec Test specification object (class TestSpec) used with --test-spec switch.
+                     This is used to add extra properties to JUnit test suite report.
     @return Stuff in format of yotta module.json
     """
 
-    ### Read yotta module basic information
-    yotta_module = YottaModule()
-    if yotta_module.init():
-        return yotta_module.get_data()
+    if test_spec:
+        result = dict()
+        first_test_spec = test_spec.get_test_builds()
+        if first_test_spec:
+            first_build = first_test_spec[0]
+            result['toolchain'] = first_build.get_toolchain()
+            result['target'] = first_build.get_platform()
+            return result
+    else:
+        ### Read yotta module basic information
+        yotta_module = YottaModule()
+        if yotta_module.init():
+            return yotta_module.get_data()
     return None
