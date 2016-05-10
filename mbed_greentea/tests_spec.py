@@ -241,7 +241,7 @@ class TestSpec:
         :return:
         """
         assert TestSpec.KW_BUILDS, "Test spec should contain key '%s'" % TestSpec.KW_BUILDS
-        for _, build in spec[TestSpec.KW_BUILDS].iteritems():
+        for build_name, build in spec[TestSpec.KW_BUILDS].iteritems():
             mandatory_keys = [TestBuild.KW_PLATFORM, TestBuild.KW_TOOLCHAIN,
                               TestBuild.KW_BAUD_RATE,
                               TestBuild.KW_BUILD_BASE_PATH]
@@ -253,14 +253,15 @@ class TestSpec:
             platform = build[TestBuild.KW_PLATFORM]
             toolchain = build[TestBuild.KW_TOOLCHAIN]
 
-            build_name = build.get(TestBuild.KW_TEST_BUILD_NAME, "%s-%s" % (platform, toolchain))
+            # If there is no 'name' property in build, we will use build key as build name
+            name = build.get(TestBuild.KW_TEST_BUILD_NAME, build_name)
 
-            tb = TestBuild(build_name, platform, toolchain,
+            tb = TestBuild(name, platform, toolchain,
                            build[TestBuild.KW_BAUD_RATE],
                            build[TestBuild.KW_BUILD_BASE_PATH],
                            build.get(TestBuild.KW_BIN_TYPE, None))
             tb.parse(build)
-            self.__target_test_spec[build_name] = tb
+            self.__target_test_spec[name] = tb
 
     def get_test_builds(self):
         """
