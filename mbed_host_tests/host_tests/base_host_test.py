@@ -25,9 +25,10 @@ class BaseHostTestAbstract(object):
         setup, test and teardown set of functions
     """
 
-    name = ''   # name of the host test (used for local registration)
-    __event_queue = None      # To main even loop
-    __dut_event_queue = None  # To DUT
+    name = ''                   # name of the host test (used for local registration)
+    __event_queue = None        # To main even loop
+    __dut_event_queue = None    # To DUT
+    script_location = None      # Path to source file used to load host test
 
     def __notify_prn(self, text):
         if self.__event_queue:
