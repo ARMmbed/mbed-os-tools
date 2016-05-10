@@ -96,7 +96,7 @@ def get_plugin_caps(methods=None):
         result[method] = host_tests_plugins.get_plugin_caps(method)
     return result
 
-def print_ht_list():
+def print_ht_list(verbose=False):
     """! Prints list of registered host test classes (by name)
         @Detail For devel & debug purposes
     """
@@ -104,13 +104,23 @@ def print_ht_list():
     # Opiortunistic apporach
     # If in yotta module top level dir try to list all
     # tests in standard test/host_tests path
-    enum_host_tests('./test/host_tests')
+    enum_host_tests('./test/host_tests', verbose=verbose)
 
-    str_len = 0
+    ht_str_len = 0
+    cls_str_len = 0
     for ht in HOSTREGISTRY.HOST_TESTS:
-        if len(ht) > str_len: str_len = len(ht)
+        cls_str = str(HOSTREGISTRY.HOST_TESTS[ht].__class__)
+
+        if len(ht) > ht_str_len: ht_str_len = len(ht)
+        if len(cls_str) > cls_str_len: cls_str_len = len(cls_str)
     for ht in sorted(HOSTREGISTRY.HOST_TESTS.keys()):
-        print "'%s'%s : %s()" % (ht, ' '*(str_len - len(ht)), HOSTREGISTRY.HOST_TESTS[ht].__class__)
+        cls_str = str(HOSTREGISTRY.HOST_TESTS[ht].__class__)
+        script_path_str = HOSTREGISTRY.HOST_TESTS[ht].script_location if HOSTREGISTRY.HOST_TESTS[ht].script_location else 'mbed-host-tests'
+
+        print "'%s'%s : %s()%s @ '%s'" % (ht, ' '*(ht_str_len - len(ht)),
+            cls_str,
+            ' '*(cls_str_len - len(cls_str)),
+            script_path_str)
 
 def enum_host_tests(path, verbose=False):
     """ Enumerates and registers locally stored host tests
@@ -146,6 +156,7 @@ def enum_host_tests(path, verbose=False):
                                 if mod_obj.name:
                                     host_test_name = mod_obj.name
                                 host_test_cls = mod_obj
+                                host_test_cls.script_location = abs_path
                                 if verbose:
                                     print "HOST: Found host test implementation: %s -|> %s"% (str(mod_obj), str(BaseHostTest))
                                     print "HOST: Registering '%s' as '%s'"% (str(host_test_cls), host_test_name)

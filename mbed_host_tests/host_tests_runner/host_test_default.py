@@ -52,7 +52,7 @@ class DefaultTestSelector(DefaultTestSelectorBase):
                 enum_host_tests(path, verbose=options.verbose)
 
             if options.list_reg_hts:    # --list option
-                print_ht_list()
+                print_ht_list(verbose=options.verbose)
                 sys.exit(0)
 
             if options.list_plugins:    # --plugins option
