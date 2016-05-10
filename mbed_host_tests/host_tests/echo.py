@@ -28,9 +28,11 @@ class EchoTest(BaseHostTest):
     uuid_recv = []
 
     def __send_echo_uuid(self):
-        str_uuid = str(uuid.uuid4())
-        self.send_kv("echo", str_uuid)
-        self.uuid_sent.append(str_uuid)
+        if self.echo_count:
+            str_uuid = str(uuid.uuid4())
+            self.send_kv("echo", str_uuid)
+            self.uuid_sent.append(str_uuid)
+            self.echo_count -= 1
 
     def _callback_echo(self, key, value, timestamp):
         self.uuid_recv.append(value)
