@@ -169,7 +169,11 @@ class HostTestPluginBase:
         if target_id:
             # If serial port changed (check using mbed-ls), use new serial port
             new_serial_port = serial_port
-            for i in range(25): # 25x 200ms = 5sec
+
+            # Sometimes OSes take a long time to mount devices (up to one minute).
+            # Current pooling time: 120x 500ms = 1 minute
+            self.print_plugin_info("Waiting for '%s' serial port (current is '%s')..."% (target_id, serial_port))
+            for i in range(120):
                 # mbed_lstools.create() should be done inside the loop. Otherwise it will loop on same data.
                 mbeds = mbed_lstools.create()
                 mbeds_by_tid = mbeds.list_mbeds_by_targetid()   # key: target_id, value mbedls_dict()
@@ -179,7 +183,7 @@ class HostTestPluginBase:
                             # Only assign if serial port is known (not None)
                             new_serial_port = mbeds_by_tid[target_id]['serial_port']
                             break
-                sleep(0.2)
+                sleep(0.5)
 
             if new_serial_port != serial_port:
                 # Serial port changed, update to new serial port from mbed-ls
