@@ -108,12 +108,13 @@ class HostTestPluginBase:
         stdout.flush()
         return True
 
-    def check_mount_point_ready(self, destination_disk, init_delay=0.2, loop_delay=0.25, target_id=None):
+    def check_mount_point_ready(self, destination_disk, init_delay=0.2, loop_delay=0.25, target_id=None, timeout=60):
         """! Waits until destination_disk is ready and can be accessed by e.g. copy commands
         @return True if mount point was ready in given time, False otherwise
         @param destination_disk Mount point (disk) which will be checked for readiness
         @param init_delay - Initial delay time before first access check
         @param loop_delay - polling delay for access check
+        @param timeout Mount point pooling timeout in seconds
         """
 
         if target_id:
@@ -124,8 +125,10 @@ class HostTestPluginBase:
 
             # Sometimes OSes take a long time to mount devices (up to one minute).
             # Current pooling time: 120x 500ms = 1 minute
-            self.print_plugin_info("Waiting for '%s' mount point (current is '%s')..."% (target_id, destination_disk))
-            for i in range(120):
+            self.print_plugin_info("Waiting up to %d sec for '%s' mount point (current is '%s')..."% (timeout, target_id, destination_disk))
+            timeout_step = 0.5
+            timeout = int(timeout / timeout_step)
+            for i in range(timeout):
                 # mbed_lstools.create() should be done inside the loop.
                 # Otherwise it will loop on same data.
                 mbeds = mbed_lstools.create()
@@ -136,7 +139,7 @@ class HostTestPluginBase:
                             # Only assign if mount point is known (not None)
                             new_destination_disk = mbeds_by_tid[target_id]['mount_point']
                             break
-                sleep(0.5)
+                sleep(timeout_step)
 
             if new_destination_disk != destination_disk:
                 # Mount point changed, update to new mount point from mbed-ls
@@ -157,11 +160,12 @@ class HostTestPluginBase:
                 self.print_plugin_char('.')
         return (result, destination_disk)
 
-    def check_serial_port_ready(self, serial_port, target_id=None):
+    def check_serial_port_ready(self, serial_port, target_id=None, timeout=60):
         """! Function checks (using mbed-ls) and updates serial port name information for DUT with specified target_id.
         If no target_id is specified function returns old serial port name.
         @param serial_port Current serial port name
         @param target_id Target ID of a device under test which serial port will be checked and updated if needed
+        @param timeout Serial port pooling timeout in seconds
         @return Tuple with result (always True) and serial port read from mbed-ls
         """
         result = True
@@ -172,8 +176,10 @@ class HostTestPluginBase:
 
             # Sometimes OSes take a long time to mount devices (up to one minute).
             # Current pooling time: 120x 500ms = 1 minute
-            self.print_plugin_info("Waiting for '%s' serial port (current is '%s')..."% (target_id, serial_port))
-            for i in range(120):
+            self.print_plugin_info("Waiting up to %d sec for '%s' serial port (current is '%s')..."% (timeout, target_id, serial_port))
+            timeout_step = 0.5
+            timeout = int(timeout / timeout_step)
+            for i in range(timeout):
                 # mbed_lstools.create() should be done inside the loop. Otherwise it will loop on same data.
                 mbeds = mbed_lstools.create()
                 mbeds_by_tid = mbeds.list_mbeds_by_targetid()   # key: target_id, value mbedls_dict()
@@ -183,7 +189,7 @@ class HostTestPluginBase:
                             # Only assign if serial port is known (not None)
                             new_serial_port = mbeds_by_tid[target_id]['serial_port']
                             break
-                sleep(0.5)
+                sleep(timeout_step)
 
             if new_serial_port != serial_port:
                 # Serial port changed, update to new serial port from mbed-ls
