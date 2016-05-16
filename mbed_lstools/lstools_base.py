@@ -96,6 +96,7 @@ class MbedLsToolsBase:
         "0805": "DISCO_L053C8",
         "0810": "DISCO_F334C8",
         "0815": "DISCO_F746NG",
+        "0816": "NUCLEO_F746ZG",
         "0820": "DISCO_L476VG",
         "0824": "LPC824",
         "0900": "XPRO_SAMR21",
