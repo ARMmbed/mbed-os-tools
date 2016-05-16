@@ -55,6 +55,7 @@ class HostTestPluginCopyMethod_Shell(HostTestPluginBase):
 
         # This optional parameter can be used if TargetID is provided (-t switch)
         target_id = kwargs.get('target_id', None)
+        pooling_timeout = kwargs.get('pooling_timeout', 60)
 
         result = False
         if self.check_parameters(capability, *args, **kwargs):
@@ -64,7 +65,7 @@ class HostTestPluginCopyMethod_Shell(HostTestPluginBase):
                 # Wait for mount point to be ready
                 # if mount point changed according to target_id use new mount point
                 # available in result (_, destination_disk) of check_mount_point_ready
-                mount_res, destination_disk = self.check_mount_point_ready(destination_disk, target_id=target_id)  # Blocking
+                mount_res, destination_disk = self.check_mount_point_ready(destination_disk, target_id=target_id, timeout=pooling_timeout)  # Blocking
                 # Prepare correct command line parameter values
                 image_base_name = basename(image_path)
                 destination_path = join(destination_disk, image_base_name)

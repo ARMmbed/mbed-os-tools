@@ -41,6 +41,7 @@ class Mbed:
         self.image_path = self.options.image_path.strip('"') if self.options.image_path is not None else ''
         self.copy_method = self.options.copy_method
         self.program_cycle_s = float(self.options.program_cycle_s if self.options.program_cycle_s is not None else 2.0)
+        self.pooling_timeout = self.options.pooling_timeout
 
         # Serial port settings
         self.serial_baud = 115200
@@ -106,12 +107,14 @@ class Mbed:
                 copy_method = 'shell'
         else:
             copy_method = 'shell'
+
         result = ht_plugins.call_plugin('CopyMethod',
                                         copy_method,
                                         image_path=image_path,
                                         serial=port,
                                         destination_disk=disk,
-                                        target_id=self.target_id)
+                                        target_id=self.target_id,
+                                        pooling_timeout=self.pooling_timeout)
         return result
 
     def hw_reset(self):

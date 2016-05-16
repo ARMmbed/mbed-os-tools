@@ -36,6 +36,7 @@ class SerialConnectorPrimitive(object):
         self.logger = HtrunLogger(prn_lock, 'SERI')
         self.LAST_ERROR = None
         self.target_id = self.config.get('target_id', None)
+        self.serial_pooling = config.get('serial_pooling', 60)
 
         # Values used to call serial port listener...
         self.logger.prn_inf("serial(port=%s, baudrate=%d, timeout=%s)"% (self.port, self.baudrate, self.timeout))
@@ -46,7 +47,7 @@ class SerialConnectorPrimitive(object):
         #
         # Note: This listener opens serial port and keeps connection so reset plugin uses
         # serial port object not serial port name!
-        _, serial_port = HostTestPluginBase().check_serial_port_ready(self.port, target_id=self.target_id)
+        _, serial_port = HostTestPluginBase().check_serial_port_ready(self.port, target_id=self.target_id, timeout=self.serial_pooling)
         if serial_port != self.port:
             # Serial port changed for given targetID
             self.logger.prn_inf("serial port changed from '%s to '%s')"% (self.port, serial_port))
@@ -156,10 +157,15 @@ class KiViBufferWalker():
 def conn_process(event_queue, dut_event_queue, prn_lock, config):
 
     logger = HtrunLogger(prn_lock, 'CONN')
-    logger.prn_inf("starting connection process... ")
+    logger.prn_inf("starting serial connection process...")
 
     port = config.get('port')
     baudrate = config.get('baudrate')
+    serial_pooling = int(config.get('serial_pooling', 60))
+
+    # Notify event queue we will wait additional time for serial port to be ready
+    logger.prn_inf("notify event queue about extra %d sec timeout for serial port pooling"%serial_pooling)
+    event_queue.put(('__timeout', serial_pooling, time()))
 
     logger.prn_inf("initializing serial port listener... ")
     connector = SerialConnectorPrimitive(port,
