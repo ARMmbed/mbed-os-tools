@@ -235,12 +235,11 @@ def exporter_testcase_junit(test_result_ext, test_suite_properties=None):
 
                 tc_class = ym_name + '.' + target_name + '.' + test_suite_name
                 tc = TestCase(tc_name, tc_class, duration, tc_stdout, tc_stderr)
-
-                message = ''
+                
                 if result_text == 'FAIL':
-                    tc.add_failure_info(message, tc_stdout)
+                    tc.add_failure_info(result_text, tc_stdout)
                 elif result_text != 'OK':
-                    tc.add_error_info(message, tc_stdout)
+                    tc.add_error_info(result_text, tc_stdout)
 
                 test_cases.append(tc)
 
