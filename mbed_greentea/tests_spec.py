@@ -245,9 +245,9 @@ class TestSpec:
             mandatory_keys = [TestBuild.KW_PLATFORM, TestBuild.KW_TOOLCHAIN,
                               TestBuild.KW_BAUD_RATE,
                               TestBuild.KW_BUILD_BASE_PATH]
-            print set(mandatory_keys)
-            print set(build.keys())
-            print set(mandatory_keys).issubset(set(build.keys()))
+            #print set(mandatory_keys)
+            #print set(build.keys())
+            #print set(mandatory_keys).issubset(set(build.keys()))
             assert set(mandatory_keys).issubset(set(build.keys())), \
                 "Build spec should contain keys [%s]. It has [%s]" % (",".join(mandatory_keys), ",".join(build.keys()))
             platform = build[TestBuild.KW_PLATFORM]
