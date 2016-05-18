@@ -263,12 +263,22 @@ class TestSpec:
             tb.parse(build)
             self.__target_test_spec[name] = tb
 
-    def get_test_builds(self):
+    def get_test_builds(self, filter_by_names=None):
         """
         Gives test builds.
+        :param filter_by_names: List of names of builds you want to filter in your result
         :return:
         """
-        return self.__target_test_spec.values()
+        result = []
+        if filter_by_names:
+            assert type(filter_by_names) is list
+            for tb in self.__target_test_spec.values():
+                if tb.get_name() in filter_by_names:
+                    result.append(tb)
+        else:
+            # When filtering by name is not defined we will return all builds objects
+            result = self.__target_test_spec.values()
+        return result
 
     def get_test_build(self, build_name):
         """
