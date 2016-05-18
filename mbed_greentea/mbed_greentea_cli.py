@@ -93,7 +93,14 @@ def print_version(verbose=True):
     return version
 
 
-def create_filtered_test_list(ctest_test_list, test_by_names, skip_test):
+def create_filtered_test_list(ctest_test_list, test_by_names, skip_test, test_spec=None):
+    """! Filters test case list (filtered with switch -n) and return filtered list.
+    @ctest_test_list List iof tests, originally from CTestTestFile.cmake in yotta module. Now comes from test specification
+    @test_by_names Command line switch -n <test_by_names>
+    @skip_test Command line switch -i <skip_test>
+    @param test_spec Command line switch --test-spec <test_spec_filename>
+    @return
+    """
     filtered_ctest_test_list = ctest_test_list
     test_list = None
     invalid_test_names = []
@@ -125,7 +132,10 @@ def create_filtered_test_list(ctest_test_list, test_by_names, skip_test):
         opt_to_print = '-n' if test_by_names else 'skip-test'
         gt_logger.gt_log_warn("invalid test case names (specified with '%s' option)"% opt_to_print)
         for test_name in invalid_test_names:
-            gt_logger.gt_log_warn("test name '%s' not found in CTestTestFile.cmake (specified with '%s' option)"% (gt_logger.gt_bright(test_name),opt_to_print))
+            if test_spec:
+                gt_logger.gt_log_warn("test name '%s' not found in '%s' (specified with --test-spec option)"% (gt_logger.gt_bright(test_name), gt_logger.gt_bright(test_spec)))
+            else:
+                gt_logger.gt_log_warn("test name '%s' not found in CTestTestFile.cmake (specified with '%s' option)"% (gt_logger.gt_bright(test_name), opt_to_print))
         gt_logger.gt_log_tab("note: test case names are case sensitive")
         gt_logger.gt_log_tab("note: see list of available test cases below")
         list_binaries_for_targets(verbose_footer=False)
@@ -725,7 +735,7 @@ def main_cli(opts, args, gt_instance_uuid=None):
                 continue
 
             test_list = test_build.get_tests()
-            filtered_ctest_test_list = create_filtered_test_list(test_list, opts.test_by_names, opts.skip_test)
+            filtered_ctest_test_list = create_filtered_test_list(test_list, opts.test_by_names, opts.skip_test, test_spec=opts.test_spec)
 
             gt_logger.gt_log("running %d test%s for platform '%s' and toolchain '%s'"% (
                 len(filtered_ctest_test_list),
