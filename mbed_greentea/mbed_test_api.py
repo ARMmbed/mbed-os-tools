@@ -373,3 +373,13 @@ def run_cli_process(cmd):
     p = Popen(cmd, stdout=PIPE, stderr=PIPE)
     _stdout, _stderr = p.communicate()
     return _stdout, _stderr, p.returncode
+
+def log_mbed_devices_properties(mbed_dev, verbose=False):
+    """! Separate function to log mbed device properties on the screen
+    """
+    # Short subset of MUT properties in verbose mode
+    dev_prop_short = ['target_id', 'mount_point', 'serial_port', 'daplink_version']
+
+    dev_prop = [x for x in mbed_dev.keys() if x in dev_prop_short] if verbose else mbed_dev.keys()
+    for k in dev_prop:
+        gt_logger.gt_log_tab("%s = '%s'"% (k, mbed_dev[k]))
