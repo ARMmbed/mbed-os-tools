@@ -77,7 +77,7 @@ class TestsSpecFunctionality(unittest.TestCase):
 
     def test_example(self):
         self.assertEqual(True, True)
-        self.assertNotEqual(True, False)        
+        self.assertNotEqual(True, False)
 
     def test_get_test_builds(self):
         self.test_spec = TestSpec()
@@ -95,7 +95,7 @@ class TestsSpecFunctionality(unittest.TestCase):
 
         self.assertEqual(len(test_builds_names), 2)
         self.assertIs(type(test_builds_names), list)
-        
+
         self.assertIn('K64F-ARM', test_builds_names)
         self.assertIn('K64F-GCC', test_builds_names)
 
@@ -104,10 +104,10 @@ class TestsSpecFunctionality(unittest.TestCase):
         self.test_spec.parse(self.ts_2_builds)
         test_builds = self.test_spec.get_test_builds()
         test_builds_names = [x.get_name() for x in self.test_spec.get_test_builds()]
-        
+
         self.assertEqual(len(test_builds_names), 2)
         self.assertIs(type(test_builds_names), list)
-        
+
         self.assertNotEqual(None, self.test_spec.get_test_build('K64F-ARM'))
         self.assertNotEqual(None, self.test_spec.get_test_build('K64F-GCC'))
 
@@ -116,16 +116,16 @@ class TestsSpecFunctionality(unittest.TestCase):
         self.test_spec.parse(self.ts_2_builds)
         test_builds = self.test_spec.get_test_builds()
         test_builds_names = [x.get_name() for x in self.test_spec.get_test_builds()]
-        
+
         self.assertEqual(len(test_builds_names), 2)
         self.assertIs(type(test_builds_names), list)
-        
+
         k64f_arm = self.test_spec.get_test_build('K64F-ARM')
         k64f_gcc = self.test_spec.get_test_build('K64F-GCC')
-        
+
         self.assertNotEqual(None, k64f_arm)
         self.assertNotEqual(None, k64f_gcc)
-    
+
         self.assertEqual('K64F', k64f_arm.get_platform())
         self.assertEqual('ARM', k64f_arm.get_toolchain())
         self.assertEqual(115200, k64f_arm.get_baudrate())
@@ -139,10 +139,30 @@ class TestsSpecFunctionality(unittest.TestCase):
         self.test_spec.parse(self.ts_2_builds)
         test_builds = self.test_spec.get_test_builds()
         test_builds_names = [x.get_name() for x in self.test_spec.get_test_builds()]
-        
-        self.assertIn('K64F-ARM', test_builds_names)
-        self.assertIn('K64F-GCC', test_builds_names)        
 
-        
+        self.assertIn('K64F-ARM', test_builds_names)
+        self.assertIn('K64F-GCC', test_builds_names)
+
+    def test_get_test_builds_names_filter_by_names(self):
+        self.test_spec = TestSpec()
+        self.test_spec.parse(self.ts_2_builds)
+
+        filter_by_names = ['K64F-ARM']
+        test_builds = self.test_spec.get_test_builds(filter_by_names=filter_by_names)
+        test_builds_names = [x.get_name() for x in test_builds]
+        self.assertEqual(len(test_builds_names), 1)
+        self.assertIn('K64F-ARM', test_builds_names)
+
+        filter_by_names = ['K64F-GCC']
+        test_builds = self.test_spec.get_test_builds(filter_by_names=filter_by_names)
+        test_builds_names = [x.get_name() for x in test_builds]
+        self.assertEqual(len(test_builds_names), 1)
+        self.assertIn('K64F-GCC', test_builds_names)
+
+        filter_by_names = ['SOME-PLATFORM-NAME']
+        test_builds = self.test_spec.get_test_builds(filter_by_names=filter_by_names)
+        test_builds_names = [x.get_name() for x in test_builds]
+        self.assertEqual(len(test_builds_names), 0)
+
 if __name__ == '__main__':
     unittest.main()
