@@ -148,7 +148,7 @@ def main():
 
     parser.add_option('-t', '--target',
                     dest='list_of_targets',
-                    help='You can specify list of yotta targets you want to build. Use comma to sepatate them.' +
+                    help='You can specify list of yotta targets you want to build. Use comma to separate them.' +
                          'Note: If --test-spec switch is defined this list becomes optional list of builds you want to filter in your test:' +
                          'Comma separated list of builds from test specification. Applicable if --test-spec switch is specified')
 
