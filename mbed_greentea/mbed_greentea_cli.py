@@ -677,8 +677,11 @@ def main_cli(opts, args, gt_instance_uuid=None):
                 continue
 
             if mbed_dev['platform_name'] == platform_name:
-                # We will force configuration specific baudrate
-                mbed_dev['serial_port'] = "%s:%d" % (mbed_dev['serial_port'], baudrate)
+                # We will force configuration specific baudrate by adding baudrate to serial port
+                # Only add baudrate decoration for serial port if it's not already there
+                # Format used by mbedhtrun: 'serial_port' = '<serial_port_name>:<baudrate>'
+                if not mbed_dev['serial_port'].endswith(str(baudrate)):
+                    mbed_dev['serial_port'] = "%s:%d" % (mbed_dev['serial_port'], baudrate)
                 mut = mbed_dev
                 muts_to_test.append(mbed_dev)
                 # Log on screen mbed device properties
