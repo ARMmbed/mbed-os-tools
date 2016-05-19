@@ -1,6 +1,6 @@
 """
 mbed SDK
-Copyright (c) 2011-2015 ARM Limited
+Copyright (c) 2011-2016 ARM Limited
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -18,13 +18,19 @@ Author: Przemyslaw Wirkus <Przemyslaw.wirkus@arm.com>
 """
 
 import re
+import os
 import sys
 from time import time
-from subprocess import call, Popen, PIPE, STDOUT
+from subprocess import Popen, PIPE, STDOUT
 
+from mbed_greentea.tests_spec import TestSpec
+from mbed_greentea.mbed_yotta_api import get_test_spec_from_yt_module
 from mbed_greentea.mbed_greentea_log import gt_logger
 from mbed_greentea.mbed_coverage_api import coverage_dump_file
 from mbed_greentea.mbed_coverage_api import coverage_pack_hex_payload
+
+from mbed_greentea.cmake_handlers import list_binaries_for_builds
+from mbed_greentea.cmake_handlers import list_binaries_for_targets
 
 
 # Return codes for test script
@@ -228,7 +234,7 @@ def get_testcase_utest(output, test_case_name):
     # string that may have regular expression metacharacters in it.
     escaped_test_case_name = re.escape(test_case_name)
 
-    re_tc_utest_log_start  = re.compile(r"^\[(\d+\.\d+)\]\[(\w+)\]\[(\w+)\] >>> Running case #(\d)+: '(%s)'"% escaped_test_case_name)
+    re_tc_utest_log_start = re.compile(r"^\[(\d+\.\d+)\]\[(\w+)\]\[(\w+)\] >>> Running case #(\d)+: '(%s)'"% escaped_test_case_name)
     re_tc_utest_log_finish = re.compile(r"^\[(\d+\.\d+)\]\[(\w+)\]\[(\w+)\] >>> '(%s)': (\d+) passed, (\d+) failed"% escaped_test_case_name)
 
     tc_log_lines = []
@@ -260,7 +266,7 @@ def get_coverage_data(build_path, output):
     for line in output.splitlines():
         m = re_gcov.search(line)
         if m:
-            timestamp, _, gcov_path, gcov_payload = m.groups()
+            _, _, gcov_path, gcov_payload = m.groups()
             try:
                 bin_gcov_payload = coverage_pack_hex_payload(gcov_payload)
                 coverage_dump_file(build_path, gcov_path, bin_gcov_payload)
@@ -280,7 +286,7 @@ def get_testcase_summary(output):
     for line in output.splitlines():
         m = re_tc_summary.search(line)
         if m:
-            timestamp, _, passes, failures = m.groups()
+            _, _, passes, failures = m.groups()
             return int(passes), int(failures)
     return None
 
@@ -342,38 +348,6 @@ def get_testcase_result(output):
 
     return result_test_cases
 
-def run_cli_command(cmd, shell=True, verbose=False):
-    """! Runs command from command line
-    @param shell Shell command (e.g. ls, ps)
-    @param verbose Verbose mode flag
-    @return Returns (True, 0) if command was executed successfully else return (False, error code)
-    """
-    result = True
-    ret = 0
-    try:
-        ret = call(cmd, shell=shell)
-        if ret:
-            result = False
-            if verbose:
-                print "mbedgt: [ret=%d] Command: %s"% (int(ret), cmd)
-    except OSError as e:
-        result = False
-        if verbose:
-            print "mbedgt: [ret=%d] Command: %s"% (int(ret), cmd)
-            print str(e)
-            print "mbedgt: traceback..."
-            print e.child_traceback
-    return (result, ret)
-
-def run_cli_process(cmd):
-    """! Runs command as a process and return stdout, stderr and ret code
-    @param cmd Command to execute
-    @return Tuple of (stdout, stderr, returncode)
-    """
-    p = Popen(cmd, stdout=PIPE, stderr=PIPE)
-    _stdout, _stderr = p.communicate()
-    return _stdout, _stderr, p.returncode
-
 def log_mbed_devices_properties(mbed_dev, verbose=False):
     """! Separate function to log mbed device properties on the screen
     """
@@ -383,3 +357,28 @@ def log_mbed_devices_properties(mbed_dev, verbose=False):
     dev_prop = [x for x in mbed_dev.keys() if x in dev_prop_short] if verbose else mbed_dev.keys()
     for k in dev_prop:
         gt_logger.gt_log_tab("%s = '%s'"% (k, mbed_dev[k]))
+
+def get_test_spec(opts):
+    """! Closure encapsulating how we get test specification and load it from file of from yotta module
+    @return Returns tuple of (test specification, ret code). Test specification == None if test spec load was not successful
+    """
+    test_spec = None
+
+    if opts.test_spec:
+        # Test spec defined from command line
+        test_spec = TestSpec(opts.test_spec)
+        if opts.list_binaries:
+            list_binaries_for_builds(test_spec)
+            return None, 0
+    elif os.path.exists('module.json'):
+        # If inside yotta module load module data and generate test spec
+        if opts.list_binaries:
+            # List available test binaries (names, no extension)
+            list_binaries_for_targets()
+            return None, 0
+        else:
+            test_spec = get_test_spec_from_yt_module(opts)
+    else:
+        gt_logger.gt_log_err("Greentea should be run inside a Yotta module or --test-spec switch should be used.")
+        return None, -1
+    return test_spec, 0

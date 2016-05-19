@@ -1,6 +1,6 @@
 """
 mbed SDK
-Copyright (c) 2011-2015 ARM Limited
+Copyright (c) 2011-2016 ARM Limited
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -74,7 +74,6 @@ def parse_ctesttestfile_line(link_target, binary_type, line, verbose=False):
             return test_case, test_case_path
     return None
 
-
 def list_binaries_for_targets(build_dir='./build', verbose_footer=False):
     """! Prints tests in target directories, only if tests exist.
     @details Skips empty / no tests for target directories.
@@ -93,11 +92,11 @@ def list_binaries_for_targets(build_dir='./build', verbose_footer=False):
         return result
 
     if count_tests():
-        gt_logger.gt_log("available tests for built targets, location '%s'"% os.path.abspath(build_dir))
         for sub_dir in sub_dirs:
+            target_name = sub_dir.split(os.sep)[-1]
+            gt_logger.gt_log("available tests for target '%s', location '%s'"% (target_name, os.path.abspath(os.path.join(build_dir, sub_dir))))
             test_list = load_ctest_testsuite(sub_dir, binary_type='')
             if len(test_list):
-                gt_logger.gt_log_tab("target '%s':" % sub_dir.split(os.sep)[-1])
                 for test in sorted(test_list):
                     gt_logger.gt_log_tab("test '%s'"% test)
     else:
@@ -106,3 +105,12 @@ def list_binaries_for_targets(build_dir='./build', verbose_footer=False):
     if verbose_footer:
         print
         print "Example: execute 'mbedgt -t TARGET_NAME -n TEST_NAME' to run test TEST_NAME for target TARGET_NAME"
+
+def list_binaries_for_builds(test_spec, verbose_footer=False):
+    """! Parse test spec and list binaries (BOOTABLE) available from test spec
+    """
+    test_builds = test_spec.get_test_builds()
+    for tb in test_builds:
+        gt_logger.gt_log("available tests for built '%s', location '%s'"% (tb.get_name(), tb.get_path()))
+        for tc in tb.get_tests():
+            gt_logger.gt_log_tab("test '%s'"% tc)

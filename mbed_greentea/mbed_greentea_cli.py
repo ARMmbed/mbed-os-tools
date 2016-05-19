@@ -2,7 +2,7 @@
 
 """
 mbed SDK
-Copyright (c) 2011-2015 ARM Limited
+Copyright (c) 2011-2016 ARM Limited
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ Author: Przemyslaw Wirkus <Przemyslaw.wirkus@arm.com>
 
 import os
 import sys
-import json
 import random
 import optparse
 from time import time
@@ -29,11 +28,11 @@ from Queue import Queue
 from threading import Thread
 
 
+from mbed_greentea.mbed_test_api import get_test_spec
 from mbed_greentea.mbed_test_api import run_host_test
 from mbed_greentea.mbed_test_api import log_mbed_devices_properties
 from mbed_greentea.mbed_test_api import TEST_RESULTS
 from mbed_greentea.mbed_test_api import TEST_RESULT_OK, TEST_RESULT_FAIL
-from mbed_greentea.cmake_handlers import list_binaries_for_targets
 from mbed_greentea.mbed_report_api import exporter_text
 from mbed_greentea.mbed_report_api import exporter_testcase_text
 from mbed_greentea.mbed_report_api import exporter_json
@@ -43,11 +42,13 @@ from mbed_greentea.mbed_greentea_dlm import GREENTEA_KETTLE_PATH
 from mbed_greentea.mbed_greentea_dlm import greentea_get_app_sem
 from mbed_greentea.mbed_greentea_dlm import greentea_update_kettle
 from mbed_greentea.mbed_greentea_dlm import greentea_clean_kettle
-from mbed_greentea.mbed_yotta_api import get_test_spec_from_yt_module
 from mbed_greentea.mbed_yotta_api import get_test_suite_properties
 from mbed_greentea.mbed_greentea_hooks import GreenteaHooks
-from mbed_greentea.tests_spec import TestSpec, TestBinary
+from mbed_greentea.tests_spec import TestBinary
 from mbed_greentea.mbed_target_info import get_platform_property
+
+from mbed_greentea.cmake_handlers import list_binaries_for_builds
+from mbed_greentea.cmake_handlers import list_binaries_for_targets
 
 try:
     import mbed_lstools
@@ -138,7 +139,11 @@ def create_filtered_test_list(ctest_test_list, test_by_names, skip_test, test_sp
                 gt_logger.gt_log_warn("test name '%s' not found in CTestTestFile.cmake (specified with '%s' option)"% (gt_logger.gt_bright(test_name), opt_to_print))
         gt_logger.gt_log_tab("note: test case names are case sensitive")
         gt_logger.gt_log_tab("note: see list of available test cases below")
-        list_binaries_for_targets(verbose_footer=False)
+        # Print available test suite names (binary names user can use with -n
+        if test_spec:
+            list_binaries_for_builds(test_spec)
+        else:
+            list_binaries_for_targets()
     return filtered_ctest_test_list
 
 
@@ -551,27 +556,15 @@ def main_cli(opts, args, gt_instance_uuid=None):
     # This is how you magically control colours in this piece of art software
     gt_logger.colorful(not opts.plain)
 
-    # List available test binaries (names, no extension)
-    if opts.list_binaries:
-        list_binaries_for_targets()
-        return (0)
-
     # Prints version and exits
     if opts.version:
         print_version()
         return (0)
 
-    # Detect Source of test spec
-    # arguments or yotta api
-    if opts.test_spec:
-        test_spec = TestSpec()
-        with open(opts.test_spec, "r") as f:
-            test_spec.parse(json.load(f))
-    elif os.path.exists('module.json'): # If yotta module
-        test_spec = get_test_spec_from_yt_module(opts)
-    else:
-        gt_logger.gt_log_err("Greentea should be run inside a Yotta module or --test-spec switch should be used.")
-        return (-1)
+    # Load test specification or print warnings / info messages and exit CLI mode
+    test_spec, ret = get_test_spec(opts)
+    if not test_spec:
+        return ret
 
     # We will load hooks from JSON file to support extra behaviour during test execution
     greentea_hooks = GreenteaHooks(opts.hooks_json) if opts.hooks_json else None
