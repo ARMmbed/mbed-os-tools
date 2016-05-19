@@ -244,7 +244,7 @@ def exporter_testcase_junit(test_result_ext, test_suite_properties=None):
                 test_cases.append(tc)
 
             ts_name = ym_name + '.' + target_name
-            ts = TestSuite(ts_name, test_cases)
+            ts = TestSuite(ts_name, test_cases, properties=test_suite_properties)
             test_suites.append(ts)
 
     return TestSuite.to_xml_string(test_suites)

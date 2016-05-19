@@ -30,6 +30,7 @@ from threading import Thread
 
 
 from mbed_greentea.mbed_test_api import run_host_test
+from mbed_greentea.mbed_test_api import log_mbed_devices_properties
 from mbed_greentea.mbed_test_api import TEST_RESULTS
 from mbed_greentea.mbed_test_api import TEST_RESULT_OK, TEST_RESULT_FAIL
 from mbed_greentea.cmake_handlers import list_binaries_for_targets
@@ -92,7 +93,14 @@ def print_version(verbose=True):
     return version
 
 
-def create_filtered_test_list(ctest_test_list, test_by_names, skip_test):
+def create_filtered_test_list(ctest_test_list, test_by_names, skip_test, test_spec=None):
+    """! Filters test case list (filtered with switch -n) and return filtered list.
+    @ctest_test_list List iof tests, originally from CTestTestFile.cmake in yotta module. Now comes from test specification
+    @test_by_names Command line switch -n <test_by_names>
+    @skip_test Command line switch -i <skip_test>
+    @param test_spec Command line switch --test-spec <test_spec_filename>
+    @return
+    """
     filtered_ctest_test_list = ctest_test_list
     test_list = None
     invalid_test_names = []
@@ -124,7 +132,10 @@ def create_filtered_test_list(ctest_test_list, test_by_names, skip_test):
         opt_to_print = '-n' if test_by_names else 'skip-test'
         gt_logger.gt_log_warn("invalid test case names (specified with '%s' option)"% opt_to_print)
         for test_name in invalid_test_names:
-            gt_logger.gt_log_warn("test name '%s' not found in CTestTestFile.cmake (specified with '%s' option)"% (gt_logger.gt_bright(test_name),opt_to_print))
+            if test_spec:
+                gt_logger.gt_log_warn("test name '%s' not found in '%s' (specified with --test-spec option)"% (gt_logger.gt_bright(test_name), gt_logger.gt_bright(test_spec)))
+            else:
+                gt_logger.gt_log_warn("test name '%s' not found in CTestTestFile.cmake (specified with '%s' option)"% (gt_logger.gt_bright(test_name), opt_to_print))
         gt_logger.gt_log_tab("note: test case names are case sensitive")
         gt_logger.gt_log_tab("note: see list of available test cases below")
         list_binaries_for_targets(verbose_footer=False)
@@ -137,7 +148,9 @@ def main():
 
     parser.add_option('-t', '--target',
                     dest='list_of_targets',
-                    help='You can specify list of targets you want to build. Use comma to sepatate them')
+                    help='You can specify list of yotta targets you want to build. Use comma to separate them.' +
+                         'Note: If --test-spec switch is defined this list becomes optional list of builds you want to filter in your test:' +
+                         'Comma separated list of builds from test specification. Applicable if --test-spec switch is specified')
 
     parser.add_option('-n', '--test-by-names',
                     dest='test_by_names',
@@ -382,7 +395,7 @@ def run_test_thread(test_result_queue, test_queue, opts, mut, build, build_path,
         # Some error in htrun, abort test execution
         if host_test_result < 0:
             break
-        
+
         single_test_result, single_test_output, single_testduration, single_timeout, result_test_cases, test_cases_summary = host_test_result
         test_result = single_test_result
 
@@ -646,11 +659,13 @@ def main_cli(opts, args, gt_instance_uuid=None):
         shuffle_random_seed = round(float(opts.shuffle_test_seed), SHUFFLE_SEED_ROUND)
 
     ### Testing procedures, for each target, for each target's compatible platform
-    for test_build in test_spec.get_test_builds():
+    # In case we are using test spec (switch --test-spec) command line option -t <list_of_targets>
+    # is used to enumerate builds from test spec we are suppling
+    filter_test_builds = opts.list_of_targets.split(',') if opts.list_of_targets else None
+    for test_build in test_spec.get_test_builds(filter_test_builds):
         platform_name = test_build.get_platform()
         gt_logger.gt_log("processing target '%s' toolchain '%s' compatible platforms..." %
-                         (gt_logger.gt_bright(platform_name),
-                                             gt_logger.gt_bright(test_build.get_toolchain())))
+                         (gt_logger.gt_bright(platform_name), gt_logger.gt_bright(test_build.get_toolchain())))
 
         baudrate = test_build.get_baudrate()
 
@@ -666,9 +681,9 @@ def main_cli(opts, args, gt_instance_uuid=None):
                 mbed_dev['serial_port'] = "%s:%d" % (mbed_dev['serial_port'], baudrate)
                 mut = mbed_dev
                 muts_to_test.append(mbed_dev)
+                # Log on screen mbed device properties
                 gt_logger.gt_log("using platform '%s' for test:"% gt_logger.gt_bright(platform_name))
-                for k in mbed_dev:
-                    gt_logger.gt_log_tab("%s = '%s'"% (k, mbed_dev[k]))
+                log_mbed_devices_properties(mbed_dev, verbose=opts.verbose)
                 if number_of_parallel_instances < parallel_test_exec:
                     number_of_parallel_instances += 1
                 else:
@@ -678,6 +693,7 @@ def main_cli(opts, args, gt_instance_uuid=None):
         if opts.verbose_test_configuration_only:
             continue
 
+        ### If we have at least one available device we can proceed
         if mut:
             target_platforms_match += 1
 
@@ -719,7 +735,7 @@ def main_cli(opts, args, gt_instance_uuid=None):
                 continue
 
             test_list = test_build.get_tests()
-            filtered_ctest_test_list = create_filtered_test_list(test_list, opts.test_by_names, opts.skip_test)
+            filtered_ctest_test_list = create_filtered_test_list(test_list, opts.test_by_names, opts.skip_test, test_spec=opts.test_spec)
 
             gt_logger.gt_log("running %d test%s for platform '%s' and toolchain '%s'"% (
                 len(filtered_ctest_test_list),
@@ -745,48 +761,48 @@ def main_cli(opts, args, gt_instance_uuid=None):
 
             number_of_threads = 0
             for mut in muts_to_test:
-                #################################################################
                 # Experimental, parallel test execution
-                #################################################################
                 if number_of_threads < parallel_test_exec:
                     args = (test_result_queue, test_queue, opts, mut, build, build_path, greentea_hooks)
                     t = Thread(target=run_test_thread, args=args)
                     execute_threads.append(t)
                     number_of_threads += 1
 
-    gt_logger.gt_log_tab("use %s instance%s for testing" % (len(execute_threads), 's' if len(execute_threads) != 1 else ''))
-    for t in execute_threads:
-        t.daemon = True
-        t.start()
+        gt_logger.gt_log_tab("use %s instance%s for testing" % (len(execute_threads), 's' if len(execute_threads) != 1 else ''))
+        for t in execute_threads:
+            t.daemon = True
+            t.start()
 
-    # merge partial test reports from diffrent threads to final test report
-    for t in execute_threads:
-        try:
-            t.join() #blocking
-            test_return_data = test_result_queue.get(False)
-        except Exception as e:
-            # No test report generated
-            gt_logger.gt_log_err("could not generate test report" + str(e))
-            test_exec_retcode += -1000
-            return test_exec_retcode
+        # merge partial test reports from different threads to final test report
+        for t in execute_threads:
+            try:
+                t.join() #blocking
+                test_return_data = test_result_queue.get(False)
+            except Exception as e:
+                # No test report generated
+                gt_logger.gt_log_err("could not generate test report" + str(e))
+                test_exec_retcode += -1000
+                return test_exec_retcode
 
-        test_platforms_match += test_return_data['test_platforms_match']
-        test_exec_retcode += test_return_data['test_exec_retcode']
-        partial_test_report = test_return_data['test_report']
-        # todo: find better solution, maybe use extend
-        for report_key in partial_test_report.keys():
-            if report_key not in test_report:
-                test_report[report_key] = {}
-                test_report.update(partial_test_report)
-            else:
-                test_report[report_key].update(partial_test_report[report_key])
+            test_platforms_match += test_return_data['test_platforms_match']
+            test_exec_retcode += test_return_data['test_exec_retcode']
+            partial_test_report = test_return_data['test_report']
+            # todo: find better solution, maybe use extend
+            for report_key in partial_test_report.keys():
+                if report_key not in test_report:
+                    test_report[report_key] = {}
+                    test_report.update(partial_test_report)
+                else:
+                    test_report[report_key].update(partial_test_report[report_key])
 
-    if opts.verbose_test_configuration_only:
-        print
-        print "Example: execute 'mbedgt --target=TARGET_NAME' to start testing for TARGET_NAME target"
-        return (0)
+        execute_threads = []
 
-    gt_logger.gt_log("all tests finished!")
+        if opts.verbose_test_configuration_only:
+            print
+            print "Example: execute 'mbedgt --target=TARGET_NAME' to start testing for TARGET_NAME target"
+            return (0)
+
+        gt_logger.gt_log("all tests finished!")
 
     # We will execute post test hooks on tests
     for build_name in test_report:
@@ -833,7 +849,9 @@ def main_cli(opts, args, gt_instance_uuid=None):
         # Reports (to file)
         if opts.report_junit_file_name:
             gt_logger.gt_log("exporting to JUnit file '%s'..."% gt_logger.gt_bright(opts.report_junit_file_name))
-            junit_report = exporter_testcase_junit(test_report, test_suite_properties = get_test_suite_properties())
+            # This test specification will be used by JUnit exporter to populate TestSuite.properties (useful meta-data for Viewer)
+            junit_test_spec = test_spec if opts.test_spec else None
+            junit_report = exporter_testcase_junit(test_report, test_suite_properties = get_test_suite_properties(test_spec=junit_test_spec))
             with open(opts.report_junit_file_name, 'w') as f:
                 f.write(junit_report)
         if opts.report_text_file_name:
