@@ -1,6 +1,6 @@
 """
 mbed SDK
-Copyright (c) 2011-2015 ARM Limited
+Copyright (c) 2011-2016 ARM Limited
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ Author: Przemyslaw Wirkus <Przemyslaw.Wirkus@arm.com>
 import os
 import re
 import json
-from mbed_test_api import run_cli_process
+from mbed_greentea.mbed_common_api import run_cli_process
 from mbed_greentea.mbed_greentea_log import gt_logger
 
 

@@ -1,6 +1,6 @@
 """
 mbed SDK
-Copyright (c) 2011-2015 ARM Limited
+Copyright (c) 2011-2016 ARM Limited
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -21,13 +21,14 @@ import os
 import re
 import json
 
-from mbed_greentea.mbed_test_api import run_cli_command
+from mbed_greentea.mbed_common_api import run_cli_command
 from mbed_greentea.mbed_greentea_log import gt_logger
 from mbed_greentea.mbed_yotta_module_parse import YottaModule, YottaConfig
 from mbed_greentea.mbed_target_info import get_mbed_target_from_current_dir
 from mbed_greentea.mbed_target_info import get_binary_type_for_platform
 from mbed_greentea.cmake_handlers import load_ctest_testsuite
 from mbed_greentea.tests_spec import TestSpec, TestBuild, Test, TestBinary
+
 
 
 class YottaError(Exception):
@@ -37,7 +38,7 @@ class YottaError(Exception):
     pass
 
 
-def build_with_yotta(yotta_target_name, verbose = False, build_to_release = False, build_to_debug = False):
+def build_with_yotta(yotta_target_name, verbose=False, build_to_release=False, build_to_debug=False):
     cmd = ["yotta"] # "yotta %s --target=%s,* build"
     if verbose:
         cmd.append("-v")
@@ -93,7 +94,7 @@ def get_platform_name_from_yotta_target(target):
 
     if platform_name is None:
         gt_logger.gt_log_err('No keyword with format "mbed-target:<platform name>" found in target.json!\n' +
-                                       'Can not determine required mbed platform name!')
+                             'Can not determine required mbed platform name!')
         return None
     return platform_name
 
