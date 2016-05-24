@@ -239,8 +239,9 @@ class TestSpec:
         :return:
         """
         self.__target_test_spec = {}
-        if test_spec_filename:
-            self.load(test_spec_filename)
+        self.test_spec_filename = test_spec_filename
+        if self.test_spec_filename:
+            self.load(self.test_spec_filename)
 
     def load(self, test_spec_filename):
         """
@@ -256,6 +257,7 @@ class TestSpec:
             print "TestSpec::load('%s')"% test_spec_filename, str(e)
             return False
 
+        self.test_spec_filename = test_spec_filename
         return True
 
     def parse(self, spec):
