@@ -364,14 +364,28 @@ def get_test_spec(opts):
     """
     test_spec = None
 
+    # Check if test_spec.json file exist, if so we will pick it up as default file and load it
+    test_spec_file_name = opts.test_spec
+
+    # Note: test_spec.json will have higher priority than module.json file
+    #       so if we are inside directory with module.json and test_spec.json we will use test spec file
+    #       instead of using yotta's module.json file
+
     if opts.test_spec:
-        # Test spec defined from command line
-        test_spec = TestSpec(opts.test_spec)
+        gt_logger.gt_log("test specification file '%s' (specified with --test-spec option)"% opts.test_spec)
+    elif os.path.exists('test_spec.json'):
+        test_spec_file_name = 'test_spec.json'
+
+    if test_spec_file_name:
+        # Test spec from command line (--test-spec) or default test_spec.json will be used
+        gt_logger.gt_log("using '%s' from current directory!"% test_spec_file_name)
+        test_spec = TestSpec(test_spec_file_name)
         if opts.list_binaries:
             list_binaries_for_builds(test_spec)
             return None, 0
     elif os.path.exists('module.json'):
         # If inside yotta module load module data and generate test spec
+        gt_logger.gt_log("using 'module.json' from current directory!")
         if opts.list_binaries:
             # List available test binaries (names, no extension)
             list_binaries_for_targets()
@@ -379,6 +393,6 @@ def get_test_spec(opts):
         else:
             test_spec = get_test_spec_from_yt_module(opts)
     else:
-        gt_logger.gt_log_err("Greentea should be run inside a Yotta module or --test-spec switch should be used.")
+        gt_logger.gt_log_err("greentea should be run inside a Yotta module or --test-spec switch should be used.")
         return None, -1
     return test_spec, 0
