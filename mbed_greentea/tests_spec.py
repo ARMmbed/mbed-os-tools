@@ -231,6 +231,7 @@ class TestSpec:
     Test specification. Contains Builds.
     """
     KW_BUILDS = "builds"
+    test_spec_filename = 'runtime_load'
 
     def __init__(self, test_spec_filename=None):
         """
@@ -240,13 +241,14 @@ class TestSpec:
         """
         self.__target_test_spec = {}
         if test_spec_filename:
-            self.load(test_spec_filename)
+            self.test_spec_filename = test_spec_filename
+            self.load(self.test_spec_filename)
 
     def load(self, test_spec_filename):
         """
-        Load test spec dirrectly from file
+        Load test spec directly from file
 
-        :param test_spec_filename: Name of JSON file with TestSpec
+        :param test_spec_filename: Name of JSON file with TestSpec to load
         :return: Treu if load was successful
         """
         try:
@@ -256,6 +258,7 @@ class TestSpec:
             print "TestSpec::load('%s')"% test_spec_filename, str(e)
             return False
 
+        self.test_spec_filename = test_spec_filename
         return True
 
     def parse(self, spec):
@@ -270,9 +273,6 @@ class TestSpec:
             mandatory_keys = [TestBuild.KW_PLATFORM, TestBuild.KW_TOOLCHAIN,
                               TestBuild.KW_BAUD_RATE,
                               TestBuild.KW_BUILD_BASE_PATH]
-            #print set(mandatory_keys)
-            #print set(build.keys())
-            #print set(mandatory_keys).issubset(set(build.keys()))
             assert set(mandatory_keys).issubset(set(build.keys())), \
                 "Build spec should contain keys [%s]. It has [%s]" % (",".join(mandatory_keys), ",".join(build.keys()))
             platform = build[TestBuild.KW_PLATFORM]

@@ -5,10 +5,10 @@
 # Table of contents
 
 * [Table of contents](#table-of-contents)
-* [Quickstart document](#quickstart-document)
 * [Introduction](#introduction)
+* [Quickstart document](#quickstart-document)
   * [mbed test tools collection](#mbed-test-tools-collection)
-  * [Additional documentation:](#additional-documentation)
+  * [Additional documentation](#additional-documentation)
   * [Supported operating systems](#supported-operating-systems)
 * [Getting started](#getting-started)
   * [End to end example](#end-to-end-example)
@@ -25,6 +25,12 @@
   * [Environment check](#environment-check)
   * [Building the mbed-drivers for yotta target target](#building-the-mbed-drivers-for-yotta-target-target)
 * [Testing](#testing)
+* [Test specification JSON formatted input](#test-specification-json-formatted-input)
+  * [Test specification formatted](#test-specification-formatted)
+  * [Example of test specification file](#example-of-test-specification-file)
+    * [Command line usage](#command-line-usage)
+      * [Executing all tests](#executing-all-tests)
+      * [Cherry-pick tests](#cherry-pick-tests)
 * [Using Greentea with new targets](#using-greentea-with-new-targets)
   * [Greentea and yotta targets](#greentea-and-yotta-targets)
   * [Prototyping support](#prototyping-support)
@@ -62,7 +68,7 @@ Please read [QUICKSTART.md](https://github.com/ARMmbed/greentea/blob/master/docs
 * [mbed-ls](https://github.com/ARMmbed/mbed-ls) - list all connected to host mbed compatible devices.
   * This application is also distributed as Python Package: [mbed-ls in PyPI](https://pypi.python.org/pypi/mbed-ls).
 
-## Additional documentation:
+## Additional documentation
 
 * [Quickstart document](https://github.com/ARMmbed/greentea/blob/master/docs/QUICKSTART.md)
 * Things you need to know [when you contribute](https://github.com/ARMmbed/greentea/blob/master/docs/CONTRIBUTING.md) to open source mbed test tools repositories.
@@ -505,6 +511,119 @@ $ mbedgt -V --target=frdm-k64f-gcc
 ```
 
 Above command will execute all tests for yotta module you are in, e.g. ```mbed-drivers```.
+
+# Test specification JSON formatted input
+
+Greentea originally only supports yotta artefacts. It assumes it is run inside a yotta module and gathers information from local file system. To make it generic for any other test artefacts we can support a test specification input. This specification can tell information like platform, toolchain, build artefacts path, test binaries, flash methods of test binaries to Greentea.
+Test specification is an interface which can be used by any build system or it can be created manually. Test specification interface was added to separate build system from test automation automation (Greentea).
+
+Changes:
+* New command line switch `--test-spec` is introduced. It is used to pass test specification file name to Greentea.
+* Existing command line switch `-t` together with `--test-spec` switch can be used to select build(s) by name which should be used for test runs. When no test specification is defined switch `-t` / `--target` behaves as usual: you can select yotta targets inside yotta module.
+
+## Test specification formatted
+
+More detailed test specification format will be introduced in near future. In current form test specification is a dictionary with key-value pairs under "builds" entry where key is a build name and value is a dictionary with additional properties describing build itself. Build properties include platform name, toolchain used to compile, interface chip baudrate, and list of test binaries.
+
+## Example of test specification file
+
+In the below example there are two builds defined:
+* Build `K64F-ARM` for Freescale `K64F` platform compiled with `ARMCC` compiler and
+* build `K64F-GCC` for Freescale `K64F` platform compiled with `GCC ARM` compiler.
+
+```json
+{
+    "builds": {
+        "K64F-ARM": {
+            "platform": "K64F",
+            "toolchain": "ARM",
+            "base_path": "./.build/K64F/ARM",
+            "baud_rate": 115200,
+            "tests": {
+                "mbed-drivers-test-generic_tests":{
+                    "binaries":[
+                        {
+                            "binary_type": "bootable",
+                            "path": "./.build/K64F/ARM/mbed-drivers-test-generic_tests.bin"
+                        }
+                    ]
+                },
+                "mbed-drivers-test-c_strings":{
+                    "binaries":[
+                        {
+                            "binary_type": "bootable",
+                            "path": "./.build/K64F/ARM/mbed-drivers-test-c_strings.bin"
+                        }
+                    ]
+                }
+            }
+        },
+        "K64F-GCC": {
+            "platform": "K64F",
+            "toolchain": "GCC_ARM",
+            "base_path": "./.build/K64F/GCC_ARM",
+            "baud_rate": 115200,
+            "tests": {
+                "mbed-drivers-test-generic_tests":{
+                    "binaries":[
+                        {
+                            "binary_type": "bootable",
+                            "path": "./.build/K64F/GCC_ARM/mbed-drivers-test-generic_tests.bin"
+                        }
+                    ]
+                }
+
+            }
+        }
+
+    }
+}
+```
+
+In below examples we will use above test specification file.
+
+### Command line usage
+
+When building your mbed projects with *build system* capable of returning test specification in our format you can directly call Greentea to execute tests or list available tests (`-l` / `--list` switch).
+
+#### Executing all tests
+
+Assuming that `test_spec.json` is in current directory:
+```
+$ mbedgt -VS
+```
+will pick up test specification and execute all tests in it.
+
+#### Cherry-pick tests
+
+* We will first list the tests we want to execute:
+
+Assuming that `test_spec.json` is in current directory:
+```
+$ mbedgt -l
+```
+```
+mbedgt: using 'test_spec.json' from current directory!
+mbedgt: available tests for built 'K64F-ARM', location './.build/K64F/ARM'
+        test 'mbed-drivers-test-generic_tests'
+        test 'mbed-drivers-test-c_strings'
+mbedgt: available tests for built 'K64F-GCC', location './.build/K64F/GCC_ARM'
+        test 'mbed-drivers-test-generic_tests'
+```
+
+* Now we can select test case(s) by name(s) using `-n` switch:
+
+Below command will execute tests with name `mbed-drivers-test-generic_tests` from all builds in build specification:
+```
+$ mbedgt -V -n mbed-drivers-test-generic_tests
+```
+
+Below command will execute tests with name `mbed-drivers-test-generic_tests` only from build `K64F-ARM` in build specification:
+```
+$ mbedgt -V -n mbed-drivers-test-generic_tests -t K64F-ARM
+```
+
+Note: you can use comman '`,`' to separate test names (switch `-n`) and build names (switch `-t`)
 
 # Using Greentea with new targets
 When prototyping or developing new port you will find yourself in a situation where your yotta modules are not published (especially targets) and you still want to use Greentea.
