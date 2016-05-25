@@ -240,7 +240,7 @@ class TestSpec:
         :return:
         """
         self.__target_test_spec = {}
-        if self.test_spec_filename:
+        if test_spec_filename:
             self.test_spec_filename = test_spec_filename
             self.load(self.test_spec_filename)
 
