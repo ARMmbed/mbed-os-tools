@@ -514,7 +514,7 @@ Above command will execute all tests for yotta module you are in, e.g. ```mbed-d
 
 # Test specification JSON formatted input
 
-Greentea originally only supports yotta artefacts. It assumes it is run inside a yotta module and gathers information from local file system. To make it generic for any other test artefacts we can support a test specification input. This specification can tell information like platform, tool chain, build artefacts path, test binaries, flash methods of test binaries to Greentea.
+Greentea originally only supports yotta artefacts. It assumes it is run inside a yotta module and gathers information from local file system. To make it generic for any other test artefacts we can support a test specification input. This specification can tell information like platform, toolchain, build artefacts path, test binaries, flash methods of test binaries to Greentea.
 Test specification is an interface which can be used by any build system or it can be created manually. Test specification interface was added to separate build system from test automation automation (Greentea).
 
 Changes:
@@ -523,11 +523,11 @@ Changes:
 
 ## Test specification formatted
 
-More detailed test specification format will be introduced in near future. In current form test specification is a dictionary with key-value pairs under "builds" entry where key is a build name and value is a dictionary with additional properties describing build itself. Build properties include platform name, toolchain used to compile interface chipa baudrate and list of test binaries.
+More detailed test specification format will be introduced in near future. In current form test specification is a dictionary with key-value pairs under "builds" entry where key is a build name and value is a dictionary with additional properties describing build itself. Build properties include platform name, toolchain used to compile, interface chip baudrate, and list of test binaries.
 
 ## Example of test specification file
 
-In below example there are two build defined:
+In the below example there are two builds defined:
 * Build `K64F-ARM` for Freescale `K64F` platform compiled with `ARMCC` compiler and
 * build `K64F-GCC` for Freescale `K64F` platform compiled with `GCC ARM` compiler.
 
@@ -584,7 +584,7 @@ In below examples we will use above test specification file.
 
 ### Command line usage
 
-When building your mbed projects with <build system> capable of returning test specification in our format you can directly call Greentea to execute tests or list available tests (`-l` / `--list` switch).
+When building your mbed projects with *build system* capable of returning test specification in our format you can directly call Greentea to execute tests or list available tests (`-l` / `--list` switch).
 
 #### Executing all tests
 
@@ -596,7 +596,7 @@ will pick up test specification and execute all tests in it.
 
 #### Cherry-pick tests
 
-* We will first tests we want to execute:
+* We will first list the tests we want to execute:
 
 Assuming that `test_spec.json` is in current directory:
 ```
