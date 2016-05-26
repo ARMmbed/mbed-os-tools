@@ -48,6 +48,13 @@ def run_cli_process(cmd):
     @param cmd Command to execute
     @return Tuple of (stdout, stderr, returncode)
     """
-    p = Popen(cmd, stdout=PIPE, stderr=PIPE)
-    _stdout, _stderr = p.communicate()
+    try:
+        p = Popen(cmd, stdout=PIPE, stderr=PIPE)
+        _stdout, _stderr = p.communicate()
+    except OSError as e:
+        print "mbedgt: [ret=%d] Command: %s"% (int(ret), p.returncode)
+        print str(e)
+        print "mbedgt: traceback..."
+        print e.child_traceback
+        return str(), str(), -1
     return _stdout, _stderr, p.returncode
