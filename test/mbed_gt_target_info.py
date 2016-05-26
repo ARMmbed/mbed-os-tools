@@ -17,6 +17,8 @@ limitations under the License.
 """
 
 import unittest
+
+import json
 from mock import patch
 from mbed_greentea import mbed_target_info
 
@@ -253,6 +255,57 @@ mbed-gcc 1.1.0
         r = mbed_target_info.get_mbed_target_from_current_dir()
         self.assertEqual('frdm-k64f-gcc', r)
 
+    def test_parse_yotta_json_for_build_name(self):
+        self.assertEqual('frdm-k64f-gcc', mbed_target_info.parse_yotta_json_for_build_name(
+            {
+              "build": {
+                "target": "frdm-k64f-gcc,*",
+                "targetSetExplicitly": True
+              }
+            }
+        ))
 
+        self.assertEqual('x86-linux-native', mbed_target_info.parse_yotta_json_for_build_name(
+            {
+              "build": {
+                "target": "x86-linux-native,*",
+                "targetSetExplicitly": True
+              }
+            }
+        ))
+
+        self.assertEqual('frdm-k64f-gcc', mbed_target_info.parse_yotta_json_for_build_name(
+            {
+              "build": {
+                "target": "frdm-k64f-gcc,*"
+              }
+            }
+        ))
+
+        self.assertEqual('frdm-k64f-gcc', mbed_target_info.parse_yotta_json_for_build_name(
+            {
+              "build": {
+                "target": "frdm-k64f-gcc"
+              }
+            }
+        ))
+
+        self.assertEqual(None, mbed_target_info.parse_yotta_json_for_build_name(
+            {
+                "build": {
+                }
+            }
+        ))
+
+        self.assertEqual(None, mbed_target_info.parse_yotta_json_for_build_name(
+            {
+              "BUILD": {
+                  "target": "frdm-k64f-gcc,*",
+                  "targetSetExplicitly": True
+              }
+            }
+        ))
+
+        
 if __name__ == '__main__':
     unittest.main()
