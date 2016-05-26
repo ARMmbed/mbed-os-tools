@@ -125,31 +125,88 @@ NOT_SUPPORTED_TESTS = [
 ]
 
 def get_mbed_target_call_yotta_target():
+    """! Calls yotta's 'yotta target' command to get information about
+    """
     cmd = ['yotta', '--plain', 'target']
     gt_logger.gt_log("checking yotta target in current directory")
     gt_logger.gt_log_tab("calling yotta: %s"% " ".join(cmd))
     _stdout, _stderr, _ret = run_cli_process(cmd)
     return _stdout, _stderr, _ret
 
+def parse_yotta_json_for_build_name(yotta_json_content):
+    """! Function parse .yotta.json to fetch set yotta target
+    @param yotta_json_content Content of .yotta_json file
+    @return String with set yotta target name, None if no target found
+    """
+    result = None
+    if 'build' in yotta_json_content:
+        if 'target' in yotta_json_content['build']:
+            # yotta_json_content['build']['target'] should be something like this: "frdm-k64f-gcc,*"
+            # We will split this string using ','. Because split will always return an array
+            # with at least 1 element we can select first element to be target name
+            try:
+                result = yotta_json_content['build']['target'].split(',')[0]
+            except IndexError:
+                result = None
+    return result
+
+def get_yotta_target_from_local_config(yotta_json='.yotta.json'):
+    """! Load yotta target from local configuration file
+    @param yotta_json File in format of .yotta.json which stores current target names
+    @return Yotta target set in currect directory, None if no info is available
+    @details
+    Example structure of .yotta.json file:
+    {
+      "build": {
+        "target": "frdm-k64f-gcc,*",
+        "targetSetExplicitly": true
+      }
+    }
+    """
+    result = None
+    if os.path.exists(yotta_json):
+        try:
+            gt_logger.gt_log("parsing local file '%s' for target information"% yotta_json)
+            with open(yotta_json, 'r') as f:
+                result = parse_yotta_json_for_build_name(json.load(f))
+        except Exception as e:
+            print str(e)
+    return result
+
 def get_mbed_target_from_current_dir():
     """! Function uses yotta target command to check current target
     @return Returns current target or None if target not found (e.g. not yotta package)
     """
-    result = None
-    _stdout, _stderr, _ret = get_mbed_target_call_yotta_target()
-    if not _ret:
-        for line in _stdout.splitlines():
-            target = parse_yotta_target_cmd_output(line)
-            if target:
-                result = target
-                break
+    # We will first try to load current target name using .yotta.json file
+    result = get_yotta_target_from_local_config()
+
+    # If we can't read .yotta.json, we will try to use command line to fetch target name
+    if not result:
+        _stdout, _stderr, _ret = get_mbed_target_call_yotta_target()
+        if not _ret:
+            for line in _stdout.splitlines():
+                target = parse_yotta_target_cmd_output(line)
+                if target:
+                    result = target
+                    break
     return result
 
 def parse_yotta_target_cmd_output(line):
-    # Example targets:
-    # $ yt target
-    # frdm-k64f-gcc 0.1.3
-    # mbed-gcc 0.1.1
+    """! Function parsed output from command 'yotta --plain target'
+         looking for valid target names. First one will be used as 'default'
+         of currently set yotta target
+    @param line Line of text from 'yotta target' command
+    @return Yotta target name, None if not parsed
+    @details
+
+    Example call to 'yotta target' command (all lines)
+    $ yotta --plain target
+    frdm-k64f-gcc 2.0.0
+    kinetis-k64-gcc 2.2.0
+    mbed-gcc 1.2.2
+
+    """
+    # Regular expression to parse stings like: 'frdm-k64f-gcc 2.0.0'
     m = re.search(r'[\w\d_-]+ \d+\.\d+\.\d+', line)
     if m and len(m.group()):
         result = line.split()[0]
