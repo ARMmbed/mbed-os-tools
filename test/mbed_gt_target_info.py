@@ -18,7 +18,6 @@ limitations under the License.
 
 import unittest
 
-import json
 from mock import patch
 from mbed_greentea import mbed_target_info
 
