@@ -361,14 +361,6 @@ def get_mbed_clasic_target_info(mbed_classic_name, map_platform_to_yt_target=Non
     TARGET_INFO_MAPPING = add_target_info_mapping(mbed_classic_name, map_platform_to_yt_target, use_yotta_registry)
     return TARGET_INFO_MAPPING[mbed_classic_name] if mbed_classic_name in TARGET_INFO_MAPPING else None
 
-def get_mbed_supported_test(mbed_test_case_name):
-    """! Checks if given test case name is supported / automated
-    @param mbed_test_case_name Name of the test case
-    @return Returns true if test case name from mbed SDK can be automated with mbed-greentea
-    """
-    return mbed_test_case_name not in NOT_SUPPORTED_TESTS
-
-
 def get_binary_type_for_platform(platform):
     """
     Gives binary type for the given platform.
