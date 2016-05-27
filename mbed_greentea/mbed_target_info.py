@@ -24,7 +24,20 @@ from mbed_greentea.mbed_common_api import run_cli_process
 from mbed_greentea.mbed_greentea_log import gt_logger
 
 
+## Information about some properties of targets (platforms)
+#
+#  "default" entry is used to fetch "global" properties if they are not
+#  specified with each platform
+#
+
 TARGET_INFO_MAPPING = {
+    "default" : {
+        "program_cycle_s": 4,
+        "binary_type": ".bin",
+        "copy_method": "default",
+        "reset_method": "default"
+    },
+
     "K64F" : {
         "yotta_targets": [
                 {
@@ -371,12 +384,16 @@ def get_platform_property(platform, property):
     Gives platform property.
 
     :param platform:
-    :return:
+    :return: property value, None if propery not found
     """
+    # Check if info is available for a specific platform
     if platform in TARGET_INFO_MAPPING:
         if property in TARGET_INFO_MAPPING[platform]['properties']:
             return TARGET_INFO_MAPPING[platform]['properties'][property]
-        else:
-            raise Exception("Property %s not found in platform %s" % (property, platform))
-    else:
-        raise Exception("Platform %s not in target info store." % platform)
+
+    # Check if default data is available
+    if 'default' in TARGET_INFO_MAPPING:
+        if property in TARGET_INFO_MAPPING['default']:
+            return TARGET_INFO_MAPPING['default'][property]
+
+    return None
