@@ -401,9 +401,12 @@ def run_test_thread(test_result_queue, test_queue, opts, mut, build, build_path,
                                          verbose=verbose)
 
         # Some error in htrun, abort test execution
-        if host_test_result < 0:
+        if isinstance(host_test_result, int):
+            # int(host_test_result) > 0 - Call to mbedhtrun failed
+            # int(host_test_result) < 0 - Something went wrong while executing mbedhtrun
             break
 
+        # If execution was successful 'run_host_test' return tuple with results
         single_test_result, single_test_output, single_testduration, single_timeout, result_test_cases, test_cases_summary = host_test_result
         test_result = single_test_result
 
@@ -585,6 +588,13 @@ def main_cli(opts, args, gt_instance_uuid=None):
                                          enum_host_tests_path=enum_host_tests_path,
                                          verbose=opts.verbose_test_result_only)
 
+        # Some error in htrun, abort test execution
+        if isinstance(host_test_result, int):
+            # int(host_test_result) > 0 - Call to mbedhtrun failed
+            # int(host_test_result) < 0 - Something went wrong while executing mbedhtrun
+            return int(host_test_result)
+
+        # If execution was successful 'run_host_test' return tuple with results
         single_test_result, single_test_output, single_testduration, single_timeout, result_test_cases, test_cases_summary = host_test_result
         status = TEST_RESULTS.index(single_test_result) if single_test_result in TEST_RESULTS else -1
         return (status)
@@ -727,6 +737,13 @@ def main_cli(opts, args, gt_instance_uuid=None):
                                                  enum_host_tests_path=enum_host_tests_path,
                                                  verbose=True)
 
+                # Some error in htrun, abort test execution
+                if isinstance(host_test_result, int):
+                    # int(host_test_result) > 0 - Call to mbedhtrun failed
+                    # int(host_test_result) < 0 - Something went wrong while executing mbedhtrun
+                    return int(host_test_result)
+
+                # If execution was successful 'run_host_test' return tuple with results
                 single_test_result, single_test_output, single_testduration, single_timeout, result_test_cases, test_cases_summary = host_test_result
                 status = TEST_RESULTS.index(single_test_result) if single_test_result in TEST_RESULTS else -1
                 if single_test_result != TEST_RESULT_OK:
