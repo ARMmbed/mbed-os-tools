@@ -204,6 +204,7 @@ def conn_process(event_queue, dut_event_queue, prn_lock, config):
         else:
             # Return if state machine in host_test_default has finished to end process
             if key == '__host_test_finished' and value == True:
+                logger.prn_inf("received special even '%s' value='%s', finishing"% (key, value))
                 connector.finish()
                 return 0
             connector.write_kv(key, value)
