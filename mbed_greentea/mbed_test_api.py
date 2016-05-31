@@ -108,12 +108,11 @@ def run_host_test(image_path,
                   enum_host_tests_path=None,
                   run_app=None):
     """! This function runs host test supervisor (executes mbedhtrun) and checks output from host test process.
-    @return Tuple with test results, test output, test duration times and test case results
     @param image_path Path to binary file for flashing
     @param disk Currently mounted mbed-enabled devices disk (mount point)
     @param port Currently mounted mbed-enabled devices serial port (console)
     @param duration Test case timeout
-    @param micro Mbed-nebaled device name
+    @param micro Mbed-enabled device name
     @param reset Reset type
     @param reset_tout Reset timeout (sec)
     @param verbose Verbose mode flag
@@ -124,19 +123,26 @@ def run_host_test(image_path,
     @param enum_host_tests_path Directory where locally defined host tests may reside
     @param run_app Run application mode flag (we run application and grab serial port data)
     @param digest_source if None mbedhtrun will be executed. If 'stdin',
-                           stdin will be used via StdInObserver or file (if
-                           file name was given as switch option)
+           stdin will be used via StdInObserver or file (if
+           file name was given as switch option)
+    @return Tuple with test results, test output, test duration times and test case results.
+            Return int > 0 if running mbedhtrun process failed.
+            Retrun int < 0 if something went wrong during mbedhtrun execution.
     """
 
     def run_command(cmd):
-        """! Runs command and prints proc stdout on screen """
+        """! Runs command and prints proc stdout on screen
+        @paran cmd List with command line to execute e.g. ['ls', '-l]
+        @return Value returned by subprocess.Popen, if failed return None
+        """
         try:
             p = Popen(cmd,
-                    stdout=PIPE,
-                    stderr=STDOUT)
+                      stdout=PIPE,
+                      stderr=STDOUT)
         except OSError as e:
-            print "mbedgt: run_command(%s) ret= %d failed: %s"% (str(cmd),
-                str(e), e.child_traceback)
+            gt_logger.gt_log_err("run_host_test.run_command(%s) failed!"% str(cmd))
+            gt_logger.gt_log_tab(str(e))
+            return None
         return p
 
     if verbose:
@@ -183,10 +189,15 @@ def run_host_test(image_path,
         gt_logger.gt_log_tab("calling mbedhtrun: %s"% " ".join(cmd))
     gt_logger.gt_log("mbed-host-test-runner: started")
 
-    htrun_output = ''
+    htrun_output = str()
     start_time = time()
 
+    # run_command will return None if process can't be opened (Issue #134)
     p = run_command(cmd)
+    if not p:
+        # int value > 0 notifies caller that starting of host test process failed
+        return 1729
+
     for line in iter(p.stdout.readline, b''):
         htrun_output += line
         # When dumping output to file both \r and \n will be a new line
