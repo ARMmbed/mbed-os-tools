@@ -73,6 +73,11 @@ TEST_RESULT_MAPPING = {"success" : TEST_RESULT_OK,
                        }
 
 
+# This value is used to tell caller than run_host_test function failed while invoking mbedhtrun
+# Just a value greater than zero
+RUN_HOST_TEST_POPEN_ERROR = 1729
+
+
 def get_test_result(output):
     """! Parse test 'output' data
     @details If test result not found returns by default TEST_RESULT_TIMEOUT value
@@ -196,7 +201,7 @@ def run_host_test(image_path,
     p = run_command(cmd)
     if not p:
         # int value > 0 notifies caller that starting of host test process failed
-        return 1729
+        return RUN_HOST_TEST_POPEN_ERROR
 
     for line in iter(p.stdout.readline, b''):
         htrun_output += line

@@ -404,6 +404,7 @@ def run_test_thread(test_result_queue, test_queue, opts, mut, build, build_path,
         if isinstance(host_test_result, int):
             # int(host_test_result) > 0 - Call to mbedhtrun failed
             # int(host_test_result) < 0 - Something went wrong while executing mbedhtrun
+            gt_logger.gt_log_err("run_test_thread.run_host_test() failed, aborting...")
             break
 
         # If execution was successful 'run_host_test' return tuple with results
@@ -592,7 +593,7 @@ def main_cli(opts, args, gt_instance_uuid=None):
         if isinstance(host_test_result, int):
             # int(host_test_result) > 0 - Call to mbedhtrun failed
             # int(host_test_result) < 0 - Something went wrong while executing mbedhtrun
-            return int(host_test_result)
+            return host_test_result
 
         # If execution was successful 'run_host_test' return tuple with results
         single_test_result, single_test_output, single_testduration, single_timeout, result_test_cases, test_cases_summary = host_test_result
@@ -741,7 +742,7 @@ def main_cli(opts, args, gt_instance_uuid=None):
                 if isinstance(host_test_result, int):
                     # int(host_test_result) > 0 - Call to mbedhtrun failed
                     # int(host_test_result) < 0 - Something went wrong while executing mbedhtrun
-                    return int(host_test_result)
+                    return host_test_result
 
                 # If execution was successful 'run_host_test' return tuple with results
                 single_test_result, single_test_output, single_testduration, single_timeout, result_test_cases, test_cases_summary = host_test_result
