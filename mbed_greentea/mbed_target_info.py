@@ -24,7 +24,20 @@ from mbed_greentea.mbed_common_api import run_cli_process
 from mbed_greentea.mbed_greentea_log import gt_logger
 
 
+## Information about some properties of targets (platforms)
+#
+#  "default" entry is used to fetch "global" properties if they are not
+#  specified with each platform
+#
+
 TARGET_INFO_MAPPING = {
+    "default" : {
+        "program_cycle_s": 4,
+        "binary_type": ".bin",
+        "copy_method": "default",
+        "reset_method": "default"
+    },
+
     "K64F" : {
         "yotta_targets": [
                 {
@@ -348,14 +361,6 @@ def get_mbed_clasic_target_info(mbed_classic_name, map_platform_to_yt_target=Non
     TARGET_INFO_MAPPING = add_target_info_mapping(mbed_classic_name, map_platform_to_yt_target, use_yotta_registry)
     return TARGET_INFO_MAPPING[mbed_classic_name] if mbed_classic_name in TARGET_INFO_MAPPING else None
 
-def get_mbed_supported_test(mbed_test_case_name):
-    """! Checks if given test case name is supported / automated
-    @param mbed_test_case_name Name of the test case
-    @return Returns true if test case name from mbed SDK can be automated with mbed-greentea
-    """
-    return mbed_test_case_name not in NOT_SUPPORTED_TESTS
-
-
 def get_binary_type_for_platform(platform):
     """
     Gives binary type for the given platform.
@@ -371,12 +376,16 @@ def get_platform_property(platform, property):
     Gives platform property.
 
     :param platform:
-    :return:
+    :return: property value, None if propery not found
     """
+    # Check if info is available for a specific platform
     if platform in TARGET_INFO_MAPPING:
         if property in TARGET_INFO_MAPPING[platform]['properties']:
             return TARGET_INFO_MAPPING[platform]['properties'][property]
-        else:
-            raise Exception("Property %s not found in platform %s" % (property, platform))
-    else:
-        raise Exception("Platform %s not in target info store." % platform)
+
+    # Check if default data is available
+    if 'default' in TARGET_INFO_MAPPING:
+        if property in TARGET_INFO_MAPPING['default']:
+            return TARGET_INFO_MAPPING['default'][property]
+
+    return None
