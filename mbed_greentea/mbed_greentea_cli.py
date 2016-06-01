@@ -102,6 +102,20 @@ def create_filtered_test_list(ctest_test_list, test_by_names, skip_test, test_sp
     @param test_spec Test specification object loaded with --test-spec switch
     @return
     """
+
+    def filter_names_by_prefix(test_case_name_list, prefix_name):
+        """!
+        @param test_case_name_list List of all test cases
+        @param prefix_name Prefix of test name we are looking for
+        @result Set with names of test names starting with 'prefix_name'
+        """
+        result = list()
+        print
+        for test_name in test_case_name_list:
+            if test_name.startswith(prefix_name):
+                result.append(test_name)
+        return result
+
     filtered_ctest_test_list = ctest_test_list
     test_list = None
     invalid_test_names = []
@@ -113,7 +127,12 @@ def create_filtered_test_list(ctest_test_list, test_by_names, skip_test, test_sp
         gt_logger.gt_log("test case filter (specified with -n option)")
 
         for test_name in test_list:
-            if test_name not in ctest_test_list:
+            if test_name.endswith('*'):
+                # This 'star-sufix' filter allows users to filter tests with fixed prefixes
+                # Example: -n 'TESTS-mbed_drivers* will filter all test cases with name starting with 'TESTS-mbed_drivers'
+                for test_name_filtered in filter_names_by_prefix(ctest_test_list.keys(), test_name[:-1]):
+                    filtered_ctest_test_list[test_name_filtered] = ctest_test_list[test_name_filtered]
+            elif test_name not in ctest_test_list:
                 invalid_test_names.append(test_name)
             else:
                 gt_logger.gt_log_tab("test filtered in '%s'"% gt_logger.gt_bright(test_name))
