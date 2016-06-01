@@ -76,6 +76,8 @@ def parse_ctesttestfile_line(link_target, binary_type, line, verbose=False):
 
 def list_binaries_for_targets(build_dir='./build', verbose_footer=False):
     """! Prints tests in target directories, only if tests exist.
+    @param build_dir Yotta default build directory where tests will be
+    @param verbose_footer Prints additional "how to use" Greentea footer
     @details Skips empty / no tests for target directories.
     """
     dir = build_dir
@@ -107,10 +109,16 @@ def list_binaries_for_targets(build_dir='./build', verbose_footer=False):
         print "Example: execute 'mbedgt -t TARGET_NAME -n TEST_NAME' to run test TEST_NAME for target TARGET_NAME"
 
 def list_binaries_for_builds(test_spec, verbose_footer=False):
-    """! Parse test spec and list binaries (BOOTABLE) available from test spec
+    """! Parse test spec and list binaries (BOOTABLE) in lexicographical order
+    @param test_spec Test specification object
+    @param verbose_footer Prints additional "how to use" Greentea footer
     """
     test_builds = test_spec.get_test_builds()
     for tb in test_builds:
         gt_logger.gt_log("available tests for built '%s', location '%s'"% (tb.get_name(), tb.get_path()))
         for tc in sorted(tb.get_tests().keys()):
             gt_logger.gt_log_tab("test '%s'"% tc)
+
+    if verbose_footer:
+        print
+        print "Example: execute 'mbedgt -t BUILD_NAME -n TEST_NAME' to run test TEST_NAME for build TARGET_NAME in current test specification"
