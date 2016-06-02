@@ -20,9 +20,10 @@ This end to end example will guide you through the process of mbed test tools (_
 ## Limitations
 
 * ```Ubuntu```/```Linux```/```OSX```:
-  * ```Greentea1``` mbed test tools work with _K64F's_ DAPlink version _0240_ onwards.
-  * See [Firmware FRDM K64F](https://developer.mbed.org/handbook/Firmware-FRDM-K64F) article for details how to update DAPLink firmware to latest version.
-  * You can check your _K64F_ device DAPLink version with ```$ mbedls``` command (```daplink_version``` column). Please check [here](#appendix-b-optional-installing-mbed-ls-tool) how to install _mbed-ls_ tool.
+  * ```Greentea1``` mbed test tools work with _K64F's_ _DAPLink_ version _0240_ onwards.
+  * See [Firmware FRDM K64F](https://developer.mbed.org/handbook/Firmware-FRDM-K64F) article for details how to update _DAPLink_ firmware to latest version. 
+    * Latest [DAPLink](https://github.com/mbedmicro/DAPLink) release can be found on [DAPLink release tab on GitHub](https://github.com/mbedmicro/DAPLink/releases).
+  * You can check your _K64F_ device _DAPLink_ version with ```$ mbedls``` command (```daplink_version``` column). Please check [here](#appendix-b-optional-installing-mbed-ls-tool) how to install _mbed-ls_ tool.
   * Code coverage support (only for Ubuntu/Linux/OSX):
     * Works only for platforms natively supporting ```gcov``` and ```lcov``` applications.
 * ```yotta test``` command may now work with mbed test tools 0.2.0 onwards.
