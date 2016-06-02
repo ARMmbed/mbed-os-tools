@@ -1,16 +1,16 @@
-
 # Table of content
 
+* [Table of content](#table-of-content)
 * [mbed test tools instructions](#mbed-test-tools-instructions)
   * [Limitations](#limitations)
   * [mbed test tools collection](#mbed-test-tools-collection)
-  * [dependencies check-list](#dependencies-check-list)
-  * [dependencies installation procedure](#dependencies-installation-procedure)
-    * [dependencies check-list](#dependencies-check-list)
+  * [Dependencies check-list](#dependencies-check-list)
+  * [Dependencies installation procedure](#dependencies-installation-procedure)
+    * [Dependencies installation verification](#dependencies-installation-verification)
   * [Example test procedure walk-through](#example-test-procedure-walk-through)
 * [Appendix A: (Optional) code coverage instrumentation](#appendix-a-optional-code-coverage-instrumentation)
   * [Prerequisites](#prerequisites)
-  * [code coverage measurement](#code-coverage-measurement)
+  * [Code coverage measurement](#code-coverage-measurement)
 * [Appendix B: (Optional) Installing mbed-ls tool](#appendix-b-optional-installing-mbed-ls-tool)
 
 # mbed test tools instructions
@@ -21,7 +21,7 @@ This end to end example will guide you through the process of mbed test tools (_
 
 * ```Ubuntu```/```Linux```/```OSX```:
   * ```Greentea1``` mbed test tools work with _K64F's_ _DAPLink_ version _0240_ onwards.
-  * See [Firmware FRDM K64F](https://developer.mbed.org/handbook/Firmware-FRDM-K64F) article for details how to update _DAPLink_ firmware to latest version. 
+  * See [Firmware FRDM K64F](https://developer.mbed.org/handbook/Firmware-FRDM-K64F) article for details how to update _DAPLink_ firmware to latest version.
     * Latest [DAPLink](https://github.com/mbedmicro/DAPLink) release can be found on [DAPLink release tab on GitHub](https://github.com/mbedmicro/DAPLink/releases).
   * You can check your _K64F_ device _DAPLink_ version with ```$ mbedls``` command (```daplink_version``` column). Please check [here](#appendix-b-optional-installing-mbed-ls-tool) how to install _mbed-ls_ tool.
   * Code coverage support (only for Ubuntu/Linux/OSX):
@@ -42,7 +42,7 @@ mbed test tools set:
 * [mbed-ls](https://github.com/ARMmbed/mbed-ls) - list all connected to host mbed compatible devices.
   * This application is also distributed as Python Package: [mbed-ls in PyPI](https://pypi.python.org/pypi/mbed-ls).
 
-## dependencies check-list
+## Dependencies check-list
 
 * Have one mbed board connected to your PC over USB. In our case it will be one [Freescale K64F](https://developer.mbed.org/platforms/FRDM-K64F/) board.
 * Installed toolchain for ARM Cortex-M: [GCC ARM Embedded v4.9.3](https://launchpad.net/gcc-arm-embedded).
@@ -55,7 +55,7 @@ mbed test tools set:
 
 Next step will provide guidelines for _mbed test tools_ dependencies installation.
 
-## dependencies installation procedure
+## Dependencies installation procedure
 
 * Please install [Python 2.7.11](https://www.python.org/download/releases/2.7/). mbed test tools are not compatible with Python 3.x.
 * Installed toolchain for ARM Cortex-M: [GCC ARM Embedded v4.9.3](https://launchpad.net/gcc-arm-embedded).
@@ -99,7 +99,7 @@ This is free software; see the source for copying conditions.  There is NO
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 ```
 
-### dependencies check-list
+### Dependencies installation verification
 
 * Check whether the mbed test tools dependencies exist on your machine:
 
@@ -291,7 +291,7 @@ lcov: LCOV version 1.10
 * You need to make sure you are using GCC ARM Embedded toolchain version **4.9.3**.
 * We will have to create two additional files in root directory of ```mbed-drivers``` and rebuild our project.
 
-## code coverage measurement
+## Code coverage measurement
 
 * Make sure your _K64F_ is plugged in.
 * Make sure you are in ```./mbed-drivers``` directory.
