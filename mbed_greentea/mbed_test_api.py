@@ -150,6 +150,39 @@ def run_host_test(image_path,
             return None
         return p
 
+    def get_binary_host_tests_dir(binary_path, level=2):
+        """! Checks if in binary test group has host_tests directory
+        @param binary_path Path to binary in test specification
+        @param level How many directories above test host_tests dir exists
+        @return Path to host_tests dir in group binary belongs too, None if not found
+        """
+        try:
+            binary_path_norm = os.path.normpath(binary_path)
+            # Finding path to binary tests group
+            # Removing ,build/tests/PLATFORM/TOOLCHAIN
+            # [4:  -> .build\\tests\\K64F\\GCC_ARM
+            # :-2] -> \\queue\\TESTS-mbedmicro-rtos-mbed-queue.bin
+            host_tests_path = ['.'] + binary_path_norm.split(os.sep)[4:-level] + ['host_tests']
+            host_tests_path = os.path.join(*host_tests_path)
+        except Exception as e:
+            gt_logger.gt_log_warn("there was a problem while looking for host_tests directory")
+            gt_logger.gt_log_tab("level %d, path: %s"% (level, binary_path))
+            gt_logger.gt_log_tab(str(e))
+            return None
+
+        if os.path.isdir(host_tests_path):
+            return host_tests_path
+        return None
+
+    if not enum_host_tests_path:
+        # If there is -e specified we will try to find a host_tests path ourselves
+        test_group_ht_path = get_binary_host_tests_dir(image_path, level=2)
+        TESTS_dir_ht_path = get_binary_host_tests_dir(image_path, level=3)
+        if test_group_ht_path:
+            enum_host_tests_path = test_group_ht_path
+        else:
+            enum_host_tests_path = TESTS_dir_ht_path
+
     if verbose:
         gt_logger.gt_log("selecting test case observer...")
         if digest_source:
