@@ -47,11 +47,15 @@ class WaitusTest(BaseHostTest):
             return deviation <= self.DEVIATION
 
         # Check if time between ticks was accurate
-        timestamps = [timestamp for _, _, timestamp in self.ticks]
-        self.log(str(timestamps))
-        m = map(sub_timestamps, timestamps[1:], timestamps[:-1])
-        self.log(str(m))
-        self.__result = all(m)
+        if self.ticks:
+            # If any ticks were recorded
+            timestamps = [timestamp for _, _, timestamp in self.ticks]
+            self.log(str(timestamps))
+            m = map(sub_timestamps, timestamps[1:], timestamps[:-1])
+            self.log(str(m))
+            self.__result = all(m)
+        else:
+            self.__result = False
         return self.__result
 
     def teardown(self):
