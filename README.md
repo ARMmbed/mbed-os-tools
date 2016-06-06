@@ -75,7 +75,8 @@ Please read [QUICKSTART.md](https://github.com/ARMmbed/greentea/blob/master/docs
 
 ## Supported operating systems
 
-* Windows
+* Windows 7
+* Ubuntu LTS
 * Linux (experimental)
 * OS X 10.10 (experimental)
 
