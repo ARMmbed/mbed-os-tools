@@ -176,12 +176,18 @@ def run_host_test(image_path,
 
     if not enum_host_tests_path:
         # If there is -e specified we will try to find a host_tests path ourselves
+        gt_logger.gt_log("checking for 'host_tests' directory above image directory structure")
         test_group_ht_path = get_binary_host_tests_dir(image_path, level=2)
         TESTS_dir_ht_path = get_binary_host_tests_dir(image_path, level=3)
         if test_group_ht_path:
             enum_host_tests_path = test_group_ht_path
-        else:
+        elif TESTS_dir_ht_path:
             enum_host_tests_path = TESTS_dir_ht_path
+
+        if enum_host_tests_path:
+            gt_logger.gt_log_tab("found 'host_tests' directory in: '%s'"% enum_host_tests_path)
+        else:
+            gt_logger.gt_log_tab("'host_tests' directory not found (to directory levels above image path checked")
 
     if verbose:
         gt_logger.gt_log("selecting test case observer...")
