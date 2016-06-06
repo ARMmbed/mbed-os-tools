@@ -83,22 +83,21 @@ class DefaultTestSelector(DefaultTestSelectorBase):
         @return True if obj_instance is derived from mbed_host_tests.BaseHostTest()
                 and BaseHostTest.__init__() was called, else return False
         """
+        result = True
         if obj_instance:
             # Check if host test (obj_instance) is derived from mbed_host_tests.BaseHostTest()
+            self.logger.prn_inf("host test class: '%s'"% obj_instance.__class__)
+
             if not isinstance(obj_instance, BaseHostTest):
                 self.logger.prn_err("host test must inherit from mbed_host_tests.BaseHostTest() class")
-                self.logger.prn_err("host test class '%s'"% obj_instance.__class__)
-                return False
+                result = False
 
             # Check if BaseHostTest.__init__() was called when custom host test is created
-            if not self.obj_instance.base_host_test_inited():
+            if not obj_instance.base_host_test_inited():
                 self.logger.prn_err("custom host test __init__() must call BaseHostTest.__init__(self)")
-                self.logger.prn_err("host test class '%s'"% obj_instance.__class__)
-                return False
+                result = False
 
-            # It is a valid host test class object
-            return True
-        return False
+        return result
 
     def run_test(self):
         """! This function implements key-value protocol state-machine.
@@ -176,7 +175,7 @@ class DefaultTestSelector(DefaultTestSelectorBase):
                             # derived from 'mbed_host_tests.BaseHostTest()'
                             # Additionaly if host test class implements custom ctor it should
                             # call BaseHostTest().__Init__()
-                            if self.is_host_test_obj_compatible(self.test_supervisor):
+                            if self.test_supervisor and self.is_host_test_obj_compatible(self.test_supervisor):
                                 # Pass communication queues and setup() host test
                                 self.test_supervisor.setup_communication(event_queue, dut_event_queue)
                                 try:
