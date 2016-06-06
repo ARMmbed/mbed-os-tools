@@ -23,6 +23,7 @@ import traceback
 from time import time
 from Queue import Empty as QueueEmpty   # Queue here refers to the module, not a class
 
+from mbed_host_tests import BaseHostTest
 from multiprocessing import Process, Queue, Lock
 from mbed_host_tests import print_ht_list
 from mbed_host_tests import get_host_test
@@ -32,7 +33,6 @@ from mbed_host_tests.host_tests_conn_proxy import HtrunLogger
 from mbed_host_tests.host_tests_conn_proxy import conn_process
 from mbed_host_tests.host_tests_runner.host_test import DefaultTestSelectorBase
 from mbed_host_tests.host_tests_toolbox.host_functional import handle_send_break_cmd
-
 
 class DefaultTestSelector(DefaultTestSelectorBase):
     """! Select default host_test supervision (replaced after auto detection) """
@@ -74,7 +74,37 @@ class DefaultTestSelector(DefaultTestSelectorBase):
 
         DefaultTestSelectorBase.__init__(self, options)
 
+    def is_host_test_obj_compatible(self, obj_instance):
+        """! Check if host test object loaded is actually host test class
+             derived from 'mbed_host_tests.BaseHostTest()'
+             Additionaly if host test class implements custom ctor it should
+             call BaseHostTest().__Init__()
+        @param obj_instance Instance of host test derived class
+        @return True if obj_instance is derived from mbed_host_tests.BaseHostTest()
+                and BaseHostTest.__init__() was called, else return False
+        """
+        if obj_instance:
+            # Check if host test (obj_instance) is derived from mbed_host_tests.BaseHostTest()
+            if not isinstance(obj_instance, BaseHostTest):
+                self.logger.prn_err("host test must inherit from mbed_host_tests.BaseHostTest() class")
+                self.logger.prn_err("host test class '%s'"% obj_instance.__class__)
+                return False
+
+            # Check if BaseHostTest.__init__() was called when custom host test is created
+            if not self.obj_instance.base_host_test_inited():
+                self.logger.prn_err("custom host test __init__() must call BaseHostTest.__init__(self)")
+                self.logger.prn_err("host test class '%s'"% obj_instance.__class__)
+                return False
+
+            # It is a valid host test class object
+            return True
+        return False
+
     def run_test(self):
+        """! This function implements key-value protocol state-machine.
+            Handling of all events and connector are handled here.
+        @return Return self.TestResults.RESULT_* enum
+        """
         result = None
         timeout_duration = 10       # Default test case timeout
         event_queue = Queue()       # Events from DUT to host
@@ -141,15 +171,12 @@ class DefaultTestSelector(DefaultTestSelectorBase):
                         elif key == '__host_test_name':
                             # Load dynamically requested host test
                             self.test_supervisor = get_host_test(value)
-                            if self.test_supervisor:
-                                if not self.test_supervisor.base_host_test_inited():
-                                    self.logger.prn_err("==== host test script '%s' error ===="% value)
-                                    self.logger.prn_err("* host test doesn't inherit from mbed_host_tests.BaseHostTest() class or")
-                                    self.logger.prn_err("* BaseHostTest.__init__(self) not called in host test script constructor")
-                                    self.logger.prn_err("==== host test script error ====")
-                                    result = self.RESULT_ERROR
-                                    break
 
+                            # Check if host test object loaded is actually host test class
+                            # derived from 'mbed_host_tests.BaseHostTest()'
+                            # Additionaly if host test class implements custom ctor it should
+                            # call BaseHostTest().__Init__()
+                            if self.is_host_test_obj_compatible(self.test_supervisor):
                                 # Pass communication queues and setup() host test
                                 self.test_supervisor.setup_communication(event_queue, dut_event_queue)
                                 try:
@@ -174,6 +201,9 @@ class DefaultTestSelector(DefaultTestSelectorBase):
                                 self.logger.prn_inf("host test detected: %s"% value)
                             else:
                                 self.logger.prn_err("host test not detected: %s"% value)
+                                result = self.RESULT_ERROR
+                                break
+
                             consume_preamble_events = False
                         elif key == '__sync':
                             # This is DUT-Host Test handshake event
