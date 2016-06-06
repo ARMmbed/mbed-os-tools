@@ -98,10 +98,13 @@ def print_ht_list(verbose=False):
     """! Prints list of registered host test classes (by name)
         @Detail For devel & debug purposes
     """
+    from prettytable import PrettyTable
+    column_names = ['name', 'class', 'origin']
+    pt = PrettyTable(column_names)
+    for column in column_names:
+        pt.align[column] = 'l'
 
-    # Opiortunistic apporach
-    # If in yotta module top level dir try to list all
-    # tests in standard test/host_tests path
+    # Opiortunistic approach: always try to add current ./test/host_tests
     enum_host_tests('./test/host_tests', verbose=verbose)
 
     ht_str_len = 0
@@ -114,11 +117,9 @@ def print_ht_list(verbose=False):
     for ht in sorted(HOSTREGISTRY.HOST_TESTS.keys()):
         cls_str = str(HOSTREGISTRY.HOST_TESTS[ht].__class__)
         script_path_str = HOSTREGISTRY.HOST_TESTS[ht].script_location if HOSTREGISTRY.HOST_TESTS[ht].script_location else 'mbed-host-tests'
-
-        print "'%s'%s : %s()%s @ '%s'" % (ht, ' '*(ht_str_len - len(ht)),
-            cls_str,
-            ' '*(cls_str_len - len(cls_str)),
-            script_path_str)
+        row = [ht, cls_str, script_path_str]
+        pt.add_row(row)
+    print pt.get_string()
 
 def enum_host_tests(path, verbose=False):
     """ Enumerates and registers locally stored host tests
