@@ -176,6 +176,16 @@ def run_host_test(image_path,
 
     if not enum_host_tests_path:
         # If there is -e specified we will try to find a host_tests path ourselves
+        #
+        # * Path to binary starts from "build" directory, and goes 4 levels
+        #   deep: ./build/tests/compiler/toolchain
+        # * Binary is inside test group.
+        #   For example: <app>/tests/test_group_name/test_dir/*,cpp.
+        # * We will search for directory called host_tests on the level of test group (level=2)
+        #   or on the level of tests directory (level=3).
+        #
+        # If host_tests directory is found above test code will will pass it to mbedhtrun using
+        # switch -e <path_to_host_tests_dir>
         gt_logger.gt_log("checking for 'host_tests' directory above image directory structure")
         test_group_ht_path = get_binary_host_tests_dir(image_path, level=2)
         TESTS_dir_ht_path = get_binary_host_tests_dir(image_path, level=3)
