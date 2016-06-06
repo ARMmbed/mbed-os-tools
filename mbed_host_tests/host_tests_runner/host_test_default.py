@@ -83,12 +83,15 @@ class DefaultTestSelector(DefaultTestSelectorBase):
         @return True if obj_instance is derived from mbed_host_tests.BaseHostTest()
                 and BaseHostTest.__init__() was called, else return False
         """
-        result = True
+        result = False
         if obj_instance:
-            # Check if host test (obj_instance) is derived from mbed_host_tests.BaseHostTest()
+            result = True
             self.logger.prn_inf("host test class: '%s'"% obj_instance.__class__)
 
+            # Check if host test (obj_instance) is derived from mbed_host_tests.BaseHostTest()
             if not isinstance(obj_instance, BaseHostTest):
+                # In theory we should always get host test objects inheriting from BaseHostTest()
+                # because loader will only load those.
                 self.logger.prn_err("host test must inherit from mbed_host_tests.BaseHostTest() class")
                 result = False
 
