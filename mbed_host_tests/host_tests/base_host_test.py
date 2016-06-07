@@ -230,5 +230,17 @@ class HostTestCallbackBase(BaseHostTestAbstract):
 
 class BaseHostTest(HostTestCallbackBase):
 
+    __BaseHostTest_Called = False
+
+    def base_host_test_inited(self):
+        """ This function will check if BaseHostTest ctor was called
+            Call to BaseHostTest is required in order to force required
+            interfaces implementation.
+            @return Returns True if ctor was called (ok behaviour)
+        """
+        return self.__BaseHostTest_Called
+
     def __init__(self):
         HostTestCallbackBase.__init__(self)
+        self.__BaseHostTest_Called = True
+
