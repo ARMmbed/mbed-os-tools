@@ -187,6 +187,20 @@ class MbedLsToolsBase:
     DETAILS_TXT_NAME = 'DETAILS.TXT'
     MBED_HTM_NAME = 'mbed.htm'
 
+    def list_manufacture_ids(self):
+        from prettytable import PrettyTable
+
+        columns = ['target_id_prefix', 'platform_name']
+        pt = PrettyTable(columns)
+        for col in columns:
+            pt.align[col] = 'l'
+
+        for target_id_prefix in sorted(self.manufacture_ids.keys()):
+            platform_name = self.manufacture_ids[target_id_prefix]
+            pt.add_row([target_id_prefix, platform_name])
+
+        return pt.get_string()
+
     def mock_read(self):
         """! Load mocking data from local file
         @return Curent mocking configuration (dictionary)
