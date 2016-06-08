@@ -34,6 +34,54 @@
     * [Log example](#log-example)
 * [End-to-end examples](#end-to-end-examples)
 
+# Installation
+
+`htrun` is redistributed with sources, as Python 2.7 compatible module called `mbed-host-tests` and command line tool called `mbedhtrun`.
+
+## Installation from PyPI (Python Package Index)
+`mbed-host-tests` module is redistributed via PyPI. We recommend you use the [application pip](https://pip.pypa.io/en/latest/installing.html#install-pip).
+
+**Note:** Python 2.7.9 onwards include ```pip``` by default, so you may have ```pip``` already.
+**Note:** `mbed-host-tests` module is redistributed with `mbed-greentea` module as a dependency. So if you've already installed Greentea `mbed-host-tests` should be there!
+
+To install mbed-ls from [PyPI](https://pypi.python.org/pypi/mbed-host-tests) use command:
+```
+$ pip install mbed-host-tests --upgrade
+```
+
+## Installation from Python sources
+To install the mbed test suite, first clone the `htrun` repository:
+```
+$ git clone https://github.com/ARMmbed/htrun.git
+```
+
+Change the directory to the `htrun` directory:
+```
+$ cd htrun
+```
+
+Now you are ready to install `htrun`:
+```
+$ python setup.py install
+```
+
+On Linux, if you have a problem with permissions, use `sudo`:
+```
+$ sudo python setup.py install
+```
+
+### Checking installation
+To check whether the installation was successful try running the ```mbedgt --help``` command and check that it returns information (you may need to restart your terminal first):
+```
+$ mbedhtrun --help
+Usage: mbedgt-script.py [options]
+
+Flash, reset and perform host supervised tests on mbed platforms
+
+Options:
+  -h, --help            show this help message and exit
+```
+
 # mbed-host-tests
 
 mbed's test suite (codenamed ```Greentea```) supports the *test supervisor* concept. This concept is realized by this module. ```mbed-host-tests``` is a collection of host tests. Host test is script written in Python, which is executed in parallel with the test suite runner (a binary running on the target hardware / device under test) to monitor the test execution's progress or to control the test flow (interaction with the mbed device under test - DUT). The host test is also responsible for grabbing the test result, or deducing it from the test runner's behavior.
