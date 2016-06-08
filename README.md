@@ -5,6 +5,10 @@
 # Table of contents
 
 * [Table of contents](#table-of-contents)
+* [Installation](#installation)
+  * [Installation from PyPI (Python Package Index)](#installation-from-pypi-python-package-index)
+  * [Installation from Python sources](#installation-from-python-sources)
+    * [Checking installation](#checking-installation)
 * [mbed-host-tests](#mbed-host-tests)
   * [Key-value protocol overview](#key-value-protocol-overview)
   * [Design draft](#design-draft)
