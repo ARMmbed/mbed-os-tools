@@ -31,6 +31,7 @@
     * [Command line usage](#command-line-usage)
       * [Executing all tests](#executing-all-tests)
       * [Cherry-pick tests](#cherry-pick-tests)
+      * [Cherry-pick group of tests](#cherry-pick-group-of-tests)
 * [Using Greentea with new targets](#using-greentea-with-new-targets)
   * [Greentea and yotta targets](#greentea-and-yotta-targets)
   * [Prototyping support](#prototyping-support)
@@ -625,6 +626,20 @@ $ mbedgt -V -n mbed-drivers-test-generic_tests -t K64F-ARM
 ```
 
 Note: you can use comman '`,`' to separate test names (switch `-n`) and build names (switch `-t`)
+
+#### Cherry-pick group of tests
+
+When using Greentea switch `-n` and putting `*` at the end of test suite name filter will run to filter in all test suite names starting with string before `*`.
+
+* Filter all tests with names starting with 'mbed-drivers-t', e.g.:
+```
+$ mbedgt -V -n mbed-drivers-t*
+```
+
+* Filter all tests with names starting with 'mbed-drivers-t' and test case `tests-mbed_drivers-rtc`
+```
+$ mbedgt -V -n mbed-drivers-t*,tests-mbed_drivers-rtc
+```
 
 # Using Greentea with new targets
 When prototyping or developing new port you will find yourself in a situation where your yotta modules are not published (especially targets) and you still want to use Greentea.
