@@ -17,7 +17,6 @@ limitations under the License.
 Author: Przemyslaw Wirkus <Przemyslaw.wirkus@arm.com>
 """
 
-
 def export_to_file(file_name, payload):
     """! Simple file dump used to store reports on disk
     @param file_name Report file name (with path if needed)
@@ -133,7 +132,6 @@ def exporter_testcase_text(test_result_ext, test_suite_properties=None):
         pt.align[col] = "l"
     pt.padding_width = 1 # One space between column edges and contents (default)
 
-    # ym_name = test_suite_properties.get('name', 'unknown')
     result_testcase_dict = {}   # Used to print test case results
 
     for target_name in sorted(test_result_ext):
@@ -183,16 +181,11 @@ def exporter_testcase_text(test_result_ext, test_suite_properties=None):
 def exporter_testcase_junit(test_result_ext, test_suite_properties=None):
     """! Export test results in JUnit XML compliant format
     @param test_result_ext Extended report from Greentea
-    @param test_suite_properties Data from yotta module.json file
+    @param test_spec Dictionary of test build names to test suite properties
     @details This function will import junit_xml library to perform report conversion
     @return String containing Junit XML formatted test result output
     """
     from junit_xml import TestSuite, TestCase
-
-    # Only check test suite properties if argument is valid
-    ym_name = 'unknown'
-    if test_suite_properties:
-        ym_name = test_suite_properties.get('name', 'unknown')
 
     test_suites = []
 
@@ -233,7 +226,7 @@ def exporter_testcase_junit(test_result_ext, test_suite_properties=None):
                 except UnicodeDecodeError as e:
                     print "exporter_testcase_junit:", str(e)
 
-                tc_class = ym_name + '.' + target_name + '.' + test_suite_name
+                tc_class = target_name + '.' + test_suite_name
                 tc = TestCase(tc_name, tc_class, duration, tc_stdout, tc_stderr)
                 
                 if result_text == 'FAIL':
@@ -243,8 +236,9 @@ def exporter_testcase_junit(test_result_ext, test_suite_properties=None):
 
                 test_cases.append(tc)
 
-            ts_name = ym_name + '.' + target_name
-            ts = TestSuite(ts_name, test_cases, properties=test_suite_properties)
+            ts_name = target_name
+            test_build_properties = test_suite_properties[target_name] if target_name in test_suite_properties else None
+            ts = TestSuite(ts_name, test_cases, properties=test_build_properties)
             test_suites.append(ts)
 
     return TestSuite.to_xml_string(test_suites)

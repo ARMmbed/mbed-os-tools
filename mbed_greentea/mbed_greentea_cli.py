@@ -28,6 +28,7 @@ from Queue import Queue
 from threading import Thread
 
 
+from mbed_greentea.mbed_test_api import get_test_build_properties
 from mbed_greentea.mbed_test_api import get_test_spec
 from mbed_greentea.mbed_test_api import run_host_test
 from mbed_greentea.mbed_test_api import log_mbed_devices_properties
@@ -42,7 +43,6 @@ from mbed_greentea.mbed_greentea_dlm import GREENTEA_KETTLE_PATH
 from mbed_greentea.mbed_greentea_dlm import greentea_get_app_sem
 from mbed_greentea.mbed_greentea_dlm import greentea_update_kettle
 from mbed_greentea.mbed_greentea_dlm import greentea_clean_kettle
-from mbed_greentea.mbed_yotta_api import get_test_suite_properties
 from mbed_greentea.mbed_greentea_hooks import GreenteaHooks
 from mbed_greentea.tests_spec import TestBinary
 from mbed_greentea.mbed_target_info import get_platform_property
@@ -768,7 +768,6 @@ def main_cli(opts, args, gt_instance_uuid=None):
                 status = TEST_RESULTS.index(single_test_result) if single_test_result in TEST_RESULTS else -1
                 if single_test_result != TEST_RESULT_OK:
                     test_exec_retcode += 1
-                continue
 
             test_list = test_build.get_tests()
 
@@ -887,8 +886,12 @@ def main_cli(opts, args, gt_instance_uuid=None):
         if opts.report_junit_file_name:
             gt_logger.gt_log("exporting to JUnit file '%s'..."% gt_logger.gt_bright(opts.report_junit_file_name))
             # This test specification will be used by JUnit exporter to populate TestSuite.properties (useful meta-data for Viewer)
-            junit_test_spec = test_spec if opts.test_spec else None
-            junit_report = exporter_testcase_junit(test_report, test_suite_properties = get_test_suite_properties(test_spec=junit_test_spec))
+            test_suite_properties = {}
+            for target_name in test_report:
+                test_build_properties = get_test_build_properties(test_spec, target_name)
+                if test_build_properties:
+                    test_suite_properties[target_name] = test_build_properties
+            junit_report = exporter_testcase_junit(test_report, test_suite_properties = test_suite_properties)
             with open(opts.report_junit_file_name, 'w') as f:
                 f.write(junit_report)
         if opts.report_text_file_name:

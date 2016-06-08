@@ -461,3 +461,15 @@ def get_test_spec(opts):
         gt_logger.gt_log_err("greentea should be run inside a Yotta module or --test-spec switch should be used.")
         return None, -1
     return test_spec, 0
+
+def get_test_build_properties(test_spec, test_build_name):
+    result = dict()
+    test_builds = test_spec.get_test_builds(filter_by_names=[test_build_name])
+    if test_builds:
+        test_build = test_builds[0]
+        result['name'] = test_build.get_name()
+        result['toolchain'] = test_build.get_toolchain()
+        result['target'] = test_build.get_platform()
+        return result
+    else:
+        return None
