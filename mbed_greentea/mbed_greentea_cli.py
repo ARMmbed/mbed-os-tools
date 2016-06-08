@@ -196,7 +196,7 @@ def main():
     parser.add_option("-S", "--skip-build",
                     action="store_true",
                     dest="skip_yotta_build",
-                    default=False,
+                    default=True,
                     help="Skip calling 'yotta build' on this module")
 
     copy_methods_str = "Plugin support: " + ', '.join(mbed_host_tests.host_tests_plugins.get_plugin_caps('CopyMethod'))
