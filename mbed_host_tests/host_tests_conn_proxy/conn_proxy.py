@@ -198,7 +198,7 @@ def conn_process(event_queue, dut_event_queue, prn_lock, config):
 
         # Send data to DUT
         try:
-            (key, value, _) = dut_event_queue.get(timeout=1)
+            (key, value, _) = dut_event_queue.get(block=False)
         except QueueEmpty:
             pass # Check if target sent something
         else:
