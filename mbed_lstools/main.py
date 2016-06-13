@@ -91,6 +91,12 @@ def cmd_parser_setup():
                       action="store_true",
                       help='Parser friendly verbose mode')
 
+    parser.add_option('-l', '--list',
+                      dest='list_platforms',
+                      default=False,
+                      action="store_true",
+                      help='List all platforms and corresponding TargetID values mapped by mbed-ls')
+
     parser.add_option('-m', '--mock',
                       dest='mock_platform',
                       help='Add locally manufacturers id and platform name. Example --mock=12B4:NEW_PLATFORM')
@@ -144,7 +150,7 @@ def cmd_parser_setup():
 def mbedls_main():
     """! Function used to drive CLI (command line interface) application
 
-    @return Function exits with successcode
+    @return Function exits with success code
 
     @details Function exits back to command line with ERRORLEVEL
     """
@@ -159,6 +165,10 @@ def mbedls_main():
 
     if not opts.skip_retarget:
         mbeds.retarget()
+
+    if opts.list_platforms:
+        print mbeds.list_manufacture_ids()
+        sys.exit(0)
 
     if opts.mock_platform:
         if opts.mock_platform == '*':
