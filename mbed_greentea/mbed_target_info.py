@@ -128,15 +128,6 @@ TARGET_TOOLCAHINS = {
     '-iar': 'IAR',
 }
 
-NOT_SUPPORTED_TESTS = [
-    "mbed-test-serial_interrupt",
-    "mbed-test-stl",
-    "mbed-test-sleep_timeout",
-    "mbed-test-blinky",
-    "mbed-test-heap_and_stack",
-    "mbed-test-cstring",
-]
-
 def get_mbed_target_call_yotta_target():
     """! Calls yotta's 'yotta target' command to get information about
     """
