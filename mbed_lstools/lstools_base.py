@@ -132,6 +132,7 @@ class MbedLsToolsBase:
         "1168": "LPC11U68",
         "1234": "UBLOX_C027",
         "1235": "UBLOX_C027",
+        "1236": "UBLOX_C029",
         "1300": "NUC472-NUTINY",
         "1301": "NUMBED",
         "1549": "LPC1549",
