@@ -144,6 +144,7 @@ class MbedLsToolsBase:
         "2020": "EFM32LG_STK3600",
         "2025": "EFM32TG_STK3300",
         "2030": "EFM32ZG_STK3200",
+        "2035": "EFM32PG_STK3401",
         "2100": "XBED_LPC1768",
         "2201": "WIZWIKI_W7500",
         "2202": "WIZWIKI_W7500ECO",
