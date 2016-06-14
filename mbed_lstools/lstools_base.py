@@ -157,7 +157,7 @@ class MbedLsToolsBase:
         "4500": "DELTA_DFCM_NNN40",
         "5000": "ARM_MPS2",
         "5001": "ARM_MPS2_M0",
-        "5003": "ARM_MPS2_M0P",
+        "5003": "ARM_BEETLE_SOC",
         "5005": "ARM_MPS2_M0DS",
         "5007": "ARM_MPS2_M1",
         "5009": "ARM_MPS2_M3",
