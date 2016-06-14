@@ -215,7 +215,7 @@ def init_host_test_cli_params():
     parser.add_option("-R", "--reset-timeout",
                       dest="forced_reset_timeout",
                       metavar="NUMBER",
-                      type="int",
+                      type="float",
                       help="When forcing a reset using option -r you can set up after reset idle delay in seconds")
 
     parser.add_option("-e", "--enum-host-tests",
