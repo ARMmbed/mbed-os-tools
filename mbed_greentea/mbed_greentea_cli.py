@@ -240,7 +240,7 @@ def main():
 
     parser.add_option('-m', '--map-target',
                     dest='map_platform_to_yt_target',
-                    help='List of custom mapping between platform name and yotta target. Comma separated list of PLATFORM:TARGET tuples')
+                    help='List of custom mapping between platform name and yotta target. Comma separated list of YOTTA_TARGET:PLATFORM tuples')
 
     parser.add_option('', '--use-tids',
                     dest='use_target_ids',
@@ -401,6 +401,7 @@ def run_test_thread(test_result_queue, test_queue, opts, mut, build, build_path,
         port = mut['serial_port']
         micro = mut['platform_name']
         program_cycle_s = get_platform_property(micro, "program_cycle_s")
+        forced_reset_timeout = get_platform_property(micro, "forced_reset_timeout")
         copy_method = opts.copy_method if opts.copy_method else 'shell'
         verbose = opts.verbose_test_result_only
         enum_host_tests_path = get_local_host_tests_dir(opts.enum_host_tests)
@@ -414,6 +415,7 @@ def run_test_thread(test_result_queue, test_queue, opts, mut, build, build_path,
                                          micro=micro,
                                          copy_method=copy_method,
                                          program_cycle_s=program_cycle_s,
+                                         forced_reset_timeout=forced_reset_timeout,
                                          digest_source=opts.digest_source,
                                          json_test_cfg=opts.json_test_configuration,
                                          enum_host_tests_path=enum_host_tests_path,

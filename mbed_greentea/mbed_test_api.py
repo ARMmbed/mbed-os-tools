@@ -107,6 +107,7 @@ def run_host_test(image_path,
                   verbose=False,
                   copy_method=None,
                   program_cycle_s=None,
+                  forced_reset_timeout=None,
                   digest_source=None,
                   json_test_cfg=None,
                   max_failed_properties=5,
@@ -222,6 +223,8 @@ def run_host_test(image_path,
     # Add extra parameters to host_test
     if program_cycle_s is not None:
         cmd += ["-C", str(program_cycle_s)]
+    if forced_reset_timeout:
+        cmd += ["-R", str(forced_reset_timeout)]
     if copy_method is not None:
         cmd += ["-c", copy_method]
     if micro is not None:

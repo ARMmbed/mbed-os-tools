@@ -345,7 +345,7 @@ def add_target_info_mapping(mbed_classic_name, map_platform_to_yt_target=None, u
 def get_mbed_clasic_target_info(mbed_classic_name, map_platform_to_yt_target=None, use_yotta_registry=False):
     """! Function resolves meta-data information about target given as mbed classic name.
     @param mbed_classic_name Mbed classic (mbed 2.0) name e.g. K64F, LPC1768 etc.
-    @param map_platform_to_yt_target User defined mapping platfrom:supported target
+    @param map_platform_to_yt_target User defined mapping platform:supported target
     @details Function first updated TARGET_INFO_MAPPING structure and later checks if mbed classic name is available in mapping structure
     @return Returns information about yotta target for specific toolchain
     """
@@ -359,16 +359,22 @@ def get_binary_type_for_platform(platform):
     :param platform:
     :return:
     """
-    return TARGET_INFO_MAPPING[platform]['properties']["binary_type"]
-
+    #return TARGET_INFO_MAPPING[platform]['properties']["binary_type"]
+    return get_platform_property(platform, 'binary_type')
 
 def get_platform_property(platform, property):
     """
     Gives platform property.
 
     :param platform:
-    :return: property value, None if propery not found
+    :return: property value, None if property not found
     """
+
+    # First load from targets.json if available
+    value_from_targets_json = get_platform_property_from_targets(platform, property)
+    if value_from_targets_json:
+        return value_from_targets_json
+
     # Check if info is available for a specific platform
     if platform in TARGET_INFO_MAPPING:
         if property in TARGET_INFO_MAPPING[platform]['properties']:
@@ -380,3 +386,28 @@ def get_platform_property(platform, property):
             return TARGET_INFO_MAPPING['default'][property]
 
     return None
+
+def get_platform_property_from_targets(platform, property):
+    """
+    Load properties from targets.json file somewhere in the project structure
+
+    :param platform:
+    :return: property value, None if property not found
+    """
+
+    result = None
+    targets_json_path = ['./mbed-os/mbed/hal/targets.json',
+                         './mbed/hal/targets.json']
+
+    for targets_path in targets_json_path:
+        try:
+            with open(targets_path, 'r') as f:
+                targets = json.load(f)
+                # Load property from targets.json
+                if platform in targets:
+                    if property in targets[platform]:
+                        result = targets[platform][property]
+        except Exception as e:
+            continue
+
+    return result
