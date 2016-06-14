@@ -37,6 +37,7 @@ class SerialConnectorPrimitive(object):
         self.LAST_ERROR = None
         self.target_id = self.config.get('target_id', None)
         self.serial_pooling = config.get('serial_pooling', 60)
+        self.forced_reset_timeout = config.get('forced_reset_timeout', 1)
 
         # Values used to call serial port listener...
         self.logger.prn_inf("serial(port=%s, baudrate=%d, timeout=%s)"% (self.port, self.baudrate, self.timeout))
@@ -63,7 +64,7 @@ class SerialConnectorPrimitive(object):
                 str(e))
             self.logger.prn_err(str(e))
         else:
-            self.reset_dev_via_serial()
+            self.reset_dev_via_serial(delay=self.forced_reset_timeout)
 
     def reset_dev_via_serial(self, delay=1):
         """! Reset device using selected method, calls one of the reset plugins """
@@ -79,8 +80,10 @@ class SerialConnectorPrimitive(object):
             disk=disk,
             target_id=self.target_id)
         # Post-reset sleep
+        if delay:
+            self.logger.prn_inf("waiting %.2f sec after reset"% delay)
+            sleep(delay)
         self.logger.prn_inf("wait for it...")
-        sleep(delay)
         return result
 
     def read(self, count):

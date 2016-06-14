@@ -143,7 +143,8 @@ class DefaultTestSelector(DefaultTestSelectorBase):
                 "program_cycle_s" : self.options.program_cycle_s,
                 "reset_type" : self.options.forced_reset_type,
                 "target_id" : self.options.target_id,
-                "serial_pooling" : self.options.pooling_timeout
+                "serial_pooling" : self.options.pooling_timeout,
+                "forced_reset_timeout" : self.options.forced_reset_timeout
             }
             # DUT-host communication process
             args = (event_queue, dut_event_queue, self.prn_lock, config)
