@@ -240,7 +240,7 @@ def main():
 
     parser.add_option('-m', '--map-target',
                     dest='map_platform_to_yt_target',
-                    help='List of custom mapping between platform name and yotta target. Comma separated list of PLATFORM:TARGET tuples')
+                    help='List of custom mapping between platform name and yotta target. Comma separated list of YOTTA_TARGET:PLATFORM tuples')
 
     parser.add_option('', '--use-tids',
                     dest='use_target_ids',

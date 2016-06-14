@@ -33,6 +33,7 @@ from mbed_greentea.mbed_greentea_log import gt_logger
 TARGET_INFO_MAPPING = {
     "default" : {
         "program_cycle_s": 4,
+        "forced_reset_timeout": 1,
         "binary_type": ".bin",
         "copy_method": "default",
         "reset_method": "default"
@@ -359,8 +360,8 @@ def get_binary_type_for_platform(platform):
     :param platform:
     :return:
     """
-    return TARGET_INFO_MAPPING[platform]['properties']["binary_type"]
-
+    #return TARGET_INFO_MAPPING[platform]['properties']["binary_type"]
+    return get_platform_property(platform, 'binary_type')
 
 def get_platform_property(platform, property):
     """
