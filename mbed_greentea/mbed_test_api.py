@@ -159,12 +159,13 @@ def run_host_test(image_path,
         """
         try:
             binary_path_norm = os.path.normpath(binary_path)
-            # Finding path to binary tests group
-            # From: "...\\.build\\tests\\K64F\\GCC_ARM\\TESTS\\mbedmicro-net\\udp_echo_client\\TESTS-mbedmicro-net-udp_echo_client.bin"
-            # To:   ".\\TESTS\\mbedmicro-net\\host_tests" or
-            # To:   ".\\TESTS\\host_tests"
-            host_tests_path = ['.'] + binary_path_norm.split(os.sep)[-4:-level] + ['host_tests']
-            host_tests_path = os.path.join(*host_tests_path)
+            current_path_norm = os.path.normpath(os.getcwd())
+            host_tests_path = binary_path_norm.split(os.sep)[:-level] + ['host_tests']
+
+            idx = host_tests_path.index('.build')
+            # Cut /.build/tests/TOOLCHAIN/TARGET
+            host_tests_path = host_tests_path[:idx] + host_tests_path[idx+4:]
+            host_tests_path = os.sep.join(host_tests_path)
         except Exception as e:
             gt_logger.gt_log_warn("there was a problem while looking for host_tests directory")
             gt_logger.gt_log_tab("level %d, path: %s"% (level, binary_path))
