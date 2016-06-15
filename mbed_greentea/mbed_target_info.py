@@ -398,7 +398,7 @@ def get_platform_property_from_targets(platform, property):
     result = None
     targets_json_path = [
         './mbed-os/core/hal/targets.json',
-        './mbed/core/targets.json'
+        './core/hal/targets.json',
         './mbed-os/mbed/hal/targets.json',
         './mbed/hal/targets.json']
 
@@ -410,6 +410,7 @@ def get_platform_property_from_targets(platform, property):
                 if platform in targets:
                     if property in targets[platform]:
                         result = targets[platform][property]
+                        break
         except Exception:
             continue
     return result
