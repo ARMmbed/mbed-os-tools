@@ -165,6 +165,8 @@ def conn_process(event_queue, dut_event_queue, prn_lock, config):
     port = config.get('port')
     baudrate = config.get('baudrate')
     serial_pooling = int(config.get('serial_pooling', 60))
+    sync_behavior = int(config.get('sync_behavior', 1))
+    sync_timeout = config.get('sync_timeout', 1.0)
 
     # Notify event queue we will wait additional time for serial port to be ready
     logger.prn_inf("notify event queue about extra %d sec timeout for serial port pooling"%serial_pooling)
@@ -177,7 +179,9 @@ def conn_process(event_queue, dut_event_queue, prn_lock, config):
         config=config)
 
     kv_buffer = KiViBufferWalker()
-    sync_uuid = str(uuid.uuid4())
+
+    # List of all sent to target UUIDs (if multiple found)
+    sync_uuid_list = []
 
     # We will ignore all kv pairs before we get sync back
     sync_uuid_discovered = False
@@ -185,11 +189,26 @@ def conn_process(event_queue, dut_event_queue, prn_lock, config):
     # Some RXD data buffering so we can show more text per log line
     print_data = str()
 
-    # Handshake, we will send {{sync;UUID}} preamble and wait for mirrored reply
-    logger.prn_inf("sending preamble '%s'..."% sync_uuid)
-    connector.write("mbed" * 10, log=True)
-    connector.write_kv('__sync', sync_uuid)
+    def __send_sync(sync_uuid=None):
+        if not sync_uuid:
+            sync_uuid = str(uuid.uuid4())
+        # Handshake, we will send {{sync;UUID}} preamble and wait for mirrored reply
+        logger.prn_inf("sending preamble '%s'..."% sync_uuid)
+        connector.write_kv('__sync', sync_uuid)
+        return sync_uuid
 
+    # Send simple string to device to 'wake up' greentea-client k-v parser
+    connector.write("mbed" * 10, log=True)
+
+    if sync_behavior > 0:
+        sync_uuid_list.append(__send_sync())
+    elif sync_behavior == 0:
+        logger.prn_inf("skipping __sync packet (specified with --sync=%s)"% sync_behavior)
+    else:
+        logger.prn_inf("sending multiple __sync packets (specified with --sync=%s)"% sync_behavior)
+        sync_uuid_list.append(__send_sync())
+
+    loop_timer = time()
     while True:
 
         # Check if connection is lost to serial
@@ -242,13 +261,24 @@ def conn_process(event_queue, dut_event_queue, prn_lock, config):
                     logger.prn_inf("found KV pair in stream: {{%s;%s}}, queued..."% (key, value))
                 else:
                     if key == '__sync':
-                        if value == sync_uuid:
+                        if value in sync_uuid_list:
                             sync_uuid_discovered = True
                             event_queue.put((key, value, time()))
-                            logger.prn_inf("found SYNC in stream: {{%s;%s}}, queued..."% (key, value))
+                            idx = sync_uuid_list.index(value)
+                            logger.prn_inf("found SYNC in stream: {{%s;%s}} it is #%d sent, queued..."% (key, value, idx))
                         else:
                             logger.prn_err("found faulty SYNC in stream: {{%s;%s}}, ignored..."% (key, value))
                     else:
                         logger.prn_wrn("found KV pair in stream: {{%s;%s}}, ignoring..."% (key, value))
+
+        if not sync_uuid_discovered:
+            # Resending __sync after 'sync_timeout' secs (default 1 sec)
+            # to target platform
+            time_to_sync_again = time() - loop_timer
+            
+            
+            if time_to_sync_again > sync_timeout:
+                sync_uuid_list.append(__send_sync())
+                loop_timer = time()
 
     return 0

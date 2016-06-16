@@ -188,6 +188,13 @@ def init_host_test_cli_params():
                       help="Unique Target Id or mbed platform",
                       metavar="TARGET_ID")
 
+    parser.add_option("", "--sync",
+                      dest="sync_behavior",
+                      default=2,
+                      type=int,
+                      help="Define how many times __sync packet will be sent to device: 0: none; -1: forever; 1,2,3... - number of times (Default 2 time)",
+                      metavar="SYNC_BEHAVIOR")
+
     parser.add_option("-f", "--image-path",
                       dest="image_path",
                       help="Path with target's binary image",
