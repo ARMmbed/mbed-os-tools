@@ -189,16 +189,28 @@ def conn_process(event_queue, dut_event_queue, prn_lock, config):
     # Some RXD data buffering so we can show more text per log line
     print_data = str()
 
-    def __send_sync(sync_uuid=None):
-        if not sync_uuid:
-            sync_uuid = str(uuid.uuid4())
+    def __send_sync(timeout=None):
+        sync_uuid = str(uuid.uuid4())
         # Handshake, we will send {{sync;UUID}} preamble and wait for mirrored reply
-        logger.prn_inf("sending preamble '%s'..."% sync_uuid)
+        if timeout:
+            logger.prn_inf("resending new preamble '%s' after %0.2f sec"% (sync_uuid, timeout))
+        else:
+            logger.prn_inf("sending preamble '%s'"% sync_uuid)
         connector.write_kv('__sync', sync_uuid)
         return sync_uuid
 
     # Send simple string to device to 'wake up' greentea-client k-v parser
     connector.write("mbed" * 10, log=True)
+
+    # Sync packet management allows us to manipulate the way htrun sends __sync packet(s)
+    # With current settings we can force on htrun to send __sync packets in this manner:
+    #
+    # * --sync=0        - No sync packets will be sent to target platform
+    # * --sync=-10      - __sync packets will be sent unless we will reach
+    #                     timeout or proper response is sent from target platform
+    # * --sync=N        - Send up to N __sync packets to target platform. Response
+    #                     is sent unless we get response from target platform or
+    #                     timeout occur
 
     if sync_behavior > 0:
         # Sending up to 'n' __sync packets
@@ -279,12 +291,15 @@ def conn_process(event_queue, dut_event_queue, prn_lock, config):
 
         if not sync_uuid_discovered:
             # Resending __sync after 'sync_timeout' secs (default 1 sec)
-            # to target platform
-            
+            # to target platform. If 'sync_behavior' counter is != 0 we
+            # will continue to send __sync packets to target platform.
+            # If we specify 'sync_behavior' < 0 we will send 'forever'
+            # (or until we get reply)
+
             if sync_behavior != 0:
                 time_to_sync_again = time() - loop_timer
                 if time_to_sync_again > sync_timeout:
-                    sync_uuid_list.append(__send_sync())
+                    sync_uuid_list.append(__send_sync(timeout=time_to_sync_again))
                     sync_behavior -= 1
                     loop_timer = time()
 
