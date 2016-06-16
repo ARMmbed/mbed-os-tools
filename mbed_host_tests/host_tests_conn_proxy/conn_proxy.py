@@ -201,12 +201,18 @@ def conn_process(event_queue, dut_event_queue, prn_lock, config):
     connector.write("mbed" * 10, log=True)
 
     if sync_behavior > 0:
+        # Sending up to 'n' __sync packets
+        logger.prn_inf("sending up to %s __sync packets (specified with --sync=%s)"% (sync_behavior, sync_behavior))
         sync_uuid_list.append(__send_sync())
+        sync_behavior -= 1
     elif sync_behavior == 0:
-        logger.prn_inf("skipping __sync packet (specified with --sync=%s)"% sync_behavior)
+        # No __sync packets
+        logger.prn_wrn("skipping __sync packet (specified with --sync=%s)"% sync_behavior)
     else:
+        # Send __sync until we go reply
         logger.prn_inf("sending multiple __sync packets (specified with --sync=%s)"% sync_behavior)
         sync_uuid_list.append(__send_sync())
+        sync_behavior -= 1
 
     loop_timer = time()
     while True:
@@ -274,11 +280,12 @@ def conn_process(event_queue, dut_event_queue, prn_lock, config):
         if not sync_uuid_discovered:
             # Resending __sync after 'sync_timeout' secs (default 1 sec)
             # to target platform
-            time_to_sync_again = time() - loop_timer
             
-            
-            if time_to_sync_again > sync_timeout:
-                sync_uuid_list.append(__send_sync())
-                loop_timer = time()
+            if sync_behavior != 0:
+                time_to_sync_again = time() - loop_timer
+                if time_to_sync_again > sync_timeout:
+                    sync_uuid_list.append(__send_sync())
+                    sync_behavior -= 1
+                    loop_timer = time()
 
     return 0
