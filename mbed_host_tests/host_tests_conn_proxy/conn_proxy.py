@@ -26,6 +26,38 @@ from mbed_host_tests.host_tests_plugins.host_test_plugins import HostTestPluginB
 from conn_proxy_logger import HtrunLogger
 
 
+class ConnectorPrimitive(object):
+
+    def __init__(self, name, prn_lock):
+        self.LAST_ERROR = None
+        self.prn_lock = prn_lock
+        self.logger = HtrunLogger(prn_lock, name)
+
+    def write_kv(self, key, value):
+        kv_buff = "{{%s;%s}}\n"% (key, value)
+        self.write(kv_buff)
+        self.logger.prn_txd(kv_buff)
+        return kv_buff
+
+    def read(self, count):
+        raise NotImplementedError
+
+    def write(self, payload, log=False):
+        raise NotImplementedError
+
+    def flush(self):
+        raise NotImplementedError
+
+    def connected(self):
+        raise NotImplementedError
+
+    def error(self):
+        raise NotImplementedError
+
+    def finish(self):
+        raise NotImplementedError
+
+
 class SerialConnectorPrimitive(object):
     def __init__(self, port, baudrate, prn_lock, config):
         self.port = port
