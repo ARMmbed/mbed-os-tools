@@ -173,6 +173,46 @@ class GreenteaFilteredTestList(unittest.TestCase):
         self.assertEqual(len(expected), len(filtered_ctest_test_list))
         self.assertEqual(set(filtered_ctest_test_list.keys()), set(expected))
 
+    def test_prefix_filter_merge_n_and_i(self):
+        self.test_by_names='mbed-drivers-test-ticker_2,mbed-drivers-test-ticker_3,mbed-drivers-test-rtc,mbed-drivers-test-ticker'
+        self.skip_test = 'mbed-drivers-test-ticker_3'
+        filtered_ctest_test_list = mbed_greentea_cli.create_filtered_test_list(self.ctest_test_list_mbed_drivers,
+                                                                               self.test_by_names,
+                                                                               self.skip_test)
+
+        expected = ['mbed-drivers-test-ticker',
+                    'mbed-drivers-test-ticker_2',
+                    'mbed-drivers-test-rtc']
+        self.assertEqual(len(expected), len(filtered_ctest_test_list))
+        self.assertEqual(set(filtered_ctest_test_list.keys()), set(expected))
+
+    def test_prefix_filter_merge_n_and_i_repeated(self):
+        self.test_by_names='mbed-drivers-test-ticker_2,mbed-drivers-test-ticker_3,mbed-drivers-test-rtc,mbed-drivers-test-ticker'
+        self.skip_test = 'mbed-drivers-test-ticker_3,mbed-drivers-test-ticker_3'
+        filtered_ctest_test_list = mbed_greentea_cli.create_filtered_test_list(self.ctest_test_list_mbed_drivers,
+                                                                               self.test_by_names,
+                                                                               self.skip_test)
+
+        expected = ['mbed-drivers-test-ticker',
+                    'mbed-drivers-test-ticker_2',
+                    'mbed-drivers-test-rtc']
+        self.assertEqual(len(expected), len(filtered_ctest_test_list))
+        self.assertEqual(set(filtered_ctest_test_list.keys()), set(expected))
+
+    def test_prefix_filter_merge_n_and_i_missing(self):
+        self.test_by_names='mbed-drivers-test-ticker_2,mbed-drivers-test-ticker_3,mbed-drivers-test-rtc,mbed-drivers-test-ticker'
+        self.skip_test = 'mbed-drivers-test-ticker_XXX'
+        filtered_ctest_test_list = mbed_greentea_cli.create_filtered_test_list(self.ctest_test_list_mbed_drivers,
+                                                                               self.test_by_names,
+                                                                               self.skip_test)
+
+        expected = ['mbed-drivers-test-ticker',
+                    'mbed-drivers-test-ticker_2',
+                    'mbed-drivers-test-ticker_3',
+                    'mbed-drivers-test-rtc']
+        self.assertEqual(len(expected), len(filtered_ctest_test_list))
+        self.assertEqual(set(filtered_ctest_test_list.keys()), set(expected))
+
 
 if __name__ == '__main__':
     unittest.main()

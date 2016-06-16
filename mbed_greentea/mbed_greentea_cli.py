@@ -110,42 +110,44 @@ def create_filtered_test_list(ctest_test_list, test_by_names, skip_test, test_sp
         @result Set with names of test names starting with 'prefix_name'
         """
         result = list()
-        print
         for test_name in test_case_name_list:
             if test_name.startswith(prefix_name):
                 result.append(test_name)
-        return result
+        return sorted(result)
 
     filtered_ctest_test_list = ctest_test_list
     test_list = None
     invalid_test_names = []
     if filtered_ctest_test_list is None:
         return {}
-    elif test_by_names:
+
+    if test_by_names:
         filtered_ctest_test_list = {}   # Subset of 'ctest_test_list'
         test_list = test_by_names.split(',')
         gt_logger.gt_log("test case filter (specified with -n option)")
 
-        for test_name in test_list:
+        for test_name in set(test_list):
             if test_name.endswith('*'):
                 # This 'star-sufix' filter allows users to filter tests with fixed prefixes
                 # Example: -n 'TESTS-mbed_drivers* will filter all test cases with name starting with 'TESTS-mbed_drivers'
                 for test_name_filtered in filter_names_by_prefix(ctest_test_list.keys(), test_name[:-1]):
+                    gt_logger.gt_log_tab("test filtered in '%s'"% gt_logger.gt_bright(test_name_filtered))
                     filtered_ctest_test_list[test_name_filtered] = ctest_test_list[test_name_filtered]
             elif test_name not in ctest_test_list:
                 invalid_test_names.append(test_name)
             else:
                 gt_logger.gt_log_tab("test filtered in '%s'"% gt_logger.gt_bright(test_name))
                 filtered_ctest_test_list[test_name] = ctest_test_list[test_name]
-    elif skip_test:
+
+    if skip_test:
         test_list = skip_test.split(',')
         gt_logger.gt_log("test case filter (specified with -i option)")
 
-        for test_name in test_list:
+        for test_name in set(test_list):
             if test_name not in ctest_test_list:
                 invalid_test_names.append(test_name)
             else:
-                gt_logger.gt_log_tab("test '%s' skipped"% gt_logger.gt_bright(test_name))
+                gt_logger.gt_log_tab("test filtered out '%s'"% gt_logger.gt_bright(test_name))
                 del filtered_ctest_test_list[test_name]
 
     if invalid_test_names:
@@ -166,6 +168,7 @@ def create_filtered_test_list(ctest_test_list, test_by_names, skip_test, test_sp
             list_binaries_for_builds(test_spec)
         else:
             list_binaries_for_targets()
+
     return filtered_ctest_test_list
 
 
