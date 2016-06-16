@@ -26,15 +26,46 @@ from mbed_host_tests.host_tests_plugins.host_test_plugins import HostTestPluginB
 from conn_proxy_logger import HtrunLogger
 
 
-class SerialConnectorPrimitive(object):
-    def __init__(self, port, baudrate, prn_lock, config):
+class ConnectorPrimitive(object):
+
+    def __init__(self, name, prn_lock):
+        self.LAST_ERROR = None
+        self.prn_lock = prn_lock
+        self.logger = HtrunLogger(prn_lock, name)
+
+    def write_kv(self, key, value):
+        kv_buff = "{{%s;%s}}\n"% (key, value)
+        self.write(kv_buff)
+        self.logger.prn_txd(kv_buff)
+        return kv_buff
+
+    def read(self, count):
+        raise NotImplementedError
+
+    def write(self, payload, log=False):
+        raise NotImplementedError
+
+    def flush(self):
+        raise NotImplementedError
+
+    def connected(self):
+        raise NotImplementedError
+
+    def error(self):
+        raise NotImplementedError
+
+    def finish(self):
+        raise NotImplementedError
+
+
+class SerialConnectorPrimitive(ConnectorPrimitive):
+    def __init__(self, name, port, baudrate, prn_lock, config):
+        ConnectorPrimitive.__init__(self, name, prn_lock)
         self.port = port
         self.baudrate = int(baudrate)
         self.timeout = 0
         self.prn_lock = prn_lock
         self.config = config
-        self.logger = HtrunLogger(prn_lock, 'SERI')
-        self.LAST_ERROR = None
         self.target_id = self.config.get('target_id', None)
         self.serial_pooling = config.get('serial_pooling', 60)
         self.forced_reset_timeout = config.get('forced_reset_timeout', 1)
@@ -111,12 +142,6 @@ class SerialConnectorPrimitive(object):
             self.logger.prn_err(str(e))
         return payload
 
-    def write_kv(self, key, value):
-        kv_buff = "{{%s;%s}}\n"% (key, value)
-        self.write(kv_buff)
-        self.logger.prn_txd(kv_buff)
-        return kv_buff
-
     def flush(self):
         if self.serial:
             self.serial.flush()
@@ -173,7 +198,9 @@ def conn_process(event_queue, dut_event_queue, prn_lock, config):
     event_queue.put(('__timeout', serial_pooling, time()))
 
     logger.prn_inf("initializing serial port listener... ")
-    connector = SerialConnectorPrimitive(port,
+    connector = SerialConnectorPrimitive(
+        'SERI',
+        port,
         baudrate,
         prn_lock,
         config=config)
