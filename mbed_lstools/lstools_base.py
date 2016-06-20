@@ -88,7 +88,7 @@ class MbedLsToolsBase:
         "0775": "NUCLEO_F303K8",
         "0777": "NUCLEO_F446RE",
         "0778": "NUCLEO_F446ZE",
-        "0780": "ST_PLACEHOLDER",
+        "0780": "NUCLEO_L011K4",
         "0785": "NUCLEO_F042K6",
         "0788": "DISCO_F469NI",
         "0790": "NUCLEO_L031K6",
