@@ -124,6 +124,7 @@ class MbedLsToolsBase:
         "1090": "RBLAB_NRF51822",
         "1095": "RBLAB_BLENANO",
         "1100": "NRF51_DK",
+        "1101": "NRF52_DK",
         "1105": "NRF51_DK_OTA",
         "1114": "LPC1114",
         "1120": "NRF51_DONGLE",
