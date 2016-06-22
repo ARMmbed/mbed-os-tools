@@ -28,10 +28,9 @@ from conn_proxy_logger import HtrunLogger
 
 class ConnectorPrimitive(object):
 
-    def __init__(self, name, prn_lock):
+    def __init__(self, name):
         self.LAST_ERROR = None
-        self.prn_lock = prn_lock
-        self.logger = HtrunLogger(prn_lock, name)
+        self.logger = HtrunLogger(name)
 
     def write_kv(self, key, value):
         kv_buff = "{{%s;%s}}\n"% (key, value)
@@ -59,12 +58,11 @@ class ConnectorPrimitive(object):
 
 
 class SerialConnectorPrimitive(ConnectorPrimitive):
-    def __init__(self, name, port, baudrate, prn_lock, config):
-        ConnectorPrimitive.__init__(self, name, prn_lock)
+    def __init__(self, name, port, baudrate, config):
+        ConnectorPrimitive.__init__(self, name)
         self.port = port
         self.baudrate = int(baudrate)
         self.timeout = 0
-        self.prn_lock = prn_lock
         self.config = config
         self.target_id = self.config.get('target_id', None)
         self.serial_pooling = config.get('serial_pooling', 60)
@@ -182,9 +180,9 @@ class KiViBufferWalker():
         return (key, value, time())
 
 
-def conn_process(event_queue, dut_event_queue, prn_lock, config):
+def conn_process(event_queue, dut_event_queue, config):
 
-    logger = HtrunLogger(prn_lock, 'CONN')
+    logger = HtrunLogger('CONN')
     logger.prn_inf("starting serial connection process...")
 
     port = config.get('port')
@@ -202,7 +200,6 @@ def conn_process(event_queue, dut_event_queue, prn_lock, config):
         'SERI',
         port,
         baudrate,
-        prn_lock,
         config=config)
 
     kv_buffer = KiViBufferWalker()

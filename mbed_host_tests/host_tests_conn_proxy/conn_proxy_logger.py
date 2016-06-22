@@ -18,54 +18,33 @@ limitations under the License.
 
 
 import sys
+import logging
 from time import time
 
 
 class HtrunLogger(object):
     """! Yet another logger flavour """
-    def __init__(self, prn_lock, name):
-        self.__prn_lock = prn_lock
-        self.__name = name
-
-    def __prn_func(self, text, nl=True):
-        """! Prints and flushes data to stdout """
-        with self.__prn_lock:
-            if nl and not text.endswith('\n'):
-                text += '\n'
-            sys.stdout.write(text)
-            sys.stdout.flush()
-
-    def __prn_log_human(self, level, text, timestamp=None):
-        if not timestamp:
-            timestamp = time()
-        timestamp_str = strftime("%y-%m-%d %H:%M:%S", gmtime(timestamp))
-        frac, whole = modf(timestamp)
-        s = "[%s.%d][%s][%s] %s"% (timestamp_str, frac, self.__name, level, text)
-        self.__prn_func(s, nl=True)
-
-    def __prn_log(self, level, text, timestamp=None):
-        if not timestamp:
-            timestamp = time()
-        s = "[%.2f][%s][%s] %s"% (timestamp, self.__name, level, text)
-        self.__prn_func(s, nl=True)
+    def __init__(self, name):
+        logging.basicConfig(stream=sys.stdout,format='[%(created).2f][%(name)s][%(logger_level)s] %(message)s', level=logging.DEBUG)
+        self.logger = logging.getLogger(name)
 
     def prn_dbg(self, text, timestamp=None):
-        self.__prn_log('DBG', text, timestamp)
+        self.logger.debug(text, extra={'logger_level': 'DBG'})
 
     def prn_wrn(self, text, timestamp=None):
-        self.__prn_log('WRN', text, timestamp)
+        self.logger.debug(text, extra={'logger_level': 'WRN'})
 
     def prn_err(self, text, timestamp=None):
-        self.__prn_log('ERR', text, timestamp)
+        self.logger.debug(text, extra={'logger_level': 'ERR'})
 
     def prn_inf(self, text, timestamp=None):
-        self.__prn_log('INF', text, timestamp)
+        self.logger.debug(text, extra={'logger_level': 'INF'})
 
     def prn_txt(self, text, timestamp=None):
-        self.__prn_log('TXT', text, timestamp)
+        self.logger.debug(text, extra={'logger_level': 'TXT'})
 
     def prn_txd(self, text, timestamp=None):
-        self.__prn_log('TXD', text, timestamp)
+        self.logger.debug(text, extra={'logger_level': 'TXD'})
 
     def prn_rxd(self, text, timestamp=None):
-        self.__prn_log('RXD', text, timestamp)
+        self.logger.debug(text, extra={'logger_level': 'RXD'})

@@ -44,8 +44,7 @@ class DefaultTestSelector(DefaultTestSelectorBase):
         """
         self.options = options
 
-        self.prn_lock = Lock()
-        self.logger = HtrunLogger(self.prn_lock, 'HTST')
+        self.logger = HtrunLogger('HTST')
 
         # Handle extra command from
         if options:
@@ -148,7 +147,7 @@ class DefaultTestSelector(DefaultTestSelectorBase):
                 "sync_behavior" : self.options.sync_behavior
             }
             # DUT-host communication process
-            args = (event_queue, dut_event_queue, self.prn_lock, config)
+            args = (event_queue, dut_event_queue, config)
             p = Process(target=conn_process, args=args)
             p.deamon = True
             p.start()
