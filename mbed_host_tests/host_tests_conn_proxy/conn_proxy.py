@@ -33,7 +33,7 @@ class ConnectorPrimitive(object):
         self.logger = HtrunLogger(name)
 
     def write_kv(self, key, value):
-        kv_buff = "{{%s;%s}}\n"% (key, value)
+        kv_buff = "{{%s;%s}}"% (key, value)
         self.write(kv_buff)
         self.logger.prn_txd(kv_buff)
         return kv_buff
