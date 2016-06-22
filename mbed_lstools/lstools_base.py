@@ -484,7 +484,7 @@ class MbedLsToolsBase:
         return result
 
     def get_mbed_htm_comment_section_ver_build(self, line):
-        """! Check for Version and Build date of interface chip firmware
+        """! Check for Version and Build date of interface chip firmware im mbed.htm file
         @return (version, build) tuple if successful, None if no info found
         """
         # <!-- Version: 0200 Build: Mar 26 2014 13:22:20 -->
@@ -499,15 +499,17 @@ class MbedLsToolsBase:
             version_str, build_str = m.groups()
             return (version_str.strip(), build_str.strip())
 
+        # <!-- Version: 0.14.3. build 471 -->
+        m = re.search(r'^<!-- Version: ([\d+\.]+)\. build (\d+) -->', line)
+        if m:
+            version_str, build_str = m.groups()
+            return (version_str.strip(), build_str.strip())
         return None
 
     def get_mbed_htm(self, mount_point):
-        """!
-        <!-- mbed Microcontroller Website and Authentication Shortcut -->
-        <!-- Version: 0200 Build: Mar 26 2014 13:22:20 -->
-        <html>
-        ...
-        </html>
+        """! Check for version, build date/timestamp, URL in mbed.htm file
+        @param mount_point Where to look for mbed.htm file
+        @return Dictoionary with additional DAPlink names
         """
         result = {}
         for line in self.get_mbed_htm_lines(mount_point):

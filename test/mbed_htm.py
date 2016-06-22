@@ -94,6 +94,10 @@ class ParseMbedHTMTestCase(unittest.TestCase):
         self.assertIsNotNone(ver_bld)
         self.assertEqual(('0219', 'Feb  2 2016 15:20:54'), ver_bld)
 
+        ver_bld = self.mbeds.get_mbed_htm_comment_section_ver_build('<!-- Version: 0.14.3. build 471 -->')
+        self.assertIsNotNone(ver_bld)
+        self.assertEqual(('0.14.3', '471'), ver_bld)
+
     def test_(self):
         pass
 
