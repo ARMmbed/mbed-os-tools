@@ -483,6 +483,24 @@ class MbedLsToolsBase:
                 return target_id
         return result
 
+    def get_mbed_htm_comment_section_ver_build(self, line):
+        """! Check for Version and Build date of interface chip firmware
+        @return (version, build) tuple if successful, None if no info found
+        """
+        # <!-- Version: 0200 Build: Mar 26 2014 13:22:20 -->
+        m = re.search(r'^<!-- Version: (\d+) Build: ([\d\w: ]+) -->', line)
+        if m:
+            version_str, build_str = m.groups()
+            return (version_str.strip(), build_str.strip())
+
+        # <!-- Version: 0219 Build: Feb  2 2016 15:20:54 Git Commit SHA: 0853ba0cdeae2436c52efcba0ba76a6434c200ff Git local mods:No-->
+        m = re.search(r'^<!-- Version: (\d+) Build: ([\d\w: ]+) Git Commit SHA', line)
+        if m:
+            version_str, build_str = m.groups()
+            return (version_str.strip(), build_str.strip())
+
+        return None
+
     def get_mbed_htm(self, mount_point):
         """!
         <!-- mbed Microcontroller Website and Authentication Shortcut -->
@@ -494,11 +512,9 @@ class MbedLsToolsBase:
         result = {}
         for line in self.get_mbed_htm_lines(mount_point):
             # Check for Version and Build date of interface chip firmware
-            m = re.search(r'^<!-- Version: (\d+) Build: ([\d\w: ]+) -->', line)
-            if m:
-                version_str, build_str = m.groups()
-                result['Version'] = version_str.strip()
-                result['Build'] = build_str.strip()
+            ver_bld = self.get_mbed_htm_comment_section_ver_build(line)
+            if ver_bld:
+                result['version'], result['build'] = ver_bld
 
             # Check for mbed URL
             m = re.search(r'url=([\w\d\:/\\\?\.=-_]+)', line)
