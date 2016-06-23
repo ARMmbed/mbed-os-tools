@@ -112,7 +112,7 @@ Key-value protocol was developed and is used to provide communication layer betw
 ## Design draft
 * Simple key-value protocol is introduced. It is used to communicate between DUT and host. Protocol main features:
 * Protocol introduced is master-slave protocol, where master is host and slave is device under test.
-* Transport layer consist of simple ```{{KEY;VALUE}}}``` messages sent by slave (DUT). Both key and value are strings with allowed character set limitations (to simplify parsing and protocol parser itself).
+* Transport layer consist of simple ```{{ KEY ; VALUE }} \n``` text messages sent by slave (DUT). Both key and value are strings with allowed character set limitations (to simplify parsing and protocol parser itself). Message ends with required by DUT K-V parser `\n` character.
 * DUT always (except for handshake phase) initializes communication by sending key-value message to host.
 * To avoid miscommunication between master and slave simple handshake protocol is introduces:
     * Master (host) sends sync packet: ```{{__sync;UUID-STRING}}}``` with message value containing random UUID string.
