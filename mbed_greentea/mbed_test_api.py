@@ -423,7 +423,7 @@ def log_mbed_devices_properties(mbed_dev, verbose=False):
     # Short subset of MUT properties in verbose mode
     dev_prop_short = ['target_id', 'mount_point', 'serial_port', 'daplink_version']
 
-    dev_prop = [x for x in mbed_dev.keys() if x in dev_prop_short] if verbose else mbed_dev.keys()
+    dev_prop = [x for x in mbed_dev.keys() if x in dev_prop_short] if not verbose else mbed_dev.keys()
     for k in dev_prop:
         gt_logger.gt_log_tab("%s = '%s'"% (k, mbed_dev[k]))
 

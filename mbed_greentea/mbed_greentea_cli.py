@@ -576,6 +576,42 @@ def main_cli(opts, args, gt_instance_uuid=None):
     @return This function doesn't return, it exits to environment with proper success code
     """
 
+    def filter_ready_devices(mbeds_list):
+        """! Filters list of MUTs to check if all MUTs are correctly detected with mbed-ls module.
+        @details This function logs a lot to help users figure out root cause of their problems
+        @param mbeds_list List of MUTs to verify
+        @return Tuple of (MUTS detected correctly, MUTs not detected fully)
+        """
+        ready_mbed_devices = []     # Devices which can be used (are fully detected)
+        not_ready_mbed_devices = [] # Devices which can't be used (are not fully detected)
+
+        gt_logger.gt_log("detected %d device%s"% (len(mbeds_list), 's' if len(mbeds_list) != 1 else ''))
+        for mut in mbeds_list:
+            if not all(mut.values()):
+                gt_logger.gt_log_err("mbed-ls was unable to enumerate correctly all properties of the device!")
+                gt_logger.gt_log_tab("check with 'mbedls -j' command if all properties of your device are enumerated properly")
+                for prop in mut:
+                    if not mut[prop]:
+                        # Adding MUT to NOT DETECTED FULLY list
+                        if mut not in not_ready_mbed_devices:
+                            not_ready_mbed_devices.append(mut)
+                        gt_logger.gt_log_err("mbed-ls property '%s' is '%s'"% (prop, str(mut[prop])))
+                        if prop == 'serial_port':
+                            gt_logger.gt_log_tab("check if your serial port driver is correctly installed!")
+                        if prop == 'mount_point':
+                            gt_logger.gt_log_tab('check if your OS can detect and mount mbed device mount point!')
+            else:
+                # Adding MUT to DETECTED CORRECTLY list
+                ready_mbed_devices.append(mut)
+                gt_logger.gt_log_tab("detected '%s' -> '%s', console at '%s', mounted at '%s', target id '%s'"% (
+                    gt_logger.gt_bright(mut['platform_name']),
+                    gt_logger.gt_bright(mut['platform_name_unique']),
+                    gt_logger.gt_bright(mut['serial_port']),
+                    gt_logger.gt_bright(mut['mount_point']),
+                    gt_logger.gt_bright(mut['target_id'])
+                ))
+        return (ready_mbed_devices, not_ready_mbed_devices)
+
     if not MBED_LMTOOLS:
         gt_logger.gt_log_err("error: mbed-ls proprietary module not installed")
         return (-1)
@@ -632,26 +668,12 @@ def main_cli(opts, args, gt_instance_uuid=None):
     mbeds_list = mbeds.list_mbeds_ext()
 
     ready_mbed_devices = [] # Devices which can be used (are fully detected)
+    not_ready_mbed_devices = [] # Devices which can't be used (are not fully detected)
 
     if mbeds_list:
-        gt_logger.gt_log("detected %d device%s"% (len(mbeds_list), 's' if len(mbeds_list) != 1 else ''))
-        for mut in mbeds_list:
-            if not all(mut.values()):
-                gt_logger.gt_log_err("can't detect all properties of the device!")
-                for prop in mut:
-                    if not mut[prop]:
-                        gt_logger.gt_log_tab("property '%s' is '%s'"% (prop, str(mut[prop])))
-            else:
-                ready_mbed_devices.append(mut)
-                gt_logger.gt_log_tab("detected '%s' -> '%s', console at '%s', mounted at '%s', target id '%s'"% (
-                    gt_logger.gt_bright(mut['platform_name']),
-                    gt_logger.gt_bright(mut['platform_name_unique']),
-                    gt_logger.gt_bright(mut['serial_port']),
-                    gt_logger.gt_bright(mut['mount_point']),
-                    gt_logger.gt_bright(mut['target_id'])
-                ))
+        ready_mbed_devices, not_ready_mbed_devices = filter_ready_devices(mbeds_list)
     else:
-        gt_logger.gt_log_err("no devices detected")
+        gt_logger.gt_log_err("no compatible devices detected")
         return (RET_NO_DEVICES)
 
     ### We can filter in only specific target ids
@@ -933,7 +955,7 @@ def main_cli(opts, args, gt_instance_uuid=None):
             test_exec_retcode += -10
         if target_platforms_match == 0:
             # No platforms were tested
-            gt_logger.gt_log_warn("no target matching platforms were found!")
+            gt_logger.gt_log_warn("no matching platforms were found!")
             test_exec_retcode += -100
 
     return (test_exec_retcode)
