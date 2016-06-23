@@ -295,10 +295,8 @@ def main():
                     help='You can log test suite results to text file')
 
     parser.add_option('', '--report-json',
-                    dest='report_json',
-                    default=False,
-                    action="store_true",
-                    help='Outputs test results in JSON')
+                    dest='report_json_file_name',
+                    help='You can log test suite results to JSON formatted file')
 
     parser.add_option('', '--report-fails',
                     dest='report_fails',
@@ -887,9 +885,24 @@ def main_cli(opts, args, gt_instance_uuid=None):
         # Prints shuffle seed
         gt_logger.gt_log("shuffle seed: %.*f"% (SHUFFLE_SEED_ROUND, shuffle_random_seed))
 
-        # Reports (to file)
+        def dump_report_to_text_file(filename, content):
+            """! Closure for report dumps to text files
+            @param filename Name of destination file
+            @parm content Text content of the file to write
+            @return True if write was successful, else return False
+            """
+            try:
+                with open(filename, 'w') as f:
+                    f.write(content)
+            except IOError as e:
+                gt_logger.gt_log_err("can't export to '%s', reason:"% filename)
+                gt_logger.gt_log_err(str(e))
+                return False
+            return True
+
+        # Reports to JUNIT file
         if opts.report_junit_file_name:
-            gt_logger.gt_log("exporting to JUnit file '%s'..."% gt_logger.gt_bright(opts.report_junit_file_name))
+            gt_logger.gt_log("exporting to JUNIT file '%s'..."% gt_logger.gt_bright(opts.report_junit_file_name))
             # This test specification will be used by JUnit exporter to populate TestSuite.properties (useful meta-data for Viewer)
             test_suite_properties = {}
             for target_name in test_report:
@@ -897,34 +910,36 @@ def main_cli(opts, args, gt_instance_uuid=None):
                 if test_build_properties:
                     test_suite_properties[target_name] = test_build_properties
             junit_report = exporter_testcase_junit(test_report, test_suite_properties = test_suite_properties)
-            with open(opts.report_junit_file_name, 'w') as f:
-                f.write(junit_report)
-        if opts.report_text_file_name:
-            gt_logger.gt_log("exporting to text '%s'..."% gt_logger.gt_bright(opts.report_text_file_name))
+            dump_report_to_text_file(opts.report_junit_file_name, junit_report)
 
+        # Reports to text file
+        if opts.report_text_file_name:
+            gt_logger.gt_log("exporting to TEXT '%s'..."% gt_logger.gt_bright(opts.report_text_file_name))
+            # Useful text reporter for those who do not like to copy paste to files tabale with results
             text_report, text_results = exporter_text(test_report)
             text_testcase_report, text_testcase_results = exporter_testcase_text(test_report)
-            with open(opts.report_text_file_name, 'w') as f:
-                f.write('\n'.join([text_report, text_results, text_testcase_report, text_testcase_results]))
+            text_final_report = '\n'.join([text_report, text_results, text_testcase_report, text_testcase_results])
+            dump_report_to_text_file(opts.report_text_file_name, text_final_report)
 
-        # Reports (to console)
-        if opts.report_json:
+        # Reports to JSON file
+        if opts.report_json_file_name:
             # We will not print summary and json report together
-            gt_logger.gt_log("json test report:")
-            print exporter_json(test_report)
-        else:
-            # Final summary
-            if test_report:
-                # Test suite report
-                gt_logger.gt_log("test suite report:")
-                text_report, text_results = exporter_text(test_report)
-                print text_report
-                gt_logger.gt_log("test suite results: " + text_results)
-                # test case detailed report
-                gt_logger.gt_log("test case report:")
-                text_testcase_report, text_testcase_results = exporter_testcase_text(test_report)
-                print text_testcase_report
-                gt_logger.gt_log("test case results: " + text_testcase_results)
+            gt_logger.gt_log("exporting to JSON '%s'..."% gt_logger.gt_bright(opts.report_json_file_name))
+            json_report = exporter_json(test_report)
+            dump_report_to_text_file(opts.report_json_file_name, json_report)
+
+        # Final summary
+        if test_report:
+            # Test suite report
+            gt_logger.gt_log("test suite report:")
+            text_report, text_results = exporter_text(test_report)
+            print text_report
+            gt_logger.gt_log("test suite results: " + text_results)
+            # test case detailed report
+            gt_logger.gt_log("test case report:")
+            text_testcase_report, text_testcase_results = exporter_testcase_text(test_report)
+            print text_testcase_report
+            gt_logger.gt_log("test case results: " + text_testcase_results)
 
         # This flag guards 'build only' so we expect only yotta errors
         if test_platforms_match == 0:
