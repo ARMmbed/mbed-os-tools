@@ -33,9 +33,15 @@ class ConnectorPrimitive(object):
         self.logger = HtrunLogger(name)
 
     def write_kv(self, key, value):
-        kv_buff = "{{%s;%s}}"% (key, value)
+        """! Forms and sends Key-Value protocol message.
+        @details On how to parse K-V sent from DUT see KiViBufferWalker::KIVI_REGEX
+                 On how DUT sends K-V please see greentea_write_postamble() function in greentea-client
+        @return Returns buffer with K-V message sent to DUT
+        """
+        # All Key-Value messages ends with newline character
+        kv_buff = "{{%s;%s}}"% (key, value) + '\n'
         self.write(kv_buff)
-        self.logger.prn_txd(kv_buff)
+        self.logger.prn_txd(kv_buff.rstrip())
         return kv_buff
 
     def read(self, count):
