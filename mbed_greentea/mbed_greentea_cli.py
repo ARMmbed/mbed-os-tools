@@ -741,8 +741,6 @@ def main_cli(opts, args, gt_instance_uuid=None):
                     mbed_dev['serial_port'] = "%s:%d" % (mbed_dev['serial_port'], baudrate)
                 mut = mbed_dev
                 muts_to_test.append(mbed_dev)
-                # Log on screen mbed device properties
-                #gt_logger.gt_log("using platform '%s' for test:"% gt_logger.gt_bright(platform_name))
                 if number_of_parallel_instances < parallel_test_exec:
                     number_of_parallel_instances += 1
                 else:
