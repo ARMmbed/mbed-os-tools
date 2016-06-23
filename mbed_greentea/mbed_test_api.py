@@ -417,16 +417,6 @@ def get_testcase_result(output):
 
     return result_test_cases
 
-def log_mbed_devices_properties(mbed_dev, verbose=False):
-    """! Separate function to log mbed device properties on the screen
-    """
-    # Short subset of MUT properties in verbose mode
-    dev_prop_short = ['target_id', 'mount_point', 'serial_port', 'daplink_version']
-
-    dev_prop = [x for x in mbed_dev.keys() if x in dev_prop_short] if not verbose else mbed_dev.keys()
-    for k in dev_prop:
-        gt_logger.gt_log_tab("%s = '%s'"% (k, mbed_dev[k]))
-
 def log_mbed_devices_in_table(muts, cols = ['platform_name', 'platform_name_unique', 'serial_port', 'mount_point', 'target_id']):
     """! Print table of muts using prettytable
     @param muts List of MUTs to print in table

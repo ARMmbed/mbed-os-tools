@@ -32,7 +32,6 @@ from mbed_greentea.mbed_test_api import get_test_build_properties
 from mbed_greentea.mbed_test_api import get_test_spec
 from mbed_greentea.mbed_test_api import run_host_test
 from mbed_greentea.mbed_test_api import log_mbed_devices_in_table
-from mbed_greentea.mbed_test_api import log_mbed_devices_properties
 from mbed_greentea.mbed_test_api import TEST_RESULTS
 from mbed_greentea.mbed_test_api import TEST_RESULT_OK, TEST_RESULT_FAIL
 from mbed_greentea.mbed_report_api import exporter_text
