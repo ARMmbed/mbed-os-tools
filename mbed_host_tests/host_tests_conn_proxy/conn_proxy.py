@@ -158,7 +158,7 @@ class SerialConnectorPrimitive(ConnectorPrimitive):
 class KiViBufferWalker():
     """! Simple auxiliary class used to walk through a buffer and search for KV tokens """
     def __init__(self):
-        self.KIVI_REGEX = r"\{\{([\w\d_-]+);([^\}]+)\}\}"
+        self.KIVI_REGEX = r"\{\{([\w\d_-]+);([^\}]+)\}\}\n"
         self.buff = str()
         self.buff_idx = 0
         self.re_kv = re.compile(self.KIVI_REGEX)
