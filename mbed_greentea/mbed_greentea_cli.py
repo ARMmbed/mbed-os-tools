@@ -31,7 +31,7 @@ from threading import Thread
 from mbed_greentea.mbed_test_api import get_test_build_properties
 from mbed_greentea.mbed_test_api import get_test_spec
 from mbed_greentea.mbed_test_api import run_host_test
-from mbed_greentea.mbed_test_api import log_mbed_devices_properties
+from mbed_greentea.mbed_test_api import log_mbed_devices_in_table
 from mbed_greentea.mbed_test_api import TEST_RESULTS
 from mbed_greentea.mbed_test_api import TEST_RESULT_OK, TEST_RESULT_FAIL
 from mbed_greentea.mbed_report_api import exporter_text
@@ -670,6 +670,10 @@ def main_cli(opts, args, gt_instance_uuid=None):
 
     if mbeds_list:
         ready_mbed_devices, not_ready_mbed_devices = filter_ready_devices(mbeds_list)
+        if ready_mbed_devices:
+            # devices in form of a pretty formatted table
+            for line in log_mbed_devices_in_table(ready_mbed_devices).splitlines():
+                gt_logger.gt_log_tab(line.strip())
     else:
         gt_logger.gt_log_err("no compatible devices detected")
         return (RET_NO_DEVICES)
@@ -715,8 +719,10 @@ def main_cli(opts, args, gt_instance_uuid=None):
     filter_test_builds = opts.list_of_targets.split(',') if opts.list_of_targets else None
     for test_build in test_spec.get_test_builds(filter_test_builds):
         platform_name = test_build.get_platform()
-        gt_logger.gt_log("processing target '%s' toolchain '%s' compatible platforms..." %
-                         (gt_logger.gt_bright(platform_name), gt_logger.gt_bright(test_build.get_toolchain())))
+        gt_logger.gt_log("processing target '%s' toolchain '%s' compatible platforms... (note: switch set to --parallel %d)" %
+                         (gt_logger.gt_bright(platform_name),
+                          gt_logger.gt_bright(test_build.get_toolchain()),
+                          int(opts.parallel_test_exec)))
 
         baudrate = test_build.get_baudrate()
 
@@ -735,13 +741,14 @@ def main_cli(opts, args, gt_instance_uuid=None):
                     mbed_dev['serial_port'] = "%s:%d" % (mbed_dev['serial_port'], baudrate)
                 mut = mbed_dev
                 muts_to_test.append(mbed_dev)
-                # Log on screen mbed device properties
-                gt_logger.gt_log("using platform '%s' for test:"% gt_logger.gt_bright(platform_name))
-                log_mbed_devices_properties(mbed_dev, verbose=opts.verbose)
                 if number_of_parallel_instances < parallel_test_exec:
                     number_of_parallel_instances += 1
                 else:
                     break
+
+        # devices in form of a pretty formatted table
+        for line in log_mbed_devices_in_table(muts_to_test).splitlines():
+            gt_logger.gt_log_tab(line.strip())
 
         # Configuration print mode:
         if opts.verbose_test_configuration_only:

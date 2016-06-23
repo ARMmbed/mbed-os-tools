@@ -417,15 +417,25 @@ def get_testcase_result(output):
 
     return result_test_cases
 
-def log_mbed_devices_properties(mbed_dev, verbose=False):
-    """! Separate function to log mbed device properties on the screen
+def log_mbed_devices_in_table(muts, cols = ['platform_name', 'platform_name_unique', 'serial_port', 'mount_point', 'target_id']):
+    """! Print table of muts using prettytable
+    @param muts List of MUTs to print in table
+    @param cols Columns used to for a table, required for each mut
+    @return string with formatted prettytable
     """
-    # Short subset of MUT properties in verbose mode
-    dev_prop_short = ['target_id', 'mount_point', 'serial_port', 'daplink_version']
-
-    dev_prop = [x for x in mbed_dev.keys() if x in dev_prop_short] if not verbose else mbed_dev.keys()
-    for k in dev_prop:
-        gt_logger.gt_log_tab("%s = '%s'"% (k, mbed_dev[k]))
+    from prettytable import PrettyTable
+    pt = PrettyTable(cols)
+    for col in cols:
+        pt.align[col] = "l"
+    pt.padding_width = 1 # One space between column edges and contents (default)
+    row = []
+    for mut in muts:
+        for col in cols:
+            cell_val = mut[col] if col in mut else 'not detected'
+            row.append(cell_val)
+        pt.add_row(row)
+        row = []
+    return pt.get_string()
 
 def get_test_spec(opts):
     """! Closure encapsulating how we get test specification and load it from file of from yotta module
