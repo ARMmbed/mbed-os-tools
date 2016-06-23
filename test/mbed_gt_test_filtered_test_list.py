@@ -41,6 +41,35 @@ class GreenteaFilteredTestList(unittest.TestCase):
                                              'mbed-drivers-test-timeout'       : './build/mbed-drivers-test-timeout.bin',
                                              'mbed-drivers-test-wait_us'       : './build/mbed-drivers-test-wait_us.bin'}
 
+        self.ctest_test_list_mbed_drivers_ext = {'tests-integration-threaded_blinky'     : './build/tests-integration-threaded_blinky.bin',
+                                                 'tests-mbed_drivers-c_strings'          : './build/tests-mbed_drivers-c_strings.bin',
+                                                 'tests-mbed_drivers-callback'           : './build/tests-mbed_drivers-callback.bin',
+                                                 'tests-mbed_drivers-dev_null'           : './build/tests-mbed_drivers-dev_null.bin',
+                                                 'tests-mbed_drivers-echo'               : './build/tests-mbed_drivers-echo.bin',
+                                                 'tests-mbed_drivers-generic_tests'      : './build/tests-mbed_drivers-generic_tests.bin',
+                                                 'tests-mbed_drivers-rtc'                : './build/tests-mbed_drivers-rtc.bin',
+                                                 'tests-mbed_drivers-stl_features'       : './build/tests-mbed_drivers-stl_features.bin',
+                                                 'tests-mbed_drivers-ticker'             : './build/tests-mbed_drivers-ticker.bin',
+                                                 'tests-mbed_drivers-ticker_2'           : './build/tests-mbed_drivers-ticker_2.bin',
+                                                 'tests-mbed_drivers-ticker_3'           : './build/tests-mbed_drivers-ticker_3.bin',
+                                                 'tests-mbed_drivers-timeout'            : './build/tests-mbed_drivers-timeout.bin',
+                                                 'tests-mbed_drivers-wait_us'            : './build/tests-mbed_drivers-wait_us.bin',
+                                                 'tests-mbedmicro-mbed-attributes'       : './build/tests-mbedmicro-mbed-attributes.bin',
+                                                 'tests-mbedmicro-mbed-call_before_main' : './build/tests-mbedmicro-mbed-call_before_main.bin',
+                                                 'tests-mbedmicro-mbed-cpp'              : './build/tests-mbedmicro-mbed-cpp.bin',
+                                                 'tests-mbedmicro-mbed-div'              : './build/tests-mbedmicro-mbed-div.bin',
+                                                 'tests-mbedmicro-mbed-heap_and_stack'   : './build/tests-mbedmicro-mbed-heap_and_stack.bin',
+                                                 'tests-mbedmicro-rtos-mbed-basic'       : './build/tests-mbedmicro-rtos-mbed-basic.bin',
+                                                 'tests-mbedmicro-rtos-mbed-isr'         : './build/tests-mbedmicro-rtos-mbed-isr.bin',
+                                                 'tests-mbedmicro-rtos-mbed-mail'        : './build/tests-mbedmicro-rtos-mbed-mail.bin',
+                                                 'tests-mbedmicro-rtos-mbed-mutex'       : './build/tests-mbedmicro-rtos-mbed-mutex.bin',
+                                                 'tests-mbedmicro-rtos-mbed-queue'       : './build/tests-mbedmicro-rtos-mbed-queue.bin',
+                                                 'tests-mbedmicro-rtos-mbed-semaphore'   : './build/tests-mbedmicro-rtos-mbed-semaphore.bin',
+                                                 'tests-mbedmicro-rtos-mbed-signals'     : './build/tests-mbedmicro-rtos-mbed-signals.bin',
+                                                 'tests-mbedmicro-rtos-mbed-threads'     : './build/tests-mbedmicro-rtos-mbed-threads.bin',
+                                                 'tests-mbedmicro-rtos-mbed-timer'       : './build/tests-mbedmicro-rtos-mbed-timer.bin',
+                                                 'tests-storage_abstraction-basicapi'    : './build/tests-storage_abstraction-basicapi.bin'}
+
     def tearDown(self):
         pass
 
@@ -213,6 +242,54 @@ class GreenteaFilteredTestList(unittest.TestCase):
         self.assertEqual(len(expected), len(filtered_ctest_test_list))
         self.assertEqual(set(filtered_ctest_test_list.keys()), set(expected))
 
+    def test_prefix_filter_merge_n_multi_star(self):
+        self.test_by_names='tests-mbedmicro-mbed*,tests-mbedmicro-rtos*'
+        filtered_ctest_test_list = mbed_greentea_cli.create_filtered_test_list(self.ctest_test_list_mbed_drivers_ext,
+                                                                               self.test_by_names,
+                                                                               self.skip_test)
+
+        expected = ['tests-mbedmicro-mbed-attributes',
+                    'tests-mbedmicro-mbed-call_before_main',
+                    'tests-mbedmicro-mbed-cpp',
+                    'tests-mbedmicro-mbed-div',
+                    'tests-mbedmicro-mbed-heap_and_stack',
+                    'tests-mbedmicro-rtos-mbed-basic',
+                    'tests-mbedmicro-rtos-mbed-isr',
+                    'tests-mbedmicro-rtos-mbed-mail',
+                    'tests-mbedmicro-rtos-mbed-mutex',
+                    'tests-mbedmicro-rtos-mbed-queue',
+                    'tests-mbedmicro-rtos-mbed-semaphore',
+                    'tests-mbedmicro-rtos-mbed-signals',
+                    'tests-mbedmicro-rtos-mbed-threads',
+                    'tests-mbedmicro-rtos-mbed-timer']
+
+        self.assertEqual(len(expected), len(filtered_ctest_test_list))
+        self.assertEqual(set(filtered_ctest_test_list.keys()), set(expected))
+
+    def test_prefix_filter_merge_n_multi_star_and_i(self):
+        self.test_by_names='tests-mbedmicro-mbed*,tests-mbedmicro-rtos*'
+        self.skip_test='tests-mbedmicro-rtos-mbed-isr,tests-mbedmicro-rtos-mbed-semaphore,tests-mbedmicro-mbed-call_before_main'
+        filtered_ctest_test_list = mbed_greentea_cli.create_filtered_test_list(self.ctest_test_list_mbed_drivers_ext,
+                                                                               self.test_by_names,
+                                                                               self.skip_test)
+
+        expected = ['tests-mbedmicro-mbed-attributes',
+                    #'tests-mbedmicro-mbed-call_before_main',
+                    'tests-mbedmicro-mbed-cpp',
+                    'tests-mbedmicro-mbed-div',
+                    'tests-mbedmicro-mbed-heap_and_stack',
+                    'tests-mbedmicro-rtos-mbed-basic',
+                    #'tests-mbedmicro-rtos-mbed-isr',
+                    'tests-mbedmicro-rtos-mbed-mail',
+                    'tests-mbedmicro-rtos-mbed-mutex',
+                    'tests-mbedmicro-rtos-mbed-queue',
+                    #'tests-mbedmicro-rtos-mbed-semaphore',
+                    'tests-mbedmicro-rtos-mbed-signals',
+                    'tests-mbedmicro-rtos-mbed-threads',
+                    'tests-mbedmicro-rtos-mbed-timer']
+
+        self.assertEqual(len(expected), len(filtered_ctest_test_list))
+        self.assertEqual(set(filtered_ctest_test_list.keys()), set(expected))
 
 if __name__ == '__main__':
     unittest.main()
