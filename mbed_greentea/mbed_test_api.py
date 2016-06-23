@@ -427,6 +427,26 @@ def log_mbed_devices_properties(mbed_dev, verbose=False):
     for k in dev_prop:
         gt_logger.gt_log_tab("%s = '%s'"% (k, mbed_dev[k]))
 
+def log_mbed_devices_in_table(muts, cols = ['platform_name', 'platform_name_unique', 'serial_port', 'mount_point', 'target_id']):
+    """! Print table of muts using prettytable
+    @param muts List of MUTs to print in table
+    @param cols Columns used to for a table, required for each mut
+    @return string with formatted prettytable
+    """
+    from prettytable import PrettyTable
+    pt = PrettyTable(cols)
+    for col in cols:
+        pt.align[col] = "l"
+    pt.padding_width = 1 # One space between column edges and contents (default)
+    row = []
+    for mut in muts:
+        for col in cols:
+            cell_val = mut[col] if col in mut else 'not detected'
+            row.append(cell_val)
+        pt.add_row(row)
+        row = []
+    return pt.get_string()
+
 def get_test_spec(opts):
     """! Closure encapsulating how we get test specification and load it from file of from yotta module
     @return Returns tuple of (test specification, ret code). Test specification == None if test spec load was not successful
