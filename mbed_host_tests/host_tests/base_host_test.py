@@ -121,6 +121,7 @@ class HostTestCallbackBase(BaseHostTestAbstract):
             '__testcase_start',
             '__testcase_finish',
             '__testcase_count',
+            '__testcase_name',
             '__testcase_summary',
             '__rxd_line',
         ]
