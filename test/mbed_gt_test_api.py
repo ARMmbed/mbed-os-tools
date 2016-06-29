@@ -185,6 +185,46 @@ class GreenteaTestAPI(unittest.TestCase):
 [1459246276.98][HTST][INF] {{result;failure}}
 """
 
+        self.OUTOUT_CSTRING_TEST_CASE_COUNT_AND_NAME = """
+[1467197417.13][SERI][TXD] {{__sync;3018cb93-f11c-417e-bf61-240c338dfec9}}
+[1467197417.27][CONN][RXD] {{__sync;3018cb93-f11c-417e-bf61-240c338dfec9}}
+[1467197417.27][CONN][INF] found SYNC in stream: {{__sync;3018cb93-f11c-417e-bf61-240c338dfec9}} it is #0 sent, queued...
+[1467197417.27][HTST][INF] sync KV found, uuid=3018cb93-f11c-417e-bf61-240c338dfec9, timestamp=1467197417.272000
+[1467197417.29][CONN][RXD] {{__version;1.1.0}}
+[1467197417.29][CONN][INF] found KV pair in stream: {{__version;1.1.0}}, queued...
+[1467197417.29][HTST][INF] DUT greentea-client version: 1.1.0
+[1467197417.31][CONN][RXD] {{__timeout;5}}
+[1467197417.31][CONN][INF] found KV pair in stream: {{__timeout;5}}, queued...
+[1467197417.31][HTST][INF] setting timeout to: 5 sec
+[1467197417.34][CONN][RXD] {{__host_test_name;default_auto}}
+[1467197417.34][CONN][INF] found KV pair in stream: {{__host_test_name;default_auto}}, queued...
+[1467197417.34][HTST][INF] host test class: '<class 'mbed_host_tests.host_tests.default_auto.DefaultAuto'>'
+[1467197417.34][HTST][INF] host test setup() call...
+[1467197417.34][HTST][INF] CALLBACKs updated
+[1467197417.34][HTST][INF] host test detected: default_auto
+[1467197417.36][CONN][RXD] {{__testcase_count;2}}
+[1467197417.36][CONN][INF] found KV pair in stream: {{__testcase_count;2}}, queued...
+[1467197417.39][CONN][RXD] >>> Running 2 test cases...
+[1467197417.43][CONN][RXD] {{__testcase_name;C strings: strtok}}
+[1467197417.43][CONN][INF] found KV pair in stream: {{__testcase_name;C strings: strtok}}, queued...
+[1467197417.47][CONN][RXD] {{__testcase_name;C strings: strpbrk}}
+[1467197417.47][CONN][INF] found KV pair in stream: {{__testcase_name;C strings: strpbrk}}, queued...
+[1467197417.52][CONN][RXD] >>> Running case #1: 'C strings: strtok'...
+[1467197417.56][CONN][RXD] {{__testcase_start;C strings: strtok}}
+[1467197417.56][CONN][INF] found KV pair in stream: {{__testcase_start;C strings: strtok}}, queued...
+[1467197422.31][HTST][INF] test suite run finished after 5.00 sec...
+[1467197422.31][CONN][INF] received special even '__host_test_finished' value='True', finishing
+[1467197422.33][HTST][INF] CONN exited with code: 0
+[1467197422.33][HTST][INF] No events in queue
+[1467197422.33][HTST][INF] stopped consuming events
+[1467197422.33][HTST][INF] host test result(): None
+[1467197422.33][HTST][WRN] missing __exit event from DUT
+[1467197422.33][HTST][ERR] missing __exit event from DUT and no result from host test, timeout...
+[1467197422.33][HTST][INF] calling blocking teardown()
+[1467197422.33][HTST][INF] teardown() finished
+[1467197422.33][HTST][INF] {{result;timeout}}
+"""
+
     def tearDown(self):
         pass
 
@@ -219,6 +259,13 @@ class GreenteaTestAPI(unittest.TestCase):
         self.assertIn("[1459246276.25][CONN][INF] found KV pair in stream: {{__testcase_finish;C strings: %f %f float formatting;0;1}}, queued...", r)
         self.assertIn("[1459246276.25][CONN][RXD] {{__testcase_finish;C strings: %f %f float formatting;0;1}}", r)
         self.assertIn("[1459246276.34][CONN][RXD] >>> 'C strings: %f %f float formatting': 0 passed, 1 failed with reason 'Test Cases Failed'", r)
+
+    def get_testcase_count_and_names(self):
+        tc_count, tc_names = mbed_test_api.get_testcase_count_and_names(self.OUTOUT_CSTRING_TEST_CASE_COUNT_AND_NAME)
+
+        self.assertEqual(tc_count, 2)
+        self.assertIn('C strings: strtok', tc_names)
+        self.assertIn('C strings: strpbrk', tc_names)
 
     def test_get_test_result_return_val(self):
 
