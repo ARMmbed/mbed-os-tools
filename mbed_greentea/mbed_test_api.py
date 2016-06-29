@@ -37,6 +37,7 @@ from mbed_greentea.cmake_handlers import list_binaries_for_targets
 TEST_RESULT_OK = "OK"
 TEST_RESULT_FAIL = "FAIL"
 TEST_RESULT_ERROR = "ERROR"
+TEST_RESULT_SKIPPED = "SKIPPED"
 TEST_RESULT_UNDEF = "UNDEF"
 TEST_RESULT_IOERR_COPY = "IOERR_COPY"
 TEST_RESULT_IOERR_DISK = "IOERR_DISK"
@@ -49,6 +50,7 @@ TEST_RESULT_BUILD_FAILED = "BUILD_FAILED"
 TEST_RESULTS = [TEST_RESULT_OK,
                 TEST_RESULT_FAIL,
                 TEST_RESULT_ERROR,
+                TEST_RESULT_SKIPPED,
                 TEST_RESULT_UNDEF,
                 TEST_RESULT_IOERR_COPY,
                 TEST_RESULT_IOERR_DISK,
@@ -62,6 +64,7 @@ TEST_RESULTS = [TEST_RESULT_OK,
 TEST_RESULT_MAPPING = {"success" : TEST_RESULT_OK,
                        "failure" : TEST_RESULT_FAIL,
                        "error" : TEST_RESULT_ERROR,
+                       "skipped" : TEST_RESULT_SKIPPED,
                        "end" : TEST_RESULT_UNDEF,
                        "ioerr_copy" : TEST_RESULT_IOERR_COPY,
                        "ioerr_disk" : TEST_RESULT_IOERR_DISK,
@@ -282,6 +285,44 @@ def run_host_test(image_path,
         gt_logger.gt_log("mbed-host-test-runner: returned '%s'"% result)
     return (result, htrun_output, testcase_duration, duration, result_test_cases, test_cases_summary)
 
+def get_testcase_count_and_names(output):
+    """ Fetches from log utest events with test case count (__testcase_count) and test case names (__testcase_name)*
+
+        @details
+        Example test case count + names prints
+        [1467197417.34][HTST][INF] host test detected: default_auto
+        [1467197417.36][CONN][RXD] {{__testcase_count;2}}
+        [1467197417.36][CONN][INF] found KV pair in stream: {{__testcase_count;2}}, queued...
+        [1467197417.39][CONN][RXD] >>> Running 2 test cases...
+        [1467197417.43][CONN][RXD] {{__testcase_name;C strings: strtok}}
+        [1467197417.43][CONN][INF] found KV pair in stream: {{__testcase_name;C strings: strtok}}, queued...
+        [1467197417.47][CONN][RXD] {{__testcase_name;C strings: strpbrk}}
+        [1467197417.47][CONN][INF] found KV pair in stream: {{__testcase_name;C strings: strpbrk}}, queued...
+        [1467197417.52][CONN][RXD] >>> Running case #1: 'C strings: strtok'...
+        [1467197417.56][CONN][RXD] {{__testcase_start;C strings: strtok}}
+        [1467197417.56][CONN][INF] found KV pair in stream: {{__testcase_start;C strings: strtok}}, queued...
+
+        @return Tuple with (test case count, list of test case names in order of appearance)
+    """
+    testcase_count = 0
+    testcase_names = []
+
+    re_tc_count = re.compile(r"^\[(\d+\.\d+)\]\[(\w+)\]\[(\w+)\] \{\{(__testcase_count);(\d+)\}\}")
+    re_tc_names = re.compile(r"^\[(\d+\.\d+)\]\[(\w+)\]\[(\w+)\] \{\{(__testcase_name);([^;]+)\}\}")
+
+    for line in output.splitlines():
+
+        m = re_tc_names.search(line)
+        if m:
+            testcase_names.append(m.group(5))
+            continue
+
+        m = re_tc_count.search(line)
+        if m:
+            testcase_count = m.group(5)
+
+    return (testcase_count, testcase_names)
+
 def get_testcase_utest(output, test_case_name):
     """ Fetches from log all prints for given utest test case (from being print to end print)
 
@@ -414,6 +455,25 @@ def get_testcase_result(output):
                 result_test_cases[testcase_id]['duration'] = result_test_cases[testcase_id]['time_end'] - result_test_cases[testcase_id]['time_start']
             else:
                 result_test_cases[testcase_id]['duration'] = 0.0
+
+    ### Adding missing test cases which were defined with __testcase_name 
+    # Get test case names reported by utest + test case names
+    # This data will be used to process all tests which were not executed
+    # do their status can be set to SKIPPED (e.g. in JUnit)
+    tc_count, tc_names = get_testcase_count_and_names(output)
+    for testcase_id in tc_names:
+        if testcase_id not in result_test_cases:
+            result_test_cases[testcase_id] = {}
+            # Data collected when __testcase_start is fetched
+            result_test_cases[testcase_id]['time_start'] = 0.0
+            result_test_cases[testcase_id]['utest_log'] = []
+            # Data collected when __testcase_finish is fetched
+            result_test_cases[testcase_id]['duration'] = 0.0
+            result_test_cases[testcase_id]['result_text'] = 'SKIPPED'
+            result_test_cases[testcase_id]['time_end'] = 0.0
+            result_test_cases[testcase_id]['passed'] = 0
+            result_test_cases[testcase_id]['failed'] = 0
+            result_test_cases[testcase_id]['result'] = -8192
 
     return result_test_cases
 

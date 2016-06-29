@@ -225,6 +225,106 @@ class GreenteaTestAPI(unittest.TestCase):
 [1467197422.33][HTST][INF] {{result;timeout}}
 """
 
+        self.OUTOUT_GENERIC_TESTS_TESCASE_NAME_AND_COUNT = """
+[1467205002.74][HTST][INF] host test executor ver. 0.2.19
+[1467205002.74][HTST][INF] copy image onto target...
+        1 file(s) copied.
+Plugin info: HostTestPluginCopyMethod_Shell::CopyMethod: Waiting up to 60 sec for '0240000033514e450019500585d40008e981000097969900' mount point (current is 'F:')...
+[1467205011.16][HTST][INF] starting host test process...
+[1467205011.74][CONN][INF] starting serial connection process...
+[1467205011.74][CONN][INF] notify event queue about extra 60 sec timeout for serial port pooling
+[1467205011.74][CONN][INF] initializing serial port listener...
+[1467205011.74][HTST][INF] setting timeout to: 60 sec
+[1467205011.74][SERI][INF] serial(port=COM219, baudrate=9600, timeout=0)
+Plugin info: HostTestPluginBase::BasePlugin: Waiting up to 60 sec for '0240000033514e450019500585d40008e981000097969900' serial port (current is 'COM219')...
+[1467205011.83][SERI][INF] reset device using 'default' plugin...
+[1467205012.08][SERI][INF] waiting 1.00 sec after reset
+[1467205013.08][SERI][INF] wait for it...
+[1467205013.08][SERI][TXD] mbedmbedmbedmbedmbedmbedmbedmbedmbedmbed
+[1467205013.08][CONN][INF] sending up to 2 __sync packets (specified with --sync=2)
+[1467205013.08][CONN][INF] sending preamble 'f82e0251-bb3e-4434-bc93-b780b5d0e82a'
+[1467205013.08][SERI][TXD] {{__sync;f82e0251-bb3e-4434-bc93-b780b5d0e82a}}
+[1467205013.22][CONN][RXD] {{__sync;f82e0251-bb3e-4434-bc93-b780b5d0e82a}}
+[1467205013.22][CONN][INF] found SYNC in stream: {{__sync;f82e0251-bb3e-4434-bc93-b780b5d0e82a}} it is #0 sent, queued...
+[1467205013.22][HTST][INF] sync KV found, uuid=f82e0251-bb3e-4434-bc93-b780b5d0e82a, timestamp=1467205013.219000
+[1467205013.24][CONN][RXD] {{__version;1.1.0}}
+[1467205013.24][CONN][INF] found KV pair in stream: {{__version;1.1.0}}, queued...
+[1467205013.24][HTST][INF] DUT greentea-client version: 1.1.0
+[1467205013.25][CONN][RXD] {{__timeout;20}}
+[1467205013.26][CONN][INF] found KV pair in stream: {{__timeout;20}}, queued...
+[1467205013.26][HTST][INF] setting timeout to: 20 sec
+[1467205013.29][CONN][RXD] {{__host_test_name;default_auto}}
+[1467205013.29][CONN][INF] found KV pair in stream: {{__host_test_name;default_auto}}, queued...
+[1467205013.29][HTST][INF] host test class: '<class 'mbed_host_tests.host_tests.default_auto.DefaultAuto'>'
+[1467205013.29][HTST][INF] host test setup() call...
+[1467205013.29][HTST][INF] CALLBACKs updated
+[1467205013.29][HTST][INF] host test detected: default_auto
+[1467205013.31][CONN][RXD] {{__testcase_count;4}}
+[1467205013.31][CONN][INF] found KV pair in stream: {{__testcase_count;4}}, queued...
+[1467205013.34][CONN][RXD] >>> Running 4 test cases...
+[1467205013.37][CONN][RXD] {{__testcase_name;Basic}}
+[1467205013.37][CONN][INF] found KV pair in stream: {{__testcase_name;Basic}}, queued...
+[1467205013.40][CONN][RXD] {{__testcase_name;Blinky}}
+[1467205013.40][CONN][INF] found KV pair in stream: {{__testcase_name;Blinky}}, queued...
+[1467205013.43][CONN][RXD] {{__testcase_name;C++ stack}}
+[1467205013.43][CONN][INF] found KV pair in stream: {{__testcase_name;C++ stack}}, queued...
+[1467205013.46][CONN][RXD] {{__testcase_name;C++ heap}}
+[1467205013.46][CONN][INF] found KV pair in stream: {{__testcase_name;C++ heap}}, queued...
+[1467205013.49][CONN][RXD] >>> Running case #1: 'Basic'...
+[1467205013.52][CONN][RXD] {{__testcase_start;Basic}}
+[1467205013.52][CONN][INF] found KV pair in stream: {{__testcase_start;Basic}}, queued...
+[1467205013.56][CONN][RXD] {{__testcase_finish;Basic;1;0}}
+[1467205013.56][CONN][INF] found KV pair in stream: {{__testcase_finish;Basic;1;0}}, queued...
+[1467205013.59][CONN][RXD] >>> 'Basic': 1 passed, 0 failed
+[1467205013.62][CONN][RXD] >>> Running case #2: 'Blinky'...
+[1467205013.65][CONN][RXD] {{__testcase_start;Blinky}}
+[1467205013.65][CONN][INF] found KV pair in stream: {{__testcase_start;Blinky}}, queued...
+[1467205013.69][CONN][RXD] {{__testcase_finish;Blinky;1;0}}
+[1467205013.69][CONN][INF] found KV pair in stream: {{__testcase_finish;Blinky;1;0}}, queued...
+[1467205013.72][CONN][RXD] >>> 'Blinky': 1 passed, 0 failed
+[1467205013.75][CONN][RXD] >>> Running case #3: 'C++ stack'...
+[1467205013.78][CONN][RXD] {{__testcase_start;C++ stack}}
+[1467205013.78][CONN][INF] found KV pair in stream: {{__testcase_start;C++ stack}}, queued...
+[1467205013.79][CONN][RXD] Static::init
+[1467205013.81][CONN][RXD] Static::stack_test
+[1467205013.82][CONN][RXD] Stack::init
+[1467205013.85][CONN][RXD] Stack::hello
+[1467205013.87][CONN][RXD] Stack::destroy
+[1467205013.89][CONN][RXD] Static::check_init: OK
+[1467205013.91][CONN][RXD] Static::destroy
+[1467205013.94][CONN][RXD] {{__testcase_finish;C++ stack;1;0}}
+[1467205013.95][CONN][INF] found KV pair in stream: {{__testcase_finish;C++ stack;1;0}}, queued...
+[1467205013.98][CONN][RXD] >>> 'C++ stack': 1 passed, 0 failed
+[1467205014.02][CONN][RXD] >>> Running case #4: 'C++ heap'...
+[1467205014.05][CONN][RXD] {{__testcase_start;C++ heap}}
+[1467205014.05][CONN][INF] found KV pair in stream: {{__testcase_start;C++ heap}}, queued...
+[1467205014.06][CONN][RXD] Heap::init
+[1467205014.07][CONN][RXD] Heap::hello
+[1467205014.10][CONN][RXD] Heap::check_init: OK
+[1467205014.11][CONN][RXD] Heap::destroy
+[1467205014.15][CONN][RXD] {{__testcase_finish;C++ heap;1;0}}
+[1467205014.15][CONN][INF] found KV pair in stream: {{__testcase_finish;C++ heap;1;0}}, queued...
+[1467205014.18][CONN][RXD] >>> 'C++ heap': 1 passed, 0 failed
+[1467205014.22][CONN][RXD] >>> Test cases: 4 passed, 0 failed
+[1467205014.25][CONN][RXD] {{__testcase_summary;4;0}}
+[1467205014.25][CONN][INF] found KV pair in stream: {{__testcase_summary;4;0}}, queued...
+[1467205014.27][CONN][RXD] {{end;success}}
+[1467205014.27][CONN][INF] found KV pair in stream: {{end;success}}, queued...
+[1467205014.28][CONN][RXD] {{__exit;0}}
+[1467205014.28][CONN][INF] found KV pair in stream: {{__exit;0}}, queued...
+[1467205014.28][HTST][INF] __exit(0)
+[1467205014.28][HTST][INF] test suite run finished after 1.02 sec...
+[1467205014.28][CONN][INF] received special even '__host_test_finished' value='True', finishing
+[1467205014.31][HTST][INF] CONN exited with code: 0
+[1467205014.31][HTST][INF] Some events in queue
+[1467205014.31][HTST][INF] __notify_complete(True)
+[1467205014.31][HTST][INF] stopped consuming events
+[1467205014.31][HTST][INF] host test result() call skipped, received: True
+[1467205014.31][HTST][INF] calling blocking teardown()
+[1467205014.31][HTST][INF] teardown() finished
+[1467205014.31][HTST][INF] {{result;success}}
+"""
+
     def tearDown(self):
         pass
 
@@ -337,7 +437,7 @@ class GreenteaTestAPI(unittest.TestCase):
 
         for test_case in test_case_names:
             tc = r[test_case]
-            # If datastructure is correct
+            # If data structure is correct
             self.assertIn('utest_log', tc)
             self.assertIn('time_start', tc)
             self.assertIn('time_end', tc)
@@ -355,6 +455,25 @@ class GreenteaTestAPI(unittest.TestCase):
         self.assertEqual(tc['passed'], 0)
         self.assertEqual(tc['failed'], 1)
         self.assertEqual(tc['result_text'], 'FAIL')
+
+    def test_get_testcase_result_tescase_name_and_count(self):
+        r = mbed_test_api.get_testcase_result(self.OUTOUT_GENERIC_TESTS_TESCASE_NAME_AND_COUNT)
+        self.assertEqual(len(r), 4)
+
+        self.assertIn('Basic', r)
+        self.assertIn('Blinky', r)
+        self.assertIn('C++ heap', r)
+        self.assertIn('C++ stack', r)
+
+    def test_get_testcase_result_tescase_name_and_count(self):
+        r = mbed_test_api.get_testcase_result(self.OUTOUT_CSTRING_TEST_CASE_COUNT_AND_NAME)
+        self.assertEqual(len(r), 2)
+
+        self.assertIn('C strings: strpbrk', r)
+        self.assertIn('C strings: strtok', r)
+
+        self.assertEqual(r['C strings: strpbrk']['result_text'], 'SKIPPED')
+        self.assertEqual(r['C strings: strtok']['result_text'], 'ERROR')
 
 
 if __name__ == '__main__':
