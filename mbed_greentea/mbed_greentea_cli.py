@@ -601,13 +601,6 @@ def main_cli(opts, args, gt_instance_uuid=None):
             else:
                 # Adding MUT to DETECTED CORRECTLY list
                 ready_mbed_devices.append(mut)
-                gt_logger.gt_log_tab("detected '%s' -> '%s', console at '%s', mounted at '%s', target id '%s'"% (
-                    gt_logger.gt_bright(mut['platform_name']),
-                    gt_logger.gt_bright(mut['platform_name_unique']),
-                    gt_logger.gt_bright(mut['serial_port']),
-                    gt_logger.gt_bright(mut['mount_point']),
-                    gt_logger.gt_bright(mut['target_id'])
-                ))
         return (ready_mbed_devices, not_ready_mbed_devices)
 
     if not MBED_LMTOOLS:
