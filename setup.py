@@ -28,7 +28,7 @@ from setuptools import find_packages
 
 
 LICENSE = open('LICENSE').read()
-DESCRIPTION = "mbed 3.0 test suite, codename Greentea. The test suite is a collection of tools that enable automated testing on mbed-enabled platforms"
+DESCRIPTION = "mbed 3.0 onwards test suite, codename Greentea. The test suite is a collection of tools that enable automated testing on mbed-enabled platforms"
 OWNER_NAMES = 'Przemyslaw Wirkus, Azim Khan, Stefan Gutmann'
 OWNER_EMAILS = 'Przemyslaw.Wirkus@arm.com, Azim.Khan@arm.com, Stefan.Gutmann@arm.com'
 
@@ -37,7 +37,7 @@ def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
 setup(name='mbed-greentea',
-      version='0.2.25',
+      version='0.2.26',
       description=DESCRIPTION,
       long_description=read('README.md'),
       author=OWNER_NAMES,
