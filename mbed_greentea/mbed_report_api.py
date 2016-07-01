@@ -33,42 +33,6 @@ def export_to_file(file_name, payload):
     return result
 
 
-def exporter_junit(test_result_ext, test_suite_properties=None):
-    """! Export test results in JUnit XML compliant format
-    @details This function will import junit_xml library to perform report conversion
-    @return String containing Junit XML formatted test result output
-    """
-    from junit_xml import TestSuite, TestCase
-
-    test_suites = []
-    test_cases = []
-
-    targets = sorted(test_result_ext.keys())
-    for target in targets:
-        test_cases = []
-        tests = sorted(test_result_ext[target].keys())
-        for test in tests:
-            test_results = test_result_ext[target][test]
-            classname = 'test.%s.%s' % (target, test)
-            elapsed_sec = test_results['elapsed_time']
-            _stdout = test_results['single_test_output']
-            _stderr = ''
-            # Test case
-            tc = TestCase(test, classname, elapsed_sec, _stdout, _stderr)
-            # Test case extra failure / error info
-            if test_results['single_test_result'] == 'FAIL':
-                message = test_results['single_test_result']
-                tc.add_failure_info(message, _stdout)
-            elif test_results['single_test_result'] != 'OK':
-                message = test_results['single_test_result']
-                tc.add_error_info(message, _stdout)
-
-            test_cases.append(tc)
-        ts = TestSuite("test.suite.%s" % target, test_cases)
-        test_suites.append(ts)
-    return TestSuite.to_xml_string(test_suites)
-
-
 def exporter_json(test_result_ext, test_suite_properties=None):
     """! Exports test results to indented JSON format
     @details This is a machine friendly format
@@ -195,11 +159,14 @@ def exporter_testcase_junit(test_result_ext, test_suite_properties=None):
             test = test_results[test_suite_name]
 
             # tc_elapsed_sec = test['elapsed_time']
-            tc_stdout = ''  #test['single_test_output']
+            tc_stdout = str() #test['single_test_output']
+
             try:
-                tc_stderr = test['single_test_output'].decode('unicode_escape').encode('ascii','ignore')
+                tc_stdout = test['single_test_output'].decode('unicode_escape').encode('ascii','ignore')
             except UnicodeDecodeError as e:
-                print "exporter_testcase_junit:", str(e)
+                err_mgs = "(UnicodeDecodeError) exporter_testcase_junit:", str(e)
+                tc_stdout = err_mgs
+                print err_mgs
 
             # testcase_result stores info about test case results
             testcase_result = test['testcase_result']
@@ -215,24 +182,31 @@ def exporter_testcase_junit(test_result_ext, test_suite_properties=None):
 
             for tc_name in sorted(testcase_result.keys()):
                 duration = testcase_result[tc_name].get('duration', 0.0)
-                # result = testcase_result[tc_name].get('result', 0)
-                # passed = testcase_result[tc_name].get('passed', 0)
-                # failed = testcase_result[tc_name].get('failed', 0)
                 utest_log = testcase_result[tc_name].get('utest_log', '')
                 result_text = testcase_result[tc_name].get('result_text', "UNDEF")
 
                 try:
-                    tc_stdout = '\n'.join(utest_log).decode('unicode_escape').encode('ascii','ignore')
+                    tc_stderr = '\n'.join(utest_log).decode('unicode_escape').encode('ascii','ignore')
                 except UnicodeDecodeError as e:
-                    print "exporter_testcase_junit:", str(e)
+                    err_mgs = "(UnicodeDecodeError) exporter_testcase_junit:" + str(e)
+                    tc_stderr = err_mgs
+                    print err_mgs
 
                 tc_class = target_name + '.' + test_suite_name
+
+                if result_text == 'SKIPPED':
+                    # Skipped test cases do not have logs and we do not want to put
+                    # whole log inside JUNIT for skipped test case
+                    tc_stderr = str()
+
                 tc = TestCase(tc_name, tc_class, duration, tc_stdout, tc_stderr)
-                
+
                 if result_text == 'FAIL':
-                    tc.add_failure_info(result_text, tc_stdout)
+                    tc.add_failure_info(result_text)
+                elif result_text == 'SKIPPED':
+                    tc.add_skipped_info(result_text)
                 elif result_text != 'OK':
-                    tc.add_error_info(result_text, tc_stdout)
+                    tc.add_error_info(result_text)
 
                 test_cases.append(tc)
 
