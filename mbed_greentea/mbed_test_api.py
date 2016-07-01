@@ -464,17 +464,31 @@ def get_test_spec(opts):
         @param test_spec_file_name_list List of paths to different test specifications
         @return TestSpec object with all test specification data inside
         """
+
+        def copy_builds_between_test_specs(source, destination):
+            """! Copies build key-value pairs between two test_spec dicts
+                @param source Source dictionary
+                @param destination Dictionary with will be applied with 'builds' key-values
+                @return Dictionary with merged source
+            """
+            result = destination.copy()
+            if 'builds' in source and 'builds' in destination:
+                for k in source['builds']:
+                    result['builds'][k] = source['builds'][k]
+            return result
+
         merged_test_spec = {}
         for test_spec_file in test_spec_file_name_list:
             gt_logger.gt_log_tab("using '%s'"% test_spec_file)
             try:
                 with open(test_spec_file, 'r') as f:
                     test_spec_data = json.load(f)
-                    merged_test_spec.update(test_spec_data)
+                    merged_test_spec = copy_builds_between_test_specs(merged_test_spec, test_spec_data)
             except Exception as e:
                 gt_logger.gt_log_err("Unexpected error while processing '%s' test specification file"% test_spec_file)
                 gt_logger.gt_log_tab(str(e))
                 merged_test_spec = {}
+
         test_spec = TestSpec()
         test_spec.parse(merged_test_spec)
         return test_spec
