@@ -551,8 +551,9 @@ def run_test_thread(test_result_queue, test_queue, opts, mut, build, build_path,
                 failures,
                 'e' if failures == 1 else 'es'))
             if passes != passes_cnt or failures != failures_cnt:
-                gt_logger.gt_log_err("test case summary mismatch: reported passes vs failures miscount!")
-                gt_logger.gt_log_tab("(%d, %d) vs (%d, %d)"% (passes, failures, passes_cnt, failures_cnt))
+                gt_logger.gt_log_err("utest test case summary mismatch: utest reported passes and failures miscount!")
+                gt_logger.gt_log_tab("reported by utest: passes = %d, failures %d)"% (passes, failures))
+                gt_logger.gt_log_tab("test case result count: passes = %d, failures %d)"% (passes_cnt, failures_cnt))
 
         if single_test_result != 'OK' and not verbose and opts.report_fails:
             # In some cases we want to print console to see why test failed
