@@ -12,6 +12,8 @@
 * [mbedls as command line tool](#mbedls-as-command-line-tool)
   * [Exporting mbedls output to JSON](#exporting-mbedls-output-to-json)
 * [Porting instructions](#porting-instructions)
+  * [mbed-enabled technical specification overview](#mbed-enabled-technical-specification-overview)
+    * [TargetID as device unique identifier](#targetid-as-device-unique-identifier)
   * [mbed-ls auto-detection approach for Ubuntu](#mbed-ls-auto-detection-approach-for-ubuntu)
 * [Retarget mbed-ls autodetection results](#retarget-mbed-ls-autodetection-results)
   * [mbedls.json file properties](#mbedlsjson-file-properties)
@@ -230,6 +232,48 @@ $ mbedls --json
 You can help us improve the mbed-ls tools by - for example - committing a new OS port. You can see the list of currently supported OSs in the [Description](#description) section; if your OS isn't there, you can port it.
 
 For further study please check how Mac OS X (Darwin) was ported in [this pull request](https://github.com/ARMmbed/mbed-ls/pull/1).
+
+## mbed-enabled technical specification overview
+
+[mbed-enabled](https://www.mbed.com/en/about-mbed/mbed-enabled/) program is designed for mbed developers and partners who want to clearly identify their products as interoperable mbed Enabled technologies.
+User facing [DAPLink](https://github.com/mbedmicro/DAPLink#daplink) interface connects mbed-enabled device with host computer using USB interface.
+
+Interface chip should in general follow few generic rules to allow proper host detection and compliance with for example mbed test tools. There are listed below:
+* Existance of CDC (virtual serial port)
+  * Must support at all standard baudrates 9600 thru 115200
+  * Must Support `SendBreak` resulting in target reset sequence
+  * MUst have TargetID embedded in USBID
+* Mass Storage Device Class
+  * Must support programming binary files (copy file on MSD results in target flashing)
+  * Target flashing should not result in automatic target reset
+  * Must have `DETAILS.TXT` with DAPlink specification
+  * Must have `mbed.htm` with DAPlink specification
+  * `mbed.htm` should contain link to platform with `TargetID` specified
+  * Must have TargetID embedded in `USBID`
+
+### TargetID as device unique identifier
+
+Each device must have an unique identifier which generic format is specified in below chapter.
+
+TargetID generic format:
+* ASCII string containing hexadecimal values only: `[a-fA-F0-9]{4, }`
+* Should be longer than four ASCII characters (two bytes of hex data)
+* First 2 bytes coded with four ASCII characters are `vendor code`
+    * Note: *There might be more than one vendor code value assigned to one vendor.*
+* Following 2 bytes coded with four ASCII characters are `platform code`*
+* Rest of ASCII characters are vendor / platform specific. Ignored by mbed-enabled tools
+* `Vendor code` + `platform code` should create globally unique value
+
+Example TargetID coding:
+* Freescale `K64F` TargetID: `0240000033514e450019500585d40008e981000097969900`
+
+```
+        02	40	000033514e450019500585d40008e981000097969900
+        |   |
+        |   v
+        v	K64F
+        Freescale
+```
 
 ## mbed-ls auto-detection approach for Ubuntu
 
