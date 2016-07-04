@@ -22,6 +22,7 @@ import json
 import lockfile
 from os import listdir
 from os.path import isfile, join
+from lockfile import LockFailed
 
 class MbedLsToolsBase:
     """ Base class for mbed-lstools, defines mbed-ls tools interface for mbed-enabled devices detection for various hosts
