@@ -20,6 +20,7 @@ Author: Przemyslaw Wirkus <Przemyslaw.wirkus@arm.com>
 import re
 import os
 import sys
+import json
 from time import time
 from subprocess import Popen, PIPE, STDOUT
 
@@ -505,20 +506,80 @@ def get_test_spec(opts):
 
     # Check if test_spec.json file exist, if so we will pick it up as default file and load it
     test_spec_file_name = opts.test_spec
+    test_spec_file_name_list = []
 
     # Note: test_spec.json will have higher priority than module.json file
     #       so if we are inside directory with module.json and test_spec.json we will use test spec file
     #       instead of using yotta's module.json file
 
+    def get_all_test_specs_from_build_dir(path_to_scan):
+        """! Searches for all test_spec.json files
+        @param path_to_scan Directory path used to recursively search for test_spec.json
+        @result List of locations of test_spec.json
+        """
+        return [os.path.join(dp, f) for dp, dn, filenames in os.walk(path_to_scan) for f in filenames if f == 'test_spec.json']
+
+    def merge_multiple_test_specifications_from_file_list(test_spec_file_name_list):
+        """! For each file in test_spec_file_name_list merge all test specifications into one
+        @param test_spec_file_name_list List of paths to different test specifications
+        @return TestSpec object with all test specification data inside
+        """
+
+        def copy_builds_between_test_specs(source, destination):
+            """! Copies build key-value pairs between two test_spec dicts
+                @param source Source dictionary
+                @param destination Dictionary with will be applied with 'builds' key-values
+                @return Dictionary with merged source
+            """
+            result = destination.copy()
+            if 'builds' in source and 'builds' in destination:
+                for k in source['builds']:
+                    result['builds'][k] = source['builds'][k]
+            return result
+
+        merged_test_spec = {}
+        for test_spec_file in test_spec_file_name_list:
+            gt_logger.gt_log_tab("using '%s'"% test_spec_file)
+            try:
+                with open(test_spec_file, 'r') as f:
+                    test_spec_data = json.load(f)
+                    merged_test_spec = copy_builds_between_test_specs(merged_test_spec, test_spec_data)
+            except Exception as e:
+                gt_logger.gt_log_err("Unexpected error while processing '%s' test specification file"% test_spec_file)
+                gt_logger.gt_log_tab(str(e))
+                merged_test_spec = {}
+
+        test_spec = TestSpec()
+        test_spec.parse(merged_test_spec)
+        return test_spec
+
+    # Test specification look-up
     if opts.test_spec:
+        # Loading test specification from command line specified file
         gt_logger.gt_log("test specification file '%s' (specified with --test-spec option)"% opts.test_spec)
     elif os.path.exists('test_spec.json'):
+        # Test specification file exists in current directory
+        gt_logger.gt_log("using 'test_spec.json' from current directory!")
         test_spec_file_name = 'test_spec.json'
+    elif os.path.exists('.build'):
+        # Checking .build directory for test specifications
+        test_spec_file_name_list = get_all_test_specs_from_build_dir('.build')
+    elif os.path.exists(os.path.join('mbed-os', '.build')):
+        # Checking mbed-os/.build directory for test specifications
+        test_spec_file_name_list = get_all_test_specs_from_build_dir(os.path.join(['mbed-os', '.build']))
 
+    # Actual load and processing of test specification from sources
     if test_spec_file_name:
-        # Test spec from command line (--test-spec) or default test_spec.json will be used
+        # Test specification from command line (--test-spec) or default test_spec.json will be used
         gt_logger.gt_log("using '%s' from current directory!"% test_spec_file_name)
         test_spec = TestSpec(test_spec_file_name)
+        if opts.list_binaries:
+            list_binaries_for_builds(test_spec)
+            return None, 0
+    elif test_spec_file_name_list:
+        # Merge multiple test specs into one and keep calm
+        gt_logger.gt_log("using multiple test specifications from current directory!")
+        test_spec = merge_multiple_test_specifications_from_file_list(test_spec_file_name_list)
         if opts.list_binaries:
             list_binaries_for_builds(test_spec)
             return None, 0
