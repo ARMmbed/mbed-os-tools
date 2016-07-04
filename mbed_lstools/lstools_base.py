@@ -40,7 +40,7 @@ class MbedLsToolsBase:
             for mid in mock_ids:
                 self.manufacture_ids[mid] = mock_ids[mid]
 
-        # Create in HOME direcotry place for mbed-ls to store information
+        # Create in HOME directory place for mbed-ls to store information
         self.mbedls_home_dir_init()
 
     # Which OSs are supported by this module
@@ -249,15 +249,18 @@ class MbedLsToolsBase:
                     str(e)))
             return {}
 
-        with self.mbedls_get_global_lock():
-            # This read is for backward compatibility
-            # When user already have on its system local mock-up it will work
-            # overwriting global one
-            if isfile(self.MOCK_FILE_NAME):
-                return read_mock_file(self.MOCK_FILE_NAME)
+        try:
+            with self.mbedls_get_global_lock():
+                # This read is for backward compatibility
+                # When user already have on its system local mock-up it will work
+                # overwriting global one
+                if isfile(self.MOCK_FILE_NAME):
+                    return read_mock_file(self.MOCK_FILE_NAME)
 
-            if isfile(self.MOCK_HOME_FILE_NAME):
-                return read_mock_file(self.MOCK_HOME_FILE_NAME)
+                if isfile(self.MOCK_HOME_FILE_NAME):
+                    return read_mock_file(self.MOCK_HOME_FILE_NAME)
+        except LockFailed as e:
+            self.err(str(e))
         return {}
 
     def mock_write(self, mock_ids):
@@ -279,8 +282,11 @@ class MbedLsToolsBase:
                     str(e)))
             return False
 
-        with self.mbedls_get_global_lock():
-            return write_mock_file(self.MOCK_HOME_FILE_NAME, mock_ids)
+        try:
+            with self.mbedls_get_global_lock():
+                return write_mock_file(self.MOCK_HOME_FILE_NAME, mock_ids)
+        except LockFailed as e:
+            self.err(str(e))
         return False
 
     def retarget_read(self):
