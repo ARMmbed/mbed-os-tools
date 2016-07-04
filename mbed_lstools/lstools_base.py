@@ -236,8 +236,7 @@ class MbedLsToolsBase:
         """
 
         def read_mock_file(filename):
-            if self.DEBUG_FLAG:
-                self.debug(self.mock_read.__name__, "reading mock file '%s'"% filename)
+            self.debug(self.mock_read.__name__, "reading mock file '%s'"% filename)
             try:
                 with open(filename, "r") as f:
                     return json.load(f)
@@ -268,8 +267,7 @@ class MbedLsToolsBase:
         @param mock_ids JSON mock data to dump to file
         """
         def write_mock_file(filename, mock_ids):
-            if self.DEBUG_FLAG:
-                self.debug(self.mock_write.__name__, "writing mock file '%s'"% filename)
+            self.debug(self.mock_write.__name__, "writing mock file '%s'"% filename)
             try:
                 with open(filename, "w") as f:
                     f.write(json.dumps(mock_ids, indent=4))
@@ -294,8 +292,7 @@ class MbedLsToolsBase:
         @return Curent retarget configuration (dictionary)
         """
         if os.path.isfile(self.RETARGET_FILE_NAME):
-            if self.DEBUG_FLAG:
-                self.debug(self.retarget_read.__name__, "reading retarget file %s"% self.RETARGET_FILE_NAME)
+            self.debug(self.retarget_read.__name__, "reading retarget file %s"% self.RETARGET_FILE_NAME)
             try:
                 with open(self.RETARGET_FILE_NAME, "r") as f:
                     return json.load(f)
@@ -324,17 +321,14 @@ class MbedLsToolsBase:
         # Operations on mocked structure
         if oper == '+':
             mock_ids[mid] = platform_name
-            if self.DEBUG_FLAG:
-                self.debug(self.mock_manufacture_ids.__name__, "mock_ids['%s'] = '%s'"% (mid, platform_name))
+            self.debug(self.mock_manufacture_ids.__name__, "mock_ids['%s'] = '%s'"% (mid, platform_name))
         elif oper in ['-', '!']:
             if mid in mock_ids:
                 mock_ids.pop(mid)
-                if self.DEBUG_FLAG:
-                    self.debug(self.mock_manufacture_ids.__name__, "removing '%s' mock"% mid)
+                self.debug(self.mock_manufacture_ids.__name__, "removing '%s' mock"% mid)
             elif mid == '*':
                 mock_ids = {}   # Zero mocking set
-                if self.DEBUG_FLAG:
-                    self.debug(self.mock_manufacture_ids.__name__, "zero mocking set")
+                self.debug(self.mock_manufacture_ids.__name__, "zero mocking set")
 
         self.mock_write(mock_ids)
         return mock_ids
@@ -381,8 +375,7 @@ class MbedLsToolsBase:
                 target_id = val['target_id']
                 if target_id in self.retarget_data:
                     mbeds[i].update(self.retarget_data[target_id])
-                    if self.DEBUG_FLAG:
-                        self.debug(self.list_mbeds_ext.__name__, ("retargeting", target_id, mbeds[i]))
+                    self.debug(self.list_mbeds_ext.__name__, ("retargeting", target_id, mbeds[i]))
 
             # Add interface chip meta data to mbed structure
             details_txt = self.get_details_txt(val['mount_point'])
@@ -399,8 +392,7 @@ class MbedLsToolsBase:
                     if field_name not in mbeds[i]:
                         mbeds[i][field_name] = mbed_htm[field]
 
-            if self.DEBUG_FLAG:
-                self.debug(self.list_mbeds_ext.__name__, (mbeds[i]['platform_name_unique'], val['target_id']))
+            self.debug(self.list_mbeds_ext.__name__, (mbeds[i]['platform_name_unique'], val['target_id']))
         return mbeds
 
     def list_platforms(self):
@@ -462,7 +454,8 @@ class MbedLsToolsBase:
         @param text Text to be included in debug message
         @details Function prints directly on console
         """
-        print 'debug @%s.%s: %s'% (self.__class__.__name__, name, text)
+        if self.DEBUG_FLAG:
+            print 'debug @%s.%s: %s'% (self.__class__.__name__, name, text)
 
     def __str__(self):
         """! Object to string casting
@@ -584,11 +577,9 @@ class MbedLsToolsBase:
                             with open(mbed_htm_path, 'r') as f:
                                 result = f.readlines()
                         except IOError:
-                            if self.DEBUG_FLAG:
-                                self.debug(self.get_mbed_htm_target_id.__name__, ('Failed to open file', mbed_htm_path))
+                            self.debug(self.get_mbed_htm_target_id.__name__, ('Failed to open file', mbed_htm_path))
             except OSError:
-                if self.DEBUG_FLAG:
-                    self.debug(self.get_mbed_htm_target_id.__name__, ('Failed to list mount point', mount_point))
+                self.debug(self.get_mbed_htm_target_id.__name__, ('Failed to list mount point', mount_point))
 
         return result
 
@@ -622,8 +613,7 @@ class MbedLsToolsBase:
                     with open(path_to_details_txt, 'r') as f:
                         result = self.parse_details_txt(f.readlines())
                 except IOError:
-                    if self.DEBUG_FLAG:
-                        self.debug(self.get_mbed_fw_version.get_details_txt.__name__, ('Failed to open file', path_to_details_txt))
+                    self.debug(self.get_mbed_fw_version.get_details_txt.__name__, ('Failed to open file', path_to_details_txt))
         return result if result else None
 
     def parse_details_txt(self, lines):
@@ -649,20 +639,16 @@ class MbedLsToolsBase:
         m = re.search('\?code=([a-fA-F0-9]+)', line)
         if m:
             result = m.groups()[0]
-            if self.DEBUG_FLAG:
-                self.debug(self.scan_html_line_for_target_id.__name__, line.strip())
-            if self.DEBUG_FLAG:
-                self.debug(self.scan_html_line_for_target_id.__name__, (m.groups(), result))
+            self.debug(self.scan_html_line_for_target_id.__name__, line.strip())
+            self.debug(self.scan_html_line_for_target_id.__name__, (m.groups(), result))
             return result
         # Last resort, we can try to see if old mbed.htm format is there
         else:
             m = re.search('\?auth=([a-fA-F0-9]+)', line)
             if m:
                 result = m.groups()[0]
-                if self.DEBUG_FLAG:
-                    self.debug(self.scan_html_line_for_target_id.__name__, line.strip())
-                if self.DEBUG_FLAG:
-                    self.debug(self.scan_html_line_for_target_id.__name__, (m.groups(), result))
+                self.debug(self.scan_html_line_for_target_id.__name__, line.strip())
+                self.debug(self.scan_html_line_for_target_id.__name__, (m.groups(), result))
                 return result
         return None
 
