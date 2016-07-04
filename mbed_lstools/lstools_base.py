@@ -17,7 +17,9 @@ limitations under the License.
 
 import re
 import os
+from os.path import expanduser
 import json
+import lockfile
 from os import listdir
 from os.path import isfile, join
 
@@ -37,6 +39,9 @@ class MbedLsToolsBase:
         if mock_ids:
             for mid in mock_ids:
                 self.manufacture_ids[mid] = mock_ids[mid]
+
+        # Create in HOME direcotry place for mbed-ls to store information
+        self.mbedls_home_dir_init()
 
     # Which OSs are supported by this module
     # Note: more than one OS can be supported by mbed-lstools_* module
@@ -190,10 +195,26 @@ class MbedLsToolsBase:
         "RIOT": "RIOT",
     }
 
+    # Directory where we will store global (OS user specific mocking)
+    HOME_DIR = expanduser("~")
+    MBEDLS_HOME_DIR = '.mbed-ls'
     MOCK_FILE_NAME = '.mbedls-mock'
+    MBEDLS_GLOBAL_LOCK = 'mbedls-lock'
+    MOCK_HOME_FILE_NAME = os.path.join(HOME_DIR, MBEDLS_HOME_DIR, MOCK_FILE_NAME)
     RETARGET_FILE_NAME = 'mbedls.json'
     DETAILS_TXT_NAME = 'DETAILS.TXT'
     MBED_HTM_NAME = 'mbed.htm'
+
+    def mbedls_home_dir_init(self):
+        """ Initialize data in home directory for locking features
+        """
+        if not os.path.isdir(os.path.join(self.HOME_DIR, self.MBEDLS_HOME_DIR)):
+            os.mkdir(os.path.join(self.HOME_DIR, self.MBEDLS_HOME_DIR))
+
+    def mbedls_get_global_lock(self):
+        file_path = os.path.join(self.HOME_DIR, self.MBEDLS_HOME_DIR, self.MBEDLS_GLOBAL_LOCK)
+        lock = lockfile.LockFile(file_path)
+        return lock
 
     def list_manufacture_ids(self):
         from prettytable import PrettyTable
@@ -213,35 +234,54 @@ class MbedLsToolsBase:
         """! Load mocking data from local file
         @return Curent mocking configuration (dictionary)
         """
-        if isfile(self.MOCK_FILE_NAME):
+
+        def read_mock_file(filename):
             if self.DEBUG_FLAG:
-                self.debug(self.mock_read.__name__, "reading mock file %s"% self.MOCK_FILE_NAME)
+                self.debug(self.mock_read.__name__, "reading mock file '%s'"% filename)
             try:
-                with open(self.MOCK_FILE_NAME, "r") as f:
+                with open(filename, "r") as f:
                     return json.load(f)
             except IOError as e:
-                self.err("reading file '%s' failed: %s"% (os.path.abspath(self.MOCK_FILE_NAME),
+                self.err("reading file '%s' failed: %s"% (os.path.abspath(filename),
                     str(e)))
             except ValueError as e:
-                self.err("reading file '%s' content failed: %s"% (os.path.abspath(self.MOCK_FILE_NAME),
+                self.err("reading file '%s' content failed: %s"% (os.path.abspath(filename),
                     str(e)))
+            return {}
+
+        with self.mbedls_get_global_lock():
+            # This read is for backward compatibility
+            # When user already have on its system local mock-up it will work
+            # overwriting global one
+            if isfile(self.MOCK_FILE_NAME):
+                return read_mock_file(self.MOCK_FILE_NAME)
+
+            if isfile(self.MOCK_HOME_FILE_NAME):
+                return read_mock_file(self.MOCK_HOME_FILE_NAME)
         return {}
 
     def mock_write(self, mock_ids):
         """! Write current mocking structure
         @param mock_ids JSON mock data to dump to file
         """
-        if self.DEBUG_FLAG:
-            self.debug(self.mock_write.__name__, "writing %s"% self.MOCK_FILE_NAME)
-        try:
-            with open(self.MOCK_FILE_NAME, "w") as f:
-                f.write(json.dumps(mock_ids, indent=4))
-        except IOError as e:
-            self.err("reading file '%s' failed: %s"% (os.path.abspath(self.MOCK_FILE_NAME),
-                str(e)))
-        except ValueError as e:
-            self.err("reading file '%s' content failed: %s"% (os.path.abspath(self.MOCK_FILE_NAME),
-                str(e)))
+        def write_mock_file(filename, mock_ids):
+            if self.DEBUG_FLAG:
+                self.debug(self.mock_write.__name__, "writing mock file '%s'"% filename)
+            try:
+                with open(filename, "w") as f:
+                    f.write(json.dumps(mock_ids, indent=4))
+                    return True
+            except IOError as e:
+                self.err("writing file '%s' failed: %s"% (os.path.abspath(filename),
+                    str(e)))
+            except ValueError as e:
+                self.err("writing file '%s' content failed: %s"% (os.path.abspath(filename),
+                    str(e)))
+            return False
+
+        with self.mbedls_get_global_lock():
+            return write_mock_file(self.MOCK_HOME_FILE_NAME, mock_ids)
+        return False
 
     def retarget_read(self):
         """! Load retarget data from local file
