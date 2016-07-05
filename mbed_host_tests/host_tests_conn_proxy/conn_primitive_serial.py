@@ -120,3 +120,6 @@ class SerialConnectorPrimitive(ConnectorPrimitive):
     def finish(self):
         if self.serial:
             self.serial.close()
+
+    def __del__(self):
+        self.finish()
