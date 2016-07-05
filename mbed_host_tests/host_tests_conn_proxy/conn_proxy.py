@@ -22,6 +22,7 @@ from time import time
 from Queue import Empty as QueueEmpty   # Queue here refers to the module, not a class
 from conn_proxy_logger import HtrunLogger
 from conn_primitive_serial import SerialConnectorPrimitive
+from conn_primitive_remote import RemoteConnectorPrimitive
 
 
 class KiViBufferWalker():
@@ -54,22 +55,37 @@ def conn_process(event_queue, dut_event_queue, config):
     logger = HtrunLogger('CONN')
     logger.prn_inf("starting serial connection process...")
 
-    port = config.get('port')
-    baudrate = config.get('baudrate')
     serial_pooling = int(config.get('serial_pooling', 60))
     sync_behavior = int(config.get('sync_behavior', 1))
     sync_timeout = config.get('sync_timeout', 1.0)
+    conn_resource = config.get('conn_resource', 'serial')
 
-    # Notify event queue we will wait additional time for serial port to be ready
-    logger.prn_inf("notify event queue about extra %d sec timeout for serial port pooling"%serial_pooling)
-    event_queue.put(('__timeout', serial_pooling, time()))
+    connector = None
+    if conn_resource == 'serial':
+        # Standard serial port connection
+        # Notify event queue we will wait additional time for serial port to be ready
+        logger.prn_inf("notify event queue about extra %d sec timeout for serial port pooling"%serial_pooling)
+        event_queue.put(('__timeout', serial_pooling, time()))
 
-    logger.prn_inf("initializing serial port listener... ")
-    connector = SerialConnectorPrimitive(
-        'SERI',
-        port,
-        baudrate,
-        config=config)
+        port = config.get('port')
+        baudrate = config.get('baudrate')
+
+        logger.prn_inf("initializing serial port listener... ")
+        connector = SerialConnectorPrimitive(
+            'SERI',
+            port,
+            baudrate,
+            config=config)
+
+    elif conn_resource == 'grm':
+        # Gloabal Resource Mgr
+        logger.prn_inf("initializing global resource mgr listener... ")
+        connector = RemoteConnectorPrimitive(
+            'GLRM',
+            config=config)
+    else:
+        ogger.pn_err("unknown connection resource!")
+        return 0
 
     kv_buffer = KiViBufferWalker()
 
