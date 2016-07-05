@@ -38,19 +38,38 @@ class ConnectorPrimitive(object):
         return kv_buff
 
     def read(self, count):
+        """! Read data from DUT
+        @param count Number of bytes to read
+        @return Bytes read
+        """
         raise NotImplementedError
 
     def write(self, payload, log=False):
+        """! Read data from DUT
+        @param payload Buffer with data to send
+        @param log Set to True if you want to enable logging for this function
+        @return Payload (what was actually sent - if possible to establish that)
+        """
         raise NotImplementedError
 
     def flush(self):
+        """! Flush read/write channels of DUT """
         raise NotImplementedError
 
     def connected(self):
+        """! Check if there is a connection to DUT
+        @return True if there is conenction to DUT (read/write/flush API works)
+        """
         raise NotImplementedError
 
     def error(self):
+        """! Returns LAST_ERROR value
+        @return Value of self.LAST_ERROR
+        """
         raise NotImplementedError
+        return self.LAST_ERROR
 
     def finish(self):
+        """! Handle DUT dtor like (close resource) operations here
+        """
         raise NotImplementedError
