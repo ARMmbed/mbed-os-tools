@@ -876,6 +876,9 @@ class DetectRuntimeError(BaseHostTest):
       * ```CONN``` - connection process (pooling for connection source e.g. serial port),
       * ```SERI``` - serial port wrapper with standard read, write, flush interface,
       * ```HTST``` - host test object, HostTestBase derived object,
+      * ```PLGN``` - host test plugins, type `BasePlugin` of the plugin,
+      * ```COPY``` - host test plugins, type `CopyMethod` of the plugin,
+      * ```REST``` - host test plugins, type `ResetMethod` of the plugin,
     * ```level``` - logging level:
       * ```INF``` (info),
       * ```WRN``` (warning),
