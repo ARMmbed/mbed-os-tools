@@ -203,7 +203,7 @@ def run_host_test(image_path,
         if enum_host_tests_path:
             gt_logger.gt_log_tab("found 'host_tests' directory in: '%s'"% enum_host_tests_path)
         else:
-            gt_logger.gt_log_tab("'host_tests' directory not found (to directory levels above image path checked")
+            gt_logger.gt_log_tab("'host_tests' directory not found: two directory levels above image path checked")
 
     if verbose:
         gt_logger.gt_log("selecting test case observer...")
@@ -457,7 +457,7 @@ def get_testcase_result(output):
             else:
                 result_test_cases[testcase_id]['duration'] = 0.0
 
-    ### Adding missing test cases which were defined with __testcase_name 
+    ### Adding missing test cases which were defined with __testcase_name
     # Get test case names reported by utest + test case names
     # This data will be used to process all tests which were not executed
     # do their status can be set to SKIPPED (e.g. in JUnit)
