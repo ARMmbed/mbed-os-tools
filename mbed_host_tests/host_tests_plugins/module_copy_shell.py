@@ -23,13 +23,17 @@ from host_test_plugins import HostTestPluginBase
 
 
 class HostTestPluginCopyMethod_Shell(HostTestPluginBase):
-
     # Plugin interface
     name = 'HostTestPluginCopyMethod_Shell'
     type = 'CopyMethod'
     stable = True
     capabilities = ['shell', 'cp', 'copy', 'xcopy']
     required_parameters = ['image_path', 'destination_disk']
+
+    def __init__(self):
+        """ ctor
+        """
+        HostTestPluginBase.__init__(self)
 
     def setup(self, *args, **kwargs):
         """ Configure plugin, this function should be called before plugin execute() method is used.

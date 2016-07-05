@@ -26,10 +26,11 @@ from os import access, F_OK
 from sys import stdout
 from time import sleep
 from subprocess import call
+from mbed_host_tests.host_tests_logger import HtrunLogger
 
 
 class HostTestPluginBase:
-    """ Base class for all plugins used with host tests
+    """! Base class for all plugins used with host tests
     """
     ###########################################################################
     # Interface:
@@ -39,15 +40,27 @@ class HostTestPluginBase:
     # Interface attributes defining plugin name, type etc.
     ###########################################################################
     name = "HostTestPluginBase" # Plugin name, can be plugin class name
-    type = "BasePlugin"         # Plugin type: ResetMethod, Copymethod etc.
+    type = "BasePlugin"         # Plugin type: ResetMethod, CopyMethod etc.
     capabilities = []           # Capabilities names: what plugin can achieve
                                 # (e.g. reset using some external command line tool)
     required_parameters = []    # Parameters required for 'kwargs' in plugin APIs: e.g. self.execute()
     stable = False              # Determine if plugin is stable and can be used
 
+    def __init__(self):
+        """ ctor
+        """
+        # Setting Host Test Logger instance
+        ht_loggers = {
+            'BasePlugin' : HtrunLogger('PLGN'),
+            'CopyMethod' : HtrunLogger('COPY'),
+            'ResetMethod' : HtrunLogger('REST'),
+        }
+        self.plugin_logger = ht_loggers.get(self.type, ht_loggers['BasePlugin'])
+
     ###########################################################################
     # Interface methods
     ###########################################################################
+
     def setup(self, *args, **kwargs):
         """ Configure plugin, this function should be called before plugin execute() method is used.
         """
@@ -55,13 +68,10 @@ class HostTestPluginBase:
 
     def execute(self, capability, *args, **kwargs):
         """! Executes capability by name
-
         @param capability Capability name
         @param args Additional arguments
         @param kwargs Additional arguments
-
         @details Each capability e.g. may directly just call some command line program or execute building pythonic function
-
         @return Capability call return value
         """
         return False
@@ -82,23 +92,18 @@ class HostTestPluginBase:
     ###########################################################################
     def print_plugin_error(self, text):
         """! Function prints error in console and exits always with False
-
         @param text Text to print
         """
-        print "Plugin error: %s::%s: %s"% (self.name, self.type, text)
+        self.plugin_logger.prn_err(text)
         return False
 
     def print_plugin_info(self, text, NL=True):
         """! Function prints notification in console and exits always with True
-
         @param text Text to print
-
-        @param NL Newline will be added behind text if this flag is True
+        @param NL Deprecated! Newline will be added behind text if this flag is True
         """
-        if NL:
-            print "Plugin info: %s::%s: %s"% (self.name, self.type, text)
-        else:
-            print "Plugin info: %s::%s: %s"% (self.name, self.type, text),
+
+        self.plugin_logger.prn_inf(text)
         return True
 
     def print_plugin_char(self, char):

@@ -26,6 +26,11 @@ class HostTestPluginCopyMethod_Mbed(HostTestPluginBase):
     """ Generic flashing method for mbed-enabled devices (by copy)
     """
 
+    def __init__(self):
+        """ ctor
+        """
+        HostTestPluginBase.__init__(self)
+
     def generic_mbed_copy(self, image_path, destination_disk):
         """! Generic mbed copy method for "mbed enabled" devices.
 

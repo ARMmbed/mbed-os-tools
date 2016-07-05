@@ -23,7 +23,7 @@ from Queue import Empty as QueueEmpty   # Queue here refers to the module, not a
 from serial import Serial, SerialException
 from mbed_host_tests import host_tests_plugins
 from mbed_host_tests.host_tests_plugins.host_test_plugins import HostTestPluginBase
-from conn_proxy_logger import HtrunLogger
+from mbed_host_tests.host_tests_logger import HtrunLogger
 
 
 class ConnectorPrimitive(object):
