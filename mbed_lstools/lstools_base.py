@@ -398,8 +398,12 @@ class MbedLsToolsBase:
 
     def get_dummy_platform(self, platform_name):
         """! Returns simple dummy platform """
+        if not hasattr(self, "dummy_counter"):
+            self.dummy_counter = 0
+
         platform = {
             "platform_name": platform_name,
+            "platform_name_unique": "%s[%d]"% (platform_name, self.dummy_counter),
             "mount_point": "DUMMY",
             "serial_port": "DUMMY",
             "target_id": "DUMMY",
@@ -407,6 +411,7 @@ class MbedLsToolsBase:
             "target_id_usb_id": "DUMMY",
             "daplink_version": "DUMMY"
         }
+        self.dummy_counter += 1
         return platform
 
     def list_platforms(self):
