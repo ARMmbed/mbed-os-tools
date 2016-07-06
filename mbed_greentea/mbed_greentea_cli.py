@@ -610,6 +610,20 @@ def main_cli(opts, args, gt_instance_uuid=None):
                 ready_mbed_devices.append(mut)
         return (ready_mbed_devices, not_ready_mbed_devices)
 
+    def get_parallel_value(value):
+        """! Get correct value for parallel switch (--parallel)
+        @param value Value passed from --parallel
+        @return Refactored version of parallel number
+        """
+        try:
+            parallel_test_exec = int(value)
+            if parallel_test_exec < 1:
+                parallel_test_exec = 1
+        except ValueError:
+            gt_logger.gt_log_err("argument of mode --parallel is not a int, disabled parallel mode")
+            parallel_test_exec = 1
+        return parallel_test_exec
+
     if not MBED_LMTOOLS:
         gt_logger.gt_log_err("error: mbed-ls proprietary module not installed")
         return (-1)
@@ -711,13 +725,8 @@ def main_cli(opts, args, gt_instance_uuid=None):
     execute_threads = []        # list of threads to run test cases
 
     ### check if argument of --parallel mode is a integer and greater or equal 1
-    try:
-        parallel_test_exec = int(opts.parallel_test_exec)
-        if parallel_test_exec < 1:
-            parallel_test_exec = 1
-    except ValueError:
-        gt_logger.gt_log_err("argument of mode --parallel is not a int, disable parallel mode")
-        parallel_test_exec = 1
+
+    parallel_test_exec = get_parallel_value(opts.parallel_test_exe)
 
     # Values used to generate random seed for test execution order shuffle
     SHUFFLE_SEED_ROUND = 10 # Value used to round float random seed
