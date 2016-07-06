@@ -68,6 +68,7 @@ class MbedListingestCase(unittest.TestCase):
         mbeds = self.mbeds.list_mbeds_ext()
         for mbed in mbeds:
             self.assertIn('platform_name_unique', mbed)
+            self.assertIn('daplink_version', mbed)
 
     def test_list_platforms(self):
         platforms = self.mbeds.list_platforms()
@@ -83,6 +84,18 @@ class MbedListingestCase(unittest.TestCase):
             self.assertIs(type(platforms[p]), int)
             self.assertTrue(type(platforms[p]) >= 0)
 
+    def test_get_dummy_platform(self):
+        p = self.mbeds.get_dummy_platform('K64F')
+        self.assertIs(type(p), dict)
+
+        self.assertIn('platform_name', p)
+        self.assertIn('platform_name_unique', p)
+        self.assertIn('target_id', p)
+        self.assertIn('mount_point', p)
+        self.assertIn('serial_port', p)
+        self.assertIn('target_id_mbed_htm', p)
+        self.assertIn('target_id_usb_id', p)
+        self.assertIn('daplink_version', p)
 
 if __name__ == '__main__':
     unittest.main()
