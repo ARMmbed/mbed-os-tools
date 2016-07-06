@@ -152,7 +152,7 @@ class DefaultTestSelector(DefaultTestSelectorBase):
                 "forced_reset_timeout" : self.options.forced_reset_timeout,
                 "sync_behavior" : self.options.sync_behavior,
                 "platform_name" : self.options.micro,
-                "image_path" : self.options.image_path,
+                "image_path" : self.mbed.image_path,
             }
 
             if self.options.global_resource_mgr:
