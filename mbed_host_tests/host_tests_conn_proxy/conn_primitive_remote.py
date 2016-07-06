@@ -53,7 +53,7 @@ class RemoteConnectorPrimitive(ConnectorPrimitive):
         self.logger.prn_inf("remote resources initialization: remote(host=%s, port=%s)"% (self.grm_host, self.grm_port))
 
         # Connect to remote global resource manager
-        self.client = self.remote_module.RaasClient(host=self.grm_host, port=self.grm_port)
+        self.client = self.remote_module.create(host=self.grm_host, port=self.grm_port)
 
         # First get the resources
         resources = self.client.get_resources()
