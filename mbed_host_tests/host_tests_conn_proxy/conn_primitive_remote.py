@@ -69,26 +69,29 @@ class RemoteConnectorPrimitive(ConnectorPrimitive):
             self.logger.prn_err("can't allocate resource: '%s', reason: %s"% (self.platform_name, str(e)))
             return False
 
-        # Remote DUT reset
-        if not self.__remote_connect(baudrate=self.baudrate):
-            return False
-
-        if not self.__remote_flashing(self.image_path):
-            return False
-
-        if not self.__remote_reset():
-            return False
+        # Remote DUT connection, flashing and reset...
+        self.__remote_connect(baudrate=self.baudrate)
+        self.__remote_flashing(self.image_path)
+        self.__remote_disconnect()
+        self.__remote_connect(baudrate=self.baudrate)
+        self.__remote_reset()
         return True
 
     def __remote_connect(self, baudrate=115200, buffer_size=6):
         """! Open remote connection to DUT """
-        self.logger.prn_inf("opening connection to platform at '%s'"% baudrate)
+        self.logger.prn_inf("opening connection to platform at baudrate='%s, bufferSize=%d'"% (baudrate, buffer_size))
         try:
             serial_parameters = self.remote_module.SerialParameters(lineMode=False, baudrate=baudrate, bufferSize=buffer_size)
             self.selected_resource.openConnection(parameters=serial_parameters)
         except self.remote_module.resources.ResourceError as e:
             self.logger.prn_inf("openConnection() failed, reason: " + str(e))
             self.selected_resource = None
+            return False
+        return True
+
+    def __remote_disconnect(self):
+        if self.selected_resource.is_connected:
+            self.selected_resource.closeConnection()
             return False
         return True
 
@@ -110,11 +113,11 @@ class RemoteConnectorPrimitive(ConnectorPrimitive):
 
     def read(self, count):
         """! Read 'count' bytes of data from DUT """
+        date = str()
         try:
             data = self.selected_resource.read(count)
         except self.remote_module.resources.ResourceError as e:
             self.logger.prn_err("RemoteConnectorPrimitive.read(%d): %s"% (count, str(e)))
-            return str()
         return data
 
     def write(self, payload, log=False):
