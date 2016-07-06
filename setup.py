@@ -49,4 +49,6 @@ setup(name='mbed-ls',
             "mbedls=mbed_lstools:mbedls_main",
         ],
       },
-      install_requires=["PrettyTable>=0.7.2"])
+      install_requires=[
+        "PrettyTable>=0.7.2",
+        "lockfile"])

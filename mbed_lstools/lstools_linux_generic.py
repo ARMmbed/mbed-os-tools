@@ -138,8 +138,7 @@ class MbedLsToolsLinuxGeneric(MbedLsToolsBase):
                 line = line.rstrip()
                 if not line.lower().startswith('total '):    # total 0
                     result.append(line)
-                    if self.DEBUG_FLAG:
-                        self.debug(self.get_dev_by_id_process.__name__, line)
+                    self.debug(self.get_dev_by_id_process.__name__, line)
         return result
 
     def get_dev_by_id(self, subdir):
@@ -157,8 +156,7 @@ class MbedLsToolsLinuxGeneric(MbedLsToolsBase):
         result = []
         cmd = 'mount | grep vfat'
 
-        if self.DEBUG_FLAG:
-            self.debug(self.get_mounts.__name__, cmd)
+        self.debug(self.get_mounts.__name__, cmd)
 
         _stdout, _, retval = self.run_cli_process(cmd)
 
@@ -166,8 +164,7 @@ class MbedLsToolsLinuxGeneric(MbedLsToolsBase):
             for line in _stdout.splitlines():
                 line = line.rstrip()
                 result.append(line)
-                if self.DEBUG_FLAG:
-                    self.debug(self.get_mounts.__name__, line)
+                self.debug(self.get_mounts.__name__, line)
         return result
 
     def get_disk_hex_ids(self, disk_list):

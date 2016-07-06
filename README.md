@@ -441,7 +441,7 @@ Let's say we want change ```serial_port```'s value to other COM port. For exampl
 To do so we would have to create a new file called ```mbedls.json``` in directory where want to use this modification. File content could look like this: a JSON file where keys are ```target_id```'s and values are dictionaries with new values:
 
 ```
-$ cat mbedls.ls
+$ cat mbedls.json
 {
     "0240022648cb1e77000000000000000000000000b512e3cf" : {
         "serial_port" : "MyComPort01"
@@ -461,24 +461,21 @@ $ mbedls
 
 # Mocking new or existing target to custom platform name
 Command line switch ```--mock``` provide simple manufacturers ID masking with new platform name.
-Users should be able to add locally new ```MID``` -> ```platform_name``` mapping when e.g. prototyping.
+Users should be able to add temporarily new ```MID``` -> ```platform_name``` mapping when e.g. prototyping.
 
-Mock configuration will be stored in directory where ```mbedls --mock``` command was issues, in local file ```.mbedls-mock```.
+Mock configuration will be stored in `$HOME/.mbed-ls/` directory, in local file ```.mbedls-mock```.
 
-**Note***: ```MID```: "manufacturers ID", first 4 characters of ```target_id```. Example: If ```target_id``` is ```02400221A0811E505D5FE3E8```, corresponding manufacturers ID is ```0240```.
+**Note***: ```MID``` stands for "manufacturers ID". `MID` is first four (4) characters of ```target_id``` string. Example: If ```target_id``` is ```02400221A0811E505D5FE3E8```, corresponding manufacturers ID is ```0240```.
 
 ## Mock command line examples
-* Add new command line parameter ```--mock``` (switch -m)
-* Add new / mask existing mapping ```MID``` -> ```platform_name``` and assign MID
+* Mock command line parameter: `--mock` or (switch `-m`)
+* Add new / mask existing mapping ```MID``` -> ```platform_name``` and assign `MID`:
     * ```$ mbedls --mock MID:PLATFORM_NAME``` or
     * ```$ mbedls --mock MID1:PLATFORM_NAME1,MID2:PLATFORM_NAME2```
-* Mask existing manufacturers ID with new platform name
-* Remove masking with '!' prefix
-    * ```$ mbedls --mock !MID```
-* Remove all maskings using !* notation
-    * ```$ mbedls --mock !*```
-* Combine above using comma (```,```) separator:
-    * ```$ mbedls --mock MID1:PLATFORM_NAME1,!MID2```
+    * Example: `$ mbedls --mock 0818:NUCLEO_F767ZI`
+* Remove masking with '!' prefix: `$ mbedls --mock !MID`
+* Remove all maskings using !* notation: `$ mbedls --mock !*`
+* Combine above using comma (`,`) separator: `$ mbedls --mock MID1:PLATFORM_NAME1,!MID2`
 
 ## Mocking example with Freescale K64F platform
 Initial setup with 1 x Freescale ```K64F``` board:
@@ -513,7 +510,7 @@ $ mbedls
 +--------------+---------------------+------------+------------+-------------------------+
 ```
 
-* We can remove mapping ```1234``` -> Anythying using ```!``` wildcard.
+* We can remove mapping ```1234``` -> Anythying using ```!``` wild-card.
 Note: We are using flag ```-json``` to get JSON format output of the ```--mock``` operation.
 ```
 $ mbedls --mock !1234 --json
@@ -539,7 +536,7 @@ $ mbedls --mock !*
 
 We can verify our mapping is reset:
 ```
-$ cat .mbedls-mock
+$ cat $HOME/.mbed-ls/.mbedls-mock
 {}
 ```
 

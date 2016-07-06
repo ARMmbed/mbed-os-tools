@@ -17,9 +17,12 @@ limitations under the License.
 
 import re
 import os
+from os.path import expanduser
 import json
+import lockfile
 from os import listdir
 from os.path import isfile, join
+from lockfile import LockFailed
 
 class MbedLsToolsBase:
     """ Base class for mbed-lstools, defines mbed-ls tools interface for mbed-enabled devices detection for various hosts
@@ -37,6 +40,9 @@ class MbedLsToolsBase:
         if mock_ids:
             for mid in mock_ids:
                 self.manufacture_ids[mid] = mock_ids[mid]
+
+        # Create in HOME directory place for mbed-ls to store information
+        self.mbedls_home_dir_init()
 
     # Which OSs are supported by this module
     # Note: more than one OS can be supported by mbed-lstools_* module
@@ -191,10 +197,26 @@ class MbedLsToolsBase:
         "RIOT": "RIOT",
     }
 
+    # Directory where we will store global (OS user specific mocking)
+    HOME_DIR = expanduser("~")
+    MBEDLS_HOME_DIR = '.mbed-ls'
     MOCK_FILE_NAME = '.mbedls-mock'
+    MBEDLS_GLOBAL_LOCK = 'mbedls-lock'
+    MOCK_HOME_FILE_NAME = os.path.join(HOME_DIR, MBEDLS_HOME_DIR, MOCK_FILE_NAME)
     RETARGET_FILE_NAME = 'mbedls.json'
     DETAILS_TXT_NAME = 'DETAILS.TXT'
     MBED_HTM_NAME = 'mbed.htm'
+
+    def mbedls_home_dir_init(self):
+        """ Initialize data in home directory for locking features
+        """
+        if not os.path.isdir(os.path.join(self.HOME_DIR, self.MBEDLS_HOME_DIR)):
+            os.mkdir(os.path.join(self.HOME_DIR, self.MBEDLS_HOME_DIR))
+
+    def mbedls_get_global_lock(self):
+        file_path = os.path.join(self.HOME_DIR, self.MBEDLS_HOME_DIR, self.MBEDLS_GLOBAL_LOCK)
+        lock = lockfile.LockFile(file_path)
+        return lock
 
     def list_manufacture_ids(self):
         from prettytable import PrettyTable
@@ -214,43 +236,65 @@ class MbedLsToolsBase:
         """! Load mocking data from local file
         @return Curent mocking configuration (dictionary)
         """
-        if isfile(self.MOCK_FILE_NAME):
-            if self.DEBUG_FLAG:
-                self.debug(self.mock_read.__name__, "reading mock file %s"% self.MOCK_FILE_NAME)
+
+        def read_mock_file(filename):
+            self.debug(self.mock_read.__name__, "reading mock file '%s'"% filename)
             try:
-                with open(self.MOCK_FILE_NAME, "r") as f:
+                with open(filename, "r") as f:
                     return json.load(f)
             except IOError as e:
-                self.err("reading file '%s' failed: %s"% (os.path.abspath(self.MOCK_FILE_NAME),
+                self.err("reading file '%s' failed: %s"% (os.path.abspath(filename),
                     str(e)))
             except ValueError as e:
-                self.err("reading file '%s' content failed: %s"% (os.path.abspath(self.MOCK_FILE_NAME),
+                self.err("reading file '%s' content failed: %s"% (os.path.abspath(filename),
                     str(e)))
+            return {}
+
+        try:
+            with self.mbedls_get_global_lock():
+                # This read is for backward compatibility
+                # When user already have on its system local mock-up it will work
+                # overwriting global one
+                if isfile(self.MOCK_FILE_NAME):
+                    return read_mock_file(self.MOCK_FILE_NAME)
+
+                if isfile(self.MOCK_HOME_FILE_NAME):
+                    return read_mock_file(self.MOCK_HOME_FILE_NAME)
+        except LockFailed as e:
+            self.err(str(e))
         return {}
 
     def mock_write(self, mock_ids):
         """! Write current mocking structure
         @param mock_ids JSON mock data to dump to file
         """
-        if self.DEBUG_FLAG:
-            self.debug(self.mock_write.__name__, "writing %s"% self.MOCK_FILE_NAME)
+        def write_mock_file(filename, mock_ids):
+            self.debug(self.mock_write.__name__, "writing mock file '%s'"% filename)
+            try:
+                with open(filename, "w") as f:
+                    f.write(json.dumps(mock_ids, indent=4))
+                    return True
+            except IOError as e:
+                self.err("writing file '%s' failed: %s"% (os.path.abspath(filename),
+                    str(e)))
+            except ValueError as e:
+                self.err("writing file '%s' content failed: %s"% (os.path.abspath(filename),
+                    str(e)))
+            return False
+
         try:
-            with open(self.MOCK_FILE_NAME, "w") as f:
-                f.write(json.dumps(mock_ids, indent=4))
-        except IOError as e:
-            self.err("reading file '%s' failed: %s"% (os.path.abspath(self.MOCK_FILE_NAME),
-                str(e)))
-        except ValueError as e:
-            self.err("reading file '%s' content failed: %s"% (os.path.abspath(self.MOCK_FILE_NAME),
-                str(e)))
+            with self.mbedls_get_global_lock():
+                return write_mock_file(self.MOCK_HOME_FILE_NAME, mock_ids)
+        except LockFailed as e:
+            self.err(str(e))
+        return False
 
     def retarget_read(self):
         """! Load retarget data from local file
         @return Curent retarget configuration (dictionary)
         """
         if os.path.isfile(self.RETARGET_FILE_NAME):
-            if self.DEBUG_FLAG:
-                self.debug(self.retarget_read.__name__, "reading retarget file %s"% self.RETARGET_FILE_NAME)
+            self.debug(self.retarget_read.__name__, "reading retarget file %s"% self.RETARGET_FILE_NAME)
             try:
                 with open(self.RETARGET_FILE_NAME, "r") as f:
                     return json.load(f)
@@ -279,17 +323,14 @@ class MbedLsToolsBase:
         # Operations on mocked structure
         if oper == '+':
             mock_ids[mid] = platform_name
-            if self.DEBUG_FLAG:
-                self.debug(self.mock_manufacture_ids.__name__, "mock_ids['%s'] = '%s'"% (mid, platform_name))
+            self.debug(self.mock_manufacture_ids.__name__, "mock_ids['%s'] = '%s'"% (mid, platform_name))
         elif oper in ['-', '!']:
             if mid in mock_ids:
                 mock_ids.pop(mid)
-                if self.DEBUG_FLAG:
-                    self.debug(self.mock_manufacture_ids.__name__, "removing '%s' mock"% mid)
+                self.debug(self.mock_manufacture_ids.__name__, "removing '%s' mock"% mid)
             elif mid == '*':
                 mock_ids = {}   # Zero mocking set
-                if self.DEBUG_FLAG:
-                    self.debug(self.mock_manufacture_ids.__name__, "zero mocking set")
+                self.debug(self.mock_manufacture_ids.__name__, "zero mocking set")
 
         self.mock_write(mock_ids)
         return mock_ids
@@ -336,8 +377,7 @@ class MbedLsToolsBase:
                 target_id = val['target_id']
                 if target_id in self.retarget_data:
                     mbeds[i].update(self.retarget_data[target_id])
-                    if self.DEBUG_FLAG:
-                        self.debug(self.list_mbeds_ext.__name__, ("retargeting", target_id, mbeds[i]))
+                    self.debug(self.list_mbeds_ext.__name__, ("retargeting", target_id, mbeds[i]))
 
             # Add interface chip meta data to mbed structure
             details_txt = self.get_details_txt(val['mount_point'])
@@ -354,8 +394,7 @@ class MbedLsToolsBase:
                     if field_name not in mbeds[i]:
                         mbeds[i][field_name] = mbed_htm[field]
 
-            if self.DEBUG_FLAG:
-                self.debug(self.list_mbeds_ext.__name__, (mbeds[i]['platform_name_unique'], val['target_id']))
+            self.debug(self.list_mbeds_ext.__name__, (mbeds[i]['platform_name_unique'], val['target_id']))
         return mbeds
 
     def list_platforms(self):
@@ -417,7 +456,8 @@ class MbedLsToolsBase:
         @param text Text to be included in debug message
         @details Function prints directly on console
         """
-        print 'debug @%s.%s: %s'% (self.__class__.__name__, name, text)
+        if self.DEBUG_FLAG:
+            print 'debug @%s.%s: %s'% (self.__class__.__name__, name, text)
 
     def __str__(self):
         """! Object to string casting
@@ -539,11 +579,9 @@ class MbedLsToolsBase:
                             with open(mbed_htm_path, 'r') as f:
                                 result = f.readlines()
                         except IOError:
-                            if self.DEBUG_FLAG:
-                                self.debug(self.get_mbed_htm_target_id.__name__, ('Failed to open file', mbed_htm_path))
+                            self.debug(self.get_mbed_htm_target_id.__name__, ('Failed to open file', mbed_htm_path))
             except OSError:
-                if self.DEBUG_FLAG:
-                    self.debug(self.get_mbed_htm_target_id.__name__, ('Failed to list mount point', mount_point))
+                self.debug(self.get_mbed_htm_target_id.__name__, ('Failed to list mount point', mount_point))
 
         return result
 
@@ -577,8 +615,7 @@ class MbedLsToolsBase:
                     with open(path_to_details_txt, 'r') as f:
                         result = self.parse_details_txt(f.readlines())
                 except IOError:
-                    if self.DEBUG_FLAG:
-                        self.debug(self.get_mbed_fw_version.get_details_txt.__name__, ('Failed to open file', path_to_details_txt))
+                    self.debug(self.get_mbed_fw_version.get_details_txt.__name__, ('Failed to open file', path_to_details_txt))
         return result if result else None
 
     def parse_details_txt(self, lines):
@@ -604,20 +641,16 @@ class MbedLsToolsBase:
         m = re.search('\?code=([a-fA-F0-9]+)', line)
         if m:
             result = m.groups()[0]
-            if self.DEBUG_FLAG:
-                self.debug(self.scan_html_line_for_target_id.__name__, line.strip())
-            if self.DEBUG_FLAG:
-                self.debug(self.scan_html_line_for_target_id.__name__, (m.groups(), result))
+            self.debug(self.scan_html_line_for_target_id.__name__, line.strip())
+            self.debug(self.scan_html_line_for_target_id.__name__, (m.groups(), result))
             return result
         # Last resort, we can try to see if old mbed.htm format is there
         else:
             m = re.search('\?auth=([a-fA-F0-9]+)', line)
             if m:
                 result = m.groups()[0]
-                if self.DEBUG_FLAG:
-                    self.debug(self.scan_html_line_for_target_id.__name__, line.strip())
-                if self.DEBUG_FLAG:
-                    self.debug(self.scan_html_line_for_target_id.__name__, (m.groups(), result))
+                self.debug(self.scan_html_line_for_target_id.__name__, line.strip())
+                self.debug(self.scan_html_line_for_target_id.__name__, (m.groups(), result))
                 return result
         return None
 

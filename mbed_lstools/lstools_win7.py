@@ -89,8 +89,7 @@ class MbedLsToolsWin7(MbedLsToolsBase):
         self.winreg.Enum = self.winreg.OpenKey(self.winreg.HKEY_LOCAL_MACHINE, r'SYSTEM\CurrentControlSet\Enum')
         usb_devs = self.winreg.OpenKey(self.winreg.Enum, 'USB')
 
-        if self.DEBUG_FLAG:
-            self.debug(self.get_mbed_com_port.__name__, 'ID: ' + tid)
+        self.debug(self.get_mbed_com_port.__name__, 'ID: ' + tid)
 
         # first try to find all devs keys (by tid)
         dev_keys = []
@@ -105,8 +104,7 @@ class MbedLsToolsWin7(MbedLsToolsBase):
             try:
                 param = self.winreg.OpenKey(key, "Device Parameters")
                 port = self.winreg.QueryValueEx(param, 'PortName')[0]
-                if self.DEBUG_FLAG:
-                    self.debug(self.get_mbed_com_port.__name__, port)
+                self.debug(self.get_mbed_com_port.__name__, port)
                 return port
             except:
                 pass
@@ -122,8 +120,7 @@ class MbedLsToolsWin7(MbedLsToolsBase):
                             ports += [self.get_mbed_com_port(dev)]
                 for port in ports:
                     if port:
-                        if self.DEBUG_FLAG:
-                            self.debug(self.get_mbed_com_port.__name__, port)
+                        self.debug(self.get_mbed_com_port.__name__, port)
                         return port
             except:
                 pass
@@ -148,8 +145,7 @@ class MbedLsToolsWin7(MbedLsToolsBase):
             # TargetID is a hex string with 10-48 chars
             tid = re.search('[0-9A-Fa-f]{10,48}', mbed[1]).group(0)
             mbeds += [(mountpoint, tid)]
-            if self.DEBUG_FLAG:
-                self.debug(self.get_mbeds.__name__, (mountpoint, tid))
+            self.debug(self.get_mbeds.__name__, (mountpoint, tid))
         return mbeds
 
     # =============================== Registry ====================================
@@ -183,8 +179,7 @@ class MbedLsToolsWin7(MbedLsToolsBase):
             result += [d for d in self.get_dos_devices() if ven.upper() in d[1].upper()]
 
         for r in result:
-            if self.DEBUG_FLAG:
-                self.debug(self.get_mbed_devices.__name__, r)
+            self.debug(self.get_mbed_devices.__name__, r)
         return result
 
     def get_dos_devices(self):
