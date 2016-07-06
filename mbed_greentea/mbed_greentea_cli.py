@@ -726,7 +726,7 @@ def main_cli(opts, args, gt_instance_uuid=None):
 
     ### check if argument of --parallel mode is a integer and greater or equal 1
 
-    parallel_test_exec = get_parallel_value(opts.parallel_test_exe)
+    parallel_test_exec = get_parallel_value(opts.parallel_test_exec)
 
     # Values used to generate random seed for test execution order shuffle
     SHUFFLE_SEED_ROUND = 10 # Value used to round float random seed
