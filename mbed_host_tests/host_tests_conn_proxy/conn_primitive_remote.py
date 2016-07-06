@@ -70,11 +70,15 @@ class RemoteConnectorPrimitive(ConnectorPrimitive):
             return False
 
         # Remote DUT connection, flashing and reset...
-        self.__remote_connect(baudrate=self.baudrate)
-        self.__remote_flashing(self.image_path)
-        self.__remote_disconnect()
-        self.__remote_connect(baudrate=self.baudrate)
-        self.__remote_reset()
+        try:
+            self.__remote_connect(baudrate=self.baudrate)
+            self.__remote_flashing(self.image_path)
+            self.__remote_disconnect()
+            self.__remote_connect(baudrate=self.baudrate)
+            self.__remote_reset()
+        except Exception as e:
+            self.logger.prn_err(str(e))
+            return False
         return True
 
     def __remote_connect(self, baudrate=115200, buffer_size=6):
@@ -84,32 +88,25 @@ class RemoteConnectorPrimitive(ConnectorPrimitive):
             serial_parameters = self.remote_module.SerialParameters(lineMode=False, baudrate=baudrate, bufferSize=buffer_size)
             self.selected_resource.openConnection(parameters=serial_parameters)
         except self.remote_module.resources.ResourceError as e:
-            self.logger.prn_inf("openConnection() failed, reason: " + str(e))
+            self.logger.prn_inf("openConnection() failed")
             self.selected_resource = None
-            return False
-        return True
+            raise e
 
     def __remote_disconnect(self):
         if self.selected_resource.is_connected:
             self.selected_resource.closeConnection()
-            return False
-        return True
 
     def __remote_reset(self):
         """! Use GRM remote API to reset DUT """
         self.logger.prn_inf("remote resources reset...")
         if not self.selected_resource.reset():
-            self.logger.prn_err("remote resources reset failed!")
-            return False
-        return True
+            raise Exception("remote resources reset failed!")
 
     def __remote_flashing(self, filename, forceflash=True):
         """! Use GRM remote API to flash DUT """
         self.logger.prn_inf("remote resources flashing with '%s'..."% filename)
         if not self.selected_resource.flash(filename, forceflash=forceflash):
-            self.logger.prn_err("remote resources flashing failed!")
-            return False
-        return True
+            raise Exception("remote resources flashing failed!")
 
     def read(self, count):
         """! Read 'count' bytes of data from DUT """
