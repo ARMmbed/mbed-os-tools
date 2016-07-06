@@ -23,8 +23,13 @@ from host_test_plugins import HostTestPluginBase
 
 
 class HostTestPluginCopyMethod_MPS2(HostTestPluginBase):
-
     # MPS2 specific flashing / binary setup funcitons
+
+    def __init__(self):
+        """ ctor
+        """
+        HostTestPluginBase.__init__(self)
+
     def mps2_set_board_image_file(self, disk, images_cfg_path, image0file_path, image_name='images.txt'):
         """ This function will alter image cfg file
 

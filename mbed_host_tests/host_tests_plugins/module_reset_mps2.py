@@ -24,23 +24,29 @@ from host_test_plugins import HostTestPluginBase
 
 class HostTestPluginResetMethod_MPS2(HostTestPluginBase):
     """! Plugin used to reset ARM_MPS2 platform
-    
+
     @details Supports:
              reboot.txt   - startup from standby state, reboots when in run mode.
              shutdown.txt - shutdown from run mode.
              reset.txt    - reset FPGA during run mode.
     """
-    def touch_file(self, path):
-        """ Touch file and set timestamp to items
-        """
-        with open(path, 'a'):
-            os.utime(path, None)
 
     # Plugin interface
     name = 'HostTestPluginResetMethod_MPS2'
     type = 'ResetMethod'
     capabilities = ['reboot.txt', 'shutdown.txt', 'reset.txt']
     required_parameters = ['disk']
+
+    def __init__(self):
+        """ ctor
+        """
+        HostTestPluginBase.__init__(self)
+
+    def touch_file(self, path):
+        """ Touch file and set timestamp to items
+        """
+        with open(path, 'a'):
+            os.utime(path, None)
 
     def setup(self, *args, **kwargs):
         """ Prepare / configure plugin to work.

@@ -24,6 +24,13 @@ from host_test_plugins import HostTestPluginBase
 
 class HostTestPluginResetMethod_Mbed(HostTestPluginBase):
 
+    # Plugin interface
+    name = 'HostTestPluginResetMethod_Mbed'
+    type = 'ResetMethod'
+    stable = True
+    capabilities = ['default']
+    required_parameters = ['serial']
+
     def __init__(self):
         """! ctor
         @details We can check module version by referring to version attribute
@@ -31,18 +38,11 @@ class HostTestPluginResetMethod_Mbed(HostTestPluginBase):
         print pkg_resources.require("mbed-host-tests")[0].version
         '2.7'
         """
+        HostTestPluginBase.__init__(self)
         self.re_float = re.compile("^\d+\.\d+")
         pyserial_version = pkg_resources.require("pyserial")[0].version
         self.pyserial_version = self.get_pyserial_version(pyserial_version)
         self.is_pyserial_v3 = float(self.pyserial_version) >= 3.0
-
-
-    # Plugin interface
-    name = 'HostTestPluginResetMethod_Mbed'
-    type = 'ResetMethod'
-    stable = True
-    capabilities = ['default']
-    required_parameters = ['serial']
 
     def get_pyserial_version(self, pyserial_version):
         """! Retrieve pyserial module version

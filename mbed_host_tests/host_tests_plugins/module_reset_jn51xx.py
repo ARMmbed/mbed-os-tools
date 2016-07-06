@@ -29,6 +29,11 @@ class HostTestPluginResetMethod_JN51xx(HostTestPluginBase):
     required_parameters = ['serial']
     stable = False
 
+    def __init__(self):
+        """ ctor
+        """
+        HostTestPluginBase.__init__(self)
+
     def is_os_supported(self, os_name=None):
         """! In this implementation this plugin only is supporeted under Windows machines
         """

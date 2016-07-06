@@ -33,6 +33,11 @@ class HostTestPluginPowerCycleResetMethod(HostTestPluginBase):
     capabilities = ['power_cycle']
     required_parameters = ['target_id', 'device_info']
 
+    def __init__(self):
+        """ ctor
+        """
+        HostTestPluginBase.__init__(self)
+
     def setup(self, *args, **kwargs):
         """! Configure plugin, this function should be called before plugin execute() method is used.
         """
