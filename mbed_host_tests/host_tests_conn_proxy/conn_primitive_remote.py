@@ -16,7 +16,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from conn_primitive import ConnectorPrimitive
+from mbed_host_tests.host_tests_conn_proxy.conn_primitive import ConnectorPrimitive
 
 
 class RemoteConnectorPrimitive(ConnectorPrimitive):
@@ -48,7 +48,7 @@ class RemoteConnectorPrimitive(ConnectorPrimitive):
         except ImportError as e:
             self.logger.prn_err("unable to load global resource manager '%s' module!"% self.grm_module)
             self.remote_module = None
-            return
+            return False
 
         self.logger.prn_inf("remote resources initialization: remote(host=%s, port=%s)"% (self.grm_host, self.grm_port))
 
@@ -61,38 +61,66 @@ class RemoteConnectorPrimitive(ConnectorPrimitive):
 
         # Query for available resource
         # Automatic selection and allocation of a resource
-        self.selected_resource = self.client.allocate({
+        try:
+            self.selected_resource = self.client.allocate({
                 "platform_name": self.platform_name
-        })
+            })
+        except self.remote_module.resources.ResourceError as e:
+            self.logger.prn_err("can't allocate resource: '%s', reason: %s"% (self.platform_name, str(e)))
+            return False
 
-        # Open remote connection to DUT
-        serial_parameters = self.remote_module.SerialParameters(lineMode=False, baudrate=self.baudrate)
-        self.selected_resource.openConnection(parameters=serial_parameters)
         # Remote DUT reset
-        self.__remote_flashing(self.image_path)
-        self.__remote_reset()
+        if not self.__remote_connect(baudrate=self.baudrate):
+            return False
+
+        if not self.__remote_flashing(self.image_path):
+            return False
+
+        if not self.__remote_reset():
+            return False
+        return True
+
+    def __remote_connect(self, baudrate=115200, buffer_size=6):
+        """! Open remote connection to DUT """
+        self.logger.prn_inf("opening connection to platform at '%s'"% baudrate)
+        try:
+            serial_parameters = self.remote_module.SerialParameters(lineMode=False, baudrate=baudrate, bufferSize=buffer_size)
+            self.selected_resource.openConnection(parameters=serial_parameters)
+        except self.remote_module.resources.ResourceError as e:
+            self.logger.prn_inf("openConnection() failed, reason: " + str(e))
+            self.selected_resource = None
+            return False
+        return True
 
     def __remote_reset(self):
         """! Use GRM remote API to reset DUT """
         self.logger.prn_inf("remote resources reset...")
         if not self.selected_resource.reset():
             self.logger.prn_err("remote resources reset failed!")
+            return False
+        return True
 
-    def __remote_flashing(self, filename):
+    def __remote_flashing(self, filename, forceflash=True):
         """! Use GRM remote API to flash DUT """
         self.logger.prn_inf("remote resources flashing with '%s'..."% filename)
-        if not self.selected_resource.flash(filename, forceflash=True):
+        if not self.selected_resource.flash(filename, forceflash=forceflash):
             self.logger.prn_err("remote resources flashing failed!")
+            return False
+        return True
 
     def read(self, count):
         """! Read 'count' bytes of data from DUT """
-        data = self.selected_resource.read(count)
+        try:
+            data = self.selected_resource.read(count)
+        except self.remote_module.resources.ResourceError as e:
+            self.logger.prn_err("RemoteConnectorPrimitive.read(%d): %s"% (count, str(e)))
+            return str()
         return data
 
     def write(self, payload, log=False):
         """! Write 'payload' to DUT """
         if self.selected_resource:
-            self.selected_resource.writeline(payload)
+            self.selected_resource.write(payload)
             if log:
                 self.logger.prn_txd(payload)
         return payload
@@ -101,7 +129,7 @@ class RemoteConnectorPrimitive(ConnectorPrimitive):
         pass
 
     def connected(self):
-        return all([self.self.remote_module,
+        return all([self.remote_module,
             self.selected_resource,
             self.selected_resource.is_connected])
 
@@ -112,10 +140,13 @@ class RemoteConnectorPrimitive(ConnectorPrimitive):
         # Finally once we're done with the resource
         # we disconnect and release the allocation
         if self.selected_resource:
-            if self.selected_resource.is_connected:
-                self.selected_resource.closeConnection()
-            if self.selected_resource.is_allocated:
-                self.selected_resource.release()
+            try:
+                if self.selected_resource.is_connected:
+                    self.selected_resource.closeConnection()
+                if self.selected_resource.is_allocated:
+                    self.selected_resource.release()
+            except self.remote_module.resources.ResourceError as e:
+                self.logger.prn_err("RemoteConnectorPrimitive.finish() failed, reason: " + str(e))
 
     def __del__(self):
         self.finish()

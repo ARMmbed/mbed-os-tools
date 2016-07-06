@@ -53,9 +53,8 @@ class KiViBufferWalker():
 def conn_process(event_queue, dut_event_queue, config):
 
     logger = HtrunLogger('CONN')
-    logger.prn_inf("starting serial connection process...")
+    logger.prn_inf("starting connection process...")
 
-    serial_pooling = int(config.get('serial_pooling', 60))
     sync_behavior = int(config.get('sync_behavior', 1))
     sync_timeout = config.get('sync_timeout', 1.0)
     conn_resource = config.get('conn_resource', 'serial')
@@ -65,10 +64,13 @@ def conn_process(event_queue, dut_event_queue, config):
         # Standard serial port connection
         # Notify event queue we will wait additional time for serial port to be ready
         logger.prn_inf("notify event queue about extra %d sec timeout for serial port pooling"%serial_pooling)
-        event_queue.put(('__timeout', serial_pooling, time()))
 
+        # Get extra configuration related to serial port
         port = config.get('port')
         baudrate = config.get('baudrate')
+        serial_pooling = int(config.get('serial_pooling', 60))
+
+        event_queue.put(('__timeout', serial_pooling, time()))
 
         logger.prn_inf("initializing serial port listener... ")
         connector = SerialConnectorPrimitive(
@@ -78,8 +80,15 @@ def conn_process(event_queue, dut_event_queue, config):
             config=config)
 
     elif conn_resource == 'grm':
-        # Gloabal Resource Mgr
+        # Start GRM (Gloabal Resource Mgr) collection
         logger.prn_inf("initializing global resource mgr listener... ")
+
+        # Get extra configuration related to remote host
+        remote_pooling = int(config.get('remote_pooling', 30))
+
+        # Adding extra timeout for connection to remote resource host
+        event_queue.put(('__timeout', remote_pooling, time()))
+
         connector = RemoteConnectorPrimitive(
             'GLRM',
             config=config)
