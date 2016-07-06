@@ -63,13 +63,13 @@ def conn_process(event_queue, dut_event_queue, config):
     if conn_resource == 'serial':
         # Standard serial port connection
         # Notify event queue we will wait additional time for serial port to be ready
-        logger.prn_inf("notify event queue about extra %d sec timeout for serial port pooling"%serial_pooling)
 
         # Get extra configuration related to serial port
         port = config.get('port')
         baudrate = config.get('baudrate')
         serial_pooling = int(config.get('serial_pooling', 60))
 
+        logger.prn_inf("notify event queue about extra %d sec timeout for serial port pooling"%serial_pooling)
         event_queue.put(('__timeout', serial_pooling, time()))
 
         logger.prn_inf("initializing serial port listener... ")
@@ -87,6 +87,7 @@ def conn_process(event_queue, dut_event_queue, config):
         remote_pooling = int(config.get('remote_pooling', 30))
 
         # Adding extra timeout for connection to remote resource host
+        logger.prn_inf("notify event queue about extra %d sec timeout for remote connection"%remote_pooling)
         event_queue.put(('__timeout', remote_pooling, time()))
 
         connector = RemoteConnectorPrimitive(
