@@ -341,15 +341,14 @@ class MbedLsToolsBase:
     # Interface
     def list_mbeds(self):
         """! Get information about mbeds connected to device
-
         @return Returns None or if no error MBED_BOARDS = [ <MBED_BOARD>, ]
-
         @details MBED_BOARD
         {
             'mount_point' : <>,
             'serial_port' : <>,
             'target_id' : <>,
             'platform_name' : <>,
+            'daplink_version' : <>,
         }
         # If field unknown, place None
         """
@@ -396,6 +395,19 @@ class MbedLsToolsBase:
 
             self.debug(self.list_mbeds_ext.__name__, (mbeds[i]['platform_name_unique'], val['target_id']))
         return mbeds
+
+    def get_dummy_platform(self, platform_name):
+        """! Returns simple dummy platform """
+        platform = {
+            "platform_name": platform_name,
+            "mount_point": "DUMMY",
+            "serial_port": "DUMMY",
+            "target_id": "DUMMY",
+            "target_id_mbed_htm": "DUMMY",
+            "target_id_usb_id": "DUMMY",
+            "daplink_version": "DUMMY"
+        }
+        return platform
 
     def list_platforms(self):
         """! Useful if you just want to know which platforms are currently available on the system
