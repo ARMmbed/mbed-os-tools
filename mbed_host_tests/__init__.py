@@ -248,7 +248,7 @@ def init_host_test_cli_params():
 
     parser.add_option('-g', '--grm',
                       dest='global_resource_mgr',
-                      help='Global resource manager service IP address and port, example 10.2.123.43:3334')
+                      help='[Experimental] Global resource manager service module name, IP and port, example remote_client:10.2.123.43:3334')
 
     parser.add_option('', '--run',
                       dest='run_binary',
