@@ -149,11 +149,16 @@ def cmd_parser_setup():
 
 def mbedls_main():
     """! Function used to drive CLI (command line interface) application
-
     @return Function exits with success code
-
     @details Function exits back to command line with ERRORLEVEL
     """
+
+    def get_mbedls_version():
+        """! Get mbed-ls Python module version string """
+        import pkg_resources  # part of setuptools
+        version = pkg_resources.require("mbed-ls")[0].version
+        return version
+
     (opts, args) = cmd_parser_setup()
     mbeds = create()
 
@@ -162,6 +167,7 @@ def mbedls_main():
         sys.exit(-1)
 
     mbeds.DEBUG_FLAG = opts.debug
+    mbeds.debug(__name__, "mbed-ls ver. " + get_mbedls_version())
 
     if not opts.skip_retarget:
         mbeds.retarget()
@@ -204,14 +210,11 @@ def mbedls_main():
         print json.dumps(mbeds.list_platforms_ext(), indent=4, sort_keys=True)
 
     elif opts.version:
-        import pkg_resources  # part of setuptools
-        version = pkg_resources.require("mbed-ls")[0].version
-        print version
+        print get_mbedls_version()
 
     else:
         print mbeds.get_string(border=not opts.simple, header=not opts.simple)
 
-    if mbeds.DEBUG_FLAG:
-        mbeds.debug(__name__, "Return code: %d" % mbeds.ERRORLEVEL_FLAG)
+    mbeds.debug(__name__, "Return code: %d" % mbeds.ERRORLEVEL_FLAG)
 
     sys.exit(mbeds.ERRORLEVEL_FLAG)
