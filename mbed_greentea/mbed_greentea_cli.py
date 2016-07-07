@@ -83,16 +83,23 @@ def get_local_host_tests_dir(path):
         return LOCAL_HOST_TESTS_DIR
     return None
 
-
-def print_version(verbose=True):
-    """! Print current package version
+def get_greentea_version():
+    """! Get Greentea (mbed-greentea) Python module version
     """
     import pkg_resources  # part of setuptools
     version = pkg_resources.require("mbed-greentea")[0].version
-    if verbose:
-        print version
     return version
 
+def print_version():
+    """! Print current package version
+    """
+    print get_greentea_version()
+
+def get_hello_string():
+    """! Hello string used as first print
+    """
+    version = get_greentea_version()
+    return "greentea test automation tool ver. " + version
 
 def create_filtered_test_list(ctest_test_list, test_by_names, skip_test, test_spec=None):
     """! Filters test case list (filtered with switch -n) and return filtered list.
@@ -341,6 +348,7 @@ def main():
 
     cli_ret = 0
 
+    gt_logger.gt_log(get_hello_string())
     start = time()
     if opts.lock_by_target:
         # We are using Greentea proprietary locking mechanism to lock between platforms and targets
