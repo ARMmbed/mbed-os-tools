@@ -27,12 +27,24 @@ class GreenteaCliFunctionality(unittest.TestCase):
     def tearDown(self):
         pass
 
-    def test_print_version(self):
-        version = mbed_greentea_cli.print_version(verbose=False)
+    def test_get_greentea_version(self):
+        version = mbed_greentea_cli.get_greentea_version()
+
+        self.assertIs(type(version), str)
+
         a, b, c = version.split('.')
+
         self.assertEqual(a.isdigit(), True)
         self.assertEqual(b.isdigit(), True)
         self.assertEqual(c.isdigit(), True)
+
+    def get_hello_string(self):
+        version = mbed_greentea_cli.get_greentea_version()
+        hello_string = mbed_greentea_cli.get_hello_string()
+
+        self.assertIs(type(version), str)
+        self.assertIs(type(hello_string), str)
+        self.assertIn(version, hello_string)
 
 
 if __name__ == '__main__':
