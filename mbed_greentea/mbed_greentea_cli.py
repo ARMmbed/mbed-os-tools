@@ -34,6 +34,7 @@ from mbed_greentea.mbed_test_api import run_host_test
 from mbed_greentea.mbed_test_api import log_mbed_devices_in_table
 from mbed_greentea.mbed_test_api import TEST_RESULTS
 from mbed_greentea.mbed_test_api import TEST_RESULT_OK, TEST_RESULT_FAIL
+from mbed_greentea.mbed_test_api import parse_global_resource_mgr
 from mbed_greentea.mbed_report_api import exporter_text
 from mbed_greentea.mbed_report_api import exporter_testcase_text
 from mbed_greentea.mbed_report_api import exporter_json
@@ -248,6 +249,10 @@ def main():
                     action="store_true",
                     help='List available binaries')
 
+    parser.add_option('-g', '--grm',
+                    dest='global_resource_mgr',
+                    help='Global resource manager service query: platrform name, remote mgr module name, IP address and port, example K64F:module_name:10.2.123.43:3334')
+
     parser.add_option('-m', '--map-target',
                     dest='map_platform_to_yt_target',
                     help='List of custom mapping between platform name and yotta target. Comma separated list of YOTTA_TARGET:PLATFORM tuples')
@@ -428,6 +433,7 @@ def run_test_thread(test_result_queue, test_queue, opts, mut, build, build_path,
                                          digest_source=opts.digest_source,
                                          json_test_cfg=opts.json_test_configuration,
                                          enum_host_tests_path=enum_host_tests_path,
+                                         global_resource_mgr=opts.global_resource_mgr,
                                          verbose=verbose)
 
         # Some error in htrun, abort test execution
@@ -612,6 +618,20 @@ def main_cli(opts, args, gt_instance_uuid=None):
                 ready_mbed_devices.append(mut)
         return (ready_mbed_devices, not_ready_mbed_devices)
 
+    def get_parallel_value(value):
+        """! Get correct value for parallel switch (--parallel)
+        @param value Value passed from --parallel
+        @return Refactored version of parallel number
+        """
+        try:
+            parallel_test_exec = int(value)
+            if parallel_test_exec < 1:
+                parallel_test_exec = 1
+        except ValueError:
+            gt_logger.gt_log_err("argument of mode --parallel is not a int, disabled parallel mode")
+            parallel_test_exec = 1
+        return parallel_test_exec
+
     if not MBED_LMTOOLS:
         gt_logger.gt_log_err("error: mbed-ls proprietary module not installed")
         return (-1)
@@ -667,6 +687,20 @@ def main_cli(opts, args, gt_instance_uuid=None):
     mbeds = mbed_lstools.create()
     mbeds_list = mbeds.list_mbeds_ext()
 
+    if opts.global_resource_mgr:
+        # Mocking available platform requested by --grm switch
+        grm_values = parse_global_resource_mgr(opts.global_resource_mgr)
+        if grm_values:
+            gt_logger.gt_log_warn("entering global resource manager mbed-ls dummy mode!")
+            grm_platform_name, grm_module_name, grm_ip_name, grm_port_name = grm_values
+            mbeds_list = []
+            mbeds_list.append(mbeds.get_dummy_platform(grm_platform_name))
+            opts.global_resource_mgr = ':'.join(grm_values[1:])
+            gt_logger.gt_log_tab("adding dummy platform '%s'"% grm_platform_name)
+        else:
+            gt_logger.gt_log("global resource manager switch '--grm %s' in wrong format!"% opts.global_resource_mgr)
+            return (-1)
+
     ready_mbed_devices = [] # Devices which can be used (are fully detected)
     not_ready_mbed_devices = [] # Devices which can't be used (are not fully detected)
 
@@ -699,13 +733,8 @@ def main_cli(opts, args, gt_instance_uuid=None):
     execute_threads = []        # list of threads to run test cases
 
     ### check if argument of --parallel mode is a integer and greater or equal 1
-    try:
-        parallel_test_exec = int(opts.parallel_test_exec)
-        if parallel_test_exec < 1:
-            parallel_test_exec = 1
-    except ValueError:
-        gt_logger.gt_log_err("argument of mode --parallel is not a int, disable parallel mode")
-        parallel_test_exec = 1
+
+    parallel_test_exec = get_parallel_value(opts.parallel_test_exec)
 
     # Values used to generate random seed for test execution order shuffle
     SHUFFLE_SEED_ROUND = 10 # Value used to round float random seed

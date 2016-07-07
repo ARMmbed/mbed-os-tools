@@ -116,6 +116,7 @@ def run_host_test(image_path,
                   json_test_cfg=None,
                   max_failed_properties=5,
                   enum_host_tests_path=None,
+                  global_resource_mgr=None,
                   run_app=None):
     """! This function runs host test supervisor (executes mbedhtrun) and checks output from host test process.
     @param image_path Path to binary file for flashing
@@ -220,32 +221,39 @@ def run_host_test(image_path,
 
     # Command executing CLI for host test supervisor (in detect-mode)
     cmd = ["mbedhtrun",
-            '-d', disk,
+            '-m', micro,
             '-p', port,
             '-f', '"%s"'% image_path,
             ]
 
-    # Add extra parameters to host_test
-    if program_cycle_s is not None:
-        cmd += ["-C", str(program_cycle_s)]
-    if forced_reset_timeout:
-        cmd += ["-R", str(forced_reset_timeout)]
-    if copy_method is not None:
-        cmd += ["-c", copy_method]
-    if micro is not None:
-        cmd += ["-m", micro]
-    if target_id is not None:
-        cmd += ["-t", target_id]
-    if reset is not None:
-        cmd += ["-r", reset]
-    if reset_tout is not None:
-        cmd += ["-R", str(reset_tout)]
-    if json_test_cfg is not None:
-        cmd += ["--test-cfg", '"%s"' % str(json_test_cfg)]
-    if run_app is not None:
-        cmd += ["--run"]    # -f stores binary name!
-    if enum_host_tests_path:
-        cmd += ["-e", '"%s"'% enum_host_tests_path]
+    if global_resource_mgr:
+        # Use global resource manager to execute test
+        # Example:
+        # $ mbedhtrun -p :9600 -f "tests-mbed_drivers-generic_tests.bin" -m K64F --grm raas_client:10.2.203.31:8000
+        cmd += ['--grm', global_resource_mgr]
+    else:
+        # Use local resources to execute tests
+        # Add extra parameters to host_test
+        if disk:
+            cmd += ["-d", disk]
+        if program_cycle_s:
+            cmd += ["-C", str(program_cycle_s)]
+        if forced_reset_timeout:
+            cmd += ["-R", str(forced_reset_timeout)]
+        if copy_method:
+            cmd += ["-c", copy_method]
+        if target_id:
+            cmd += ["-t", target_id]
+        if reset:
+            cmd += ["-r", reset]
+        if reset_tout:
+            cmd += ["-R", str(reset_tout)]
+        if json_test_cfg:
+            cmd += ["--test-cfg", '"%s"' % str(json_test_cfg)]
+        if run_app:
+            cmd += ["--run"]    # -f stores binary name!
+        if enum_host_tests_path:
+            cmd += ["-e", '"%s"'% enum_host_tests_path]
 
     if verbose:
         gt_logger.gt_log_tab("calling mbedhtrun: %s"% " ".join(cmd))
@@ -608,3 +616,14 @@ def get_test_build_properties(test_spec, test_build_name):
         return result
     else:
         return None
+
+def parse_global_resource_mgr(global_resource_mgr):
+    """! Parses --grm switch with global resource manager info
+    @details K64F:module_name:10.2.123.43:3334
+    @return tuple wity four elements from GRM or None if error
+    """
+    try:
+        platform_name, module_name, ip_name, port_name = global_resource_mgr.split(':')
+    except ValueError as e:
+        return False
+    return platform_name, module_name, ip_name, port_name
