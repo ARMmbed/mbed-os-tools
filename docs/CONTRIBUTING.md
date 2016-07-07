@@ -131,7 +131,10 @@ Please see [PEP 0008 -- Style Guide for Python Code](https://www.python.org/dev/
 Example:
 ```python
 def make_squares(key, value=0):
-    """Return a dictionary and a list..."""
+    """! Return a dictionary and a list...
+    @param value Value parameter with default value of zero (0)
+    @return Retruns tuple of 'd' stuff and 'l' stuff
+    """
     d = {key: value}
     l = [key, value]
     return d, l
