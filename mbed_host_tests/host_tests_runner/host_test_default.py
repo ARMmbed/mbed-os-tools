@@ -73,6 +73,12 @@ class DefaultTestSelector(DefaultTestSelectorBase):
                     verbose=options.verbose)
                 sys.exit(0)
 
+            if options.global_resource_mgr:
+                # If Global Resource Mgr is working it will handle reset/flashing workflow
+                # So local plugins are offline
+                self.options.skip_reset = True
+                self.options.skip_flashing = True
+
         DefaultTestSelectorBase.__init__(self, options)
 
     def is_host_test_obj_compatible(self, obj_instance):
@@ -144,8 +150,21 @@ class DefaultTestSelector(DefaultTestSelectorBase):
                 "target_id" : self.options.target_id,
                 "serial_pooling" : self.options.pooling_timeout,
                 "forced_reset_timeout" : self.options.forced_reset_timeout,
-                "sync_behavior" : self.options.sync_behavior
+                "sync_behavior" : self.options.sync_behavior,
+                "platform_name" : self.options.micro,
+                "image_path" : self.mbed.image_path,
             }
+
+            if self.options.global_resource_mgr:
+                grm_module, grm_host, grm_port = self.options.global_resource_mgr.split(':')
+
+                config.update({
+                    "conn_resource" : 'grm',
+                    "grm_module" : grm_module,
+                    "grm_host" : grm_host,
+                    "grm_port" : grm_port,
+                })
+
             # DUT-host communication process
             args = (event_queue, dut_event_queue, config)
             p = Process(target=conn_process, args=args)

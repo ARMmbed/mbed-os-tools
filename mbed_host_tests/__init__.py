@@ -246,6 +246,10 @@ def init_host_test_cli_params():
                       action="store_true",
                       help='Prints registered plugins and exits')
 
+    parser.add_option('-g', '--grm',
+                      dest='global_resource_mgr',
+                      help='[Experimental] Global resource manager service module name, IP and port, example remote_client:10.2.123.43:3334')
+
     parser.add_option('', '--run',
                       dest='run_binary',
                       default=False,

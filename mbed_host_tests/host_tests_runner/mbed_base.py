@@ -101,12 +101,13 @@ class Mbed:
         @details Method which is actually copying image to mbed
         """
         # image_path - Where is binary with target's firmware
-        if copy_method is not None:
-            # We override 'default' method with 'shell' method
-            if copy_method == 'default':
-                copy_method = 'shell'
-        else:
-            copy_method = 'shell'
+
+        # Select copy_method
+        # We override 'default' method with 'shell' method
+        copy_method = {
+            None : 'shell',
+            'default' : 'shell',
+        }.get(copy_method, copy_method)
 
         result = ht_plugins.call_plugin('CopyMethod',
                                         copy_method,

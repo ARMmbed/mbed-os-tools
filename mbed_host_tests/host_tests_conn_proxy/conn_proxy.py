@@ -18,147 +18,11 @@ limitations under the License.
 
 import re
 import uuid
-from time import time, sleep
+from time import time
 from Queue import Empty as QueueEmpty   # Queue here refers to the module, not a class
-from serial import Serial, SerialException
-from mbed_host_tests import host_tests_plugins
-from mbed_host_tests.host_tests_plugins.host_test_plugins import HostTestPluginBase
 from mbed_host_tests.host_tests_logger import HtrunLogger
-
-
-class ConnectorPrimitive(object):
-
-    def __init__(self, name):
-        self.LAST_ERROR = None
-        self.logger = HtrunLogger(name)
-
-    def write_kv(self, key, value):
-        """! Forms and sends Key-Value protocol message.
-        @details On how to parse K-V sent from DUT see KiViBufferWalker::KIVI_REGEX
-                 On how DUT sends K-V please see greentea_write_postamble() function in greentea-client
-        @return Returns buffer with K-V message sent to DUT
-        """
-        # All Key-Value messages ends with newline character
-        kv_buff = "{{%s;%s}}"% (key, value) + '\n'
-        self.write(kv_buff)
-        self.logger.prn_txd(kv_buff.rstrip())
-        return kv_buff
-
-    def read(self, count):
-        raise NotImplementedError
-
-    def write(self, payload, log=False):
-        raise NotImplementedError
-
-    def flush(self):
-        raise NotImplementedError
-
-    def connected(self):
-        raise NotImplementedError
-
-    def error(self):
-        raise NotImplementedError
-
-    def finish(self):
-        raise NotImplementedError
-
-
-class SerialConnectorPrimitive(ConnectorPrimitive):
-    def __init__(self, name, port, baudrate, config):
-        ConnectorPrimitive.__init__(self, name)
-        self.port = port
-        self.baudrate = int(baudrate)
-        self.timeout = 0
-        self.config = config
-        self.target_id = self.config.get('target_id', None)
-        self.serial_pooling = config.get('serial_pooling', 60)
-        self.forced_reset_timeout = config.get('forced_reset_timeout', 1)
-
-        # Values used to call serial port listener...
-        self.logger.prn_inf("serial(port=%s, baudrate=%d, timeout=%s)"% (self.port, self.baudrate, self.timeout))
-
-        # Check if serial port for given target_id changed
-        # If it does we will use new port to open connections and make sure reset plugin
-        # later can reuse opened already serial port
-        #
-        # Note: This listener opens serial port and keeps connection so reset plugin uses
-        # serial port object not serial port name!
-        _, serial_port = HostTestPluginBase().check_serial_port_ready(self.port, target_id=self.target_id, timeout=self.serial_pooling)
-        if serial_port != self.port:
-            # Serial port changed for given targetID
-            self.logger.prn_inf("serial port changed from '%s to '%s')"% (self.port, serial_port))
-            self.port = serial_port
-
-        try:
-            self.serial = Serial(self.port, baudrate=self.baudrate, timeout=self.timeout)
-        except SerialException as e:
-            self.serial = None
-            self.LAST_ERROR = "connection lost, serial.Serial(%s. %d, %d): %s"% (self.port,
-                self.baudrate,
-                self.timeout,
-                str(e))
-            self.logger.prn_err(str(e))
-        else:
-            self.reset_dev_via_serial(delay=self.forced_reset_timeout)
-
-    def reset_dev_via_serial(self, delay=1):
-        """! Reset device using selected method, calls one of the reset plugins """
-        reset_type = self.config.get('reset_type', 'default')
-        if not reset_type:
-            reset_type = 'default'
-        disk = self.config.get('disk', None)
-
-        self.logger.prn_inf("reset device using '%s' plugin..."% reset_type)
-        result = host_tests_plugins.call_plugin('ResetMethod',
-            reset_type,
-            serial=self.serial,
-            disk=disk,
-            target_id=self.target_id)
-        # Post-reset sleep
-        if delay:
-            self.logger.prn_inf("waiting %.2f sec after reset"% delay)
-            sleep(delay)
-        self.logger.prn_inf("wait for it...")
-        return result
-
-    def read(self, count):
-        """! Read data from serial port RX buffer """
-        c = str()
-        try:
-            if self.serial:
-                c = self.serial.read(count)
-        except SerialException as e:
-            self.serial = None
-            self.LAST_ERROR = "connection lost, serial.read(%d): %s"% (count, str(e))
-            self.logger.prn_err(str(e))
-        return c
-
-    def write(self, payload, log=False):
-        """! Write data to serial port TX buffer """
-        try:
-            if self.serial:
-                self.serial.write(payload)
-                if log:
-                    self.logger.prn_txd(payload)
-        except SerialException as e:
-            self.serial = None
-            self.LAST_ERROR = "connection lost, serial.write(%d bytes): %s"% (len(payload), str(e))
-            self.logger.prn_err(str(e))
-        return payload
-
-    def flush(self):
-        if self.serial:
-            self.serial.flush()
-
-    def connected(self):
-        return bool(self.serial)
-
-    def error(self):
-        return self.LAST_ERROR
-
-    def finish(self):
-        if self.serial:
-            self.serial.close()
+from conn_primitive_serial import SerialConnectorPrimitive
+from conn_primitive_remote import RemoteConnectorPrimitive
 
 
 class KiViBufferWalker():
@@ -186,28 +50,70 @@ class KiViBufferWalker():
         return (key, value, time())
 
 
+def conn_primitive_factory(conn_resource, config, event_queue, logger):
+    """! Factory producing connectors based on type and config
+    @param conn_resource Name of connection primitive (e.g. 'serial' for
+           local serial port connection or 'grm' for global resource manager)
+    @param event_queue Even queue of Key-Value protocol
+    @param config Global configuration for connection process
+    @param logger Host Test logger instance
+    @return Object of type <ConnectorPrimitive> or None if type of connection primitive unknown (conn_resource)
+    """
+    if conn_resource == 'serial':
+        # Standard serial port connection
+        # Notify event queue we will wait additional time for serial port to be ready
+
+        # Get extra configuration related to serial port
+        port = config.get('port')
+        baudrate = config.get('baudrate')
+        serial_pooling = int(config.get('serial_pooling', 60))
+
+        logger.prn_inf("notify event queue about extra %d sec timeout for serial port pooling"%serial_pooling)
+        event_queue.put(('__timeout', serial_pooling, time()))
+
+        logger.prn_inf("initializing serial port listener... ")
+        connector = SerialConnectorPrimitive(
+            'SERI',
+            port,
+            baudrate,
+            config=config)
+        return connector
+
+    elif conn_resource == 'grm':
+        # Start GRM (Gloabal Resource Mgr) collection
+
+        # Get extra configuration related to remote host
+        remote_pooling = int(config.get('remote_pooling', 30))
+
+        # Adding extra timeout for connection to remote resource host
+        logger.prn_inf("notify event queue about extra %d sec timeout for remote connection"%remote_pooling)
+        event_queue.put(('__timeout', remote_pooling, time()))
+
+        logger.prn_inf("initializing global resource mgr listener... ")
+        connector = RemoteConnectorPrimitive(
+            'GLRM',
+            config=config)
+        return connector
+
+    else:
+        logger.pn_err("unknown connection resource!")
+        raise NotImplementedError("ConnectorPrimitive factory: unknown connection resource '%s'!"% conn_resource)
+        return None
+
+
 def conn_process(event_queue, dut_event_queue, config):
 
     logger = HtrunLogger('CONN')
-    logger.prn_inf("starting serial connection process...")
+    logger.prn_inf("starting connection process...")
 
-    port = config.get('port')
-    baudrate = config.get('baudrate')
-    serial_pooling = int(config.get('serial_pooling', 60))
+    # Configuration of conn_opriocess behaviour
     sync_behavior = int(config.get('sync_behavior', 1))
     sync_timeout = config.get('sync_timeout', 1.0)
+    conn_resource = config.get('conn_resource', 'serial')
 
-    # Notify event queue we will wait additional time for serial port to be ready
-    logger.prn_inf("notify event queue about extra %d sec timeout for serial port pooling"%serial_pooling)
-    event_queue.put(('__timeout', serial_pooling, time()))
-
-    logger.prn_inf("initializing serial port listener... ")
-    connector = SerialConnectorPrimitive(
-        'SERI',
-        port,
-        baudrate,
-        config=config)
-
+    # Create connector instance with proper configuration
+    connector = conn_primitive_factory(conn_resource, config, event_queue, logger)
+    # Create simple buffer we will use for Key-Value protocol data
     kv_buffer = KiViBufferWalker()
 
     # List of all sent to target UUIDs (if multiple found)
