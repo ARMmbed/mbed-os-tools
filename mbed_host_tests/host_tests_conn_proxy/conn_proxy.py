@@ -20,7 +20,7 @@ import re
 import uuid
 from time import time
 from Queue import Empty as QueueEmpty   # Queue here refers to the module, not a class
-from conn_proxy_logger import HtrunLogger
+from mbed_host_tests.host_tests_logger import HtrunLogger
 from conn_primitive_serial import SerialConnectorPrimitive
 from conn_primitive_remote import RemoteConnectorPrimitive
 
