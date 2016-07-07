@@ -50,16 +50,15 @@ class KiViBufferWalker():
         return (key, value, time())
 
 
-def conn_process(event_queue, dut_event_queue, config):
-
-    logger = HtrunLogger('CONN')
-    logger.prn_inf("starting connection process...")
-
-    sync_behavior = int(config.get('sync_behavior', 1))
-    sync_timeout = config.get('sync_timeout', 1.0)
-    conn_resource = config.get('conn_resource', 'serial')
-
-    connector = None
+def conn_primitive_factory(conn_resource, config, event_queue, logger):
+    """! Factory producing connectors based on type and config
+    @param conn_resource Name of connection primitive (e.g. 'serial' for
+           local serial port connection or 'grm' for global resource manager)
+    @param event_queue Even queue of Key-Value protocol
+    @param config Global configuration for connection process
+    @param logger Host Test logger instance
+    @return Object of type <ConnectorPrimitive> or None if type of connection primitive unknown (conn_resource)
+    """
     if conn_resource == 'serial':
         # Standard serial port connection
         # Notify event queue we will wait additional time for serial port to be ready
@@ -78,10 +77,10 @@ def conn_process(event_queue, dut_event_queue, config):
             port,
             baudrate,
             config=config)
+        return connector
 
     elif conn_resource == 'grm':
         # Start GRM (Gloabal Resource Mgr) collection
-        logger.prn_inf("initializing global resource mgr listener... ")
 
         # Get extra configuration related to remote host
         remote_pooling = int(config.get('remote_pooling', 30))
@@ -90,13 +89,31 @@ def conn_process(event_queue, dut_event_queue, config):
         logger.prn_inf("notify event queue about extra %d sec timeout for remote connection"%remote_pooling)
         event_queue.put(('__timeout', remote_pooling, time()))
 
+        logger.prn_inf("initializing global resource mgr listener... ")
         connector = RemoteConnectorPrimitive(
             'GLRM',
             config=config)
-    else:
-        ogger.pn_err("unknown connection resource!")
-        return 0
+        return connector
 
+    else:
+        logger.pn_err("unknown connection resource!")
+        raise NotImplementedError("ConnectorPrimitive factory: unknown connection resource '%s'!"% conn_resource)
+        return None
+
+
+def conn_process(event_queue, dut_event_queue, config):
+
+    logger = HtrunLogger('CONN')
+    logger.prn_inf("starting connection process...")
+
+    # Configuration of conn_opriocess behaviour
+    sync_behavior = int(config.get('sync_behavior', 1))
+    sync_timeout = config.get('sync_timeout', 1.0)
+    conn_resource = config.get('conn_resource', 'serial')
+
+    # Create connector instance with proper configuration
+    connector = conn_primitive_factory(conn_resource, config, event_queue, logger)
+    # Create simple buffer we will use for Key-Value protocol data
     kv_buffer = KiViBufferWalker()
 
     # List of all sent to target UUIDs (if multiple found)
