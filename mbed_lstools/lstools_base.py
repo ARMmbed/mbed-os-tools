@@ -87,6 +87,7 @@ class MbedLsToolsBase:
         "0740": "NUCLEO_F411RE",
         "0744": "NUCLEO_F410RB",
         "0745": "NUCLEO_F303RE",
+        "0747": "NUCLEO_F303ZE",
         "0750": "NUCLEO_F091RC",
         "0755": "NUCLEO_F070RB",
         "0760": "NUCLEO_L073RZ",
