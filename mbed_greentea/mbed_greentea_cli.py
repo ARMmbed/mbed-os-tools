@@ -353,7 +353,10 @@ def main():
 
     cli_ret = 0
 
-    gt_logger.gt_log(get_hello_string())
+    if not opts.version:
+        # This string should not appear when fetching plain version string
+        gt_logger.gt_log(get_hello_string())
+
     start = time()
     if opts.lock_by_target:
         # We are using Greentea proprietary locking mechanism to lock between platforms and targets
