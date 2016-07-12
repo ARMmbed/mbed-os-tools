@@ -11,6 +11,7 @@
     * [Flashing phase operations](#flashing-phase-operations)
     * [DUT-host communication and reset phase](#dut-host-communication-and-reset-phase)
     * [Global Resource Manager connection](#global-resource-manager-connection)
+    * [Miscellaneous](#miscellaneous)
 * [Installation](#installation)
   * [Installation from PyPI (Python Package Index)](#installation-from-pypi-python-package-index)
   * [Installation from Python sources](#installation-from-python-sources)
@@ -46,7 +47,7 @@
 
 # Quickstart
 
-`htrun` has extensiove command line portfolio. In most cases `htrun` (or its command line avatar `mbedhtrun`) will be run in background:
+`htrun` has extensive command line. In most cases `htrun` (or its command line avatar `mbedhtrun`) will be run in background:
 * driving test binary flashing,
 * device reset and
 * test execution.
@@ -60,14 +61,14 @@ Test execution phase will consist of:
 * DUT will send to host preamble with test runner information such as:
   * test environment version,
   * test timeout,
-  * prefered host test script (Python script which is usd to supervise/instrument test execution),
-* Host will spawn host test script and test execution will be intrumented
+  * preferred host test script (Python script which is used to supervise/instrument test execution),
+* Host will spawn host test script and test execution will be instrumented
 * Exchange data (in most cases text) between host and DUT,
 
 
 ## Command line overview
 
-This chapter will present few examples of how you can use `mbedhtrun` command line to execute tests. In most cases test automation tools such as [Greentea](https://github.com/ARMmbed/greentea) will execute `mbedhtrun` implcitly. There are cases when we want to execute `mbedhtrun` independently. Mostly in situation when we want to:
+This chapter will present few examples of how you can use `mbedhtrun` command line to execute tests. In most cases test automation tools such as [Greentea](https://github.com/ARMmbed/greentea) will execute `mbedhtrun` implicitly. There are cases when we want to execute `mbedhtrun` independently. Mostly in situation when we want to:
 * debug our code and have binary + host test instrumentation on,
 * prototype or
 * just want to replace test runner in another OS with one compatible with mbed-enabled devices.
@@ -105,11 +106,45 @@ As above but we will skip reset phase (non so common but in some cases can be us
 $ mbedhtrun -f /path/to/file/binary.bin -d D: -p COM4:115200 --skip-reset
 ```
 
+Flash binary file `/path/to/file/binary.bin` using mount point `D:`. Use serial port `COM4` with default baudrate to communicate with DUT. Do not send `__sync` key-value protocol synchronization packet to DUT before preamble read:
+```
+$ mbedhtrun -f /path/to/file/binary.bin -d D: -p COM4 --sync=0
+```
+
+**Note**: Sync packet management allows you to manipulate the way `htrun` sends `__sync` packet(s) to DUT. With current settings we can force on `htrun` to send `__sync` packets in this manner:
+* `--sync=0` - No sync packets will be sent to DUT.
+* `--sync=-1`- `__sync` packets will be sent unless we will reach timeout or proper response is sent from DUT.
+* `--sync=N` - Where N is integer > 0. Send up to N `__sync` packets to target platform. Response is sent unless we get response from target platform or timeout occurs.
+
 ### Global Resource Manager connection
 
 Flash local file `/path/to/file/binary.bin` to remote device resource (platform `K64F`) provided by `remote_client` GRM service available on IP address `10.2.203.31` and port: `8000`. Force serial port connection to remote device `9600` with baudrate:
 ```
 $ mbedhtrun -p :9600 -f /path/to/file/binary.bin -m K64F --grm remote_client:10.2.203.31:8000
+```
+
+Command line switch `--grm` has format: `<module_name>:<IP_address>:<port_number>`.
+  * `<module_name>` - name of Python module to load as remote resource manager.
+  * `<IP_address>` and `<port_number>` - IP address and port of remote resource manager.
+
+**Note**: Switch -m <platform_name> is required to tell Global Resource Management which platform to request.
+**Note**: Command line switch `--grm` implicitly forces `--skip-flashing` and `--skip-reset` because both flags are used for locally available DUTs.
+
+### Miscellaneous
+
+List available host tests names, class names and origin:
+```
+$ mbedhtrun --list
+```
+
+List available host tests names, class names and origin. Load additional host tests from `/path/to/host_tests` directory:
+```
+$ mbedhtrun --list -e /path/to/host_tests
+```
+
+List available reset and flashing plugins:
+```
+$ mbedhtrun --plugins
 ```
 
 # Installation
