@@ -5,6 +5,12 @@
 # Table of contents
 
 * [Table of contents](#table-of-contents)
+* [Quickstart](#quickstart)
+  * [Command line overview](#command-line-overview)
+  * [Useful command line end-to-end examples](#useful-command-line-end-to-end-examples)
+    * [Flashing phase operations](#flashing-phase-operations)
+    * [DUT-host communication and reset phase](#dut-host-communication-and-reset-phase)
+    * [Global Resource Manager connection](#global-resource-manager-connection)
 * [Installation](#installation)
   * [Installation from PyPI (Python Package Index)](#installation-from-pypi-python-package-index)
   * [Installation from Python sources](#installation-from-python-sources)
@@ -37,6 +43,74 @@
   * [ ```htrun``` new log format:](#-htrun-new-log-format)
     * [Log example](#log-example)
 * [End-to-end examples](#end-to-end-examples)
+
+# Quickstart
+
+`htrun` has extensiove command line portfolio. In most cases `htrun` (or its command line avatar `mbedhtrun`) will be run in background:
+* driving test binary flashing,
+* device reset and
+* test execution.
+
+Default binary flashing method is one supported by [mbed-enabled](https://www.mbed.com/en/about-mbed/mbed-enabled/) devices: binary file is copied on mbed-enabled DUT (Device Under Test) mounted drive (MSD). This procedure will automatically flash device with given binary file content.
+
+Default DUT reset method is one supported by [mbed-enabled](https://www.mbed.com/en/about-mbed/mbed-enabled/) devices: serial port (CDC) "*sendBreak*" command resets target MCU on mbed-enabled platform.
+
+Test execution phase will consist of:
+* Opening connection between host computer and DUT,
+* DUT will send to host preamble with test runner information such as:
+  * test environment version,
+  * test timeout,
+  * prefered host test script (Python script which is usd to supervise/instrument test execution),
+* Host will spawn host test script and test execution will be intrumented
+* Exchange data (in most cases text) between host and DUT,
+
+
+## Command line overview
+
+This chapter will present few examples of how you can use `mbedhtrun` command line to execute tests. In most cases test automation tools such as [Greentea](https://github.com/ARMmbed/greentea) will execute `mbedhtrun` implcitly. There are cases when we want to execute `mbedhtrun` independently. Mostly in situation when we want to:
+* debug our code and have binary + host test instrumentation on,
+* prototype or
+* just want to replace test runner in another OS with one compatible with mbed-enabled devices.
+
+All `mbedhtrun` needs is name of the binary you want to flash and method of flashing!
+
+## Useful command line end-to-end examples
+
+### Flashing phase operations
+
+Flash binary file `/path/to/file/binary.bin` using mount point `D:`. Use serial port `COM4` to communicate with DUT:
+```
+$ mbedhtrun -f /path/to/file/binary.bin -d D: -p COM4
+```
+
+Flash (use shell command `copy`) binary file `/path/to/file/binary.bin` using mount point `D:`. Use serial port `COM4` to communicate with DUT:
+```
+$ mbedhtrun -f /path/to/file/binary.bin -d D: -p COM4 -c copy
+```
+
+Skip flashing phase (e.g. you've already flashed this device with `/path/to/file/binary.bin` binary). Use serial port `COM4` to communicate with DUT:
+```
+$ mbedhtrun -f /path/to/file/binary.bin -d D: -p COM4 --skip-flashing
+```
+
+### DUT-host communication and reset phase
+
+Flash binary file `/path/to/file/binary.bin` using mount point `D:`. Use serial port `COM4` with baudrate `115200` to communicate with DUT:
+```
+$ mbedhtrun -f /path/to/file/binary.bin -d D: -p COM4:115200
+```
+
+As above but we will skip reset phase (non so common but in some cases can be used to suppress reset phase for some reasons):
+```
+$ mbedhtrun -f /path/to/file/binary.bin -d D: -p COM4:115200 --skip-reset
+```
+
+### Global Resource Manager connection
+
+Flash local file `/path/to/file/binary.bin` to remote device resource (platform `K64F`) provided by `remote_client` GRM service available on IP address `10.2.203.31` and port: `8000`. Force serial port connection to remote device `9600` with baudrate:
+```
+$ mbedhtrun -p :9600 -f /path/to/file/binary.bin -m K64F --grm remote_client:10.2.203.31:8000
+```
 
 # Installation
 
