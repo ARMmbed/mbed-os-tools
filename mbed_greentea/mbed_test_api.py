@@ -193,7 +193,7 @@ def run_host_test(image_path,
         #
         # If host_tests directory is found above test code will will pass it to mbedhtrun using
         # switch -e <path_to_host_tests_dir>
-        gt_logger.gt_log("checking for 'host_tests' directory above image directory structure")
+        gt_logger.gt_log("checking for 'host_tests' directory above image directory structure", print_text=verbose)
         test_group_ht_path = get_binary_host_tests_dir(image_path, level=2)
         TESTS_dir_ht_path = get_binary_host_tests_dir(image_path, level=3)
         if test_group_ht_path:
@@ -202,9 +202,9 @@ def run_host_test(image_path,
             enum_host_tests_path = TESTS_dir_ht_path
 
         if enum_host_tests_path:
-            gt_logger.gt_log_tab("found 'host_tests' directory in: '%s'"% enum_host_tests_path)
+            gt_logger.gt_log_tab("found 'host_tests' directory in: '%s'"% enum_host_tests_path, print_text=verbose)
         else:
-            gt_logger.gt_log_tab("'host_tests' directory not found: two directory levels above image path checked")
+            gt_logger.gt_log_tab("'host_tests' directory not found: two directory levels above image path checked", print_text=verbose)
 
     if verbose:
         gt_logger.gt_log("selecting test case observer...")
@@ -601,7 +601,7 @@ def get_test_spec(opts):
         else:
             test_spec = get_test_spec_from_yt_module(opts)
     else:
-        gt_logger.gt_log_err("greentea should be run inside a Yotta module or --test-spec switch should be used.")
+        gt_logger.gt_log_err("greentea should be run inside a Yotta module or --test-spec switch should be used")
         return None, -1
     return test_spec, 0
 
