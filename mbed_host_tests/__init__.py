@@ -104,7 +104,7 @@ def print_ht_list(verbose=False):
     for column in column_names:
         pt.align[column] = 'l'
 
-    # Opiortunistic approach: always try to add current ./test/host_tests
+    # Oportunistic approach: always try to add current ./test/host_tests
     enum_host_tests('./test/host_tests', verbose=verbose)
 
     ht_str_len = 0
