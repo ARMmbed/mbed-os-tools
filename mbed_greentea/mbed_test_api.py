@@ -206,10 +206,9 @@ def run_host_test(image_path,
         else:
             gt_logger.gt_log_tab("'host_tests' directory not found: two directory levels above image path checked", print_text=verbose)
 
-    if verbose:
-        gt_logger.gt_log("selecting test case observer...")
-        if digest_source:
-            gt_logger.gt_log_tab("selected digest source: %s"% digest_source)
+    gt_logger.gt_log("selecting test case observer...", print_text=verbose)
+    if digest_source:
+        gt_logger.gt_log_tab("selected digest source: %s"% digest_source, print_text=verbose)
 
     # Select who will digest test case serial port data
     if digest_source == 'stdin':
@@ -255,8 +254,7 @@ def run_host_test(image_path,
         if enum_host_tests_path:
             cmd += ["-e", '"%s"'% enum_host_tests_path]
 
-    if verbose:
-        gt_logger.gt_log_tab("calling mbedhtrun: %s"% " ".join(cmd))
+    gt_logger.gt_log_tab("calling mbedhtrun: %s"% " ".join(cmd), print_text=verbose)
     gt_logger.gt_log("mbed-host-test-runner: started")
 
     htrun_output = str()
@@ -289,9 +287,7 @@ def run_host_test(image_path,
     test_cases_summary = get_testcase_summary(htrun_output)
     get_coverage_data(build_path, htrun_output)
 
-    if verbose:
-        gt_logger.gt_log("mbed-host-test-runner: stopped")
-        gt_logger.gt_log("mbed-host-test-runner: returned '%s'"% result)
+    gt_logger.gt_log("mbed-host-test-runner: stopped and returned '%s'"% result, print_text=verbose)
     return (result, htrun_output, testcase_duration, duration, result_test_cases, test_cases_summary)
 
 def get_testcase_count_and_names(output):
