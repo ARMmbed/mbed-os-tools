@@ -107,12 +107,15 @@ class GreenTeaSimpleLockLogger:
             self.__print(result)
         return result
 
-    def gt_log_tab(self, text, tab_count=1):
+    def gt_log_tab(self, text, tab_count=1, print_text=True):
         """! Prints standard log message with one (1) tab margin on the left
+        @param tab_count How many tags should be added (indent level)
+        @param print_text Forces log function to print on screen (not only return message)
         @return Returns string with message
         """
         result = "\t"*tab_count + text
-        self.__print(result)
+        if print_text:
+            self.__print(result)
         return result
 
     def gt_log_err(self, text, print_text=True):
