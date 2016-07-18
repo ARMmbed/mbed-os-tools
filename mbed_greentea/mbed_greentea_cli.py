@@ -39,6 +39,7 @@ from mbed_greentea.mbed_report_api import exporter_text
 from mbed_greentea.mbed_report_api import exporter_testcase_text
 from mbed_greentea.mbed_report_api import exporter_json
 from mbed_greentea.mbed_report_api import exporter_testcase_junit
+from mbed_greentea.mbed_report_api import exporter_html
 from mbed_greentea.mbed_greentea_log import gt_logger
 from mbed_greentea.mbed_greentea_dlm import GREENTEA_KETTLE_PATH
 from mbed_greentea.mbed_greentea_dlm import greentea_get_app_sem
@@ -309,6 +310,10 @@ def main():
     parser.add_option('', '--report-json',
                     dest='report_json_file_name',
                     help='You can log test suite results to JSON formatted file')
+
+    parser.add_option('', '--report-html',
+                    dest='report_html_file_name',
+                    help='You can log test suite results in the form of a HTML page')
 
     parser.add_option('', '--report-fails',
                     dest='report_fails',
@@ -990,6 +995,13 @@ def main_cli(opts, args, gt_instance_uuid=None):
             gt_logger.gt_log("exporting to JSON '%s'..."% gt_logger.gt_bright(opts.report_json_file_name))
             json_report = exporter_json(test_report)
             dump_report_to_text_file(opts.report_json_file_name, json_report)
+
+        # Reports to HTML file
+        if opts.report_html_file_name:
+            gt_logger.gt_log("exporting to HTML file '%s'..."% gt_logger.gt_bright(opts.report_html_file_name))
+            # Generate a HTML page displaying all of the results
+            html_report = exporter_html(test_report)
+            dump_report_to_text_file(opts.report_html_file_name, html_report)
 
         # Final summary
         if test_report:

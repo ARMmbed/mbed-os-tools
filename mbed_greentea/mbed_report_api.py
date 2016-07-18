@@ -230,7 +230,7 @@ html_template = """<html>
                     elem.style.display = "";
                 }
             }
-            
+
             function toggleDropdown(elem) {
                 if (elem.style.height == "0px" || elem.style.height == "") {
                     elem.style.height = "auto";
@@ -245,6 +245,10 @@ html_template = """<html>
             table {
                 table-layout: fixed;
             }
+
+            .test-column {
+                padding-right: 15px;
+            }
             
             .overlay {
                 width: 100%%;
@@ -258,7 +262,7 @@ html_template = """<html>
                 overflow-y: scroll;
                 display: none;
             }
-            
+
             .overlay-content {
                 position: relative;
                 top: 20px;
@@ -276,12 +280,12 @@ html_template = """<html>
                 font-size: 14px;
                 white-space: pre-line;
             }
-            
+
             .no-space {
                 margin: 0;
                 padding: 0;
             }
-            
+
             .dropdown {
                 border: solid thin black;
                 border-radius: 5px;
@@ -289,7 +293,7 @@ html_template = """<html>
                 margin: 0;
                 cursor: pointer;
             }
-            
+
             .dropdown-content {
                 height: 0;
                 max-height: 500px;
@@ -297,51 +301,52 @@ html_template = """<html>
                 white-space: pre-line;
                 overflow-y: auto;
             }
+
             .sub-dropdown-content {
                 margin-left: 2%%;
                 margin-right: 2%%;
                 max-height: inherit;
             }
-            
+
             .output-text {
                 overflow-y: scroll;
                 background-color: #f7f7f7;
                 max-height: 500px;
             }
-            
+
             .result {
                 cursor: pointer;
                 border-radius: 15px;
                 padding: 2px 6px 2px 6px;
             }
-            
+
             .nowrap {
                 white-space: nowrap;
             }
-            
+
             .close-button {
                 color: black;
                 float: right;
                 cursor: pointer;
                 font-size: 20pt;
             }
-            
+
             .close-button:hover {
                 color: darkgrey;
             }
-            
+
             .result-ok {
                 background-color: lime;
             }
-            
+
             .result-fail {
                 background-color: darkorange;
             }
-            
+
             .result-error {
                 background-color: red;
             }
-            
+
             .result-other {
                 background-color: lightgrey;
             }
@@ -349,6 +354,10 @@ html_template = """<html>
     </head>
     <body>
         <table>
+        <colgroup>
+            <col width="auto">
+            <col span="%d" width="150px">
+        </colgroup>
             %s
         </table>
     </body>
@@ -360,7 +369,7 @@ def get_result_colour_class(result):
     @details Returns a string of the CSS colour class of the result, or returns the default if the result is not found
     @return String containing the CSS colour class
     """
-    
+
     return {
         'OK' : "result-ok",
         'FAIL' : "result-fail",
@@ -377,14 +386,14 @@ def get_dropdown_html(title_classes, div_id, dropdown_name, dropdown_classes, co
     @details This function will create the HTML for a dropdown menu
     @return String containing the HTML of dropdown menu
     """
-    
+
     dropdown_template = """
                                 <div class="nowrap">
                                     <p class="dropdown no-space %s" onclick="toggleDropdown(%s)">&#9650 %s</p>
                                     <div id="%s" class="dropdown-content%s">%s
                                     </div>
                                 </div>"""
-    
+
     return dropdown_template % (title_classes,
                                 div_id,
                                 dropdown_name,
@@ -401,9 +410,9 @@ def get_result_overlay_testcase_dropdown(result_div_id, index, testcase_result_n
     @details This function will create the HTML for a testcase dropdown
     @return String containing the HTML of the testcases dropdown
     """
-    
+
     import datetime
-    
+
     testcase_result_template = """Result: %s
                                         Elapsed Time: %.2f
                                         Start Time: %s
@@ -411,18 +420,17 @@ def get_result_overlay_testcase_dropdown(result_div_id, index, testcase_result_n
                                         Failed: %d
                                         Passed: %d
                                         <br>%s"""
-    
-    
+
     # Create unique ids to reference the divs
     testcase_div_id = "%s_testcase_result_%d" % (result_div_id, index)
     testcase_utest_div_id = "%s_testcase_result_%d_utest" % (result_div_id, index)
-    
+
     testcase_utest_log_dropdown = get_dropdown_html("",
                                                     testcase_utest_div_id,
                                                     "uTest Log",
                                                     " sub-dropdown-content output-text",
                                                     "\n".join(testcase_result['utest_log']).rstrip("\n"))
-    
+
     testcase_info = testcase_result_template % (testcase_result['result_text'],
                                                 testcase_result['duration'],
                                                 datetime.datetime.fromtimestamp(testcase_result['time_start']).strftime('%d-%m-%Y %H:%M:%S.%f'),
@@ -430,7 +438,7 @@ def get_result_overlay_testcase_dropdown(result_div_id, index, testcase_result_n
                                                 testcase_result['failed'],
                                                 testcase_result['passed'],
                                                 testcase_utest_log_dropdown)
-    
+
     testcase_class = get_result_colour_class(testcase_result['result_text'])
     testcase_dropdown = get_dropdown_html(testcase_class,
                                           testcase_div_id,
@@ -446,20 +454,20 @@ def get_result_overlay_testcases_dropdown_menu(result_div_id, test_results):
     @details This function will create the HTML for the result overlay's testcases dropdown menu
     @return String containing the HTML test overlay's testcase dropdown menu
     """
-    
+
     testcase_results_div_id = "%s_testcase" % result_div_id
     testcase_results_info = ""
-    
+
     # Loop through the test cases giving them a number to create a unique id
     for index, (testcase_result_name, testcase_result) in enumerate(test_results['testcase_result'].iteritems()):
         testcase_results_info += get_result_overlay_testcase_dropdown(result_div_id, index, testcase_result_name, testcase_result)
-    
+
     result_testcases_dropdown = get_dropdown_html("",
                                                   testcase_results_div_id,
                                                   "Testcase Results",
                                                   " sub-dropdown-content",
                                                   testcase_results_info)
-    
+
     return result_testcases_dropdown
 
 def get_result_overlay_dropdowns(result_div_id, test_results):
@@ -469,7 +477,7 @@ def get_result_overlay_dropdowns(result_div_id, test_results):
     @details This function will create the HTML for the dropdown menus of an overlay
     @return String containing the HTML test overlay's dropdowns
     """
-    
+
     # The HTML for the dropdown containing the ouput of the test
     result_output_div_id = "%s_output" % result_div_id
     result_output_dropdown = get_dropdown_html("",
@@ -477,13 +485,13 @@ def get_result_overlay_dropdowns(result_div_id, test_results):
                                                "Test Output",
                                                " output-text",
                                                test_results['single_test_output'].rstrip("\n"))
-    
+
     # Add a dropdown for the testcases if they are present
     if len(test_results) > 0:
         result_overlay_dropdowns = result_output_dropdown + get_result_overlay_testcases_dropdown_menu(result_div_id, test_results)
     else:
         result_overlay_dropdowns = result_output_dropdown
-    
+
     return result_overlay_dropdowns
 
 def get_result_overlay(result_div_id, test_name, platform, toolchain, test_results):
@@ -496,7 +504,7 @@ def get_result_overlay(result_div_id, test_name, platform, toolchain, test_resul
     @details This function will create the HTML of an overlay to display additional information on a test
     @return String containing the HTML test overlay
     """
-    
+
     overlay_template = """<div id="%s" class="overlay">
                             <div class="overlay-content" onclick="event.stopPropagation()">
                                 <h2 class="no-space">Test: %s <a class="close-button" onclick="toggleOverlay(%s)">x</a></h2>
@@ -510,9 +518,9 @@ def get_result_overlay(result_div_id, test_name, platform, toolchain, test_resul
                                 </p>%s
                             </div>
                         </div>"""
-    
+
     overlay_dropdowns = result_overlay_dropdowns = get_result_overlay_dropdowns(result_div_id, test_results)
-    
+
     return overlay_template % (result_div_id,
                                test_name,
                                result_div_id,
@@ -531,7 +539,7 @@ def exporter_html(test_result_ext, test_suite_properties=None):
     @details This function will create a user friendly HTML report
     @return String containing the HTML output
     """
-    
+
     result_cell_template = """
                 <td>
                     <div class="result %s" onclick="toggleOverlay(%s)">
@@ -547,7 +555,7 @@ def exporter_html(test_result_ext, test_suite_properties=None):
             <tr>
                 %s
             </tr>"""
-    
+
     unique_test_names = set()
     platforms_toolchains = {}
     # Populate a set of all of the unique tests
@@ -558,57 +566,56 @@ def exporter_html(test_result_ext, test_suite_properties=None):
             platforms_toolchains[platform].append(toolchain)
         else:
             platforms_toolchains[platform] = [toolchain]
-        
+
         for test_name in test_list:
             unique_test_names.add(test_name)
-    
+
     table = ""
     platform_row = ""
     toolchain_row = ""
-    
+
     platform_cell_template = """
                 <td colspan="%s">
                     <center>%s</center>
                 </td>"""
-    
     center_cell_template = """
                 <td>
                     <center>%s</center>
                 </td>"""
-    
+
     for platform, toolchains in platforms_toolchains.iteritems():
         platform_row += platform_cell_template % (len(toolchains), platform)
         for toolchain in toolchains:
             toolchain_row += center_cell_template % toolchain
     table += platform_template % (platform_row, toolchain_row)
-    
-    cell_template = """
-                <td>%s</td>"""
-    
+
+    test_cell_template = """
+                <td class="test-column">%s</td>"""
     row_template = """
             <tr>%s
             </tr>"""
-    
+
     # Loop through the tests and get the results for the different platforms and toolchains
     for test_name in unique_test_names:
-        this_row = cell_template % test_name
+        this_row = test_cell_template % test_name
         for platform, toolchains in platforms_toolchains.iteritems():
             for toolchain in toolchains:
                 test_results = test_result_ext["%s-%s" % (platform, toolchain)][test_name]
                 result_div_id = "target_%s_toolchain_%s_test_%s" % (platform, toolchain, test_name.replace('-', '_'))
-                
+
                 result_overlay = get_result_overlay(result_div_id,
                                                     test_name,
                                                     platform,
                                                     toolchain,
                                                     test_results)
-                
+
                 result_class = get_result_colour_class(test_results['single_test_result'])             
                 this_row += result_cell_template % (result_class,
                                                     result_div_id,
                                                     test_results['single_test_result'],
                                                     result_overlay)
-        
+
         table += row_template % this_row
-    
-    return html_template % table
+
+    # Add the numbers of columns to make them have the same width
+    return html_template % (len(test_result_ext), table)
