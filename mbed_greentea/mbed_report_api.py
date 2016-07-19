@@ -272,8 +272,6 @@ html_template = """<html>
                 margin-right: 10%%;
                 margin-top: 30px;
                 padding: 20px;
-                padding-top: 0;
-                padding-bottom: 0;
                 background-color: white;
                 cursor: default;
                 font-family: "Courier New", Courier, monospace;
@@ -335,21 +333,13 @@ html_template = """<html>
                 color: darkgrey;
             }
 
-            .result-ok {
-                background-color: lime;
+            .test-title-font {
+                font-size: 20pt;
             }
 
-            .result-fail {
-                background-color: darkorange;
-            }
-
-            .result-error {
-                background-color: red;
-            }
-
-            .result-other {
-                background-color: lightgrey;
-            }
+            .test-result-title-font {
+                font-size: 16pt;
+            }%s
         </style>
     </head>
     <body>
@@ -363,6 +353,46 @@ html_template = """<html>
     </body>
 </html>"""
 
+TEST_RESULT_COLOURS = {
+    'OK': "limegreen",
+    'FAIL': "darkorange",
+    'ERROR': "orangered",
+    'SKIPPED': "lightsteelblue",
+    # 'UNDEF': "",
+    # 'IOERR_COPY': "",
+    # 'IOERR_DISK': "",
+    # 'IOERR_SERIAL': "",
+    # 'TIMEOUT': "",
+    # 'NO_IMAGE': "",
+    # 'MBED_ASSERT': "",
+    # 'BUILD_FAILED': "",
+}
+
+TEST_RESULT_DEFAULT_COLOUR = "lavender"
+
+def get_result_colour_class_css():
+    """! Get the CSS for the colour classes
+    @details Returns a string of the CSS classes that are used to colour the different results
+    @return String containing the CSS classes
+    """
+
+    colour_class_template = """
+
+            .%s {
+                background-color: %s;
+            }"""
+
+    # Create CSS classes for all of the allocated colours
+    css = ""
+    for result, colour in TEST_RESULT_COLOURS.iteritems():
+        css += colour_class_template % ("result-%s" % result.lower().replace("_", "-"),
+                                        colour)
+
+    css += colour_class_template % ("result-other",
+                                    TEST_RESULT_DEFAULT_COLOUR)
+
+    return css
+
 def get_result_colour_class(result):
     """! Get the CSS colour class representing the result
     @param result The result of the test
@@ -370,11 +400,10 @@ def get_result_colour_class(result):
     @return String containing the CSS colour class
     """
 
-    return {
-        'OK' : "result-ok",
-        'FAIL' : "result-fail",
-        'ERROR' : "result-error",
-    }.get(result, "result-other")
+    if result in TEST_RESULT_COLOURS:
+        return "result-%s" % result.lower().replace("_", "-")
+    else:
+        return "result-other"
 
 def get_dropdown_html(div_id, dropdown_name, content, title_classes="", output_text=False, sub_dropdown=False):
     """! Get the HTML for a dropdown menu
@@ -511,8 +540,9 @@ def get_result_overlay(result_div_id, test_name, platform, toolchain, test_resul
 
     overlay_template = """<div id="%s" class="overlay">
                             <div class="overlay-content" onclick="event.stopPropagation()">
-                                <h2 class="no-space">Test: %s <a class="close-button" onclick="toggleOverlay(%s)">x</a></h2>
                                 <p class="no-space">
+                                    <span class="no-space test-title-font"><b>Test: %s <a class="close-button" onclick="toggleOverlay(%s)">x</a></b></span>
+                                    <span class="no-space test-result-title-font">Result: %s</span><br>
                                     <b>Platform: %s - Toolchain: %s</b>
                                     Elapsed Time: %.2f seconds
                                     Build Path: %s
@@ -528,6 +558,7 @@ def get_result_overlay(result_div_id, test_name, platform, toolchain, test_resul
     return overlay_template % (result_div_id,
                                test_name,
                                result_div_id,
+                               test_results['single_test_result'],
                                platform,
                                toolchain,
                                test_results['elapsed_time'],
@@ -622,4 +653,4 @@ def exporter_html(test_result_ext, test_suite_properties=None):
         table += row_template % this_row
 
     # Add the numbers of columns to make them have the same width
-    return html_template % (len(test_result_ext), table)
+    return html_template % (get_result_colour_class_css(), len(test_result_ext), table)
