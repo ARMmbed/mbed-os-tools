@@ -253,7 +253,7 @@ class MbedLsToolsBase:
 
         try:
             lock = self.mbedls_get_global_lock()
-            if lock.acquire(timeout=1):
+            if lock.acquire(timeout=0.5):
                 # This read is for backward compatibility
                 # When user already have on its system local mock-up it will work
                 # overwriting global one
@@ -290,7 +290,7 @@ class MbedLsToolsBase:
 
         try:
             lock = self.mbedls_get_global_lock()
-            if lock.acquire(timeout=1):
+            if lock.acquire(timeout=0.5):
                 ret = write_mock_file(self.MOCK_HOME_FILE_NAME, mock_ids)
                 lock.release()
                 return ret
