@@ -22,7 +22,7 @@ import json
 import lockfile
 from os import listdir
 from os.path import isfile, join
-from lockfile import LockFailed
+from lockfile import LockFailed, LockTimeout
 
 class MbedLsToolsBase:
     """ Base class for mbed-lstools, defines mbed-ls tools interface for mbed-enabled devices detection for various hosts
@@ -252,16 +252,21 @@ class MbedLsToolsBase:
             return {}
 
         try:
-            with self.mbedls_get_global_lock():
+            lock = self.mbedls_get_global_lock()
+            if lock.acquire(timeout=1):
                 # This read is for backward compatibility
                 # When user already have on its system local mock-up it will work
                 # overwriting global one
                 if isfile(self.MOCK_FILE_NAME):
-                    return read_mock_file(self.MOCK_FILE_NAME)
+                    ret = read_mock_file(self.MOCK_FILE_NAME)
+                    lock.release()
+                    return ret
 
                 if isfile(self.MOCK_HOME_FILE_NAME):
-                    return read_mock_file(self.MOCK_HOME_FILE_NAME)
-        except LockFailed as e:
+                    ret = read_mock_file(self.MOCK_HOME_FILE_NAME)
+                    lock.release()
+                    return ret
+        except (LockFailed, LockTimeout) as e:
             self.err(str(e))
         return {}
 
@@ -284,9 +289,12 @@ class MbedLsToolsBase:
             return False
 
         try:
-            with self.mbedls_get_global_lock():
-                return write_mock_file(self.MOCK_HOME_FILE_NAME, mock_ids)
-        except LockFailed as e:
+            lock = self.mbedls_get_global_lock()
+            if lock.acquire(timeout=1):
+                ret = write_mock_file(self.MOCK_HOME_FILE_NAME, mock_ids)
+                lock.release()
+                return ret
+        except (LockFailed, LockTimeout) as e:
             self.err(str(e))
         return False
 
