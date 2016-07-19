@@ -376,7 +376,7 @@ def get_result_colour_class(result):
         'ERROR' : "result-error",
     }.get(result, "result-other")
 
-def get_dropdown_html(title_classes, div_id, dropdown_name, dropdown_classes, content):
+def get_dropdown_html(div_id, dropdown_name, content, title_classes="", output_text=False, sub_dropdown=False):
     """! Get the HTML for a dropdown menu
     @param title_classes A space separated string of css classes on the title
     @param div_id The id of the dropdowns menus inner div
@@ -393,6 +393,12 @@ def get_dropdown_html(title_classes, div_id, dropdown_name, dropdown_classes, co
                                     <div id="%s" class="dropdown-content%s">%s
                                     </div>
                                 </div>"""
+    
+    dropdown_classes = ""
+    if output_text:
+        dropdown_classes += " output-text"
+    if sub_dropdown:
+        dropdown_classes += " sub-dropdown-content"
 
     return dropdown_template % (title_classes,
                                 div_id,
@@ -425,11 +431,11 @@ def get_result_overlay_testcase_dropdown(result_div_id, index, testcase_result_n
     testcase_div_id = "%s_testcase_result_%d" % (result_div_id, index)
     testcase_utest_div_id = "%s_testcase_result_%d_utest" % (result_div_id, index)
 
-    testcase_utest_log_dropdown = get_dropdown_html("",
-                                                    testcase_utest_div_id,
+    testcase_utest_log_dropdown = get_dropdown_html(testcase_utest_div_id,
                                                     "uTest Log",
-                                                    " sub-dropdown-content output-text",
-                                                    "\n".join(testcase_result['utest_log']).rstrip("\n"))
+                                                    "\n".join(testcase_result['utest_log']).rstrip("\n"),
+                                                    output_text=True,
+                                                    sub_dropdown=True)
 
     testcase_info = testcase_result_template % (testcase_result['result_text'],
                                                 testcase_result['duration'],
@@ -440,11 +446,11 @@ def get_result_overlay_testcase_dropdown(result_div_id, index, testcase_result_n
                                                 testcase_utest_log_dropdown)
 
     testcase_class = get_result_colour_class(testcase_result['result_text'])
-    testcase_dropdown = get_dropdown_html(testcase_class,
-                                          testcase_div_id,
+    testcase_dropdown = get_dropdown_html(testcase_div_id,
                                           "Testcase: %s<br>" % testcase_result_name,
-                                          " sub-dropdown-content",
-                                          testcase_info)
+                                          testcase_info,
+                                          title_classes=testcase_class,
+                                          sub_dropdown=True)
     return testcase_dropdown
 
 def get_result_overlay_testcases_dropdown_menu(result_div_id, test_results):
@@ -462,11 +468,10 @@ def get_result_overlay_testcases_dropdown_menu(result_div_id, test_results):
     for index, (testcase_result_name, testcase_result) in enumerate(test_results['testcase_result'].iteritems()):
         testcase_results_info += get_result_overlay_testcase_dropdown(result_div_id, index, testcase_result_name, testcase_result)
 
-    result_testcases_dropdown = get_dropdown_html("",
-                                                  testcase_results_div_id,
+    result_testcases_dropdown = get_dropdown_html(testcase_results_div_id,
                                                   "Testcase Results",
-                                                  " sub-dropdown-content",
-                                                  testcase_results_info)
+                                                  testcase_results_info,
+                                                  sub_dropdown=True)
 
     return result_testcases_dropdown
 
@@ -480,11 +485,10 @@ def get_result_overlay_dropdowns(result_div_id, test_results):
 
     # The HTML for the dropdown containing the ouput of the test
     result_output_div_id = "%s_output" % result_div_id
-    result_output_dropdown = get_dropdown_html("",
-                                               result_output_div_id,
+    result_output_dropdown = get_dropdown_html(result_output_div_id,
                                                "Test Output",
-                                               " output-text",
-                                               test_results['single_test_output'].rstrip("\n"))
+                                               test_results['single_test_output'].rstrip("\n"),
+                                               output_text=True)
 
     # Add a dropdown for the testcases if they are present
     if len(test_results) > 0:
@@ -519,7 +523,7 @@ def get_result_overlay(result_div_id, test_name, platform, toolchain, test_resul
                             </div>
                         </div>"""
 
-    overlay_dropdowns = result_overlay_dropdowns = get_result_overlay_dropdowns(result_div_id, test_results)
+    overlay_dropdowns = get_result_overlay_dropdowns(result_div_id, test_results)
 
     return overlay_template % (result_div_id,
                                test_name,
