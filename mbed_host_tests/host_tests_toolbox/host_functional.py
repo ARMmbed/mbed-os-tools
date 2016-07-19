@@ -81,11 +81,11 @@ def reset_dev(port=None,
             result = False
     return result
 
-def handle_send_break_cmd(port, 
-                          disk, 
-                          reset_type=None, 
-                          baudrate=115200, 
-                          timeout=1, 
+def handle_send_break_cmd(port,
+                          disk,
+                          reset_type=None,
+                          baudrate=115200,
+                          timeout=1,
                           verbose=False):
     """! Resets platforms and prints serial port output
         @detail Mix with switch -r RESET_TYPE and -p PORT for versatility
