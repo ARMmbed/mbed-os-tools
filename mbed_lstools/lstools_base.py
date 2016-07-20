@@ -149,6 +149,8 @@ class MbedLsToolsBase:
         "1236": "UBLOX_C029",
         "1300": "NUC472-NUTINY",
         "1301": "NUMBED",
+        "1302": "NUMAKER_PFM_NUC472",
+        "1303": "NUMAKER_PFM_M453",
         "1549": "LPC1549",
         "1600": "LPC4330_M4",
         "1605": "LPC4330_M4",
