@@ -35,14 +35,14 @@ class MbedLsToolsBase:
         self.ERRORLEVEL_FLAG = 0    # Used to return success code to environment
         self.retarget_data = {}          # Used to retarget mbed-enabled platform properties
 
+        # Create in HOME directory place for mbed-ls to store information
+        self.mbedls_home_dir_init()
+
         # If there is a local mocking data use it and add / override manufacture_ids
         mock_ids = self.mock_read()
         if mock_ids:
             for mid in mock_ids:
                 self.manufacture_ids[mid] = mock_ids[mid]
-
-        # Create in HOME directory place for mbed-ls to store information
-        self.mbedls_home_dir_init()
 
     # Which OSs are supported by this module
     # Note: more than one OS can be supported by mbed-lstools_* module
