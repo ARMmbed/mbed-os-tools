@@ -38,12 +38,6 @@ class MbedLsToolsBase:
         # Create in HOME directory place for mbed-ls to store information
         self.mbedls_home_dir_init()
 
-        # If there is a local mocking data use it and add / override manufacture_ids
-        mock_ids = self.mock_read()
-        if mock_ids:
-            for mid in mock_ids:
-                self.manufacture_ids[mid] = mock_ids[mid]
-
     # Which OSs are supported by this module
     # Note: more than one OS can be supported by mbed-lstools_* module
     os_supported = []
@@ -216,6 +210,14 @@ class MbedLsToolsBase:
         if not os.path.isdir(os.path.join(self.HOME_DIR, self.MBEDLS_HOME_DIR)):
             os.mkdir(os.path.join(self.HOME_DIR, self.MBEDLS_HOME_DIR))
 
+    def mbedls_get_mocks(self):
+        # If there is a local mocking data use it and add / override manufacture_ids
+        mock_ids = self.mock_read()
+        if mock_ids:
+            self.debug(self.mbedls_get_mocks.__name__, "mock data found, %d entries"% len(mock_ids))
+            for mid in mock_ids:
+                self.manufacture_ids[mid] = mock_ids[mid]
+
     def mbedls_get_global_lock(self):
         file_path = os.path.join(self.HOME_DIR, self.MBEDLS_HOME_DIR, self.MBEDLS_GLOBAL_LOCK)
         lock = lockfile.LockFile(file_path)
@@ -241,7 +243,6 @@ class MbedLsToolsBase:
         """
 
         def read_mock_file(filename):
-            self.debug(self.read_mock_file.__name__, "reading mock file '%s'"% filename)
             try:
                 with open(filename, "r") as f:
                     return json.load(f)
@@ -282,7 +283,6 @@ class MbedLsToolsBase:
         @param mock_ids JSON mock data to dump to file
         """
         def write_mock_file(filename, mock_ids):
-            self.debug(self.mock_write.__name__, "writing mock file '%s'"% filename)
             try:
                 with open(filename, "w") as f:
                     f.write(json.dumps(mock_ids, indent=4))
