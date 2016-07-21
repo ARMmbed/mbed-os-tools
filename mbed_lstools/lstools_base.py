@@ -205,13 +205,16 @@ class MbedLsToolsBase:
     MBED_HTM_NAME = 'mbed.htm'
 
     def mbedls_home_dir_init(self):
-        """ Initialize data in home directory for locking features
+        """! Initialize data in home directory for locking features
+        @details Create '.mbed-ls' sub-directory in current user $HOME directory
         """
         if not os.path.isdir(os.path.join(self.HOME_DIR, self.MBEDLS_HOME_DIR)):
             os.mkdir(os.path.join(self.HOME_DIR, self.MBEDLS_HOME_DIR))
 
     def mbedls_get_mocks(self):
-        # If there is a local mocking data use it and add / override manufacture_ids
+        """! Load existing mocking configuration from current user $HOME directory
+        @details If there is a local mocking data use it and add / override manufacture_ids
+        """
         mock_ids = self.mock_read()
         if mock_ids:
             self.debug(self.mbedls_get_mocks.__name__, "mock data found, %d entries"% len(mock_ids))
@@ -219,11 +222,18 @@ class MbedLsToolsBase:
                 self.manufacture_ids[mid] = mock_ids[mid]
 
     def mbedls_get_global_lock(self):
+        """! Create lock (file lock) object used to guard operations on
+             mock configuration file in current user $HOME directory
+        @return Global lock object instance
+        """
         file_path = os.path.join(self.HOME_DIR, self.MBEDLS_HOME_DIR, self.MBEDLS_GLOBAL_LOCK)
         lock = lockfile.LockFile(file_path)
         return lock
 
     def list_manufacture_ids(self):
+        """! Creates list of all available mappings for target_id -> Platform
+        @return String with table formatted output
+        """
         from prettytable import PrettyTable
 
         columns = ['target_id_prefix', 'platform_name']
@@ -239,6 +249,8 @@ class MbedLsToolsBase:
 
     def mock_read(self):
         """! Load mocking data from local file
+        @details Uses file locking for operation on Mock
+                 configuration file in current user $HOME directory
         @return Curent mocking configuration (dictionary)
         """
 
@@ -281,6 +293,9 @@ class MbedLsToolsBase:
     def mock_write(self, mock_ids):
         """! Write current mocking structure
         @param mock_ids JSON mock data to dump to file
+        @details Uses file locking for operation on Mock
+                 configuration file in current user $HOME directory
+        @return True if configuration operation was success, else False
         """
         def write_mock_file(filename, mock_ids):
             try:
@@ -330,6 +345,8 @@ class MbedLsToolsBase:
 
     def retarget(self):
         """! Enable retargeting
+        @details Read data from local retarget configuration file
+        @return Retarget data structure read from configuration file
         """
         self.retarget_data = self.retarget_read()
         return self.retarget_data
