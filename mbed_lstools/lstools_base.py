@@ -241,7 +241,7 @@ class MbedLsToolsBase:
         """
 
         def read_mock_file(filename):
-            self.debug(self.mock_read.__name__, "reading mock file '%s'"% filename)
+            self.debug(self.read_mock_file.__name__, "reading mock file '%s'"% filename)
             try:
                 with open(filename, "r") as f:
                     return json.load(f)
@@ -253,24 +253,29 @@ class MbedLsToolsBase:
                     str(e)))
             return {}
 
-        try:
-            lock = self.mbedls_get_global_lock()
-            if lock.acquire(timeout=0.5):
-                # This read is for backward compatibility
-                # When user already have on its system local mock-up it will work
-                # overwriting global one
-                if isfile(self.MOCK_FILE_NAME):
-                    ret = read_mock_file(self.MOCK_FILE_NAME)
-                    lock.release()
-                    return ret
+        lock = self.mbedls_get_global_lock()
+        while not lock.i_am_locking():
+            try:
+                lock.acquire(timeout=1)
+            except LockTimeout as e:
+                lock.break_lock()
+                lock.acquire()
+                self.debug(self.mock_read.__name__, str(e))
+        self.debug(self.mock_read.__name__, "locked '%s'"% lock.path)
 
-                if isfile(self.MOCK_HOME_FILE_NAME):
-                    ret = read_mock_file(self.MOCK_HOME_FILE_NAME)
-                    lock.release()
-                    return ret
-        except (LockFailed, LockTimeout) as e:
-            self.err(str(e))
-        return {}
+        result = {}
+
+        # This read is for backward compatibility
+        # When user already have on its system local mock-up it will work
+        # overwriting global one
+        if isfile(self.MOCK_FILE_NAME):
+            result = read_mock_file(self.MOCK_FILE_NAME)
+        elif isfile(self.MOCK_HOME_FILE_NAME):
+            result = read_mock_file(self.MOCK_HOME_FILE_NAME)
+
+        lock.release()
+        self.debug(self.mock_read.__name__, "released '%s'"% lock.path)
+        return result
 
     def mock_write(self, mock_ids):
         """! Write current mocking structure
@@ -290,15 +295,21 @@ class MbedLsToolsBase:
                     str(e)))
             return False
 
-        try:
-            lock = self.mbedls_get_global_lock()
-            if lock.acquire(timeout=0.5):
-                ret = write_mock_file(self.MOCK_HOME_FILE_NAME, mock_ids)
-                lock.release()
-                return ret
-        except (LockFailed, LockTimeout) as e:
-            self.err(str(e))
-        return False
+        lock = self.mbedls_get_global_lock()
+        while not lock.i_am_locking():
+            try:
+                lock.acquire(timeout=1)
+            except LockTimeout as e:
+                lock.break_lock()
+                lock.acquire()
+                self.debug(self.mock_read.__name__, str(e))
+        self.debug(self.mock_write.__name__, "locked '%s'"% lock.path)
+
+        result = write_mock_file(self.MOCK_HOME_FILE_NAME, mock_ids)
+
+        lock.release()
+        self.debug(self.mock_read.__name__, "released '%s'"% lock.path)
+        return result
 
     def retarget_read(self):
         """! Load retarget data from local file
