@@ -169,6 +169,9 @@ def mbedls_main():
     mbeds.DEBUG_FLAG = opts.debug
     mbeds.debug(__name__, "mbed-ls ver. " + get_mbedls_version())
 
+    # Load extra mock configuration
+    mbeds.mbedls_get_mocks()
+
     if not opts.skip_retarget:
         mbeds.retarget()
 
