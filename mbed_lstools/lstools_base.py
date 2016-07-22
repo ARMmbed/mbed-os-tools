@@ -209,7 +209,10 @@ class MbedLsToolsBase:
         @details Create '.mbed-ls' sub-directory in current user $HOME directory
         """
         if not os.path.isdir(os.path.join(self.HOME_DIR, self.MBEDLS_HOME_DIR)):
-            os.mkdir(os.path.join(self.HOME_DIR, self.MBEDLS_HOME_DIR))
+            try:
+                os.makedirs(os.path.join(self.HOME_DIR, self.MBEDLS_HOME_DIR))
+            except os.error as e:
+                self.err(str(e))
 
     def mbedls_get_mocks(self):
         """! Load existing mocking configuration from current user $HOME directory
