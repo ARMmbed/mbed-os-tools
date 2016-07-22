@@ -656,6 +656,9 @@ def main_cli(opts, args, gt_instance_uuid=None):
     if not test_spec:
         return ret
 
+    # Verbose flag
+    verbose = opts.verbose_test_result_only
+
     # We will load hooks from JSON file to support extra behaviour during test execution
     greentea_hooks = GreenteaHooks(opts.hooks_json) if opts.hooks_json else None
 
@@ -670,7 +673,7 @@ def main_cli(opts, args, gt_instance_uuid=None):
                                          hooks=greentea_hooks,
                                          digest_source=opts.digest_source,
                                          enum_host_tests_path=enum_host_tests_path,
-                                         verbose=opts.verbose_test_result_only)
+                                         verbose=verbose)
 
         # Some error in htrun, abort test execution
         if isinstance(host_test_result, int):
@@ -712,7 +715,7 @@ def main_cli(opts, args, gt_instance_uuid=None):
         if ready_mbed_devices:
             # devices in form of a pretty formatted table
             for line in log_mbed_devices_in_table(ready_mbed_devices).splitlines():
-                gt_logger.gt_log_tab(line.strip())
+                gt_logger.gt_log_tab(line.strip(), print_text=verbose)
     else:
         gt_logger.gt_log_err("no compatible devices detected")
         return (RET_NO_DEVICES)
@@ -749,7 +752,7 @@ def main_cli(opts, args, gt_instance_uuid=None):
 
     ### Testing procedures, for each target, for each target's compatible platform
     # In case we are using test spec (switch --test-spec) command line option -t <list_of_targets>
-    # is used to enumerate builds from test spec we are suppling
+    # is used to enumerate builds from test spec we are supplying
     filter_test_builds = opts.list_of_targets.split(',') if opts.list_of_targets else None
     for test_build in test_spec.get_test_builds(filter_test_builds):
         platform_name = test_build.get_platform()
@@ -782,7 +785,7 @@ def main_cli(opts, args, gt_instance_uuid=None):
 
         # devices in form of a pretty formatted table
         for line in log_mbed_devices_in_table(muts_to_test).splitlines():
-            gt_logger.gt_log_tab(line.strip())
+            gt_logger.gt_log_tab(line.strip(), print_text=verbose)
 
         # Configuration print mode:
         if opts.verbose_test_configuration_only:
@@ -870,7 +873,8 @@ def main_cli(opts, args, gt_instance_uuid=None):
                     execute_threads.append(t)
                     number_of_threads += 1
 
-        gt_logger.gt_log_tab("use %s instance%s for testing" % (len(execute_threads), 's' if len(execute_threads) != 1 else ''))
+        gt_logger.gt_log_tab("use %s instance%s of execution threads for testing"% (len(execute_threads),
+            's' if len(execute_threads) != 1 else str()), print_text=verbose)
         for t in execute_threads:
             t.daemon = True
             t.start()

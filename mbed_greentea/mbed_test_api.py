@@ -193,7 +193,7 @@ def run_host_test(image_path,
         #
         # If host_tests directory is found above test code will will pass it to mbedhtrun using
         # switch -e <path_to_host_tests_dir>
-        gt_logger.gt_log("checking for 'host_tests' directory above image directory structure")
+        gt_logger.gt_log("checking for 'host_tests' directory above image directory structure", print_text=verbose)
         test_group_ht_path = get_binary_host_tests_dir(image_path, level=2)
         TESTS_dir_ht_path = get_binary_host_tests_dir(image_path, level=3)
         if test_group_ht_path:
@@ -202,14 +202,13 @@ def run_host_test(image_path,
             enum_host_tests_path = TESTS_dir_ht_path
 
         if enum_host_tests_path:
-            gt_logger.gt_log_tab("found 'host_tests' directory in: '%s'"% enum_host_tests_path)
+            gt_logger.gt_log_tab("found 'host_tests' directory in: '%s'"% enum_host_tests_path, print_text=verbose)
         else:
-            gt_logger.gt_log_tab("'host_tests' directory not found: two directory levels above image path checked")
+            gt_logger.gt_log_tab("'host_tests' directory not found: two directory levels above image path checked", print_text=verbose)
 
-    if verbose:
-        gt_logger.gt_log("selecting test case observer...")
-        if digest_source:
-            gt_logger.gt_log_tab("selected digest source: %s"% digest_source)
+    gt_logger.gt_log("selecting test case observer...", print_text=verbose)
+    if digest_source:
+        gt_logger.gt_log_tab("selected digest source: %s"% digest_source, print_text=verbose)
 
     # Select who will digest test case serial port data
     if digest_source == 'stdin':
@@ -255,8 +254,7 @@ def run_host_test(image_path,
         if enum_host_tests_path:
             cmd += ["-e", '"%s"'% enum_host_tests_path]
 
-    if verbose:
-        gt_logger.gt_log_tab("calling mbedhtrun: %s"% " ".join(cmd))
+    gt_logger.gt_log_tab("calling mbedhtrun: %s"% " ".join(cmd), print_text=verbose)
     gt_logger.gt_log("mbed-host-test-runner: started")
 
     htrun_output = str()
@@ -289,9 +287,7 @@ def run_host_test(image_path,
     test_cases_summary = get_testcase_summary(htrun_output)
     get_coverage_data(build_path, htrun_output)
 
-    if verbose:
-        gt_logger.gt_log("mbed-host-test-runner: stopped")
-        gt_logger.gt_log("mbed-host-test-runner: returned '%s'"% result)
+    gt_logger.gt_log("mbed-host-test-runner: stopped and returned '%s'"% result, print_text=verbose)
     return (result, htrun_output, testcase_duration, duration, result_test_cases, test_cases_summary)
 
 def get_testcase_count_and_names(output):
@@ -601,7 +597,7 @@ def get_test_spec(opts):
         else:
             test_spec = get_test_spec_from_yt_module(opts)
     else:
-        gt_logger.gt_log_err("greentea should be run inside a Yotta module or --test-spec switch should be used.")
+        gt_logger.gt_log_err("greentea should be run inside a Yotta module or --test-spec switch should be used")
         return None, -1
     return test_spec, 0
 
