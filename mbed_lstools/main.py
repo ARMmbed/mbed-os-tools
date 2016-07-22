@@ -168,6 +168,7 @@ def mbedls_main():
 
     mbeds.DEBUG_FLAG = opts.debug
     mbeds.debug(__name__, "mbed-ls ver. " + get_mbedls_version())
+    mbeds.debug(__name__, "host: " +  str((mbed_lstools_os_info())))
 
     # Load extra mock configuration
     mbeds.mbedls_get_mocks()
