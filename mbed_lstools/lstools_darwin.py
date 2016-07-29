@@ -18,6 +18,7 @@ limitations under the License.
 import re
 import subprocess
 import plistlib
+import platform
 
 from lstools_base import MbedLsToolsBase
 
@@ -110,11 +111,17 @@ class MbedLsToolsDarwin(MbedLsToolsBase):
         # serial number, and then search down again to find a tty that's part
         # of the same composite device
         # ioreg -a -r -n <usb_controller_name> -l
-        usb_controllers = ['AppleUSBXHCI', 'AppleUSBUHCI', 'AppleUSBEHCI', 'AppleUSBOHCI']
+        usb_controllers = ['AppleUSBXHCI', 'AppleUSBUHCI', 'AppleUSBEHCI', 'AppleUSBOHCI', 'IOUSBHostDevice']
         usb_bus = []
 
+        cmp_par = '-n'
+        # For El Captain we need to list all the instances of (-c) rather than compare names (-n)
+        mac_ver = float('.'.join(platform.mac_ver()[0].split('.')[:2])) # Returns mac version as float XX.YY
+        if mac_ver >= 10.11:
+            cmp_par = '-c'
+
         for usb_controller in usb_controllers:	
-            ioreg_usb = subprocess.Popen(['ioreg', '-a', '-r', '-n', usb_controller, '-l'], stdout=subprocess.PIPE)
+            ioreg_usb = subprocess.Popen(['ioreg', '-a', '-r', cmp_par, usb_controller, '-l'], stdout=subprocess.PIPE)
             
 	    try:
                 usb_bus = usb_bus + plistlib.readPlist(ioreg_usb.stdout)
