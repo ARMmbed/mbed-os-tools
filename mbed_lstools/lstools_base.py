@@ -190,6 +190,7 @@ class MbedLsToolsBase:
         "9011": "ARCH_MAX",
         "9012": "SEEED_TINY_BLE",
         "9900": "NRF51_MICROBIT",
+        "C002": "VK_RZ_A1H",
         "FFFF": "K20 BOOTLOADER",
         "RIOT": "RIOT",
     }
