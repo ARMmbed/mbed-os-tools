@@ -132,6 +132,8 @@ class DefaultTestSelector(DefaultTestSelectorBase):
         callbacks_consume = True
         # Flag check if __exit event occurred
         callbacks__exit = False
+        # Flag check if __exit_event_queue event occurred
+        callbacks__exit_event_queue = False
         # Handle to dynamically loaded host test object
         self.test_supervisor = None
         # Version: greentea-client version from DUT
@@ -216,7 +218,7 @@ class DefaultTestSelector(DefaultTestSelectorBase):
                                         print line
                                     self.logger.prn_inf("==== Traceback end ====")
                                     result = self.RESULT_ERROR
-                                    break
+                                    event_queue.put(('__exit_event_queue', 0, time()))
 
                                 self.logger.prn_inf("host test setup() call...")
                                 if self.test_supervisor.get_callbacks():
@@ -228,7 +230,7 @@ class DefaultTestSelector(DefaultTestSelectorBase):
                             else:
                                 self.logger.prn_err("host test not detected: %s"% value)
                                 result = self.RESULT_ERROR
-                                break
+                                event_queue.put(('__exit_event_queue', 0, time()))
 
                             consume_preamble_events = False
                         elif key == '__sync':
@@ -240,6 +242,11 @@ class DefaultTestSelector(DefaultTestSelectorBase):
                             self.logger.prn_wrn("stopped to consume events due to %s event"% key)
                             callbacks_consume = False
                             result = self.RESULT_IO_SERIAL
+                            event_queue.put(('__exit_event_queue', 0, time()))
+                        elif key == '__exit_event_queue':
+                            # This event is sent by the host test indicating no more events expected
+                            self.logger.prn_inf("%s received"% (key))
+                            callbacks__exit_event_queue = True
                             break
                         elif key.startswith('__'):
                             # Consume other system level events
@@ -252,7 +259,6 @@ class DefaultTestSelector(DefaultTestSelectorBase):
                             # or if value is None, value will be retrieved from HostTest.result() method
                             self.logger.prn_inf("%s(%s)"% (key, str(value)))
                             result = value
-                            break
                         elif key == '__reset_dut':
                             # Disconnect to avoid connection lost event
                             dut_event_queue.put(('__host_test_finished', True, time()))
@@ -279,11 +285,16 @@ class DefaultTestSelector(DefaultTestSelectorBase):
                             self.logger.prn_wrn("stopped to consume events due to %s event"% key)
                             callbacks_consume = False
                             result = self.RESULT_IO_SERIAL
-                            break
+                            event_queue.put(('__exit_event_queue', 0, time()))
                         elif key == '__exit':
                             # This event is sent by DUT, test suite exited
                             self.logger.prn_inf("%s(%s)"% (key, str(value)))
                             callbacks__exit = True
+                            event_queue.put(('__exit_event_queue', 0, time()))
+                        elif key == '__exit_event_queue':
+                            # This event is sent by the host test indicating no more events expected
+                            self.logger.prn_inf("%s received"% (key))
+                            callbacks__exit_event_queue = True
                             break
                         elif key in callbacks:
                             # Handle callback
@@ -312,6 +323,10 @@ class DefaultTestSelector(DefaultTestSelectorBase):
         # If host test was used we will:
         # 1. Consume all existing events in queue if consume=True
         # 2. Check result from host test and call teardown()
+
+        # NOTE: with the introduction of the '__exit_event_queue' event, there
+        # should never be left events assuming the DUT has stopped sending data
+        # over the serial data. Leaving this for now to catch anything that slips through.
 
         if callbacks_consume:
             # We are consuming all remaining events if requested
@@ -346,9 +361,12 @@ class DefaultTestSelector(DefaultTestSelectorBase):
         if not callbacks__exit:
             self.logger.prn_wrn("missing __exit event from DUT")
 
-        #if not callbacks__exit and not result:
-        if not callbacks__exit and result is None:
-            self.logger.prn_err("missing __exit event from DUT and no result from host test, timeout...")
+        if not callbacks__exit_event_queue:
+            self.logger.prn_wrn("missing __exit_event_queue event from host test")
+
+        #if not callbacks__exit_event_queue and not result:
+        if not callbacks__exit_event_queue and result is None:
+            self.logger.prn_err("missing __exit_event_queue event from host test and no result from host test, timeout...")
             result = self.RESULT_TIMEOUT
 
         self.logger.prn_inf("calling blocking teardown()")

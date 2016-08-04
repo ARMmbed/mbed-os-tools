@@ -114,6 +114,7 @@ class HostTestCallbackBase(BaseHostTestAbstract):
             '__testcase_finish',
             '__testcase_summary',
             '__exit',
+            '__exit_event_queue'
         ]
 
         self.__consume_by_default = [

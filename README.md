@@ -250,6 +250,7 @@ Key-value protocol was developed and is used to provide communication layer betw
       * ```__testcase_start``` - sent by DUT, test case start data.
       * ```__testcase_finish``` - sent by DUT, test case result.
       * ```__exit``` - sent by DUT, test suite execution finished.
+      * ```__exit_event_queue``` - sent by host test, indicating no more events expected.
   * Non-Reserved event/message keys have leading ```__``` in name:
     * ```__rxd_line``` - Event triggered when ```\n``` was found on DUT RXD channel. It can be overridden (```self.register_callback('__rxd_line', <callback_function>)```) and used by user. Event is sent by host test to notify a new line of text was received on RXD channel. ```__rxd_line``` event payload (value) in a line of text received from DUT over RXD.
 * Each host test (master side) has four functions used by async framework:
