@@ -366,7 +366,8 @@ class DefaultTestSelector(DefaultTestSelectorBase):
 
         #if not callbacks__exit_event_queue and not result:
         if not callbacks__exit_event_queue and result is None:
-            self.logger.prn_err("missing __exit_event_queue event from host test and no result from host test, timeout...")
+            self.logger.prn_err("missing __exit_event_queue event from " + \
+                "host test and no result from host test, timeout...")
             result = self.RESULT_TIMEOUT
 
         self.logger.prn_inf("calling blocking teardown()")
