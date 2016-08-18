@@ -679,7 +679,7 @@ class MbedLsToolsBase:
                     with open(path_to_details_txt, 'r') as f:
                         result = self.parse_details_txt(f.readlines())
                 except IOError:
-                    self.debug(self.get_mbed_fw_version.get_details_txt.__name__, ('Failed to open file', path_to_details_txt))
+                    self.debug(self.get_details_txt.__name__, ('Failed to open file', path_to_details_txt))
         return result if result else None
 
     def parse_details_txt(self, lines):
