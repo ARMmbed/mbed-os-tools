@@ -24,6 +24,7 @@ from os import listdir
 from os.path import isfile, join
 from lockfile import LockFailed, LockTimeout
 
+
 class MbedLsToolsBase:
     """ Base class for mbed-lstools, defines mbed-ls tools interface for mbed-enabled devices detection for various hosts
     """
@@ -37,6 +38,7 @@ class MbedLsToolsBase:
 
         # Create in HOME directory place for mbed-ls to store information
         self.mbedls_home_dir_init()
+        self.mbedls_get_mocks()
 
     # Which OSs are supported by this module
     # Note: more than one OS can be supported by mbed-lstools_* module
