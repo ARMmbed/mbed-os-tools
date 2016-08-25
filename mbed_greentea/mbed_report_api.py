@@ -223,24 +223,30 @@ html_template = """
     <head>
         <title>mbed Greentea Results Report</title>
         <script type="text/javascript">
-            function toggleOverlay(elem) {
-                if (elem.style.display == "") {
-                    document.getElementsByTagName("body")[0].style.overflowY = "hidden";
-                    elem.style.display = "block";
-                } else {
-                    document.getElementsByTagName("body")[0].style.overflowY = "auto";
-                    elem.style.display = "";
-                }
+            function toggleOverlay(elemStr) {
+                var elem = document.getElementById(elemStr);
+                    if (elem) {
+                        if (elem.style.display == "") {
+                            document.getElementsByTagName("body")[0].style.overflowY = "hidden";
+                            elem.style.display = "block";
+                        } else {
+                            document.getElementsByTagName("body")[0].style.overflowY = "auto";
+                            elem.style.display = "";
+                        }
+                    }
             }
 
-            function toggleDropdown(elem) {
-                if (elem.style.height == "0px" || elem.style.height == "") {
-                    elem.style.height = "auto";
-                    elem.previousElementSibling.textContent = elem.previousElementSibling.textContent.replace("\u25B2", "\u25BC");
-                } else {
-                    elem.style.height = 0;
-                    elem.previousElementSibling.textContent = elem.previousElementSibling.textContent.replace("\u25BC", "\u25B2");
-                }
+            function toggleDropdown(elemStr) {
+                var elem = document.getElementById(elemStr);
+                    if (elem) {
+                        if (elem.style.height == "0px" || elem.style.height == "") {
+                            elem.style.height = "auto";
+                            elem.previousElementSibling.textContent = elem.previousElementSibling.textContent.replace("\u25B2", "\u25BC");
+                        } else {
+                            elem.style.height = 0;
+                            elem.previousElementSibling.textContent = elem.previousElementSibling.textContent.replace("\u25BC", "\u25B2");
+                        }
+                    }
             }
         </script>
         <style type="text/css">
@@ -420,7 +426,7 @@ def get_dropdown_html(div_id, dropdown_name, content, title_classes="", output_t
 
     dropdown_template = """
                                 <div class="nowrap">
-                                    <p class="dropdown no-space %s" onclick="toggleDropdown(%s)">&#9650 %s</p>
+                                    <p class="dropdown no-space %s" onclick="toggleDropdown('%s')">&#9650 %s</p>
                                     <div id="%s" class="dropdown-content%s">%s
                                     </div>
                                 </div>"""
@@ -543,7 +549,7 @@ def get_result_overlay(result_div_id, test_name, platform, toolchain, test_resul
     overlay_template = """<div id="%s" class="overlay">
                             <div class="overlay-content" onclick="event.stopPropagation()">
                                 <p class="no-space">
-                                    <span class="no-space test-title-font"><b>Test: %s <a class="close-button" onclick="toggleOverlay(%s)">x</a></b></span>
+                                    <span class="no-space test-title-font"><b>Test: %s <a class="close-button" onclick="toggleOverlay('%s')">x</a></b></span>
                                     <span class="no-space test-result-title-font">Result: %s</span><br>
                                     <b>Platform: %s - Toolchain: %s</b>
                                     Elapsed Time: %.2f seconds
@@ -579,7 +585,7 @@ def exporter_html(test_result_ext, test_suite_properties=None):
 
     result_cell_template = """
                 <td>
-                    <div class="result %s" onclick="toggleOverlay(%s)">
+                    <div class="result %s" onclick="toggleOverlay('%s')">
                         <center>%s</center>
                         %s
                     </div>
