@@ -150,6 +150,7 @@ class MbedLsToolsBase:
         "4100": "MOTE_L152RC",
         "4337": "LPC4337",
         "4500": "DELTA_DFCM_NNN40",
+        "4501": "DELTA_DFBM_NQ620",
         "5000": "ARM_MPS2",
         "5001": "ARM_MPS2_M0",
         "5003": "ARM_MPS2_M0P",
@@ -161,6 +162,7 @@ class MbedLsToolsBase:
         "5020": "HOME_GATEWAY_6LOWPAN",
         "5500": "RZ_A1H",
         "6660": "NZ32_SC151",
+        "7010": "BLUENINJA_CDP_TZ01B"
         "7778": "TEENSY3_1",
         "9001": "LPC1347",
         "9002": "LPC11U24",
