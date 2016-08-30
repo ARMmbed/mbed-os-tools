@@ -132,7 +132,7 @@ class MbedLsToolsWin7(MbedLsToolsBase):
         @return Returns [(<mbed_mount_point>, <mbed_id>), ..]
         @details Helper function
         """
-        return [m for m in self.get_mbeds() if os.path.exists(m[0])]
+        return [m for m in self.get_mbeds() if self.mount_point_ready(m[0])]
 
     def get_mbeds(self):
         """! Function filters devices' mount points for valid TargetID
@@ -198,3 +198,22 @@ class MbedLsToolsWin7(MbedLsToolsBase):
         """! Decode registry binary to readable string
         """
         return filter(lambda ch: ch in string.printable, regbin)
+
+    def mount_point_ready(self, path):
+        """! Check if a mount point is ready for file operations
+        @return Returns True if the given path exists, False otherwise
+        @details Calling the Windows command `dir` instead of using the python
+        `os.path.exists`. The latter causes a Python error box to appear claiming
+        there is "No Disk" for some devices that are in the ejected state. Calling
+        `dir` prevents this since it uses the Windows API to determine if the
+        device is ready before accessing the file system.
+        """
+        stdout, stderr, retcode = self.run_cli_process('dir %s' % path)
+        result = True if retcode == 0 else False
+
+        if result:
+            self.debug(self.mount_point_ready.__name__, "Mount point %s is ready" % path)
+        else:
+            self.debug(self.mount_point_ready.__name__, "Mount point %s reported not ready with error '%s'" % (path, stderr.strip()))
+
+        return result
