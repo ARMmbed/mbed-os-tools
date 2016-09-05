@@ -21,7 +21,7 @@ import sys
 import json
 from time import sleep
 from serial import Serial, SerialException
-from mbed_host_tests import host_tests_plugins
+from mbed_host_tests import host_tests_plugins, DEFAULT_BAUD_RATE
 
 
 def flash_dev(disk=None,
@@ -51,7 +51,7 @@ def reset_dev(port=None,
               reset_type='default',
               reset_timeout=1,
               serial_port=None,
-              baudrate=115200,
+              baudrate=DEFAULT_BAUD_RATE,
               timeout=1,
               verbose=False):
     """! Reset device using pythonic interface
@@ -104,8 +104,9 @@ def handle_send_break_cmd(port,
         baudrate = int(port_config[1]) if not baudrate else baudrate
         timeout = float(port_config[2])
 
+    # Use default baud rate value if not set
     if not baudrate:
-        baudrate = 115200
+        baudrate = DEFAULT_BAUD_RATE
 
     if verbose:
         print "mbedhtrun: serial port configuration: %s:%s:%s"% (port, str(baudrate), str(timeout))
