@@ -84,7 +84,7 @@ def reset_dev(port=None,
 def handle_send_break_cmd(port,
                           disk,
                           reset_type=None,
-                          baudrate=115200,
+                          baudrate=None,
                           timeout=1,
                           verbose=False):
     """! Resets platforms and prints serial port output
@@ -97,12 +97,15 @@ def handle_send_break_cmd(port,
     if len(port_config) == 2:
         # -p COM4:115200
         port = port_config[0]
-        baudrate = int(port_config[1])
+        baudrate = int(port_config[1]) if not baudrate else baudrate
     elif len(port_config) == 3:
         # -p COM4:115200:0.5
         port = port_config[0]
-        baudrate = int(port_config[1])
+        baudrate = int(port_config[1]) if not baudrate else baudrate
         timeout = float(port_config[2])
+
+    if not baudrate:
+        baudrate = 115200
 
     if verbose:
         print "mbedhtrun: serial port configuration: %s:%s:%s"% (port, str(baudrate), str(timeout))

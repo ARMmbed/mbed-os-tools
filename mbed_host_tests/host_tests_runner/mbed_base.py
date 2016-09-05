@@ -60,6 +60,8 @@ class Mbed:
             self.serial_baud = int(port_config[1])
             self.serial_timeout = float(port_config[2])
 
+        self.serial_baud = self.options.baud_rate if self.options.baud_rate else self.serial_baud
+
         # Test configuration in JSON format
         self.test_cfg = None
         if self.options.json_test_configuration is not None:

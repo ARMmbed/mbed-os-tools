@@ -281,6 +281,11 @@ def init_host_test_cli_params():
                       action="store_true",
                       help='Send reset signal to board on specified port (-p PORT) and print serial output. You can combine this with (-r RESET_TYPE) switch')
 
+    parser.add_option('', '--baud-rate',
+                      dest='baud_rate',
+                      help="Baud rate of target, overrides values from mbed-ls, disk/mount point (-d, --disk-path), and serial port -p <port>:<baud rate>",
+                      metavar="BAUD_RATE")
+
     parser.add_option('-v', '--verbose',
                       dest='verbose',
                       default=False,
