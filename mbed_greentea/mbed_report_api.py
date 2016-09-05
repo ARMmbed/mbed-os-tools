@@ -598,7 +598,10 @@ def exporter_html(test_result_ext, test_suite_properties=None):
     # Populate a set of all of the unique tests
     for platform_toolchain, test_list in test_result_ext.iteritems():
         # Format of string is <PLATFORM>-<TOOLCHAIN>
-        platform, toolchain = platform_toolchain.split('-')
+        # <PLATFORM> can however contain '-' such as "frdm-k64f"
+        # <TOOLCHAIN> is split with '_' fortunately, as in "gcc_arm"
+        toolchain = platform_toolchain.split('-')[-1]
+        platform = platform_toolchain.replace('-%s'% toolchain, '')
         if platform in platforms_toolchains:
             platforms_toolchains[platform].append(toolchain)
         else:
