@@ -58,7 +58,7 @@ HOSTREGISTRY.register_host_test("wait_us_auto", WaitusTest())
 HOSTREGISTRY.register_host_test("dev_null_auto", DevNullTest())
 
 # Set the default baud rate
-DEFAULT_BAUD_RATE = 115200
+DEFAULT_BAUD_RATE = 9600
 
 ###############################################################################
 # Functional interface for test supervisor registry
