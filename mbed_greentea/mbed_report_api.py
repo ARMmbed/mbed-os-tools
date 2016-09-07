@@ -366,6 +366,7 @@ TEST_RESULT_COLOURS = {
     'IOERR_SERIAL': "DarkSalmon",
     'TIMEOUT': "DarkKhaki",
     'NO_IMAGE': "DarkSalmon",
+    'NOT_RAN': 'grey'
     # 'MBED_ASSERT': "",
     # 'BUILD_FAILED': "",
 }
@@ -637,7 +638,24 @@ def exporter_html(test_result_ext, test_suite_properties=None):
         this_row = test_cell_template % test_name
         for platform, toolchains in platforms_toolchains.iteritems():
             for toolchain in toolchains:
-                test_results = test_result_ext["%s-%s" % (platform, toolchain)][test_name]
+                test_results = None
+                
+                if test_name in test_result_ext["%s-%s" % (platform, toolchain)]:
+                    test_results = test_result_ext["%s-%s" % (platform, toolchain)][test_name]
+                else:
+                    test_results = {
+                        'single_test_result': 'NOT_RAN',
+                        'elapsed_time': 0.0,
+                        'build_path': 'N/A',
+                        'build_path_abs': 'N/A',
+                        'copy_method': 'N/A',
+                        'image_path': 'N/A',
+                        'single_test_output': 'N/A',
+                        'platform_name': platform,
+                        'test_bin_name': 'N/A',
+                        'testcase_result': {}
+                    }
+                    
                 result_div_id = "target_%s_toolchain_%s_test_%s" % (platform, toolchain, test_name.replace('-', '_'))
 
                 result_overlay = get_result_overlay(result_div_id,
