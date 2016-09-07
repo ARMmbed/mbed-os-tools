@@ -62,17 +62,15 @@ class MbedLsToolsWin7(MbedLsToolsBase):
 
     def discover_connected_mbeds(self, defs={}):
         """! Function produces list of mbeds with additional information and bind mbed with correct TargetID
-            @return Returns [(<mbed_mount_point>, <mbed_id>, <com port>, <board model>), ..]
+            @return Returns [(<mbed_mount_point>, <mbed_id>, <com port>, <board model>,
+                              <usb_target_id>, <htm_target_id>), ..]
             @details Notice: this function is permissive: adds new elements in-places when and if found
         """
         mbeds = [(m[0], m[1], None, None) for m in self.get_connected_mbeds()]
         for i in range(len(mbeds)):
             mbed = mbeds[i]
             mnt = mbed[0]
-            mbed_htm_target_id = self.get_mbed_htm_target_id(mnt)
-            # Deducing mbed-enabled TargetID based on available targetID definition DB.
-            # If TargetID from USBID is not recognized we will try to check URL in mbed.htm
-            mbed_id = mbed_htm_target_id if mbed_htm_target_id is not None else mbed[1]
+            mbed_id, mbed_htm_target_id = self.get_mbed_target_id(mnt, mbed[1])
             mbed_id_prefix = mbed_id[0:4]
             board = defs[mbed_id_prefix] if mbed_id_prefix in defs else None
             port = self.get_mbed_com_port(mbed[1])
@@ -150,8 +148,7 @@ class MbedLsToolsWin7(MbedLsToolsBase):
         """
         connected_mbeds_ids = {}
         for mbed in self.get_connected_mbeds():
-            htm_target_id = self.get_mbed_htm_target_id(mbed[0])
-            target_id = htm_target_id if htm_target_id else mbed[1]
+            target_id, htm_target_id = self.get_mbed_target_id(mbed[0], mbed[1])
             connected_mbeds_ids[target_id] = mbed[1]
         return connected_mbeds_ids
 
@@ -168,6 +165,19 @@ class MbedLsToolsWin7(MbedLsToolsBase):
             mbeds += [(mountpoint, tid)]
             self.debug(self.get_mbeds.__name__, (mountpoint, tid))
         return mbeds
+
+    def get_mbed_target_id(self, mnt, target_usb_id):
+        """! Function gets the mbed target and HTM IDs
+        @param mnt mbed mount point (disk / drive letter)
+        @param target_usb_id mbed target USB ID
+        @return Function returns (<target_id>, <htm_target_id>)
+        @details Helper function
+        """
+        mbed_htm_target_id = self.get_mbed_htm_target_id(mnt)
+        # Deducing mbed-enabled TargetID based on available targetID definition DB.
+        # If TargetID from USBID is not recognized we will try to check URL in mbed.htm
+        mbed_id = mbed_htm_target_id if mbed_htm_target_id is not None else target_usb_id
+        return mbed_id, mbed_htm_target_id
 
     # =============================== Registry ====================================
 
