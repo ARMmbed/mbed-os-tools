@@ -738,7 +738,6 @@ def main_cli(opts, args, gt_instance_uuid=None):
     target_platforms_match = 0  # Count how many platforms were actually tested with current settings
 
     test_report = {}            # Test report used to export to Junit, HTML etc...
-    muts_to_test = []           # MUTs to actually be tested
     test_queue = Queue()        # contains information about test_bin and image_path for each test case
     test_result_queue = Queue() # used to store results of each thread
     execute_threads = []        # list of threads to run test cases
@@ -771,6 +770,7 @@ def main_cli(opts, args, gt_instance_uuid=None):
         ### Select MUTS to test from list of available MUTS to start testing
         mut = None
         number_of_parallel_instances = 1
+        muts_to_test = []           # MUTs to actually be tested
         for mbed_dev in ready_mbed_devices:
             if accepted_target_ids and mbed_dev['target_id'] not in accepted_target_ids:
                 continue
