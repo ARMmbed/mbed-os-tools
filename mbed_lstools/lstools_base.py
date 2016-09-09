@@ -723,6 +723,19 @@ class MbedLsToolsBase:
                 return result
         return None
 
+    def mount_point_ready(self, path):
+        """! Check if a mount point is ready for file operations
+        @return Returns True if the given path exists, False otherwise
+        """
+        result = os.path.exists(path)
+
+        if result:
+            self.debug(self.mount_point_ready.__name__, "Mount point %s is ready" % path)
+        else:
+            self.debug(self.mount_point_ready.__name__, "Mount point %s does not exist" % (path))
+
+        return result
+
     @staticmethod
     def run_cli_process(cmd, shell=True):
         """! Runs command as a process and return stdout, stderr and ret code
