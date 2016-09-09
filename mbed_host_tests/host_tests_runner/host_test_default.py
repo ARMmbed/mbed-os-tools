@@ -172,14 +172,48 @@ class DefaultTestSelector(DefaultTestSelectorBase):
             p.deamon = True
             p.start()
             return p
+
+        def process_code_coverage(key, value, timestamp):
+            """! Process the found coverage key value and perform an idle
+                 loop checking for more timeing out if there is no response from
+                 the target within the idle timeout.
+            @param key The key from the first coverage event
+            @param value The value from the first coverage event
+            @param timestamp The timestamp from the first coverage event
+            @return The elapsed time taken by the processing of code coverage,
+                    and the (key, value, and timestamp) of the next event
+            """
+            original_start_time = time()
+            start_time = time()
+
+            # Perform callback on first event
+            callbacks[key](key, value, timestamp)
+
+            # Start idle timeout loop looking for other events
+            while (time() - start_time) < coverage_idle_timeout:
+                if not event_queue.empty():
+                    try:
+                        (key, value, timestamp) = event_queue.get(timeout=1)
+                    except QueueEmpty:
+                        continue
+
+                    # If coverage detected use idle loop
+                    # Prevent breaking idle loop for __rxd_line (occurs between keys)
+                    if key == '__coverage_start' or key == '__rxd_line':
+                        start_time = time()
+
+                        # Perform callback
+                        callbacks[key](key, value, timestamp)
+                        continue
+
+                    elapsed_time = time() - original_start_time
+                    return elapsed_time, (key, value, timestamp)
+
         p = start_conn_process()
 
         start_time = time()
-
         try:
             consume_preamble_events = True
-            coverage_idle = False
-            resume_timeout = 0
 
             while (time() - start_time) < timeout_duration:
                 # Handle default events like timeout, host_test_name, ...
@@ -251,28 +285,14 @@ class DefaultTestSelector(DefaultTestSelectorBase):
                         else:
                             self.logger.prn_err("orphan event in preamble phase: {{%s;%s}}, timestamp=%f"% (key, str(value), timestamp))
                     else:
-                        # If coverage detected use idle loop
+                        # If coverage detected switch to idle loop
                         if key == '__coverage_start':
-                            if not coverage_idle:
-                                self.logger.prn_inf("starting coverage idle timeout loop...")
-                                coverage_idle = True
+                            self.logger.prn_inf("starting coverage idle timeout loop...")
+                            elapsed_time, (key, value, timestamp) = process_code_coverage(key, value, timestamp)
 
-                                # Save position in timeout to resume after coverage
-                                resume_timeout = timeout_duration - (time() - start_time)
-                                timeout_duration = coverage_idle_timeout
-
-                            start_time = time()
-                            # No need to perform all checks when key is known
-                            callbacks[key](key, value, timestamp)
-                            continue
-                        elif coverage_idle and key != "__rxd_line":
-                            # Prevent breaking idle loop for __rxd_line (occurs between all keys)
-                            self.logger.prn_inf("exiting coverage idle timeout loop")
-                            coverage_idle = False
-
-                            # Resume original timeout
-                            timeout_duration = resume_timeout
-                            start_time = time()
+                            # Ignore the time taken by the code coverage
+                            timeout_duration += elapsed_time
+                            self.logger.prn_inf("exiting coverage idle timeout loop (elapsed_time: %.2f" % elapsed_time)
 
                         if key == '__notify_complete':
                             # This event is sent by Host Test, test result is in value
