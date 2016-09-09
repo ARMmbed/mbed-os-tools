@@ -782,7 +782,9 @@ def main_cli(opts, args, gt_instance_uuid=None):
                 if not mbed_dev['serial_port'].endswith(str(baudrate)):
                     mbed_dev['serial_port'] = "%s:%d" % (mbed_dev['serial_port'], baudrate)
                 mut = mbed_dev
-                muts_to_test.append(mbed_dev)
+                if mbed_dev not in muts_to_test:
+                    # We will only add unique devices to list of devices "for testing" in this test run
+                    muts_to_test.append(mbed_dev)
                 if number_of_parallel_instances < parallel_test_exec:
                     number_of_parallel_instances += 1
                 else:
