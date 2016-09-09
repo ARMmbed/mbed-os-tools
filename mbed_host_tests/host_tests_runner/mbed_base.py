@@ -19,6 +19,7 @@ Author: Przemyslaw Wirkus <Przemyslaw.Wirkus@arm.com>
 
 import json
 from time import sleep
+from mbed_host_tests import DEFAULT_BAUD_RATE
 import mbed_host_tests.host_tests_plugins as ht_plugins
 
 
@@ -44,7 +45,7 @@ class Mbed:
         self.pooling_timeout = self.options.pooling_timeout
 
         # Serial port settings
-        self.serial_baud = 115200
+        self.serial_baud = DEFAULT_BAUD_RATE
         self.serial_timeout = 1
 
         # Users can use command to pass port speeds together with port name. E.g. COM4:115200:1
@@ -59,6 +60,9 @@ class Mbed:
             self.port = port_config[0]
             self.serial_baud = int(port_config[1])
             self.serial_timeout = float(port_config[2])
+
+        # Overriding baud rate value with command line specified value
+        self.serial_baud = self.options.baud_rate if self.options.baud_rate else self.serial_baud
 
         # Test configuration in JSON format
         self.test_cfg = None

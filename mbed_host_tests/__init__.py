@@ -57,6 +57,9 @@ HOSTREGISTRY.register_host_test("default_auto", DefaultAuto())
 HOSTREGISTRY.register_host_test("wait_us_auto", WaitusTest())
 HOSTREGISTRY.register_host_test("dev_null_auto", DevNullTest())
 
+# Set the default baud rate
+DEFAULT_BAUD_RATE = 9600
+
 ###############################################################################
 # Functional interface for test supervisor registry
 ###############################################################################
@@ -280,6 +283,11 @@ def init_host_test_cli_params():
                       default=False,
                       action="store_true",
                       help='Send reset signal to board on specified port (-p PORT) and print serial output. You can combine this with (-r RESET_TYPE) switch')
+
+    parser.add_option('', '--baud-rate',
+                      dest='baud_rate',
+                      help="Baud rate of target, overrides values from mbed-ls, disk/mount point (-d, --disk-path), and serial port -p <port>:<baud rate>",
+                      metavar="BAUD_RATE")
 
     parser.add_option('-v', '--verbose',
                       dest='verbose',

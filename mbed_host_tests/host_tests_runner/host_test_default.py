@@ -70,6 +70,7 @@ class DefaultTestSelector(DefaultTestSelectorBase):
                 handle_send_break_cmd(port=options.port,
                     disk=options.disk,
                     reset_type=options.forced_reset_type,
+                    baudrate=options.baud_rate,
                     verbose=options.verbose)
                 sys.exit(0)
 

@@ -16,6 +16,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+from mbed_host_tests import DEFAULT_BAUD_RATE
 from mbed_host_tests.host_tests_conn_proxy.conn_primitive import ConnectorPrimitive
 
 
@@ -28,7 +29,7 @@ class RemoteConnectorPrimitive(ConnectorPrimitive):
         self.grm_port = int(config.get('grm_port', 8000))
         self.grm_module = config.get('grm_module', 'unknown')
         self.platform_name = config.get('platform_name', None)
-        self.baudrate = config.get('baudrate', 115200)
+        self.baudrate = config.get('baudrate', DEFAULT_BAUD_RATE)
         self.image_path = config.get('image_path', None)
 
         # Global Resource Mgr tool-kit
@@ -81,7 +82,7 @@ class RemoteConnectorPrimitive(ConnectorPrimitive):
             return False
         return True
 
-    def __remote_connect(self, baudrate=115200, buffer_size=6):
+    def __remote_connect(self, baudrate=DEFAULT_BAUD_RATE, buffer_size=6):
         """! Open remote connection to DUT """
         self.logger.prn_inf("opening connection to platform at baudrate='%s, bufferSize=%d'"% (baudrate, buffer_size))
         try:
