@@ -162,7 +162,7 @@ class MbedLsToolsBase:
         "5020": "HOME_GATEWAY_6LOWPAN",
         "5500": "RZ_A1H",
         "6660": "NZ32_SC151",
-        "7010": "BLUENINJA_CDP_TZ01B"
+        "7010": "BLUENINJA_CDP_TZ01B",
         "7778": "TEENSY3_1",
         "9001": "LPC1347",
         "9002": "LPC11U24",
