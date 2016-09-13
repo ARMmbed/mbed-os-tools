@@ -70,6 +70,7 @@ class MbedLsToolsBase:
         "0310": "MTS_DRAGONFLY_F411RE",
         "0311": "K66F",
         "0315": "MTS_MDOT_F411RE",
+        "0350": "XDOT_L151CC",
         "0400": "MAXWSNENV",
         "0405": "MAX32600MBED",
         "0500": "SPANSION_PLACEHOLDER",
