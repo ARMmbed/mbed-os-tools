@@ -606,21 +606,23 @@ def main_cli(opts, args, gt_instance_uuid=None):
         ready_mbed_devices = []     # Devices which can be used (are fully detected)
         not_ready_mbed_devices = [] # Devices which can't be used (are not fully detected)
 
+        required_mut_props = ['target_id', 'platform_name', 'serial_port', 'mount_point']
+
         gt_logger.gt_log("detected %d device%s"% (len(mbeds_list), 's' if len(mbeds_list) != 1 else ''))
         for mut in mbeds_list:
-            if not all(mut.values()):
-                gt_logger.gt_log_err("mbed-ls was unable to enumerate correctly all properties of the device!")
-                gt_logger.gt_log_tab("check with 'mbedls -j' command if all properties of your device are enumerated properly")
-                for prop in mut:
-                    if not mut[prop]:
-                        # Adding MUT to NOT DETECTED FULLY list
-                        if mut not in not_ready_mbed_devices:
-                            not_ready_mbed_devices.append(mut)
-                        gt_logger.gt_log_err("mbed-ls property '%s' is '%s'"% (prop, str(mut[prop])))
-                        if prop == 'serial_port':
-                            gt_logger.gt_log_tab("check if your serial port driver is correctly installed!")
-                        if prop == 'mount_point':
-                            gt_logger.gt_log_tab('check if your OS can detect and mount mbed device mount point!')
+            for prop in required_mut_props:
+                if not mut[prop]:
+                    # Adding MUT to NOT DETECTED FULLY list
+                    if mut not in not_ready_mbed_devices:
+                        not_ready_mbed_devices.append(mut)
+                        gt_logger.gt_log_err("mbed-ls was unable to enumerate correctly all properties of the device!")
+                        gt_logger.gt_log_tab("check with 'mbedls -j' command if all properties of your device are enumerated properly")
+
+                    gt_logger.gt_log_err("mbed-ls property '%s' is '%s'"% (prop, str(mut[prop])))
+                    if prop == 'serial_port':
+                        gt_logger.gt_log_tab("check if your serial port driver is correctly installed!")
+                    if prop == 'mount_point':
+                        gt_logger.gt_log_tab('check if your OS can detect and mount mbed device mount point!')
             else:
                 # Adding MUT to DETECTED CORRECTLY list
                 ready_mbed_devices.append(mut)
