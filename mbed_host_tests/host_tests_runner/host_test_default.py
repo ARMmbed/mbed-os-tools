@@ -215,6 +215,7 @@ class DefaultTestSelector(DefaultTestSelectorBase):
         p = start_conn_process()
 
         start_time = time()
+
         try:
             consume_preamble_events = True
 
@@ -289,6 +290,8 @@ class DefaultTestSelector(DefaultTestSelectorBase):
                     elif key.startswith('__'):
                         # Consume other system level events
                         pass
+                    else:
+                        self.logger.prn_err("orphan event in preamble phase: {{%s;%s}}, timestamp=%f"% (key, str(value), timestamp))
                 else:
                     # If coverage detected switch to idle loop
                     if key == '__coverage_start':
@@ -304,7 +307,6 @@ class DefaultTestSelector(DefaultTestSelectorBase):
                         # or if value is None, value will be retrieved from HostTest.result() method
                         self.logger.prn_inf("%s(%s)"% (key, str(value)))
                         result = value
-                        break
                     elif key == '__reset_dut':
                         # Disconnect to avoid connection lost event
                         dut_event_queue.put(('__host_test_finished', True, time()))
