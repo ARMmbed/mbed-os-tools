@@ -289,57 +289,34 @@ class DefaultTestSelector(DefaultTestSelectorBase):
                     elif key.startswith('__'):
                         # Consume other system level events
                         pass
-                    else:
-                        # If coverage detected switch to idle loop
-                        if key == '__coverage_start':
-                            self.logger.prn_inf("starting coverage idle timeout loop...")
-                            elapsed_time, (key, value, timestamp) = process_code_coverage(key, value, timestamp)
+                else:
+                    # If coverage detected switch to idle loop
+                    if key == '__coverage_start':
+                        self.logger.prn_inf("starting coverage idle timeout loop...")
+                        elapsed_time, (key, value, timestamp) = process_code_coverage(key, value, timestamp)
 
-                            # Ignore the time taken by the code coverage
-                            timeout_duration += elapsed_time
-                            self.logger.prn_inf("exiting coverage idle timeout loop (elapsed_time: %.2f" % elapsed_time)
+                        # Ignore the time taken by the code coverage
+                        timeout_duration += elapsed_time
+                        self.logger.prn_inf("exiting coverage idle timeout loop (elapsed_time: %.2f" % elapsed_time)
 
-                        if key == '__notify_complete':
-                            # This event is sent by Host Test, test result is in value
-                            # or if value is None, value will be retrieved from HostTest.result() method
-                            self.logger.prn_inf("%s(%s)"% (key, str(value)))
-                            result = value
-                            break
-                        elif key == '__reset_dut':
-                            # Disconnect to avoid connection lost event
-                            dut_event_queue.put(('__host_test_finished', True, time()))
-                            p.join()
+                    if key == '__notify_complete':
+                        # This event is sent by Host Test, test result is in value
+                        # or if value is None, value will be retrieved from HostTest.result() method
+                        self.logger.prn_inf("%s(%s)"% (key, str(value)))
+                        result = value
+                        break
+                    elif key == '__reset_dut':
+                        # Disconnect to avoid connection lost event
+                        dut_event_queue.put(('__host_test_finished', True, time()))
+                        p.join()
 
-                            if value == DefaultTestSelector.RESET_TYPE_SW_RST:
-                                self.logger.prn_inf("Performing software reset.")
-                                # Just disconnecting and re-connecting comm process will soft reset DUT
-                            elif value == DefaultTestSelector.RESET_TYPE_HW_RST:
-                                self.logger.prn_inf("Performing hard reset.")
-                                # request hardware reset
-                                self.mbed.hw_reset()
-                            else:
-                                self.logger.prn_err("Invalid reset type (%s). Supported types [%s]." %
-                                                    (value, ", ".join([DefaultTestSelector.RESET_TYPE_HW_RST,
-                                                                       DefaultTestSelector.RESET_TYPE_SW_RST])))
-                                self.logger.prn_inf("Software reset will be performed.")
-
-                            # connect to the device
-                            p = start_conn_process()
-                        elif key == '__notify_conn_lost':
-                            # This event is sent by conn_process, DUT connection was lost
-                            self.logger.prn_err(value)
-                            self.logger.prn_wrn("stopped to consume events due to %s event"% key)
-                            callbacks_consume = False
-                            result = self.RESULT_IO_SERIAL
-                            break
-                        elif key == '__exit':
-                            # This event is sent by DUT, test suite exited
-                            self.logger.prn_inf("%s(%s)"% (key, str(value)))
-                            callbacks__exit = True
-                            break
-                        elif key in callbacks:
-                            # Handle callback
-                            callbacks[key](key, value, timestamp)
+                        if value == DefaultTestSelector.RESET_TYPE_SW_RST:
+                            self.logger.prn_inf("Performing software reset.")
+                            # Just disconnecting and re-connecting comm process will soft reset DUT
+                        elif value == DefaultTestSelector.RESET_TYPE_HW_RST:
+                            self.logger.prn_inf("Performing hard reset.")
+                            # request hardware reset
+                            self.mbed.hw_reset()
                         else:
                             self.logger.prn_err("Invalid reset type (%s). Supported types [%s]." %
                                                 (value, ", ".join([DefaultTestSelector.RESET_TYPE_HW_RST,
