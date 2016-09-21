@@ -29,7 +29,7 @@ class SerialConnectorPrimitive(ConnectorPrimitive):
         ConnectorPrimitive.__init__(self, name)
         self.port = port
         self.baudrate = int(baudrate)
-        self.timeout = 0
+        self.timeout = 0.2  # 200 milli sec
         self.config = config
         self.target_id = self.config.get('target_id', None)
         self.serial_pooling = config.get('serial_pooling', 60)
@@ -51,7 +51,10 @@ class SerialConnectorPrimitive(ConnectorPrimitive):
             self.port = serial_port
 
         try:
-            self.serial = Serial(self.port, baudrate=self.baudrate, timeout=self.timeout)
+            # TIMEOUT: While creating Serial object timeout is delibrately passed as 0. Because blocking in Serial.read
+            # impacts thread and mutliprocess functioning in Python. Hence, instead in self.read() s delay (sleep()) is
+            # inserted to let serial buffer collect data and avoid spinning on non blocking read().
+            self.serial = Serial(self.port, baudrate=self.baudrate, timeout=0)
         except SerialException as e:
             self.serial = None
             self.LAST_ERROR = "connection lost, serial.Serial(%s. %d, %d): %s"% (self.port,
@@ -84,6 +87,9 @@ class SerialConnectorPrimitive(ConnectorPrimitive):
 
     def read(self, count):
         """! Read data from serial port RX buffer """
+        # TIMEOUT: Since read is called in a loop, wait for self.timeout period before calling serial.read(). See
+        # comment on serial.Serial() call above about timeout.
+        sleep(self.timeout)
         c = str()
         try:
             if self.serial:

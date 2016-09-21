@@ -34,17 +34,31 @@ class KiViBufferWalker():
         self.re_kv = re.compile(self.KIVI_REGEX)
 
     def append(self, payload):
-        """! Append stream buffer with payload and process"""
+        """! Append stream buffer with payload and process. Returns non-KV strings"""
         self.buff += payload
         lines = self.buff.split('\n')
         self.buff = lines[-1]   # remaining
         lines.pop(-1)
+        discarded = []
 
         for line in lines:
             m = self.re_kv.search(line)
             if m:
                 (key, value) = m.groups()
                 self.kvl.append((key, value, time()))
+                line = line.strip()
+                match = m.group(0)
+                pos = line.find(match)
+                before = line[:pos]
+                after = line[pos + len(match):]
+                if len(before) > 0:
+                    discarded.append(before)
+                if len(after) > 0:
+                    discarded.append(after)
+            else:
+                # not a K,V pair
+                discarded.append(line)
+        return discarded
 
     def search(self):
         """! Check if there is a KV value in buffer """
@@ -128,9 +142,6 @@ def conn_process(event_queue, dut_event_queue, config):
     # We will ignore all kv pairs before we get sync back
     sync_uuid_discovered = False
 
-    # Some RXD data buffering so we can show more text per log line
-    print_data = str()
-
     def __send_sync(timeout=None):
         sync_uuid = str(uuid.uuid4())
         # Handshake, we will send {{sync;UUID}} preamble and wait for mirrored reply
@@ -193,26 +204,11 @@ def conn_process(event_queue, dut_event_queue, config):
 
         data = connector.read(2048)
         if data:
-
-            # We want to print RXD data with nice line division in log
-            print_data += data
-            print_data_lines = print_data.split('\n')
-            if print_data_lines:
-                if data.endswith('\n'):
-                    for line in print_data_lines:
-                        if line:
-                            logger.prn_rxd(line)
-                            event_queue.put(('__rxd_line', line, time()))
-                    print_data = str()
-                else:
-                    for line in print_data_lines[:-1]:
-                        if line:
-                            logger.prn_rxd(line)
-                            event_queue.put(('__rxd_line', line, time()))
-                    print_data = print_data_lines[-1]
-
             # Stream data stream KV parsing
-            kv_buffer.append(data)
+            print_lines = kv_buffer.append(data)
+            for line in print_lines:
+                logger.prn_rxd(line)
+                event_queue.put(('__rxd_line', line, time()))
             while kv_buffer.search():
                 key, value, timestamp = kv_buffer.pop_kv()
 
