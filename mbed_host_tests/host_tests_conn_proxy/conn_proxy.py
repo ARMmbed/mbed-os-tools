@@ -202,7 +202,8 @@ def conn_process(event_queue, dut_event_queue, config):
                 return 0
             connector.write_kv(key, value)
 
-        data = connector.read(2048)
+        # Since read is done every 0.2 sec, with maximum baud rate we can receive 2304 bytes in one read in worst case.
+        data = connector.read(2304)
         if data:
             # Stream data stream KV parsing
             print_lines = kv_buffer.append(data)
