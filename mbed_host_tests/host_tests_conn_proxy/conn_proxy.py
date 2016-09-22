@@ -39,6 +39,7 @@ class KiViBufferWalker():
         lines = self.buff.split('\n')
         self.buff = lines[-1]   # remaining
         lines.pop(-1)
+        # List of line or strings that did not match K,V pair.
         discarded = []
 
         for line in lines:
@@ -54,6 +55,7 @@ class KiViBufferWalker():
                 if len(before) > 0:
                     discarded.append(before)
                 if len(after) > 0:
+                    # not a K,V pair part
                     discarded.append(after)
             else:
                 # not a K,V pair
