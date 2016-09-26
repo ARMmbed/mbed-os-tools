@@ -111,6 +111,7 @@ class MbedLsToolsBase:
         "0350": "XDOT_L151CC",
         "0400": "MAXWSNENV",
         "0405": "MAX32600MBED",
+        "0406": "MAX32620MBED",
         "0407": "MAX32620HSP",
         "0408": "MAX32625NEXPAQ",
         "0500": "SPANSION_PLACEHOLDER",
