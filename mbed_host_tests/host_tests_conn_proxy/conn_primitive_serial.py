@@ -118,11 +118,12 @@ class SerialConnectorPrimitive(ConnectorPrimitive):
                 self.serial.write(payload)
                 if log:
                     self.logger.prn_txd(payload)
-                return payload
+                return True
         except SerialException as e:
             self.serial = None
             self.LAST_ERROR = "connection lost, serial.write(%d bytes): %s"% (len(payload), str(e))
             self.logger.prn_err(str(e))
+        return False
 
     def flush(self):
         if self.serial:

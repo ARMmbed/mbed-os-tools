@@ -162,11 +162,8 @@ def conn_process(event_queue, dut_event_queue, config):
             return None
 
     # Send simple string to device to 'wake up' greentea-client k-v parser
-    wake_up_string = "mbed" * 10
-    written_wake_up_string = connector.write(wake_up_string, log=True)
-
-    # Failed to write 'wake up' string, exit conn_process
-    if written_wake_up_string != wake_up_string:
+    if not connector.write("mbed" * 10, log=True):
+        # Failed to write 'wake up' string, exit conn_process
         __notify_conn_lost()
         return 0
         

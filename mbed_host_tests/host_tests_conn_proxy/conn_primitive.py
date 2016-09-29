@@ -41,9 +41,8 @@ class ConnectorPrimitive(object):
         """
         # All Key-Value messages ends with newline character
         kv_buff = "{{%s;%s}}"% (key, value) + '\n'
-        written_kv_buff = self.write(kv_buff)
 
-        if kv_buff == written_kv_buff:
+        if self.write(kv_buff):
             self.logger.prn_txd(kv_buff.rstrip())
             return kv_buff
         else:
