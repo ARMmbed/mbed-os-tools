@@ -166,9 +166,19 @@ def run_host_test(image_path,
             binary_path_norm = os.path.normpath(binary_path)
             current_path_norm = os.path.normpath(os.getcwd())
             host_tests_path = binary_path_norm.split(os.sep)[:-level] + ['host_tests']
+            build_dir_candidates = ['BUILD', '.build']
+            idx = None
 
-            idx = host_tests_path.index('.build')
-            # Cut /.build/tests/TOOLCHAIN/TARGET
+            for build_dir_candidate in build_dir_candidates:
+                if build_dir_candidate in host_tests_path:
+                    idx = host_tests_path.index(build_dir_candidate)
+                    break
+
+            if idx is None:
+                msg = 'The following directories were not in the path: %s' % (', '.join(build_dir_candidates))
+                raise Exception(msg)
+
+            # Cut /<build dir>/tests/TOOLCHAIN/TARGET
             host_tests_path = host_tests_path[:idx] + host_tests_path[idx+4:]
             host_tests_path = os.sep.join(host_tests_path)
         except Exception as e:
@@ -565,9 +575,17 @@ def get_test_spec(opts):
         # Test specification file exists in current directory
         gt_logger.gt_log("using 'test_spec.json' from current directory!")
         test_spec_file_name = 'test_spec.json'
+    elif 'BUILD' in os.listdir():
+        # Checking 'BUILD' directory for test specifications
+        # Using `os.listdir()` since it preserves case
+        test_spec_file_name_list = get_all_test_specs_from_build_dir('BUILD')
     elif os.path.exists('.build'):
         # Checking .build directory for test specifications
         test_spec_file_name_list = get_all_test_specs_from_build_dir('.build')
+    elif os.path.exists('mbed-os') and 'BUILD' in os.listdir('mbed-os'):
+        # Checking mbed-os/.build directory for test specifications
+        # Using `os.listdir()` since it preserves case
+        test_spec_file_name_list = get_all_test_specs_from_build_dir(os.path.join(['mbed-os', 'BUILD']))
     elif os.path.exists(os.path.join('mbed-os', '.build')):
         # Checking mbed-os/.build directory for test specifications
         test_spec_file_name_list = get_all_test_specs_from_build_dir(os.path.join(['mbed-os', '.build']))
