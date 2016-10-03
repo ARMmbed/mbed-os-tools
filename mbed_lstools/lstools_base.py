@@ -146,7 +146,7 @@ class MbedLsToolsBase:
         "1200": "NCS36510",
         "1234": "UBLOX_C027",
         "1235": "UBLOX_C027",
-        "1236": "UBLOX_C029",
+        "1236": "UBLOX_EVK_ODIN_W2",
         "1300": "NUC472-NUTINY",
         "1301": "NUMBED",
         "1302": "NUMAKER_PFM_NUC472",
