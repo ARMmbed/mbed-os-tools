@@ -17,12 +17,44 @@ limitations under the License.
 
 import re
 import os
+import sys
 from os.path import expanduser
 import json
-import lockfile
 from os import listdir
 from os.path import isfile, join
-from lockfile import LockFailed, LockTimeout
+from fasteners import InterProcessLock
+
+
+def timed_mbedls_lock(timeout):
+    """
+    Implements Inter Process Lock using fasteners.InterProcessLock and adding a timeout feature to avoid wait forever.
+
+    :param timeout:     Time to wait for acquiring lock. Else an exception is raised.
+    :return:
+    """
+    def wrapper(self, *args):
+        ret = None
+        lock = InterProcessLock(self.lock_file)
+        acquired = lock.acquire(blocking=False)
+        if not acquired:
+            self.debug("Waiting %d seconds for mock file lock." % timeout)
+            acquired = lock.acquire(blocking=True, timeout=timeout)
+        if acquired:
+            try:
+                ret = wrapper.original(self, *args)
+            except Exception, e:
+                lock.release()
+                raise e
+            lock.release()
+        else:
+            self.err("Failed to acquired mock file lock in %d seconds!" % timeout)
+            sys.exit(1)
+        return ret
+
+    def func(original):
+        wrapper.original = original
+        return wrapper
+    return func
 
 
 class MbedLsToolsBase:
@@ -38,6 +70,8 @@ class MbedLsToolsBase:
 
         # Create in HOME directory place for mbed-ls to store information
         self.mbedls_home_dir_init()
+        self.lock_file = os.path.join(MbedLsToolsBase.HOME_DIR,
+                                      MbedLsToolsBase.MBEDLS_HOME_DIR, MbedLsToolsBase.MBEDLS_GLOBAL_LOCK)
         self.mbedls_get_mocks()
 
     # Which OSs are supported by this module
@@ -234,15 +268,6 @@ class MbedLsToolsBase:
             for mid in mock_ids:
                 self.manufacture_ids[mid] = mock_ids[mid]
 
-    def mbedls_get_global_lock(self):
-        """! Create lock (file lock) object used to guard operations on
-             mock configuration file in current user $HOME directory
-        @return Global lock object instance
-        """
-        file_path = os.path.join(self.HOME_DIR, self.MBEDLS_HOME_DIR, self.MBEDLS_GLOBAL_LOCK)
-        lock = lockfile.LockFile(file_path)
-        return lock
-
     def list_manufacture_ids(self):
         """! Creates list of all available mappings for target_id -> Platform
         @return String with table formatted output
@@ -260,13 +285,13 @@ class MbedLsToolsBase:
 
         return pt.get_string()
 
+    @timed_mbedls_lock(60)
     def mock_read(self):
         """! Load mocking data from local file
         @details Uses file locking for operation on Mock
                  configuration file in current user $HOME directory
         @return Curent mocking configuration (dictionary)
         """
-
         def read_mock_file(filename):
             try:
                 with open(filename, "r") as f:
@@ -279,16 +304,6 @@ class MbedLsToolsBase:
                     str(e)))
             return {}
 
-        lock = self.mbedls_get_global_lock()
-        while not lock.i_am_locking():
-            try:
-                lock.acquire(timeout=1)
-            except LockTimeout as e:
-                lock.break_lock()
-                lock.acquire()
-                self.debug(self.mock_read.__name__, str(e))
-        self.debug(self.mock_read.__name__, "locked '%s'"% lock.path)
-
         result = {}
 
         # This read is for backward compatibility
@@ -299,10 +314,9 @@ class MbedLsToolsBase:
         elif isfile(self.MOCK_HOME_FILE_NAME):
             result = read_mock_file(self.MOCK_HOME_FILE_NAME)
 
-        lock.release()
-        self.debug(self.mock_read.__name__, "released '%s'"% lock.path)
         return result
 
+    @timed_mbedls_lock(60)
     def mock_write(self, mock_ids):
         """! Write current mocking structure
         @param mock_ids JSON mock data to dump to file
@@ -323,20 +337,8 @@ class MbedLsToolsBase:
                     str(e)))
             return False
 
-        lock = self.mbedls_get_global_lock()
-        while not lock.i_am_locking():
-            try:
-                lock.acquire(timeout=1)
-            except LockTimeout as e:
-                lock.break_lock()
-                lock.acquire()
-                self.debug(self.mock_read.__name__, str(e))
-        self.debug(self.mock_write.__name__, "locked '%s'"% lock.path)
-
         result = write_mock_file(self.MOCK_HOME_FILE_NAME, mock_ids)
 
-        lock.release()
-        self.debug(self.mock_read.__name__, "released '%s'"% lock.path)
         return result
 
     def retarget_read(self):
