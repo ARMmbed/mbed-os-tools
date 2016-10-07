@@ -575,7 +575,7 @@ def get_test_spec(opts):
         # Test specification file exists in current directory
         gt_logger.gt_log("using 'test_spec.json' from current directory!")
         test_spec_file_name = 'test_spec.json'
-    elif 'BUILD' in os.listdir():
+    elif 'BUILD' in os.listdir(os.getcwd()):
         # Checking 'BUILD' directory for test specifications
         # Using `os.listdir()` since it preserves case
         test_spec_file_name_list = get_all_test_specs_from_build_dir('BUILD')
