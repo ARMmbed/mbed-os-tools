@@ -114,6 +114,7 @@ class MbedLsToolsBase:
         "0406": "MAX32620MBED",
         "0407": "MAX32620HSP",
         "0408": "MAX32625NEXPAQ",
+        "0415": "MAX32625MBED",
         "0500": "SPANSION_PLACEHOLDER",
         "0505": "SPANSION_PLACEHOLDER",
         "0510": "SPANSION_PLACEHOLDER",
