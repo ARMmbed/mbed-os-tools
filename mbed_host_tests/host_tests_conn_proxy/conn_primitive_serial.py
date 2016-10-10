@@ -29,7 +29,7 @@ class SerialConnectorPrimitive(ConnectorPrimitive):
         ConnectorPrimitive.__init__(self, name)
         self.port = port
         self.baudrate = int(baudrate)
-        self.timeout = 0.2  # 200 milli sec
+        self.timeout = 0.01  # 10 milli sec
         self.config = config
         self.target_id = self.config.get('target_id', None)
         self.serial_pooling = config.get('serial_pooling', 60)
@@ -57,7 +57,7 @@ class SerialConnectorPrimitive(ConnectorPrimitive):
             self.serial = Serial(self.port, baudrate=self.baudrate, timeout=0)
         except SerialException as e:
             self.serial = None
-            self.LAST_ERROR = "connection lost, serial.Serial(%s. %d, %d): %s"% (self.port,
+            self.LAST_ERROR = "connection lost, serial.Serial(%s, %d, %d): %s"% (self.port,
                 self.baudrate,
                 self.timeout,
                 str(e))
