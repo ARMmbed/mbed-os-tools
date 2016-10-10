@@ -194,23 +194,22 @@ class DefaultTestSelector(DefaultTestSelectorBase):
 
             # Start idle timeout loop looking for other events
             while (time() - start_time) < coverage_idle_timeout:
-                if not event_queue.empty():
-                    try:
-                        (key, value, timestamp) = event_queue.get(timeout=1)
-                    except QueueEmpty:
-                        continue
+                try:
+                    (key, value, timestamp) = event_queue.get(timeout=1)
+                except QueueEmpty:
+                    continue
 
-                    # If coverage detected use idle loop
-                    # Prevent breaking idle loop for __rxd_line (occurs between keys)
-                    if key == '__coverage_start' or key == '__rxd_line':
-                        start_time = time()
+                # If coverage detected use idle loop
+                # Prevent breaking idle loop for __rxd_line (occurs between keys)
+                if key == '__coverage_start' or key == '__rxd_line':
+                    start_time = time()
 
-                        # Perform callback
-                        callbacks[key](key, value, timestamp)
-                        continue
+                    # Perform callback
+                    callbacks[key](key, value, timestamp)
+                    continue
 
-                    elapsed_time = time() - original_start_time
-                    return elapsed_time, (key, value, timestamp)
+                elapsed_time = time() - original_start_time
+                return elapsed_time, (key, value, timestamp)
 
         p = start_conn_process()
 
