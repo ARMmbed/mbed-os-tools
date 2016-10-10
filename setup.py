@@ -51,4 +51,4 @@ setup(name='mbed-ls',
       },
       install_requires=[
         "PrettyTable>=0.7.2",
-        "lockfile"])
+        "fasteners"])

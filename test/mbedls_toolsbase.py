@@ -37,13 +37,6 @@ class BasicTestCase(unittest.TestCase):
         self.assertEqual(True, True)
         self.assertNotEqual(True, False)
 
-    def test_mbedls_get_global_lock(self):
-        lock = self.base.mbedls_get_global_lock()
-
-        self.assertTrue(hasattr(lock, 'acquire'))
-        self.assertTrue(hasattr(lock, 'release'))
-        self.assertTrue(hasattr(lock, 'break_lock'))
-
     def test_list_manufacture_ids(self):
         table_str = self.base.list_manufacture_ids()
 
