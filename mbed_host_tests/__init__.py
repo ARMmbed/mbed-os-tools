@@ -229,6 +229,13 @@ def init_host_test_cli_params():
                       type="float",
                       help="When forcing a reset using option -r you can set up after reset idle delay in seconds (Default is 1 second)")
 
+    parser.add_option("--process-start-timeout",
+                      dest="process_start_timeout",
+                      default=60,
+                      metavar="NUMBER",
+                      type="float",
+                      help="This sets the maximum time in seconds to wait for an internal process to start. This mostly only affects machines under heavy load (Default is 60 seconds)")
+
     parser.add_option("-e", "--enum-host-tests",
                       dest="enum_host_tests",
                       help="Define directory with local host tests")
