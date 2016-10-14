@@ -395,22 +395,57 @@ def get_platform_property_from_targets(platform, property):
     :return: property value, None if property not found
     """
 
+    def get_platform_property_from_targets(targets, platform, property):
+        """! Get a platforms's property from the target data structure in
+             targets.json. Takes into account target inheritance.
+        @param targets Data structure parsed from targets.json
+        @param platform Name of the platform
+        @param property Name of the property
+        @return property value, None if property not found
+
+        """
+
+        result = None
+        if platform in targets:
+            if property in targets[platform]:
+                result = targets[platform][property]
+            elif 'inherits' in targets[platform]:
+                result = None
+                for inherited_target in targets[platform]['inherits']:
+                    result = get_platform_property_from_targets(targets, inherited_target, property)
+
+                    # Stop searching after finding the first value for the property
+                    if result:
+                        break
+
+        return result
+
     result = None
-    targets_json_path = [
-        './mbed-os/core/hal/targets.json',
-        './core/hal/targets.json',
-        './mbed-os/mbed/hal/targets.json',
-        './mbed/hal/targets.json']
+    targets_json_path = []
+    for root, dirs, files in os.walk(os.getcwd(), followlinks=True):
+        ignored_dirs = ['.build', 'BUILD', 'tools']
+
+        for ignored_dir in ignored_dirs:
+            if ignored_dir in dirs:
+                dirs.remove(ignored_dir)
+
+        if 'targets.json' in files:
+            targets_json_path.append(os.path.join(root, 'targets.json'))
+
+    if not targets_json_path:
+        gt_logger.gt_log_warn("No targets.json files found, using default target properties")
 
     for targets_path in targets_json_path:
         try:
             with open(targets_path, 'r') as f:
                 targets = json.load(f)
+
                 # Load property from targets.json
-                if platform in targets:
-                    if property in targets[platform]:
-                        result = targets[platform][property]
-                        break
+                result = get_platform_property_from_targets(targets, platform, property)
+
+                # If a valid property was found, stop looking
+                if result:
+                    break
         except Exception:
             continue
     return result
