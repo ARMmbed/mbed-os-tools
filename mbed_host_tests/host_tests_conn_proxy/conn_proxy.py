@@ -128,6 +128,10 @@ def conn_process(event_queue, dut_event_queue, config):
     logger = HtrunLogger('CONN')
     logger.prn_inf("starting connection process...")
 
+    # Send connection process start event to host process
+    # NOTE: Do not send any other Key-Value pairs before this!
+    event_queue.put(('__conn_process_start', 1, time()))
+
     # Configuration of conn_opriocess behaviour
     sync_behavior = int(config.get('sync_behavior', 1))
     sync_timeout = config.get('sync_timeout', 1.0)

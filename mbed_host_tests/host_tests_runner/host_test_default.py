@@ -213,6 +213,22 @@ class DefaultTestSelector(DefaultTestSelectorBase):
 
         p = start_conn_process()
 
+        conn_process_started = False
+        try:
+            (key, value, timestamp) = event_queue.get(timeout=self.options.process_start_timeout)
+
+            if key == '__conn_process_start':
+                conn_process_started = True
+            else:
+                self.logger.prn_err("First expected event was '__conn_process_start', received '%s' instead"% key)
+
+        except QueueEmpty:
+            self.logger.prn_err("Conn process failed to start in %f sec"% self.options.process_start_timeout)
+
+        if not conn_process_started:
+            p.terminate()
+            return self.RESULT_TIMEOUT
+
         start_time = time()
 
         try:
