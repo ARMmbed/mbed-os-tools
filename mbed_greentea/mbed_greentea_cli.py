@@ -410,6 +410,12 @@ def run_test_thread(test_result_queue, test_queue, opts, mut, build, build_path,
     test_platforms_match = 0
     test_report = {}
 
+    disk = mut['mount_point']
+    port = mut['serial_port']
+    micro = mut['platform_name']
+    program_cycle_s = get_platform_property(micro, "program_cycle_s")
+    forced_reset_timeout = get_platform_property(micro, "forced_reset_timeout")
+
     while not test_queue.empty():
         try:
             test = test_queue.get(False)
@@ -419,11 +425,6 @@ def run_test_thread(test_result_queue, test_queue, opts, mut, build, build_path,
 
         test_result = 'SKIPPED'
 
-        disk = mut['mount_point']
-        port = mut['serial_port']
-        micro = mut['platform_name']
-        program_cycle_s = get_platform_property(micro, "program_cycle_s")
-        forced_reset_timeout = get_platform_property(micro, "forced_reset_timeout")
         copy_method = opts.copy_method if opts.copy_method else 'shell'
         verbose = opts.verbose_test_result_only
         enum_host_tests_path = get_local_host_tests_dir(opts.enum_host_tests)
