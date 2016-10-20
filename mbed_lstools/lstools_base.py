@@ -37,7 +37,7 @@ def timed_mbedls_lock(timeout):
         lock = InterProcessLock(self.lock_file)
         acquired = lock.acquire(blocking=False)
         if not acquired:
-            self.debug("Waiting %d seconds for mock file lock." % timeout)
+            self.debug("timed_mbedls_lock", "Waiting %d seconds for mock file lock." % timeout)
             acquired = lock.acquire(blocking=True, timeout=timeout)
         if acquired:
             try:
@@ -47,7 +47,7 @@ def timed_mbedls_lock(timeout):
                 raise e
             lock.release()
         else:
-            self.err("Failed to acquired mock file lock in %d seconds!" % timeout)
+            self.err("timed_mbedls_lock", "Failed to acquired mock file lock in %d seconds!" % timeout)
             sys.exit(1)
         return ret
 
