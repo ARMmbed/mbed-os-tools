@@ -30,6 +30,7 @@ from threading import Thread
 
 from mbed_greentea.mbed_test_api import get_test_build_properties
 from mbed_greentea.mbed_test_api import get_test_spec
+from mbed_greentea.mbed_test_api import get_thread_with_max_stack_size
 from mbed_greentea.mbed_test_api import run_host_test
 from mbed_greentea.mbed_test_api import log_mbed_devices_in_table
 from mbed_greentea.mbed_test_api import TEST_RESULTS
@@ -40,6 +41,7 @@ from mbed_greentea.mbed_report_api import exporter_testcase_text
 from mbed_greentea.mbed_report_api import exporter_json
 from mbed_greentea.mbed_report_api import exporter_testcase_junit
 from mbed_greentea.mbed_report_api import exporter_html
+from mbed_greentea.mbed_report_api import exporter_memory_metrics_csv
 from mbed_greentea.mbed_greentea_log import gt_logger
 from mbed_greentea.mbed_greentea_dlm import GREENTEA_KETTLE_PATH
 from mbed_greentea.mbed_greentea_dlm import greentea_get_app_sem
@@ -321,6 +323,10 @@ def main():
                     action="store_true",
                     help='Prints console outputs for failed tests')
 
+    parser.add_option('', '--report-memory-metrics-csv',
+                    dest='report_memory_metrics_csv_file_name',
+                    help='You can log test suite memory metrics in the form of a CSV file')
+
     parser.add_option('', '--yotta-registry',
                     dest='yotta_search_for_mbed_target',
                     default=False,
@@ -453,7 +459,7 @@ def run_test_thread(test_result_queue, test_queue, opts, mut, build, build_path,
             break
 
         # If execution was successful 'run_host_test' return tuple with results
-        single_test_result, single_test_output, single_testduration, single_timeout, result_test_cases, test_cases_summary = host_test_result
+        single_test_result, single_test_output, single_testduration, single_timeout, result_test_cases, test_cases_summary, memory_metrics = host_test_result
         test_result = single_test_result
 
         build_path_abs = os.path.abspath(build_path)
@@ -550,6 +556,7 @@ def run_test_thread(test_result_queue, test_queue, opts, mut, build, build_path,
         test_report[build][test_suite_name]['platform_name'] = micro
         test_report[build][test_suite_name]['copy_method'] = copy_method
         test_report[build][test_suite_name]['testcase_result'] = result_test_cases
+        test_report[build][test_suite_name]['memory_metrics'] = memory_metrics
 
         test_report[build][test_suite_name]['build_path'] = build_path
         test_report[build][test_suite_name]['build_path_abs'] = build_path_abs
@@ -690,7 +697,7 @@ def main_cli(opts, args, gt_instance_uuid=None):
             return host_test_result
 
         # If execution was successful 'run_host_test' return tuple with results
-        single_test_result, single_test_output, single_testduration, single_timeout, result_test_cases, test_cases_summary = host_test_result
+        single_test_result, single_test_output, single_testduration, single_timeout, result_test_cases, test_cases_summary, memory_metrics = host_test_result
         status = TEST_RESULTS.index(single_test_result) if single_test_result in TEST_RESULTS else -1
         return (status)
 
@@ -843,7 +850,7 @@ def main_cli(opts, args, gt_instance_uuid=None):
                     return host_test_result
 
                 # If execution was successful 'run_host_test' return tuple with results
-                single_test_result, single_test_output, single_testduration, single_timeout, result_test_cases, test_cases_summary = host_test_result
+                single_test_result, single_test_output, single_testduration, single_timeout, result_test_cases, test_cases_summary, memory_metrics = host_test_result
                 status = TEST_RESULTS.index(single_test_result) if single_test_result in TEST_RESULTS else -1
                 if single_test_result != TEST_RESULT_OK:
                     test_exec_retcode += 1
@@ -1011,6 +1018,13 @@ def main_cli(opts, args, gt_instance_uuid=None):
             # Generate a HTML page displaying all of the results
             html_report = exporter_html(test_report)
             dump_report_to_text_file(opts.report_html_file_name, html_report)
+
+        # Memory metrics to CSV file
+        if opts.report_memory_metrics_csv_file_name:
+            gt_logger.gt_log("exporting memory metrics to CSV file '%s'..."% gt_logger.gt_bright(opts.report_memory_metrics_csv_file_name))
+            # Generate a CSV file page displaying all memory metrics
+            memory_metrics_csv_report = exporter_memory_metrics_csv(test_report)
+            dump_report_to_text_file(opts.report_memory_metrics_csv_file_name, memory_metrics_csv_report)
 
         # Final summary
         if test_report:

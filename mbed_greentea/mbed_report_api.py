@@ -683,3 +683,40 @@ def exporter_html(test_result_ext, test_suite_properties=None):
 
     # Add the numbers of columns to make them have the same width
     return html_template % (get_result_colour_class_css(), len(test_result_ext), table)
+
+def exporter_memory_metrics_csv(test_result_ext, test_suite_properties=None):
+    """! Export memory metrics as CSV
+    @param test_result_ext Extended report from Greentea
+    @details This function will create a CSV file that is parsable via CI software
+    @return String containing the CSV output
+    """
+
+    metrics_report = {}
+
+    for target_name in test_result_ext:
+        test_results = test_result_ext[target_name]
+        for test_suite_name in test_results:
+            test = test_results[test_suite_name]
+
+            if 'memory_metrics' in test and test['memory_metrics']:
+                memory_metrics = test['memory_metrics']
+
+                if 'max_heap' in memory_metrics:
+                    report_key = '%s_%s_max_heap_usage' % (target_name, test_suite_name)
+                    metrics_report[report_key] = memory_metrics['max_heap']
+
+                if 'thread_stack_summary' in memory_metrics:
+                    thread_stack_summary = memory_metrics['thread_stack_summary']
+
+                    if 'max_stack_size' in thread_stack_summary:
+                        report_key = '%s_%s_max_stack_size' % (target_name, test_suite_name)
+                        metrics_report[report_key] = thread_stack_summary['max_stack_size']
+
+                    if 'max_stack_usage' in thread_stack_summary:
+                        report_key = '%s_%s_max_stack_usage' % (target_name, test_suite_name)
+                        metrics_report[report_key] = thread_stack_summary['max_stack_usage']
+
+    column_names = sorted(metrics_report.keys())
+    column_values = [str(metrics_report[x]) for x in column_names]
+
+    return "%s\n%s" % (','.join(column_names), ','.join(column_values))
