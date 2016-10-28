@@ -161,7 +161,10 @@ class MbedLsToolsWin7(MbedLsToolsBase):
         for mbed in self.get_mbed_devices():
             mountpoint = re.match('.*\\\\(.:)$', mbed[0]).group(1)
             # TargetID is a hex string with 10-48 chars
-            tid = re.search('[&#]([0-9A-Za-z]{10,48})[&#]', mbed[1]).group(1)
+            m = re.search('[&#]([0-9A-Za-z]{10,48})[&#]', mbed[1])
+            if not m:
+                continue
+            tid = m.group(1)
             mbeds += [(mountpoint, tid)]
             self.debug(self.get_mbeds.__name__, (mountpoint, tid))
         return mbeds
