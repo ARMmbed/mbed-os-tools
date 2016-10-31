@@ -21,6 +21,7 @@ import re
 import os
 import sys
 import json
+import string
 from time import time
 from subprocess import Popen, PIPE, STDOUT
 
@@ -292,6 +293,7 @@ def run_host_test(image_path,
     end_time = time()
     testcase_duration = end_time - start_time   # Test case duration from reset to {end}
 
+    htrun_output = get_printable_string(htrun_output)
     result = get_test_result(htrun_output)
     result_test_cases = get_testcase_result(htrun_output)
     test_cases_summary = get_testcase_summary(htrun_output)
@@ -398,6 +400,9 @@ def get_coverage_data(build_path, output):
             except Exception as e:
                 gt_logger.gt_log_err("error while handling GCOV data: " + str(e))
             gt_logger.gt_log_tab("storing %d bytes in '%s'"% (len(bin_gcov_payload), gcov_path))
+
+def get_printable_string(unprintable_string):
+    return filter(lambda x: x in string.printable, unprintable_string)
 
 def get_testcase_summary(output):
     """! Searches for test case summary
