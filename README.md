@@ -44,6 +44,8 @@
   * [ ```htrun``` new log format:](#-htrun-new-log-format)
     * [Log example](#log-example)
 * [End-to-end examples](#end-to-end-examples)
+* [Plugins](#plugins)
+  * [SARA NBIOT EVK](#sara-nbiot-evk)
 
 # Quickstart
 
@@ -1009,3 +1011,10 @@ Here you can find references to modules and repositories contain examples of tes
 * ```minar``` module contains [test cases](https://github.com/ARMmbed/minar/tree/master/test) written without ```utest```. Note: ```utest``` may use ```minar``` for callback scheduling and can't be use to test ```minar``` itself.
 * ```mbed-drivers``` module contains [test cases](https://github.com/ARMmbed/mbed-drivers/tree/master/test) written with and without ```utest``` harness. Currently all ```mbed-drivers``` tests are using [build-in to ```htrun``` host tests](https://github.com/ARMmbed/htrun/tree/master/mbed_host_tests/host_tests).
 * And finally ```sockets``` module contains [test cases](https://github.com/ARMmbed/sockets/tree/master/test) with [custom host tests](https://github.com/ARMmbed/sockets/tree/master/test/host_tests).
+
+# Plugins
+
+In order to work with platforms for which the hardware is still under development, and hence may not have an mbed interface chip, some "hook" files are required.  Operation with these platforms is a matter for the platform development teams involved and is not, in general, supported by ARM.
+
+## SARA NBIOT EVK
+The SARA NBIOT EVK board must be connected to a Windows PC using a Segger JLink box, which is used for downloading code and resetting the board. The USB port on the EVK must also be connected to the same PC.  To make use of these hooks you will also require access to some proprietary tools that can be requested from u-blox.
