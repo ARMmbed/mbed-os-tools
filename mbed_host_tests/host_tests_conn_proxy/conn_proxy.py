@@ -139,6 +139,14 @@ def conn_process(event_queue, dut_event_queue, config):
 
     # Create connector instance with proper configuration
     connector = conn_primitive_factory(conn_resource, config, event_queue, logger)
+
+    # If the connector failed, stop the process now
+    if not connector.connected():
+        logger.prn_err("Failed to connect to resource")
+        connector.finish()
+        event_queue.put(('__notify_conn_lost', connector.error(), time()))
+        return 0
+
     # Create simple buffer we will use for Key-Value protocol data
     kv_buffer = KiViBufferWalker()
 
