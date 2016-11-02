@@ -782,8 +782,14 @@ def main_cli(opts, args, gt_instance_uuid=None):
                 # We will force configuration specific baudrate by adding baudrate to serial port
                 # Only add baudrate decoration for serial port if it's not already there
                 # Format used by mbedhtrun: 'serial_port' = '<serial_port_name>:<baudrate>'
-                if not mbed_dev['serial_port'].endswith(str(baudrate)):
-                    mbed_dev['serial_port'] = "%s:%d" % (mbed_dev['serial_port'], baudrate)
+                sp = mbed_dev['serial_port']
+                if sp:
+                    if not sp.endswith(str(baudrate)):
+                        mbed_dev['serial_port'] = "%s:%d" % (mbed_dev['serial_port'], baudrate)
+                else:
+                    gt_logger.gt_log_err("Serial port for target %s not detected correctly\n" % mbed_dev['target_id'])
+                    continue
+
                 mut = mbed_dev
                 if mbed_dev not in muts_to_test:
                     # We will only add unique devices to list of devices "for testing" in this test run
