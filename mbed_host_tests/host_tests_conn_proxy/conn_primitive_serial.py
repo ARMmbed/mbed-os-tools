@@ -120,9 +120,6 @@ class SerialConnectorPrimitive(ConnectorPrimitive):
     def connected(self):
         return bool(self.serial)
 
-    def error(self):
-        return self.LAST_ERROR
-
     def finish(self):
         if self.serial:
             self.serial.close()

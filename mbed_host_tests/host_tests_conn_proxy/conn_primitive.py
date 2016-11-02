@@ -66,7 +66,6 @@ class ConnectorPrimitive(object):
         """! Returns LAST_ERROR value
         @return Value of self.LAST_ERROR
         """
-        raise NotImplementedError
         return self.LAST_ERROR
 
     def finish(self):
