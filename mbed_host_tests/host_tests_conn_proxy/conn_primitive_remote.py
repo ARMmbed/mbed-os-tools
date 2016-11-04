@@ -134,9 +134,6 @@ class RemoteConnectorPrimitive(ConnectorPrimitive):
             self.selected_resource,
             self.selected_resource.is_connected])
 
-    def error(self):
-        return self.LAST_ERROR
-
     def finish(self):
         # Finally once we're done with the resource
         # we disconnect and release the allocation
