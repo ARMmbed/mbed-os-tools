@@ -215,6 +215,7 @@ class MbedLsToolsBase:
         "4337": "LPC4337",
         "4500": "DELTA_DFCM_NNN40",
         "4501": "DELTA_DFBM_NQ620",
+        "4502": "DELTA_DFCM_NNN50",
         "5000": "ARM_MPS2",
         "5001": "ARM_MPS2_M0",
         "5003": "ARM_BEETLE_SOC",
