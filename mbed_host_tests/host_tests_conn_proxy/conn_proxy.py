@@ -88,7 +88,7 @@ def conn_primitive_factory(conn_resource, config, event_queue, logger):
         # Get extra configuration related to serial port
         port = config.get('port')
         baudrate = config.get('baudrate')
-        serial_pooling = int(config.get('serial_pooling', 60))
+        serial_pooling = int(config.get('polling_timeout', 60))
 
         logger.prn_inf("notify event queue about extra %d sec timeout for serial port pooling"%serial_pooling)
         event_queue.put(('__timeout', serial_pooling, time()))
@@ -104,17 +104,17 @@ def conn_primitive_factory(conn_resource, config, event_queue, logger):
     elif conn_resource == 'grm':
         # Start GRM (Gloabal Resource Mgr) collection
 
-        # Get extra configuration related to remote host
-        remote_pooling = int(config.get('remote_pooling', 30))
-
-        # Adding extra timeout for connection to remote resource host
-        logger.prn_inf("notify event queue about extra %d sec timeout for remote connection"%remote_pooling)
-        event_queue.put(('__timeout', remote_pooling, time()))
-
         logger.prn_inf("initializing global resource mgr listener... ")
         connector = RemoteConnectorPrimitive(
             'GLRM',
             config=config)
+        # Get extra configuration related to remote host
+        remote_polling = connector.get_timeout()
+
+        # Adding extra timeout for connection to remote resource host
+        logger.prn_inf("notify event queue about extra %d sec timeout for remote connection"%remote_polling)
+        event_queue.put(('__timeout', remote_polling, time()))
+
         return connector
 
     else:

@@ -32,7 +32,7 @@ class SerialConnectorPrimitive(ConnectorPrimitive):
         self.timeout = 0.01  # 10 milli sec
         self.config = config
         self.target_id = self.config.get('target_id', None)
-        self.serial_pooling = config.get('serial_pooling', 60)
+        self.polling_timeout = config.get('polling_timeout', 60)
         self.forced_reset_timeout = config.get('forced_reset_timeout', 1)
 
         # Values used to call serial port listener...
@@ -44,7 +44,7 @@ class SerialConnectorPrimitive(ConnectorPrimitive):
         #
         # Note: This listener opens serial port and keeps connection so reset plugin uses
         # serial port object not serial port name!
-        _, serial_port = HostTestPluginBase().check_serial_port_ready(self.port, target_id=self.target_id, timeout=self.serial_pooling)
+        _, serial_port = HostTestPluginBase().check_serial_port_ready(self.port, target_id=self.target_id, timeout=self.polling_timeout)
         if serial_port != self.port:
             # Serial port changed for given targetID
             self.logger.prn_inf("serial port changed from '%s to '%s')"% (self.port, serial_port))

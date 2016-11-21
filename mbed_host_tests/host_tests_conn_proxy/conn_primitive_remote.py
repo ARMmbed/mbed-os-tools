@@ -31,6 +31,7 @@ class RemoteConnectorPrimitive(ConnectorPrimitive):
         self.platform_name = config.get('platform_name', None)
         self.baudrate = config.get('baudrate', DEFAULT_BAUD_RATE)
         self.image_path = config.get('image_path', None)
+        self.polling_timeout = int(config.get('polling_timeout', 60))
 
         # Global Resource Mgr tool-kit
         self.remote_module = None

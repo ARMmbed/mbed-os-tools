@@ -42,7 +42,7 @@ class Mbed:
         self.image_path = self.options.image_path.strip('"') if self.options.image_path is not None else ''
         self.copy_method = self.options.copy_method
         self.program_cycle_s = float(self.options.program_cycle_s if self.options.program_cycle_s is not None else 2.0)
-        self.pooling_timeout = self.options.pooling_timeout
+        self.polling_timeout = self.options.polling_timeout
 
         # Serial port settings
         self.serial_baud = DEFAULT_BAUD_RATE
@@ -119,7 +119,7 @@ class Mbed:
                                         serial=port,
                                         destination_disk=disk,
                                         target_id=self.target_id,
-                                        pooling_timeout=self.pooling_timeout)
+                                        pooling_timeout=self.polling_timeout)
         return result
 
     def hw_reset(self):

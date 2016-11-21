@@ -24,6 +24,7 @@ class ConnectorPrimitive(object):
     def __init__(self, name):
         self.LAST_ERROR = None
         self.logger = HtrunLogger(name)
+        self.polling_timeout = 60
 
     def write_kv(self, key, value):
         """! Forms and sends Key-Value protocol message.
@@ -72,3 +73,10 @@ class ConnectorPrimitive(object):
         """! Handle DUT dtor like (close resource) operations here
         """
         raise NotImplementedError
+
+    def get_timeout(self):
+        """
+        Returns connection polling timeout.
+        :return:
+        """
+        return self.polling_timeout
