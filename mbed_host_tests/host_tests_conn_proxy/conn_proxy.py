@@ -81,6 +81,10 @@ def conn_primitive_factory(conn_resource, config, event_queue, logger):
     @param logger Host Test logger instance
     @return Object of type <ConnectorPrimitive> or None if type of connection primitive unknown (conn_resource)
     """
+    polling_timeout = int(config.get('polling_timeout', 60))
+    logger.prn_inf("notify event queue about extra %d sec timeout for serial port pooling"%polling_timeout)
+    event_queue.put(('__timeout', polling_timeout, time()))
+
     if conn_resource == 'serial':
         # Standard serial port connection
         # Notify event queue we will wait additional time for serial port to be ready
@@ -88,10 +92,6 @@ def conn_primitive_factory(conn_resource, config, event_queue, logger):
         # Get extra configuration related to serial port
         port = config.get('port')
         baudrate = config.get('baudrate')
-        serial_pooling = int(config.get('polling_timeout', 60))
-
-        logger.prn_inf("notify event queue about extra %d sec timeout for serial port pooling"%serial_pooling)
-        event_queue.put(('__timeout', serial_pooling, time()))
 
         logger.prn_inf("initializing serial port listener... ")
         connector = SerialConnectorPrimitive(
@@ -99,28 +99,17 @@ def conn_primitive_factory(conn_resource, config, event_queue, logger):
             port,
             baudrate,
             config=config)
-        return connector
-
     elif conn_resource == 'grm':
         # Start GRM (Gloabal Resource Mgr) collection
-
         logger.prn_inf("initializing global resource mgr listener... ")
         connector = RemoteConnectorPrimitive(
             'GLRM',
             config=config)
-        # Get extra configuration related to remote host
-        remote_polling = connector.get_timeout()
-
-        # Adding extra timeout for connection to remote resource host
-        logger.prn_inf("notify event queue about extra %d sec timeout for remote connection"%remote_polling)
-        event_queue.put(('__timeout', remote_polling, time()))
-
-        return connector
-
     else:
         logger.pn_err("unknown connection resource!")
         raise NotImplementedError("ConnectorPrimitive factory: unknown connection resource '%s'!"% conn_resource)
-        return None
+
+    return connector
 
 
 def conn_process(event_queue, dut_event_queue, config):
