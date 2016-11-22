@@ -74,9 +74,3 @@ class ConnectorPrimitive(object):
         """
         raise NotImplementedError
 
-    def get_timeout(self):
-        """
-        Returns connection polling timeout.
-        :return:
-        """
-        return self.polling_timeout
