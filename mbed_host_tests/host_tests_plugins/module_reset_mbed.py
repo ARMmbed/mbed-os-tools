@@ -95,7 +95,11 @@ class HostTestPluginResetMethod_Mbed(HostTestPluginBase):
         except:
             # In Linux a termios.error is raised in sendBreak and in setBreak.
             # The following break_condition = False is needed to release the reset signal on the target mcu.
-            serial.break_condition = False
+            try:
+                serial.break_condition = False
+            except Exception, e:
+                self.print_plugin_error("Error while doing 'serial.break_condition = False' : %s"% str(e))
+                result = False
         return result
 
     def setup(self, *args, **kwargs):
