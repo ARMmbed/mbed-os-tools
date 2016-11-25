@@ -50,8 +50,8 @@ class SerialConnectorPrimitive(ConnectorPrimitive):
             self.port = serial_port
 
         startTime = time.time()
+        self.logger.prn_inf("serial(port=%s, baudrate=%d, timeout=%s)"% (self.port, self.baudrate, self.timeout))
         while time.time() - startTime < self.serial_pooling:
-            self.logger.prn_inf("serial(port=%s, baudrate=%d, timeout=%s)"% (self.port, self.baudrate, self.timeout))
             try:
                 # TIMEOUT: While creating Serial object timeout is delibrately passed as 0. Because blocking in Serial.read
                 # impacts thread and mutliprocess functioning in Python. Hence, instead in self.read() s delay (sleep()) is
