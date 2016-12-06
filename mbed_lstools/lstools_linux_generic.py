@@ -23,10 +23,10 @@ from lstools_base import MbedLsToolsBase
 class MbedLsToolsLinuxGeneric(MbedLsToolsBase):
     """ MbedLsToolsLinuxGeneric supports mbed-enabled platforms detection across Linux family
     """
-    def __init__(self):
+    def __init__(self, **kwargs):
         """! ctor
         """
-        MbedLsToolsBase.__init__(self)
+        MbedLsToolsBase.__init__(self, **kwargs)
         self.os_supported.append('LinuxGeneric')
         self.hex_uuid_pattern = "usb-[0-9a-zA-Z_-]*_([0-9a-zA-Z]*)-.*"
         # Since Ubuntu 15 DAplink serial port device can have pci- prefix, not only usb- one

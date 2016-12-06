@@ -21,8 +21,8 @@ from lstools_linux_generic import MbedLsToolsLinuxGeneric
 class MbedLsToolsUbuntu(MbedLsToolsLinuxGeneric):
     """ MbedLsToolsUbuntu supports mbed-enabled platforms detection across Ubuntu OS family
     """
-    def __init__(self):
+    def __init__(self, **kwargs):
         """ ctor
         """
-        MbedLsToolsLinuxGeneric.__init__(self)
+        MbedLsToolsLinuxGeneric.__init__(self, **kwargs)
         self.os_supported.append('Ubuntu')

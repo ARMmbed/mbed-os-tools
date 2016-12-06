@@ -29,9 +29,10 @@ from lstools_linux_generic import MbedLsToolsLinuxGeneric
 from lstools_darwin import MbedLsToolsDarwin
 
 
-def create():
+def create(**kwargs):
     """! Factory used to create host OS specific mbed-lstools object
 
+    :param kwargs: To pass arguments transparently to MbedLsToolsBase class.
     @return Returns MbedLsTools object or None if host OS is not supported
 
     @details Function detects host OS. Each host platform should be ported to support new host platform (OS)
@@ -39,11 +40,12 @@ def create():
     result = None
     mbed_os = mbed_os_support()
     if mbed_os is not None:
-        if mbed_os == 'Windows7': result = MbedLsToolsWin7()
-        elif mbed_os == 'Ubuntu': result = MbedLsToolsUbuntu()
-        elif mbed_os == 'LinuxGeneric': result = MbedLsToolsLinuxGeneric()
-        elif mbed_os == 'Darwin': result = MbedLsToolsDarwin()
+        if mbed_os == 'Windows7': result = MbedLsToolsWin7(**kwargs)
+        elif mbed_os == 'Ubuntu': result = MbedLsToolsUbuntu(**kwargs)
+        elif mbed_os == 'LinuxGeneric': result = MbedLsToolsLinuxGeneric(**kwargs)
+        elif mbed_os == 'Darwin': result = MbedLsToolsDarwin(**kwargs)
     return result
+
 
 def mbed_os_support():
     """! Function used to determine if host OS is supported by mbed-lstools
@@ -64,6 +66,7 @@ def mbed_os_support():
         result = 'Darwin'
     return result
 
+
 def mbed_lstools_os_info():
     """! Returns information about host OS
 
@@ -75,6 +78,7 @@ def mbed_lstools_os_info():
               platform.version(),
               sys.platform)
     return result
+
 
 def cmd_parser_setup():
     """! Configure CLI (Command Line OPtions) options
@@ -160,7 +164,7 @@ def mbedls_main():
         return version
 
     (opts, args) = cmd_parser_setup()
-    mbeds = create()
+    mbeds = create(skip_retarget=opts.skip_retarget)
 
     if mbeds is None:
         sys.stderr.write('This platform is not supported! Pull requests welcome at github.com/ARMmbed/mbed-ls\n')
@@ -169,9 +173,6 @@ def mbedls_main():
     mbeds.DEBUG_FLAG = opts.debug
     mbeds.debug(__name__, "mbed-ls ver. " + get_mbedls_version())
     mbeds.debug(__name__, "host: " +  str((mbed_lstools_os_info())))
-
-    if not opts.skip_retarget:
-        mbeds.retarget()
 
     if opts.list_platforms:
         print mbeds.list_manufacture_ids()

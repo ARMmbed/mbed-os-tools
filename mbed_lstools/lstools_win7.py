@@ -26,10 +26,10 @@ from lstools_base import MbedLsToolsBase
 class MbedLsToolsWin7(MbedLsToolsBase):
     """ Class derived from MbedLsToolsBase ports mbed-ls functionality for Windows 7 OS
     """
-    def __init__(self):
+    def __init__(self, **kwargs):
         """ MbedLsToolsWin7 supports mbed enabled platforms detection across Windows7 OS family
         """
-        MbedLsToolsBase.__init__(self)
+        MbedLsToolsBase.__init__(self, **kwargs)
         self.os_supported.append('Windows7')
         if sys.version_info[0] < 3:
             import _winreg as winreg
