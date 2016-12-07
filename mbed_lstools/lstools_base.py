@@ -235,6 +235,7 @@ class MbedLsToolsBase:
         "6660": "NZ32_SC151",
         "7010": "BLUENINJA_CDP_TZ01B",
         "7778": "TEENSY3_1",
+        "8001": "UNO_91H",
         "9001": "LPC1347",
         "9002": "LPC11U24",
         "9003": "LPC1347",
