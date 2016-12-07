@@ -17,7 +17,7 @@ limitations under the License.
 """
 
 
-from time import sleep
+import time
 from serial import Serial, SerialException
 from mbed_host_tests import host_tests_plugins
 from mbed_host_tests.host_tests_plugins.host_test_plugins import HostTestPluginBase
@@ -36,7 +36,6 @@ class SerialConnectorPrimitive(ConnectorPrimitive):
         self.forced_reset_timeout = config.get('forced_reset_timeout', 1)
 
         # Values used to call serial port listener...
-        self.logger.prn_inf("serial(port=%s, baudrate=%d, timeout=%s)"% (self.port, self.baudrate, self.timeout))
 
         # Check if serial port for given target_id changed
         # If it does we will use new port to open connections and make sure reset plugin
@@ -50,20 +49,26 @@ class SerialConnectorPrimitive(ConnectorPrimitive):
             self.logger.prn_inf("serial port changed from '%s to '%s')"% (self.port, serial_port))
             self.port = serial_port
 
-        try:
-            # TIMEOUT: While creating Serial object timeout is delibrately passed as 0. Because blocking in Serial.read
-            # impacts thread and mutliprocess functioning in Python. Hence, instead in self.read() s delay (sleep()) is
-            # inserted to let serial buffer collect data and avoid spinning on non blocking read().
-            self.serial = Serial(self.port, baudrate=self.baudrate, timeout=0)
-        except SerialException as e:
-            self.serial = None
-            self.LAST_ERROR = "connection lost, serial.Serial(%s, %d, %d): %s"% (self.port,
-                self.baudrate,
-                self.timeout,
-                str(e))
-            self.logger.prn_err(str(e))
-        else:
-            self.reset_dev_via_serial(delay=self.forced_reset_timeout)
+        startTime = time.time()
+        self.logger.prn_inf("serial(port=%s, baudrate=%d, timeout=%s)"% (self.port, self.baudrate, self.timeout))
+        while time.time() - startTime < self.serial_pooling:
+            try:
+                # TIMEOUT: While creating Serial object timeout is delibrately passed as 0. Because blocking in Serial.read
+                # impacts thread and mutliprocess functioning in Python. Hence, instead in self.read() s delay (sleep()) is
+                # inserted to let serial buffer collect data and avoid spinning on non blocking read().
+                self.serial = Serial(self.port, baudrate=self.baudrate, timeout=0)
+            except SerialException as e:
+                self.serial = None
+                self.LAST_ERROR = "connection lost, serial.Serial(%s, %d, %d): %s"% (self.port,
+                    self.baudrate,
+                    self.timeout,
+                    str(e))
+                self.logger.prn_err(str(e))
+                self.logger.prn_err("Retry after 1 sec until %s seconds" % self.serial_pooling)
+            else:
+                self.reset_dev_via_serial(delay=self.forced_reset_timeout)
+                break
+            time.sleep(1)
 
     def reset_dev_via_serial(self, delay=1):
         """! Reset device using selected method, calls one of the reset plugins """
@@ -81,7 +86,7 @@ class SerialConnectorPrimitive(ConnectorPrimitive):
         # Post-reset sleep
         if delay:
             self.logger.prn_inf("waiting %.2f sec after reset"% delay)
-            sleep(delay)
+            time.sleep(delay)
         self.logger.prn_inf("wait for it...")
         return result
 
@@ -89,7 +94,7 @@ class SerialConnectorPrimitive(ConnectorPrimitive):
         """! Read data from serial port RX buffer """
         # TIMEOUT: Since read is called in a loop, wait for self.timeout period before calling serial.read(). See
         # comment on serial.Serial() call above about timeout.
-        sleep(self.timeout)
+        time.sleep(self.timeout)
         c = str()
         try:
             if self.serial:
