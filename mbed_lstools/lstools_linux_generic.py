@@ -17,7 +17,7 @@ limitations under the License.
 
 import re
 
-from lstools_base import MbedLsToolsBase
+from .lstools_base import MbedLsToolsBase
 
 
 class MbedLsToolsLinuxGeneric(MbedLsToolsBase):
@@ -136,6 +136,8 @@ class MbedLsToolsLinuxGeneric(MbedLsToolsBase):
         if not retval:
             for line in lines:
                 line = line.rstrip()
+                if type(line) == type(bytes()):
+                    line = line.decode('utf8')
                 if not line.lower().startswith('total '):    # total 0
                     result.append(line)
                     self.debug(self.get_dev_by_id_process.__name__, line)
