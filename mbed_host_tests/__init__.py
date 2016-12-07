@@ -283,7 +283,7 @@ def init_host_test_cli_params():
                       default=60,
                       metavar="NUMBER",
                       type="int",
-                      help='Timeout in sec for mbed-ls mount point and serial port readiness. Default 60 sec')
+                      help='Timeout in sec for readiness of mount point and serial port of local or remote device. Default 60 sec')
 
     parser.add_option('-b', '--send-break',
                       dest='send_break_cmd',
