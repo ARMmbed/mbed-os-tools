@@ -1,4 +1,4 @@
-﻿[![Circle CI](https://circleci.com/gh/ARMmbed/htrun.svg?style=svg)](https://circleci.com/gh/ARMmbed/htrun)
+[![Circle CI](https://circleci.com/gh/ARMmbed/htrun.svg?style=svg)](https://circleci.com/gh/ARMmbed/htrun)
 [![Coverage Status](https://coveralls.io/repos/github/ARMmbed/htrun/badge.svg?branch=master)](https://coveralls.io/github/ARMmbed/htrun?branch=master)
 [![PyPI version](https://badge.fury.io/py/mbed-host-tests.svg)](https://badge.fury.io/py/mbed-host-tests)
 
@@ -44,6 +44,8 @@
   * [ ```htrun``` new log format:](#-htrun-new-log-format)
     * [Log example](#log-example)
 * [End-to-end examples](#end-to-end-examples)
+* [Plugins](#plugins)
+  * [SARA NBIOT EVK](#sara-nbiot-evk)
 
 # Quickstart
 
@@ -1010,6 +1012,14 @@ Here you can find references to modules and repositories contain examples of tes
 * ```mbed-drivers``` module contains [test cases](https://github.com/ARMmbed/mbed-drivers/tree/master/test) written with and without ```utest``` harness. Currently all ```mbed-drivers``` tests are using [build-in to ```htrun``` host tests](https://github.com/ARMmbed/htrun/tree/master/mbed_host_tests/host_tests).
 * And finally ```sockets``` module contains [test cases](https://github.com/ARMmbed/sockets/tree/master/test) with [custom host tests](https://github.com/ARMmbed/sockets/tree/master/test/host_tests).
 
+# Plugins
+
+In order to work with platforms for which the hardware is still under development, and hence may not have an mbed interface chip, some "hook" files are required.  Operation with these platforms is a matter for the platform development teams involved and is not, in general, supported by ARM.
+
+## SARA NBIOT EVK
+The SARA NBIOT EVK board must be connected to a Windows PC using a Segger JLink box, which is used for downloading code and resetting the board. The USB port on the EVK must also be connected to the same PC.  To make use of these hooks you will also require access to some proprietary tools that can be requested from u-blox.
+
+
 # Testing mbed-os examples
 
 mbed-os examples are essentially sample apps written as inspirational code for developers to understand the mbed-os APIs and coding paradigms. Before every mbed-os release all examples are tested across all supported configs and platforms. There is already a large set examples available and as they grow it is important to automate them. Hence automating examples make sense. Although it is important not to pollute them with test like instrumentation. As that will defeat the purpose of examples being simple and specific. 
@@ -1017,20 +1027,20 @@ mbed-os examples are essentially sample apps written as inspirational code for d
 Hence the strategy for testing examples is based on observation instead of interaction. An example's serial logging is captured and converted into a templated log. All successive executions of this example should match this log.
 
 Templated log simply means a log with text that does not change or regular expressions relacing original text. Below is an example of the templated log:
+
 ```
+
 							      >	Using Ethernet LWIP
 								
 							      >	Client IP Address is 10.2.203.139
 								
 							      >	Connecting with developer.mbed.org
 								
-Starting the TLS handshake...
-								Starting the TLS handshake...
+Starting the TLS handshake...								Starting the TLS handshake...
 								
 							      >	TLS connection to developer.mbed.org established
 								
-Server certificate:
-								Server certificate:
+Server certificate:								Server certificate:
 								
 							      >	
 								    cert. version     : 3
@@ -1057,9 +1067,7 @@ Server certificate:
 							      >	
 								    ext key usage     : TLS Web Server Authentication, TLS We
 
-Certificate verification passed
-								
-								Certificate verification passed
+Certificate verification passed								Certificate verification passed
 								
 
 								
@@ -1068,11 +1076,9 @@ Certificate verification passed
 								
 							      >	HTTPS: Received 200 OK status ... [OK]
 								
-HTTPS: Received 'Hello world!' status ... [OK]
-								HTTPS: Received 'Hello world!' status ... [OK]
+HTTPS: Received 'Hello world!' status ... [OK]								HTTPS: Received 'Hello world!' status ... [OK]
 								
-HTTPS: Received message:
-								HTTPS: Received message:
+HTTPS: Received message:								HTTPS: Received message:
 								
 
 								
@@ -1106,10 +1112,7 @@ HTTPS: Received message:
 
 								
 								
-Hello world!
-								Hello world!
-								
-								
+Hello world!								Hello world!
 
 ```
 
@@ -1118,86 +1121,56 @@ Please observe above that all the lines that have data that changes from executi
 Another example with regular examples is shown below:
 
 ```
-							      |	
-								
-							      |	
-								
-  SHA-256                  :\s*\d+ Kb/s,\s*\d+ cycles/byte
-							      |	  SHA-256                  :       1922 Kb/s,         61 cycl
-								
-  SHA-512                  :\s*\d+ Kb/s,\s*\d+ cycles/byte
-							      |	  SHA-512                  :        614 Kb/s,        191 cycl
-								
-  AES-CBC-128              :\s*\d+ Kb/s,\s*\d+ cycles/byte
-							      |	  AES-CBC-128              :       1401 Kb/s,         83 cycl
-								
-  AES-CBC-192              :\s*\d+ Kb/s,\s*\d+ cycles/byte
-							      |	  AES-CBC-192              :       1231 Kb/s,         95 cycl
-								
-  AES-CBC-256              :\s*\d+ Kb/s,\s*\d+ cycles/byte
-							      |	  AES-CBC-256              :       1097 Kb/s,        106 cycl
-								
-  AES-GCM-128              :\s*\d+ Kb/s,\s*\d+ cycles/byte
-							      |	  AES-GCM-128              :        429 Kb/s,        273 cycl
-								
-  AES-GCM-192              :\s*\d+ Kb/s,\s*\d+ cycles/byte
-							      |	  AES-GCM-192              :        412 Kb/s,        285 cycl
-								
-  AES-GCM-256              :\s*\d+ Kb/s,\s*\d+ cycles/byte
-							      |	  AES-GCM-256              :        395 Kb/s,        297 cycl
-								
-  AES-CCM-128              :\s*\d+ Kb/s,\s*\d+ cycles/byte
-							      |	  AES-CCM-128              :        604 Kb/s,        194 cycl
-								
-  AES-CCM-192              :\s*\d+ Kb/s,\s*\d+ cycles/byte
-							      |	  AES-CCM-192              :        539 Kb/s,        217 cycl
-								
-  AES-CCM-256              :\s*\d+ Kb/s,\s*\d+ cycles/byte
-							      |	  AES-CCM-256              :        487 Kb/s,        241 cycl
-								
-  CTR_DRBG \(NOPR\)          :\s*\d+ Kb/s,\s*\d+ cycles/byte
-							      |	  CTR_DRBG (NOPR)          :       1145 Kb/s,        102 cycl
-								
-  CTR_DRBG \(PR\)            :\s*\d+ Kb/s,\s*\d+ cycles/byte
-							      |	  CTR_DRBG (PR)            :        821 Kb/s,        142 cycl
-								
-  HMAC_DRBG SHA-256 \(NOPR\) :\s*\d+ Kb/s,\s*\d+ cycles/byte
-							      |	  HMAC_DRBG SHA-256 (NOPR) :        219 Kb/s,        537 cycl
-								
-  HMAC_DRBG SHA-256 \(PR\)   :\s*\d+ Kb/s,\s*\d+ cycles/byte
-							      |	  HMAC_DRBG SHA-256 (PR)   :        193 Kb/s,        612 cycl
-								
-  RSA-2048                 :\s*\d+ ms/ public
-							      |	  RSA-2048                 :      30 ms/ public
-								
-  RSA-2048                 :\s*\d+ ms/private
-							      |	  RSA-2048                 :    1054 ms/private
-								
-  RSA-4096                 :\s*\d+ ms/ public
-							      |	  RSA-4096                 :     101 ms/ public
-								
-  RSA-4096                 :\s*\d+ ms/private
-							      |	  RSA-4096                 :    5790 ms/private
-								
-  ECDHE-secp384r1          :\s*\d+ ms/handshake
-							      |	  ECDHE-secp384r1          :    1023 ms/handshake
-								
-  ECDHE-secp256r1          :\s*\d+ ms/handshake
-							      |	  ECDHE-secp256r1          :     678 ms/handshake
-								
-  ECDHE-Curve25519         :\s*\d+ ms/handshake
-							      |	  ECDHE-Curve25519         :     580 ms/handshake
-								
-  ECDH-secp384r1           :\s*\d+ ms/handshake
-							      |	  ECDH-secp384r1           :     503 ms/handshake
-								
-  ECDH-secp256r1           :\s*\d+ ms/handshake
-							      |	  ECDH-secp256r1           :     336 ms/handshake
-								
-  ECDH-Curve25519          :\s*\d+ ms/handshake
-							      |	  ECDH-Curve25519          :     300 ms/handshake
-								
 
+  SHA-256                  :\s*\d+ Kb/s,\s*\d+ cycles/byte							      |	  SHA-256                  :       1922 Kb/s,         61 cycl
+								
+  SHA-512                  :\s*\d+ Kb/s,\s*\d+ cycles/byte							      |	  SHA-512                  :        614 Kb/s,        191 cycl
+								
+  AES-CBC-128              :\s*\d+ Kb/s,\s*\d+ cycles/byte							      |	  AES-CBC-128              :       1401 Kb/s,         83 cycl
+								
+  AES-CBC-192              :\s*\d+ Kb/s,\s*\d+ cycles/byte							      |	  AES-CBC-192              :       1231 Kb/s,         95 cycl
+								
+  AES-CBC-256              :\s*\d+ Kb/s,\s*\d+ cycles/byte							      |	  AES-CBC-256              :       1097 Kb/s,        106 cycl
+								
+  AES-GCM-128              :\s*\d+ Kb/s,\s*\d+ cycles/byte							      |	  AES-GCM-128              :        429 Kb/s,        273 cycl
+								
+  AES-GCM-192              :\s*\d+ Kb/s,\s*\d+ cycles/byte							      |	  AES-GCM-192              :        412 Kb/s,        285 cycl
+								
+  AES-GCM-256              :\s*\d+ Kb/s,\s*\d+ cycles/byte							      |	  AES-GCM-256              :        395 Kb/s,        297 cycl
+								
+  AES-CCM-128              :\s*\d+ Kb/s,\s*\d+ cycles/byte							      |	  AES-CCM-128              :        604 Kb/s,        194 cycl
+								
+  AES-CCM-192              :\s*\d+ Kb/s,\s*\d+ cycles/byte							      |	  AES-CCM-192              :        539 Kb/s,        217 cycl
+								
+  AES-CCM-256              :\s*\d+ Kb/s,\s*\d+ cycles/byte							      |	  AES-CCM-256              :        487 Kb/s,        241 cycl
+								
+  CTR_DRBG \(NOPR\)          :\s*\d+ Kb/s,\s*\d+ cycles/byte							      |	  CTR_DRBG (NOPR)          :       1145 Kb/s,        102 cycl
+								
+  CTR_DRBG \(PR\)            :\s*\d+ Kb/s,\s*\d+ cycles/byte							      |	  CTR_DRBG (PR)            :        821 Kb/s,        142 cycl
+								
+  HMAC_DRBG SHA-256 \(NOPR\) :\s*\d+ Kb/s,\s*\d+ cycles/byte							      |	  HMAC_DRBG SHA-256 (NOPR) :        219 Kb/s,        537 cycl
+								
+  HMAC_DRBG SHA-256 \(PR\)   :\s*\d+ Kb/s,\s*\d+ cycles/byte							      |	  HMAC_DRBG SHA-256 (PR)   :        193 Kb/s,        612 cycl
+								
+  RSA-2048                 :\s*\d+ ms/ public							      |	  RSA-2048                 :      30 ms/ public
+								
+  RSA-2048                 :\s*\d+ ms/private							      |	  RSA-2048                 :    1054 ms/private
+								
+  RSA-4096                 :\s*\d+ ms/ public							      |	  RSA-4096                 :     101 ms/ public
+								
+  RSA-4096                 :\s*\d+ ms/private							      |	  RSA-4096                 :    5790 ms/private
+								
+  ECDHE-secp384r1          :\s*\d+ ms/handshake							      |	  ECDHE-secp384r1          :    1023 ms/handshake
+								
+  ECDHE-secp256r1          :\s*\d+ ms/handshake							      |	  ECDHE-secp256r1          :     678 ms/handshake
+								
+  ECDHE-Curve25519         :\s*\d+ ms/handshake							      |	  ECDHE-Curve25519         :     580 ms/handshake
+								
+  ECDH-secp384r1           :\s*\d+ ms/handshake							      |	  ECDH-secp384r1           :     503 ms/handshake
+								
+  ECDH-secp256r1           :\s*\d+ ms/handshake							      |	  ECDH-secp256r1           :     336 ms/handshake
+								
+  ECDH-Curve25519          :\s*\d+ ms/handshake							      |	  ECDH-Curve25519          :     300 ms/handshake
 
 ```
 
@@ -1214,3 +1187,4 @@ mbedhtrun -d D: -p COM46 -m K64F -f .\BUILD\K64F\GCC_ARM\benchmark.bin --compare
 ```
 
 A tested comparison log can be checked into GitHub with the examples and can be used in the CI for example verification.
+
