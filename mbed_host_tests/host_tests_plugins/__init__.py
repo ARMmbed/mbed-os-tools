@@ -37,6 +37,8 @@ import module_copy_silabs
 import module_reset_silabs
 import module_copy_stlink
 import module_reset_stlink
+import module_copy_ublox
+import module_reset_ublox
 #import module_copy_jn51xx
 #import module_reset_jn51xx
 
@@ -58,6 +60,8 @@ HOST_TEST_PLUGIN_REGISTRY.register_plugin(module_reset_silabs.load_plugin())
 HOST_TEST_PLUGIN_REGISTRY.register_plugin(module_copy_stlink.load_plugin())
 HOST_TEST_PLUGIN_REGISTRY.register_plugin(module_reset_stlink.load_plugin())
 HOST_TEST_PLUGIN_REGISTRY.register_plugin(module_power_cycle_mbed.load_plugin())
+HOST_TEST_PLUGIN_REGISTRY.register_plugin(module_reset_ublox.load_plugin())
+HOST_TEST_PLUGIN_REGISTRY.register_plugin(module_copy_ublox.load_plugin())
 #HOST_TEST_PLUGIN_REGISTRY.register_plugin(module_copy_jn51xx.load_plugin())
 #HOST_TEST_PLUGIN_REGISTRY.register_plugin(module_reset_jn51xx.load_plugin())
 
