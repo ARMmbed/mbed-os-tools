@@ -60,7 +60,7 @@ def timed_mbedls_lock(timeout):
 class MbedLsToolsBase:
     """ Base class for mbed-lstools, defines mbed-ls tools interface for mbed-enabled devices detection for various hosts
     """
-    def __init__(self):
+    def __init__(self, **kwargs):
         """ ctor
         """
         #extra flags
@@ -73,6 +73,9 @@ class MbedLsToolsBase:
         self.lock_file = os.path.join(MbedLsToolsBase.HOME_DIR,
                                       MbedLsToolsBase.MBEDLS_HOME_DIR, MbedLsToolsBase.MBEDLS_GLOBAL_LOCK)
         self.mbedls_get_mocks()
+        # skip retarget if specified to skip in arguments
+        if 'skip_retarget' not in kwargs or not kwargs['skip_retarget']:
+            self.retarget()
 
     # Which OSs are supported by this module
     # Note: more than one OS can be supported by mbed-lstools_* module
