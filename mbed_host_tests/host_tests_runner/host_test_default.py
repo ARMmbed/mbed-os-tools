@@ -18,6 +18,7 @@ Author: Przemyslaw Wirkus <Przemyslaw.Wirkus@arm.com>
 """
 
 
+import re
 import sys
 import traceback
 from time import time
@@ -33,6 +34,7 @@ from mbed_host_tests.host_tests_logger import HtrunLogger
 from mbed_host_tests.host_tests_conn_proxy import conn_process
 from mbed_host_tests.host_tests_runner.host_test import DefaultTestSelectorBase
 from mbed_host_tests.host_tests_toolbox.host_functional import handle_send_break_cmd
+
 
 class DefaultTestSelector(DefaultTestSelectorBase):
     """! Select default host_test supervision (replaced after auto detection) """
@@ -80,6 +82,16 @@ class DefaultTestSelector(DefaultTestSelectorBase):
                 self.options.skip_reset = True
                 self.options.skip_flashing = True
 
+        if options.compare_log:
+            with open(options.compare_log, "r") as f:
+                self.compare_log = []
+                for line in f:
+                    self.compare_log.append(line.strip())
+
+        else:
+            self.compare_log = None
+        self.serial_output_file = options.serial_output_file
+        self.compare_log_idx = 0
         DefaultTestSelectorBase.__init__(self, options)
 
     def is_host_test_obj_compatible(self, obj_instance):
@@ -241,7 +253,20 @@ class DefaultTestSelector(DefaultTestSelectorBase):
                 except QueueEmpty:
                     continue
 
-                if consume_preamble_events:
+                # Write serial output to the file if specified in options.
+                if self.serial_output_file:
+                    if key == '__rxd_line':
+                        with open(self.serial_output_file, "a") as f:
+                            f.write("%s\n" % value)
+
+                # In this mode we only check serial output against compare log.
+                if self.compare_log:
+                    if key == '__rxd_line':
+                        if self.match_log(value):
+                            self.logger.prn_inf("Target log matches compare log!")
+                            result = True
+                            break
+                elif consume_preamble_events:
                     if key == '__timeout':
                         # Override default timeout for this event queue
                         start_time = time()
@@ -486,3 +511,18 @@ class DefaultTestSelector(DefaultTestSelectorBase):
 
         except KeyboardInterrupt:
             return(-3)    # Keyboard interrupt
+
+    def match_log(self, line):
+        """
+        Matches lines from compare log with the target serial output. Compare log lines are matched in seq using index
+        self.compare_log_idx. Lines can be strings to be matched as is or regular expressions.
+
+        :param line:
+        :return:
+        """
+        if self.compare_log_idx < len(self.compare_log):
+            regex = self.compare_log[self.compare_log_idx]
+            # Either the line is matched as is or it is checked as a regular expression.
+            if regex in line or re.search(regex, line):
+                self.compare_log_idx += 1
+        return self.compare_log_idx == len(self.compare_log)

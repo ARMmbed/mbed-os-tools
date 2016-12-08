@@ -302,6 +302,16 @@ def init_host_test_cli_params():
                       action="store_true",
                       help='More verbose mode')
 
+    parser.add_option('', '--serial-output-file',
+                      dest='serial_output_file',
+                      default=None,
+                      help='Save target serial output to this file.')
+
+    parser.add_option('', '--compare-log',
+                      dest='compare_log',
+                      default=None,
+                      help='Log file to compare with the serial output from target.')
+
     parser.add_option('', '--version',
                       dest='version',
                       default=False,
