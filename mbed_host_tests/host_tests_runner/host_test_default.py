@@ -84,9 +84,7 @@ class DefaultTestSelector(DefaultTestSelectorBase):
 
         if options.compare_log:
             with open(options.compare_log, "r") as f:
-                self.compare_log = []
-                for line in f:
-                    self.compare_log.append(line.strip())
+                self.compare_log = f.read().splitlines()
 
         else:
             self.compare_log = None
@@ -257,7 +255,7 @@ class DefaultTestSelector(DefaultTestSelectorBase):
                 if self.serial_output_file:
                     if key == '__rxd_line':
                         with open(self.serial_output_file, "a") as f:
-                            f.write("%s\n" % value)
+                            f.write(value)
 
                 # In this mode we only check serial output against compare log.
                 if self.compare_log:
@@ -266,7 +264,8 @@ class DefaultTestSelector(DefaultTestSelectorBase):
                             self.logger.prn_inf("Target log matches compare log!")
                             result = True
                             break
-                elif consume_preamble_events:
+
+                if consume_preamble_events:
                     if key == '__timeout':
                         # Override default timeout for this event queue
                         start_time = time()
