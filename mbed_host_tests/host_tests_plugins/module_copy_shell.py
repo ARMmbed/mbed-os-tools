@@ -59,7 +59,7 @@ class HostTestPluginCopyMethod_Shell(HostTestPluginBase):
 
         # This optional parameter can be used if TargetID is provided (-t switch)
         target_id = kwargs.get('target_id', None)
-        pooling_timeout = kwargs.get('pooling_timeout', 60)
+        pooling_timeout = kwargs.get('polling_timeout', 60)
 
         result = False
         if self.check_parameters(capability, *args, **kwargs):

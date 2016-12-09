@@ -278,12 +278,12 @@ def init_host_test_cli_params():
                       action="store_true",
                       help='Skips use of reset plugin. Note: target will not be reset')
 
-    parser.add_option('-P', '--pooling-timeout',
-                      dest='pooling_timeout',
+    parser.add_option('-P', '--polling-timeout',
+                      dest='polling_timeout',
                       default=60,
                       metavar="NUMBER",
                       type="int",
-                      help='Timeout in sec for mbed-ls mount point and serial port readiness. Default 60 sec')
+                      help='Timeout in sec for readiness of mount point and serial port of local or remote device. Default 60 sec')
 
     parser.add_option('-b', '--send-break',
                       dest='send_break_cmd',
