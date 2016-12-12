@@ -24,7 +24,12 @@ import sys
 import random
 import optparse
 from time import time
-from Queue import Queue
+try:
+    from Queue import Queue
+except ImportError:
+    # Python 3
+    from queue import Queue
+
 from threading import Thread
 
 
@@ -97,7 +102,7 @@ def get_greentea_version():
 def print_version():
     """! Print current package version
     """
-    print get_greentea_version()
+    print(get_greentea_version())
 
 def get_hello_string():
     """! Hello string used as first print
@@ -606,7 +611,7 @@ def run_test_thread(test_result_queue, test_queue, opts, mut, build, build_path,
             # even if we are not in verbose mode
             gt_logger.gt_log_tab("test failed, reporting console output (specified with --report-fails option)")
             print
-            print single_test_output
+            print(single_test_output)
 
     #greentea_release_target_id(mut['target_id'], gt_instance_uuid)
     test_result_queue.put({'test_platforms_match': test_platforms_match,
@@ -953,7 +958,7 @@ def main_cli(opts, args, gt_instance_uuid=None):
 
         if opts.verbose_test_configuration_only:
             print
-            print "Example: execute 'mbedgt --target=TARGET_NAME' to start testing for TARGET_NAME target"
+            print("Example: execute 'mbedgt --target=TARGET_NAME' to start testing for TARGET_NAME target")
             return (0)
 
         gt_logger.gt_log("all tests finished!")
@@ -1062,12 +1067,12 @@ def main_cli(opts, args, gt_instance_uuid=None):
             # Test suite report
             gt_logger.gt_log("test suite report:")
             text_report, text_results = exporter_text(test_report)
-            print text_report
+            print(text_report)
             gt_logger.gt_log("test suite results: " + text_results)
             # test case detailed report
             gt_logger.gt_log("test case report:")
             text_testcase_report, text_testcase_results = exporter_testcase_text(test_report)
-            print text_testcase_report
+            print(text_testcase_report)
             gt_logger.gt_log("test case results: " + text_testcase_results)
 
         # This flag guards 'build only' so we expect only yotta errors

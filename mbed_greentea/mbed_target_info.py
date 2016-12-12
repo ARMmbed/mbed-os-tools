@@ -174,7 +174,7 @@ def get_yotta_target_from_local_config(yotta_json='.yotta.json'):
             with open(yotta_json, 'r') as f:
                 result = parse_yotta_json_for_build_name(json.load(f))
         except Exception as e:
-            print str(e)
+            print(str(e))
     return result
 
 def get_mbed_target_from_current_dir():

@@ -255,7 +255,7 @@ class TestSpec:
             with open(test_spec_filename, "r") as f:
                 self.parse(json.load(f))
         except Exception as e:
-            print "TestSpec::load('%s')"% test_spec_filename, str(e)
+            print("TestSpec::load('%s')"% test_spec_filename, str(e))
             return False
 
         self.test_spec_filename = test_spec_filename

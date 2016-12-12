@@ -94,7 +94,7 @@ class GreenTeaSimpleLockLogger:
         """! Mutex protected print
         """
         self.GREENTEA_LOG_MUTEX.acquire(1)
-        print text
+        print(text)
         self.GREENTEA_LOG_MUTEX.release()
 
     def gt_log(self, text, print_text=True):

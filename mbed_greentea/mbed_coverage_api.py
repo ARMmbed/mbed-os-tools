@@ -65,6 +65,6 @@ def coverage_dump_file(build_path, path, payload):
         with open(path, "wb") as f:
             f.write(payload)
     except IOError as e:
-        print str(e)
+        print(str(e))
         result = False
     return result

@@ -77,7 +77,7 @@ def get_platform_name_from_yotta_target(target):
         data = f.read()
         try:
             target_json = json.loads(data)
-        except (TypeError, ValueError), e:
+        except (TypeError, ValueError) as e:
             gt_logger.gt_log_err('Failed to load json data from target.json! error [%s]\n' % str(e) +
                                  'Can not determine required mbed platform name!')
             return None
