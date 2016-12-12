@@ -1026,7 +1026,7 @@ mbed-os examples are essentially sample apps written as inspirational code for d
 
 Hence the strategy for testing examples is based on observation instead of interaction. An example's serial logging is captured and converted into a templated log. All successive executions of this example should match this log.
 
-Templated log simply means a log with text that does not change or regular expressions relacing original text. Below is an example of the templated log:
+Templated log simply means a log with text that does not change or regular expressions replacing original text. Below is an example of the templated log:
 
 ```
 
@@ -1116,7 +1116,7 @@ Hello world!								Hello world!
 
 ```
 
-Please observe above that all the lines that have data that changes from execution to execution (on right) have been removed. It makes it possible htrun to comapre these logs. htrun matches lines from the compare log (on left) one by one. It keeps on looking for a line until it matches. Once matched it moves on to match the next line. If it finds all lines from the compare log in the target serial output stream. Then it halts and passes the examples.
+Please observe above that all the lines that have data that changes from execution to execution (on right) have been removed. It makes it possible htrun to compare these logs. htrun matches lines from the compare log (on left) one by one. It keeps on looking for a line until it matches. Once matched it moves on to match the next line. If it finds all lines from the compare log in the target serial output stream. Then it halts and passes the examples.
 
 Another example with regular examples is shown below:
 
