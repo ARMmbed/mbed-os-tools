@@ -23,6 +23,12 @@ import logging
 
 from mbed_lstools.lstools_base import MbedLsToolsBase
 
+try:
+    basestring
+except NameError:
+    # Python 3
+    basestring = str
+
 class BasicTestCase(unittest.TestCase):
     """ Basic test cases checking trivial asserts
     """

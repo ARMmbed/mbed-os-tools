@@ -20,7 +20,7 @@ import os
 import sys
 import string
 
-from lstools_base import MbedLsToolsBase
+from .lstools_base import MbedLsToolsBase
 
 
 class MbedLsToolsWin7(MbedLsToolsBase):

@@ -15,7 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from lstools_linux_generic import MbedLsToolsLinuxGeneric
+from .lstools_linux_generic import MbedLsToolsLinuxGeneric
 
 
 class MbedLsToolsUbuntu(MbedLsToolsLinuxGeneric):

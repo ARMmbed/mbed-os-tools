@@ -20,7 +20,7 @@ import subprocess
 import plistlib
 import platform
 
-from lstools_base import MbedLsToolsBase
+from .lstools_base import MbedLsToolsBase
 
 class MbedLsToolsDarwin(MbedLsToolsBase):
     """ MbedLsToolsDarwin supports mbed-enabled platforms detection on Mac OS X
@@ -120,13 +120,12 @@ class MbedLsToolsDarwin(MbedLsToolsBase):
         if mac_ver >= 10.11:
             cmp_par = '-c'
 
-        for usb_controller in usb_controllers:	
+        for usb_controller in usb_controllers:
             ioreg_usb = subprocess.Popen(['ioreg', '-a', '-r', cmp_par, usb_controller, '-l'], stdout=subprocess.PIPE)
-            
-	    try:
+            try:
                 usb_bus = usb_bus + plistlib.readPlist(ioreg_usb.stdout)
-	    except:
-		# Catch when no output is returned from ioreg command
+            except:
+                # Catch when no output is returned from ioreg command
                 pass
 
             ioreg_usb.wait()

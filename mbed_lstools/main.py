@@ -23,10 +23,10 @@ import json
 import optparse
 import platform
 
-from lstools_win7 import MbedLsToolsWin7
-from lstools_ubuntu import MbedLsToolsUbuntu
-from lstools_linux_generic import MbedLsToolsLinuxGeneric
-from lstools_darwin import MbedLsToolsDarwin
+from .lstools_win7 import MbedLsToolsWin7
+from .lstools_ubuntu import MbedLsToolsUbuntu
+from .lstools_linux_generic import MbedLsToolsLinuxGeneric
+from .lstools_darwin import MbedLsToolsDarwin
 
 
 def create(**kwargs):
@@ -175,13 +175,13 @@ def mbedls_main():
     mbeds.debug(__name__, "host: " +  str((mbed_lstools_os_info())))
 
     if opts.list_platforms:
-        print mbeds.list_manufacture_ids()
+        print(mbeds.list_manufacture_ids())
         sys.exit(0)
 
     if opts.mock_platform:
         if opts.mock_platform == '*':
             if opts.json:
-                print json.dumps(mbeds.mock_read(), indent=4)
+                print(json.dumps(mbeds.mock_read(), indent=4))
 
         for token in opts.mock_platform.split(','):
             if ':' in token:
@@ -197,25 +197,25 @@ def mbedls_main():
                 mid = token[1:]
                 mbeds.mock_manufacture_ids(mid, 'dummy', oper=oper)
         if opts.json:
-            print json.dumps(mbeds.mock_read(), indent=4)
+            print(json.dumps(mbeds.mock_read(), indent=4))
 
     elif opts.json:
-        print json.dumps(mbeds.list_mbeds_ext(), indent=4, sort_keys=True)
+        print(json.dumps(mbeds.list_mbeds_ext(), indent=4, sort_keys=True))
 
     elif opts.json_by_target_id:
-        print json.dumps(mbeds.list_mbeds_by_targetid(), indent=4, sort_keys=True)
+        print(json.dumps(mbeds.list_mbeds_by_targetid(), indent=4, sort_keys=True))
 
     elif opts.json_platforms:
-        print json.dumps(mbeds.list_platforms(), indent=4, sort_keys=True)
+        print(json.dumps(mbeds.list_platforms(), indent=4, sort_keys=True))
 
     elif opts.json_platforms_ext:
-        print json.dumps(mbeds.list_platforms_ext(), indent=4, sort_keys=True)
+        print(json.dumps(mbeds.list_platforms_ext(), indent=4, sort_keys=True))
 
     elif opts.version:
-        print get_mbedls_version()
+        print(get_mbedls_version())
 
     else:
-        print mbeds.get_string(border=not opts.simple, header=not opts.simple)
+        print(mbeds.get_string(border=not opts.simple, header=not opts.simple))
 
     mbeds.debug(__name__, "Return code: %d" % mbeds.ERRORLEVEL_FLAG)
 
