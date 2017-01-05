@@ -167,6 +167,7 @@ class DefaultTestSelector(DefaultTestSelectorBase):
                 "sync_behavior" : self.options.sync_behavior,
                 "platform_name" : self.options.micro,
                 "image_path" : self.mbed.image_path,
+                "skip_reset": self.options.skip_reset,
             }
 
             if self.options.global_resource_mgr:

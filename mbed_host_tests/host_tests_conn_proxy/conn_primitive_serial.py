@@ -34,6 +34,7 @@ class SerialConnectorPrimitive(ConnectorPrimitive):
         self.target_id = self.config.get('target_id', None)
         self.polling_timeout = config.get('polling_timeout', 60)
         self.forced_reset_timeout = config.get('forced_reset_timeout', 1)
+        self.skip_reset = config.get('skip_reset', False)
 
         # Values used to call serial port listener...
 
@@ -66,7 +67,8 @@ class SerialConnectorPrimitive(ConnectorPrimitive):
                 self.logger.prn_err(str(e))
                 self.logger.prn_err("Retry after 1 sec until %s seconds" % self.polling_timeout)
             else:
-                self.reset_dev_via_serial(delay=self.forced_reset_timeout)
+                if not self.skip_reset:
+                    self.reset_dev_via_serial(delay=self.forced_reset_timeout)
                 break
             time.sleep(1)
 
