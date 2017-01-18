@@ -236,6 +236,9 @@ def run_host_test(image_path,
             '-f', '"%s"'% image_path,
             ]
 
+    if enum_host_tests_path:
+        cmd += ["-e", '"%s"'% enum_host_tests_path]
+
     if global_resource_mgr:
         # Use global resource manager to execute test
         # Example:
@@ -262,8 +265,6 @@ def run_host_test(image_path,
             cmd += ["--test-cfg", '"%s"' % str(json_test_cfg)]
         if run_app:
             cmd += ["--run"]    # -f stores binary name!
-        if enum_host_tests_path:
-            cmd += ["-e", '"%s"'% enum_host_tests_path]
 
     gt_logger.gt_log_tab("calling mbedhtrun: %s"% " ".join(cmd), print_text=verbose)
     gt_logger.gt_log("mbed-host-test-runner: started")
