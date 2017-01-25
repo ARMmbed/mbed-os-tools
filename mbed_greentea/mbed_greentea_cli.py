@@ -697,6 +697,9 @@ def main_cli(opts, args, gt_instance_uuid=None):
     ### Query with mbedls for available mbed-enabled devices
     gt_logger.gt_log("detecting connected mbed-enabled devices...")
 
+    ### check if argument of --parallel mode is a integer and greater or equal 1
+    parallel_test_exec = get_parallel_value(opts.parallel_test_exec)
+
     # Detect devices connected to system
     mbeds = mbed_lstools.create()
     mbeds_list = mbeds.list_mbeds_ext()
@@ -708,7 +711,8 @@ def main_cli(opts, args, gt_instance_uuid=None):
             gt_logger.gt_log_warn("entering global resource manager mbed-ls dummy mode!")
             grm_platform_name, grm_module_name, grm_ip_name, grm_port_name = grm_values
             mbeds_list = []
-            mbeds_list.append(mbeds.get_dummy_platform(grm_platform_name))
+            for _ in range(parallel_test_exec):
+                mbeds_list.append(mbeds.get_dummy_platform(grm_platform_name))
             opts.global_resource_mgr = ':'.join(grm_values[1:])
             gt_logger.gt_log_tab("adding dummy platform '%s'"% grm_platform_name)
         else:
@@ -744,10 +748,6 @@ def main_cli(opts, args, gt_instance_uuid=None):
     test_queue = Queue()        # contains information about test_bin and image_path for each test case
     test_result_queue = Queue() # used to store results of each thread
     execute_threads = []        # list of threads to run test cases
-
-    ### check if argument of --parallel mode is a integer and greater or equal 1
-
-    parallel_test_exec = get_parallel_value(opts.parallel_test_exec)
 
     # Values used to generate random seed for test execution order shuffle
     SHUFFLE_SEED_ROUND = 10 # Value used to round float random seed
