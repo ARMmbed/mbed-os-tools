@@ -256,7 +256,7 @@ class DefaultTestSelector(DefaultTestSelectorBase):
                 if self.serial_output_file:
                     if key == '__rxd_line':
                         with open(self.serial_output_file, "a") as f:
-                            f.write(value)
+                            f.write("%s\n" % value)
 
                 # In this mode we only check serial output against compare log.
                 if self.compare_log:
@@ -399,6 +399,10 @@ class DefaultTestSelector(DefaultTestSelectorBase):
 
         time_duration = time() - start_time
         self.logger.prn_inf("test suite run finished after %.2f sec..."% time_duration)
+
+        if self.compare_log and result is None:
+            if self.compare_log_idx < len(self.compare_log):
+                self.logger.prn_err("Expected output [%s] not received in log." % self.compare_log[self.compare_log_idx])
 
         # Force conn_proxy process to return
         dut_event_queue.put(('__host_test_finished', True, time()))
