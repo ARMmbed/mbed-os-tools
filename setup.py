@@ -55,4 +55,6 @@ setup(name='mbed-host-tests',
       install_requires=["PySerial>=3.0",
                         "PrettyTable>=0.7.2",
                         "requests",
-                        "mbed-ls>=1.0.0"])
+                        "mbed-ls>=1.0.0",
+                        "pyOCD>=0.8.1a1",
+                        "intelhex"])

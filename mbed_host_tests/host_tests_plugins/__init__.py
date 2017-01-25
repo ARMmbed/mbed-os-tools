@@ -31,6 +31,8 @@ import module_copy_shell
 import module_copy_mbed
 import module_reset_mbed
 import module_power_cycle_mbed
+import module_copy_pyocd
+import module_reset_pyocd
 
 # Additional, non standard platforms
 import module_copy_silabs
@@ -51,6 +53,7 @@ HOST_TEST_PLUGIN_REGISTRY = host_test_registry.HostTestRegistry()
 HOST_TEST_PLUGIN_REGISTRY.register_plugin(module_copy_mbed.load_plugin())
 HOST_TEST_PLUGIN_REGISTRY.register_plugin(module_copy_shell.load_plugin())
 HOST_TEST_PLUGIN_REGISTRY.register_plugin(module_reset_mbed.load_plugin())
+HOST_TEST_PLUGIN_REGISTRY.register_plugin(module_copy_pyocd.load_plugin())
 
 # Extra platforms support
 #HOST_TEST_PLUGIN_REGISTRY.register_plugin(module_copy_mps2.load_plugin())
@@ -60,6 +63,7 @@ HOST_TEST_PLUGIN_REGISTRY.register_plugin(module_reset_silabs.load_plugin())
 HOST_TEST_PLUGIN_REGISTRY.register_plugin(module_copy_stlink.load_plugin())
 HOST_TEST_PLUGIN_REGISTRY.register_plugin(module_reset_stlink.load_plugin())
 HOST_TEST_PLUGIN_REGISTRY.register_plugin(module_power_cycle_mbed.load_plugin())
+HOST_TEST_PLUGIN_REGISTRY.register_plugin(module_reset_pyocd.load_plugin())
 HOST_TEST_PLUGIN_REGISTRY.register_plugin(module_reset_ublox.load_plugin())
 HOST_TEST_PLUGIN_REGISTRY.register_plugin(module_copy_ublox.load_plugin())
 #HOST_TEST_PLUGIN_REGISTRY.register_plugin(module_copy_jn51xx.load_plugin())
