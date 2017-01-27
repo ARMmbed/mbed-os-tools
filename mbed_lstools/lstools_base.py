@@ -137,7 +137,7 @@ class MbedLsToolsBase:
         "0750": "NUCLEO_F091RC",
         "0755": "NUCLEO_F070RB",
         "0760": "NUCLEO_L073RZ",
-        "0764": "DISCO_L475VG_IOT",
+        "0764": "DISCO_L475VG_IOT01A",
         "0765": "NUCLEO_L476RG",
         "0770": "NUCLEO_L432KC",
         "0775": "NUCLEO_F303K8",
