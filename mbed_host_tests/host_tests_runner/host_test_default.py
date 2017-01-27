@@ -22,6 +22,7 @@ import re
 import sys
 import traceback
 from time import time
+from sre_compile import error
 from Queue import Empty as QueueEmpty   # Queue here refers to the module, not a class
 
 from mbed_host_tests import BaseHostTest
@@ -167,6 +168,7 @@ class DefaultTestSelector(DefaultTestSelectorBase):
                 "sync_behavior" : self.options.sync_behavior,
                 "platform_name" : self.options.micro,
                 "image_path" : self.mbed.image_path,
+                "skip_reset": self.options.skip_reset,
             }
 
             if self.options.global_resource_mgr:
@@ -526,6 +528,10 @@ class DefaultTestSelector(DefaultTestSelectorBase):
         if self.compare_log_idx < len(self.compare_log):
             regex = self.compare_log[self.compare_log_idx]
             # Either the line is matched as is or it is checked as a regular expression.
-            if regex in line or re.search(regex, line):
-                self.compare_log_idx += 1
+            try:
+                if regex in line or re.search(regex, line):
+                    self.compare_log_idx += 1
+            except error:
+                # May not be a regular expression
+                return False
         return self.compare_log_idx == len(self.compare_log)
