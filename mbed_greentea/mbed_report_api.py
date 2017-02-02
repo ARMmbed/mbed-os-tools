@@ -354,7 +354,7 @@ html_template = """
         <table>
         <colgroup>
             <col width="auto">
-            <col span="%d" width="150px">
+            <col span="%d" width="200px">
         </colgroup>
             %s
         </table>
@@ -587,7 +587,7 @@ def exporter_html(test_result_ext, test_suite_properties=None):
     result_cell_template = """
                 <td>
                     <div class="result %s" onclick="toggleOverlay('%s')">
-                        <center>%s</center>
+                        <center>%s  -  %s&#37; (%s/%s)</center>
                         %s
                     </div>
                 </td>"""
@@ -664,6 +664,9 @@ def exporter_html(test_result_ext, test_suite_properties=None):
                         'test_bin_name': 'N/A',
                         'testcase_result': {}
                     }
+
+                test_results['single_test_passes'] = 0
+                test_results['single_test_count'] = 0
                     
                 result_div_id = "target_%s_toolchain_%s_test_%s" % (platform, toolchain, test_name.replace('-', '_'))
 
@@ -672,11 +675,19 @@ def exporter_html(test_result_ext, test_suite_properties=None):
                                                     platform,
                                                     toolchain,
                                                     test_results)
+                
+                # Loop through the test cases and count the passes and failures
+                for index, (testcase_result_name, testcase_result) in enumerate(test_results['testcase_result'].iteritems()):
+                    test_results['single_test_passes'] += testcase_result['passed']
+                    test_results['single_test_count'] += testcase_result['passed'] + testcase_result['failed']
 
                 result_class = get_result_colour_class(test_results['single_test_result'])             
                 this_row += result_cell_template % (result_class,
                                                     result_div_id,
                                                     test_results['single_test_result'],
+                                                    int((test_results['single_test_passes']*100.0)/test_results['single_test_count']),
+                                                    test_results['single_test_passes'],
+                                                    test_results['single_test_count'],
                                                     result_overlay)
 
         table += row_template % this_row
