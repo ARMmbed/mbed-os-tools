@@ -738,7 +738,7 @@ def exporter_html(test_result_ext, test_suite_properties=None):
                 # Loop through the test cases and count the passes and failures
                 for index, (testcase_result_name, testcase_result) in enumerate(test_results['testcase_result'].iteritems()):
                     test_results['single_test_passes'] += testcase_result['passed']
-                    test_results['single_test_count'] += testcase_result['passed'] + testcase_result['failed']
+                    test_results['single_test_count'] += 1
 
                 result_class = get_result_colour_class(test_results['single_test_result'])             
                 this_row += result_cell_template % (result_class,
