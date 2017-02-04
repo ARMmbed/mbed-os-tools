@@ -488,7 +488,7 @@ int main() {
     fprintf(stderr, "Received from master %s, %s", key, value);
     // ...
 
-    GREENTEA_TSUITE_RESULT(true);    // __exit
+    GREENTEA_TESTSUITE_RESULT(true);    // __exit
 }
 ```
 ## Example of corresponding host test
