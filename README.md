@@ -5,25 +5,6 @@
 # Greentea - test automation for mbed
 _**G**eneric **Re**gression **En**vironment for **te**st **a**utomation_
 
-**Table of contents**
-* [Introduction](#introduction)
-  * [Prerequistes](#prerequistes)
-  * [Installing](#installing)
-* [Test specification JSON format](#test-specification-json-format)
-  * [Example of test specification file](#example-of-test-specification-file)
-* [Command line usage](#command-line-usage)
-  * [Listing all tests](#listing-all-tests)
-  * [Executing all tests](#executing-all-tests)
-  * [Limiting tests](#limiting-tests)
-  * [Selecting platfroms](#selecting-platforms)
-  * [Creating reports](#creating-reports)
-    * [HTML](#html)
-    * [JUnit](#junit)
-    * [JSON](#json)
-    * [Plain text](#plain-text)
-* [Host test detection](#host-test-detection)
-* [Common issues](#common-issues)
-
 ## Introduction
 
 Greentea is the automated testing tool used for mbed OS development. It automates the process of flashing mbeds, driving the test, and accumulating test results into test reports. It is designed to be used by developers for local development as well as for automation in a Continuous Integration environment.
