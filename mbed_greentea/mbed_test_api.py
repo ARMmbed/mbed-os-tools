@@ -137,7 +137,7 @@ def run_host_test(image_path,
     @param digest_source if None mbedhtrun will be executed. If 'stdin',
            stdin will be used via StdInObserver or file (if
            file name was given as switch option)
-    @return Tuple with test results, test output, test duration times and test case results.
+    @return Tuple with test results, test output, test duration times, test case results, and memory metrics.
             Return int > 0 if running mbedhtrun process failed.
             Retrun int < 0 if something went wrong during mbedhtrun execution.
     """
@@ -298,10 +298,22 @@ def run_host_test(image_path,
     result = get_test_result(htrun_output)
     result_test_cases = get_testcase_result(htrun_output)
     test_cases_summary = get_testcase_summary(htrun_output)
+    max_heap, thread_stack_info = get_memory_metrics(htrun_output)
+
+    thread_stack_summary = []
+
+    if thread_stack_info:
+        thread_stack_summary = get_thread_stack_info_summary(thread_stack_info)
+
+    memory_metrics = {
+        "max_heap": max_heap,
+        "thread_stack_info": thread_stack_info,
+        "thread_stack_summary": thread_stack_summary
+    }
     get_coverage_data(build_path, htrun_output)
 
     gt_logger.gt_log("mbed-host-test-runner: stopped and returned '%s'"% result, print_text=verbose)
-    return (result, htrun_output, testcase_duration, duration, result_test_cases, test_cases_summary)
+    return (result, htrun_output, testcase_duration, duration, result_test_cases, test_cases_summary, memory_metrics)
 
 def get_testcase_count_and_names(output):
     """ Fetches from log utest events with test case count (__testcase_count) and test case names (__testcase_name)*
@@ -497,6 +509,64 @@ def get_testcase_result(output):
             result_test_cases[testcase_id]['result'] = -8192
 
     return result_test_cases
+
+def get_memory_metrics(output):
+    """! Searches for test case memory metrics
+
+        String to find:
+        [1477505660.40][CONN][INF] found KV pair in stream: {{max_heap_usage;2284}}, queued...
+
+        @return Tuple of (max heap usage, thread info list), where thread info list
+        is a list of dictionaries with format {entry, arg, max_stack, stack_size}
+    """
+    max_heap_usage = None
+    thread_info = {}
+    re_tc_max_heap_usage = re.compile(r"^\[(\d+\.\d+)\][^\{]+\{\{(max_heap_usage);(\d+)\}\}")
+    re_tc_thread_info = re.compile(r"^\[(\d+\.\d+)\][^\{]+\{\{(__thread_info);\"([A-Fa-f0-9\-xX]+)\",(\d+),(\d+)\}\}")
+    for line in output.splitlines():
+        m = re_tc_max_heap_usage.search(line)
+        if m:
+            _, _, max_heap_usage = m.groups()
+            max_heap_usage = int(max_heap_usage)
+
+        m = re_tc_thread_info.search(line)
+        if m:
+            _, _, thread_entry_arg, thread_max_stack, thread_stack_size = m.groups()
+            thread_max_stack = int(thread_max_stack)
+            thread_stack_size = int(thread_stack_size)
+            thread_entry_arg_split = thread_entry_arg.split('-')
+            thread_entry = thread_entry_arg_split[0]
+            thread_arg = thread_entry_arg_split[1]
+            thread_info[thread_entry_arg] = {
+                'entry': thread_entry,
+                'arg': thread_arg,
+                'max_stack': thread_max_stack,
+                'stack_size': thread_stack_size
+            }
+
+    thread_info_list = thread_info.values()
+
+    return max_heap_usage, thread_info_list
+
+def get_thread_with_max_stack_size(thread_stack_info):
+    max_thread_stack_size = 0
+    max_thread = None
+
+    for cur_thread_stack_info in thread_stack_info:
+        if cur_thread_stack_info['stack_size'] > max_thread_stack_size:
+            max_thread_stack_size = cur_thread_stack_info['stack_size']
+            max_thread = cur_thread_stack_info
+
+    return max_thread
+
+def get_thread_stack_info_summary(thread_stack_info):
+
+    max_thread_info = get_thread_with_max_stack_size(thread_stack_info)
+    summary = {
+        'max_stack_size': max_thread_info['stack_size'],
+        'max_stack_usage': max_thread_info['max_stack']
+    }
+    return summary
 
 def log_mbed_devices_in_table(muts, cols = ['platform_name', 'platform_name_unique', 'serial_port', 'mount_point', 'target_id']):
     """! Print table of muts using prettytable
