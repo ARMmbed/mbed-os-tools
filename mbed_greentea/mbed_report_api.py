@@ -250,8 +250,51 @@ html_template = """
             }
         </script>
         <style type="text/css">
+
+            div.container {
+                width: 100%%;
+                border: none;
+            }
+
+            div.results_table {
+                width: 50%%;
+            }
+
+            header, footer {
+                padding: 1em;
+                color: white;
+                background-color: #159ab5;
+                clear: left;
+                text-align: center;
+            }
+
+            body {
+                margin: 0;
+            }
+
+            article {
+                padding: 1em;
+                overflow: hidden;
+            }
+
             table {
-                table-layout: fixed;
+                font-family: arial, sans-serif;
+                border-collapse: collapse;
+                width: 100%%;
+            }
+
+            td.level_header {
+                background-color: #bbbbbb;
+            }
+
+            td, th {
+                border: none;
+                text-align: left;
+                padding: 8px;
+            }
+
+            tr:nth-child(even) {
+                background-color: #eeeeee;
             }
 
             .test-column {
@@ -351,13 +394,29 @@ html_template = """
         </style>
     </head>
     <body>
-        <table>
-        <colgroup>
-            <col width="auto">
-            <col span="%d" width="150px">
-        </colgroup>
-            %s
-        </table>
+
+        <div class="container">
+
+        <header>
+           <h1>mbed Greentea Results Report</h1>
+        </header>
+
+        <article>
+
+            <div style="width: 50%%; margin: 0 auto;">
+                <table>
+                <colgroup>
+                    <col width="auto">
+                    <col span="%d" width="50%%">
+                </colgroup>
+                    %s
+                </table>
+            </div>
+
+        </article>
+
+        </div>
+
     </body>
 </html>"""
 
@@ -587,12 +646,12 @@ def exporter_html(test_result_ext, test_suite_properties=None):
     result_cell_template = """
                 <td>
                     <div class="result %s" onclick="toggleOverlay('%s')">
-                        <center>%s</center>
+                        <center>%s  -  %s&#37; (%s/%s)</center>
                         %s
                     </div>
                 </td>"""
     platform_template = """<tr>
-                <td rowspan="2">
+                <td rowspan="2" class="level_header">
                     <center>Tests</center>
                 </td>%s
             </tr>
@@ -622,11 +681,11 @@ def exporter_html(test_result_ext, test_suite_properties=None):
     toolchain_row = ""
 
     platform_cell_template = """
-                <td colspan="%s">
+                <td colspan="%s" class="level_header">
                     <center>%s</center>
                 </td>"""
     center_cell_template = """
-                <td>
+                <td class="level_header">
                     <center>%s</center>
                 </td>"""
 
@@ -664,6 +723,9 @@ def exporter_html(test_result_ext, test_suite_properties=None):
                         'test_bin_name': 'N/A',
                         'testcase_result': {}
                     }
+
+                test_results['single_test_passes'] = 0
+                test_results['single_test_count'] = 0
                     
                 result_div_id = "target_%s_toolchain_%s_test_%s" % (platform, toolchain, test_name.replace('-', '_'))
 
@@ -672,11 +734,19 @@ def exporter_html(test_result_ext, test_suite_properties=None):
                                                     platform,
                                                     toolchain,
                                                     test_results)
+                
+                # Loop through the test cases and count the passes and failures
+                for index, (testcase_result_name, testcase_result) in enumerate(test_results['testcase_result'].iteritems()):
+                    test_results['single_test_passes'] += testcase_result['passed']
+                    test_results['single_test_count'] += 1
 
                 result_class = get_result_colour_class(test_results['single_test_result'])             
                 this_row += result_cell_template % (result_class,
                                                     result_div_id,
                                                     test_results['single_test_result'],
+                                                    int((test_results['single_test_passes']*100.0)/test_results['single_test_count']),
+                                                    test_results['single_test_passes'],
+                                                    test_results['single_test_count'],
                                                     result_overlay)
 
         table += row_template % this_row
