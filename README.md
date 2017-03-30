@@ -97,7 +97,7 @@ In the below example, there are two defined builds:
 The examples below use the above test specification file.
 
 ## Command-line usage
-This section highlights a few of the capabilities of the Greentea command-line interface. For a full list of the availble options, please run `mbedgt --help`.
+This section highlights a few of the capabilities of the Greentea command-line interface. For a full list of the available options, please run `mbedgt --help`.
 
 Assume for the examples below that the above `test_spec.json` file is in the current directory.
 

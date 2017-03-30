@@ -50,7 +50,7 @@ $ git clone <repo-link>
 ```
 Now you can create separate branches in the forked repository and prepare pull requests with changes.
 ### Issues solving
-Simple work-flow issue solving process may contain below steps:
+To solve issues, you can follow the steps below:
 1. Issue filed (by any user).
 2. Proper label assigned by gate-keeper.
 3. Bug-fixer forked and cloned.
@@ -100,15 +100,15 @@ $ git push origin issue_38
 * Create pull request from GitHub webpage (your fork's dashboard).
 
 ### Branch naming conventions
-We prefer is you use standardised naming convention when creating pull requests.
-Below few example of branch names' prefixes you could use when creating pull request from your fork:
+We prefer you to use standardised naming convention when creating pull requests.
+Here are a few examples of branch name prefixes you could use when creating a pull request from your fork:
 * ```issue_``` - branch with fix for issue. E.g. ```issue_38```.
 * ```doc_``` - documentation update. E.g. ```doc_add_faq```.
 * ```devel_``` - development of a new feature. E.g. ```devel_udp_client_test```.
 * ```test_``` - when pull request will consist of only new/updates to test cases. E.g. ```test_paralllel_execution```.
 
 ## Coding style and coding rules
-This chapter attempts to explain the basic styles and patterns that are used in mbed test tools projects. he following norms should be followed for new code, and for code that needs clean-up.
+This chapter attempts to explain the basic styles and patterns that are used in mbed test tools projects. The following rules should be followed for producing new code and updating existing code.
 
 ### Code Like a Pythonista: Idiomatic Python
 Please do your best to follow [Idiomatic Python](http://python.net/~goodger/projects/pycon/2007/idiomatic/handout.html) interactive tutorial.
