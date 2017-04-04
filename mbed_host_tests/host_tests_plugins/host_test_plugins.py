@@ -191,6 +191,9 @@ class HostTestPluginBase:
                         if mbeds_by_tid[target_id]['serial_port']:
                             # Only assign if serial port is known (not None)
                             new_serial_port = mbeds_by_tid[target_id]['serial_port']
+                            if new_serial_port != serial_port:
+                                # Serial port changed, update to new serial port from mbed-ls
+                                self.print_plugin_info("Serial port for tid='%s' changed from '%s' to '%s'..." % (target_id, serial_port, new_serial_port))
                             break
                 sleep(timeout_step)
         else:
