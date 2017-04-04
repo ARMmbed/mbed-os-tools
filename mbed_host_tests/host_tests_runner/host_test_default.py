@@ -154,33 +154,33 @@ class DefaultTestSelector(DefaultTestSelectorBase):
 
         self.logger.prn_inf("starting host test process...")
 
+        # Create device info here as it may change after restart.
+        config = {
+            "digest" : "serial",
+            "port" : self.mbed.port,
+            "baudrate" : self.mbed.serial_baud,
+            "program_cycle_s" : self.options.program_cycle_s,
+            "reset_type" : self.options.forced_reset_type,
+            "target_id" : self.options.target_id,
+            "polling_timeout" : self.options.polling_timeout,
+            "forced_reset_timeout" : self.options.forced_reset_timeout,
+            "sync_behavior" : self.options.sync_behavior,
+            "platform_name" : self.options.micro,
+            "image_path" : self.mbed.image_path,
+            "skip_reset": self.options.skip_reset,
+        }
+
+        if self.options.global_resource_mgr:
+            grm_module, grm_host, grm_port = self.options.global_resource_mgr.split(':')
+
+            config.update({
+                "conn_resource" : 'grm',
+                "grm_module" : grm_module,
+                "grm_host" : grm_host,
+                "grm_port" : grm_port,
+            })
+
         def start_conn_process():
-            # Create device info here as it may change after restart.
-            config = {
-                "digest" : "serial",
-                "port" : self.mbed.port,
-                "baudrate" : self.mbed.serial_baud,
-                "program_cycle_s" : self.options.program_cycle_s,
-                "reset_type" : self.options.forced_reset_type,
-                "target_id" : self.options.target_id,
-                "polling_timeout" : self.options.polling_timeout,
-                "forced_reset_timeout" : self.options.forced_reset_timeout,
-                "sync_behavior" : self.options.sync_behavior,
-                "platform_name" : self.options.micro,
-                "image_path" : self.mbed.image_path,
-                "skip_reset": self.options.skip_reset,
-            }
-
-            if self.options.global_resource_mgr:
-                grm_module, grm_host, grm_port = self.options.global_resource_mgr.split(':')
-
-                config.update({
-                    "conn_resource" : 'grm',
-                    "grm_module" : grm_module,
-                    "grm_host" : grm_host,
-                    "grm_port" : grm_port,
-                })
-
             # DUT-host communication process
             args = (event_queue, dut_event_queue, config)
             p = Process(target=conn_process, args=args)
@@ -286,7 +286,7 @@ class DefaultTestSelector(DefaultTestSelectorBase):
                         # call BaseHostTest().__Init__()
                         if self.test_supervisor and self.is_host_test_obj_compatible(self.test_supervisor):
                             # Pass communication queues and setup() host test
-                            self.test_supervisor.setup_communication(event_queue, dut_event_queue)
+                            self.test_supervisor.setup_communication(event_queue, dut_event_queue, config)
                             try:
                                 # After setup() user should already register all callbacks
                                 self.test_supervisor.setup()
@@ -346,8 +346,9 @@ class DefaultTestSelector(DefaultTestSelectorBase):
                     if key == '__notify_complete':
                         # This event is sent by Host Test, test result is in value
                         # or if value is None, value will be retrieved from HostTest.result() method
-                        self.logger.prn_inf("%s(%s)"% (key, str(value)))
+                        self.logger.prn_inf("%s(%s)" % (key, str(value)))
                         result = value
+                        event_queue.put(('__exit_event_queue', 0, time()))
                     elif key == '__reset_dut':
                         # Disconnect to avoid connection lost event
                         dut_event_queue.put(('__host_test_finished', True, time()))
