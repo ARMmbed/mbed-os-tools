@@ -58,13 +58,13 @@ Please report all bugs using the Issues tab on the GitHub page. This process hel
 
 ## How to contribute
 
-You can file a bug, help fix a bug or propose a new feature (or enhancement) and implement it yourself. If you want to contribute, please:
+You can file a bug, help fix a bug or propose a new feature (or enhancement) and implement it yourself. If you want to contribute, please see below:
 
 * Bug reports: File a bug report in the Issues tab of this repo to let us know there are problems with the code.
   * Make sure your bug report contains a simple description of the problem.
   * Include information about the host computer's configuration and OS or VM used.
   * Include information about the application's version. All applications should have at least a `--version` switch you can use to check the version.
-  * Copy and paste useful console dumps and configuration files' content. Please use [fenced code blocks](https://help.github.com/articles/github-flavored-markdown/#fenced-code-blocks) to encapsulate code snippets.
+  * Copy and paste useful console dumps and configuration files' content. Please use [fenced code blocks](https://help.github.com/articles/basic-writing-and-formatting-syntax/#quoting-code) to encapsulate code snippets.
 * New features or bug fix: Create a pull request with your changes.
 * General feedback: Give feedback by posting comments on existing pull requests and issues.
 
@@ -110,13 +110,6 @@ This chapter attempts to explain the basic styles and patterns in mbed test tool
 ### Code like a Pythonista: idiomatic Python
 
 Please do your best to follow the [Idiomatic Python](http://python.net/~goodger/projects/pycon/2007/idiomatic/handout.html) interactive tutorial.
-
-### Coding style: readability matters
-
-"*Programs must be written for people to read, and only incidentally for machines to execute.*"
-    —Abelson & Sussman, Structure and Interpretation of Computer Programs
-
-Try to make your programs easy to read.
 
 ### Style guide for Python code
 
@@ -215,12 +208,12 @@ $ git fetch upstream
 $ git rebase upstream/master
 ```
 
-Rebasing creates a cleaner history for those with local changes or commits on the repo.
+Rebasing creates a cleaner history for developers with local changes or commits.
 
 ## Final notes
 
 1. Please do not change the version of the package in the `setup.py` file. The person or process responsible for releasing will do this and release the new version.
-2. Keep your GitHub updated! Please make sure you are rebasing your local branch with changes, so it up to date and we can automatically merge your pull request.
+2. Keep your GitHub fork updated! Please make sure you are rebasing your local branch with changes, so it up to date and we can automatically merge your pull request.
 3. If possible, please squash your commits before pushing to the remote repository.
 4. Please, as part of your pull request:
   * Update `README.md` if your changes add new functionality to the module.
