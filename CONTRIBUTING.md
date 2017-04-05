@@ -213,7 +213,7 @@ Rebasing creates a cleaner history for developers with local changes or commits.
 ## Final notes
 
 1. Please do not change the version of the package in the `setup.py` file. The person or process responsible for releasing will do this and release the new version.
-2. Keep your GitHub fork updated! Please make sure you are rebasing your local branch with changes, so it up to date and we can automatically merge your pull request.
+2. Keep your GitHub fork updated! Please make sure you are rebasing your local branch with changes, so it is up to date and we can automatically merge your pull request.
 3. If possible, please squash your commits before pushing to the remote repository.
 4. Please, as part of your pull request:
   * Update `README.md` if your changes add new functionality to the module.
