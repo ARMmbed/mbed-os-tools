@@ -86,6 +86,8 @@ class RemoteConnectorPrimitive(ConnectorPrimitive):
     def __remote_connect(self, baudrate=DEFAULT_BAUD_RATE, buffer_size=6):
         """! Open remote connection to DUT """
         self.logger.prn_inf("opening connection to platform at baudrate='%s, bufferSize=%d'"% (baudrate, buffer_size))
+        if not self.selected_resource:
+            raise Exception("remote resource not exists!")
         try:
             serial_parameters = self.remote_module.SerialParameters(lineMode=False, baudrate=baudrate, bufferSize=buffer_size)
             self.selected_resource.openConnection(parameters=serial_parameters)
@@ -95,23 +97,31 @@ class RemoteConnectorPrimitive(ConnectorPrimitive):
             raise e
 
     def __remote_disconnect(self):
+        if not self.selected_resource:
+            raise Exception("remote resource not exists!")
         if self.selected_resource.is_connected:
             self.selected_resource.closeConnection()
 
     def __remote_reset(self):
         """! Use GRM remote API to reset DUT """
         self.logger.prn_inf("remote resources reset...")
+        if not self.selected_resource:
+            raise Exception("remote resource not exists!")
         if not self.selected_resource.reset():
             raise Exception("remote resources reset failed!")
 
     def __remote_flashing(self, filename, forceflash=True):
         """! Use GRM remote API to flash DUT """
         self.logger.prn_inf("remote resources flashing with '%s'..."% filename)
+        if not self.selected_resource:
+            raise Exception("remote resource not exists!")
         if not self.selected_resource.flash(filename, forceflash=forceflash):
             raise Exception("remote resources flashing failed!")
 
     def read(self, count):
         """! Read 'count' bytes of data from DUT """
+        if not self.selected_resource:
+            raise Exception("remote resource not exists!")
         date = str()
         try:
             data = self.selected_resource.read(count)
@@ -144,6 +154,7 @@ class RemoteConnectorPrimitive(ConnectorPrimitive):
                     self.selected_resource.closeConnection()
                 if self.selected_resource.is_allocated:
                     self.selected_resource.release()
+                    self.selected_resource = None
             except self.remote_module.resources.ResourceError as e:
                 self.logger.prn_err("RemoteConnectorPrimitive.finish() failed, reason: " + str(e))
 
