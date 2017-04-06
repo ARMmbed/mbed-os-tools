@@ -173,12 +173,10 @@ class HostTestPluginBase:
         @param timeout Serial port pooling timeout in seconds
         @return Tuple with result (always True) and serial port read from mbed-ls
         """
-        result = True
+        # If serial port changed (check using mbed-ls), use new serial port
+        new_serial_port = None
 
         if target_id:
-            # If serial port changed (check using mbed-ls), use new serial port
-            new_serial_port = serial_port
-
             # Sometimes OSes take a long time to mount devices (up to one minute).
             # Current pooling time: 120x 500ms = 1 minute
             self.print_plugin_info("Waiting up to %d sec for '%s' serial port (current is '%s')..."% (timeout, target_id, serial_port))
@@ -193,15 +191,15 @@ class HostTestPluginBase:
                         if mbeds_by_tid[target_id]['serial_port']:
                             # Only assign if serial port is known (not None)
                             new_serial_port = mbeds_by_tid[target_id]['serial_port']
+                            if new_serial_port != serial_port:
+                                # Serial port changed, update to new serial port from mbed-ls
+                                self.print_plugin_info("Serial port for tid='%s' changed from '%s' to '%s'..." % (target_id, serial_port, new_serial_port))
                             break
                 sleep(timeout_step)
+        else:
+            new_serial_port = serial_port
 
-            if new_serial_port != serial_port:
-                # Serial port changed, update to new serial port from mbed-ls
-                self.print_plugin_info("Serial port for tid='%s' changed from '%s' to '%s'..."% (target_id, serial_port, new_serial_port))
-                serial_port = new_serial_port
-
-        return (result, serial_port)
+        return new_serial_port
 
     def check_parameters(self, capability, *args, **kwargs):
         """! This function should be ran each time we call execute() to check if none of the required parameters is missing

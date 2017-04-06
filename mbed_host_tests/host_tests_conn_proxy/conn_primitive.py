@@ -19,6 +19,13 @@ limitations under the License.
 from mbed_host_tests.host_tests_logger import HtrunLogger
 
 
+class ConnectorPrimitiveException(Exception):
+    """
+    Exception in connector primitive module.
+    """
+    pass
+
+
 class ConnectorPrimitive(object):
 
     def __init__(self, name):

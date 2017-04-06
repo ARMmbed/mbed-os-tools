@@ -21,7 +21,7 @@ import time
 from serial import Serial, SerialException
 from mbed_host_tests import host_tests_plugins
 from mbed_host_tests.host_tests_plugins.host_test_plugins import HostTestPluginBase
-from conn_primitive import ConnectorPrimitive
+from conn_primitive import ConnectorPrimitive, ConnectorPrimitiveException
 
 
 class SerialConnectorPrimitive(ConnectorPrimitive):
@@ -35,6 +35,7 @@ class SerialConnectorPrimitive(ConnectorPrimitive):
         self.polling_timeout = config.get('polling_timeout', 60)
         self.forced_reset_timeout = config.get('forced_reset_timeout', 1)
         self.skip_reset = config.get('skip_reset', False)
+        self.serial = None
 
         # Values used to call serial port listener...
 
@@ -44,7 +45,10 @@ class SerialConnectorPrimitive(ConnectorPrimitive):
         #
         # Note: This listener opens serial port and keeps connection so reset plugin uses
         # serial port object not serial port name!
-        _, serial_port = HostTestPluginBase().check_serial_port_ready(self.port, target_id=self.target_id, timeout=self.polling_timeout)
+        serial_port = HostTestPluginBase().check_serial_port_ready(self.port, target_id=self.target_id, timeout=self.polling_timeout)
+        if serial_port is None:
+            raise ConnectorPrimitiveException("Serial port not ready!")
+
         if serial_port != self.port:
             # Serial port changed for given targetID
             self.logger.prn_inf("serial port changed from '%s to '%s')"% (self.port, serial_port))
