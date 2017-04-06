@@ -29,6 +29,7 @@ class BaseHostTestAbstract(object):
     __event_queue = None        # To main even loop
     __dut_event_queue = None    # To DUT
     script_location = None      # Path to source file used to load host test
+    __config = {}
 
     def __notify_prn(self, text):
         if self.__event_queue:
@@ -40,7 +41,7 @@ class BaseHostTestAbstract(object):
 
     def __notify_dut(self, key, value):
         """! Send data over serial to DUT """
-        if self.__event_queue:
+        if self.__dut_event_queue:
             self.__dut_event_queue.put((key, value, time()))
 
     def notify_complete(self, result=None):
@@ -72,10 +73,20 @@ class BaseHostTestAbstract(object):
         """! Send Key-Value data to DUT """
         self.__notify_dut(key, value)
 
-    def setup_communication(self, event_queue, dut_event_queue):
+    def setup_communication(self, event_queue, dut_event_queue, config={}):
         """! Setup queues used for IPC """
         self.__event_queue = event_queue         # To main even loop
         self.__dut_event_queue = dut_event_queue # To DUT
+        self.__config = config
+
+    def get_config_item(self, name):
+        """
+        Return test config
+
+        :param name:
+        :return:
+        """
+        return self.__config.get(name, None)
 
     def setup(self):
         """! Setup your tests and callbacks """
