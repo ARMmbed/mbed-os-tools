@@ -73,9 +73,8 @@ class RemoteConnectorPrimitive(ConnectorPrimitive):
 
         # Remote DUT connection, flashing and reset...
         try:
-            self.__remote_connect(baudrate=self.baudrate)
-            self.__remote_flashing(self.image_path)
             self.__remote_disconnect()
+            self.__remote_flashing(self.image_path)
             self.__remote_connect(baudrate=self.baudrate)
             self.__remote_reset()
         except Exception as e:
@@ -104,7 +103,7 @@ class RemoteConnectorPrimitive(ConnectorPrimitive):
         if not self.selected_resource.reset():
             raise Exception("remote resources reset failed!")
 
-    def __remote_flashing(self, filename, forceflash=True):
+    def __remote_flashing(self, filename, forceflash=False):
         """! Use GRM remote API to flash DUT """
         self.logger.prn_inf("remote resources flashing with '%s'..."% filename)
         if not self.selected_resource.flash(filename, forceflash=forceflash):
