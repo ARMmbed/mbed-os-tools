@@ -163,6 +163,7 @@ class MbedLsToolsBase:
         "0824": "LPC824",
         "0826": "NUCLEO_F412ZG",
         "0827": "NUCLEO_L486RG",
+        "0833": "DISCO_L072CZ_LRWAN1",
         "0835": "NUCLEO_F207ZG",
         "0840": "B96B_F446VE",
         "0900": "XPRO_SAMR21",
