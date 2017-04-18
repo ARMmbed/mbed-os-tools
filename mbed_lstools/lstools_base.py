@@ -205,6 +205,7 @@ class MbedLsToolsBase:
         "1302": "NUMAKER_PFM_NUC472",
         "1303": "NUMAKER_PFM_M453",
         "1304": "NUMAKER_PFM_M487",
+        "1305": "NUMAKER_PFM_M2351",
         "1306": "NUMAKER_PFM_NANO130",
         "1307": "NUMAKER_PFM_NUC240",
         "1549": "LPC1549",
