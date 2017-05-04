@@ -81,7 +81,7 @@ class HostTestPluginCopyMethod_Shell(HostTestPluginBase):
                     cmd = [copy_method, image_path, destination_path]
                     if os.name == 'posix':
                         result = self.run_command(cmd, shell=False)
-                        result = self.run_command(["sync"])
+                        result = self.run_command(["sync", "-f", destination_path])
                     else:
                         result = self.run_command(cmd)
         return result
