@@ -433,7 +433,7 @@ class MbedLsToolsBase:
         return mock_ids
 
     # Note: 'Ven_SEGGER' - This is used to detect devices from EFM family, they use Segger J-LInk to wrap MSD and CDC
-    usb_vendor_list = ['Ven_MBED', 'Ven_SEGGER']
+    usb_vendor_list = ['Ven_MBED', 'Ven_SEGGER', 'Ven_ARM_V2M']
 
     # Interface
     def list_mbeds(self):
