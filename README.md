@@ -11,6 +11,8 @@ Greentea is the automated testing tool for mbed OS development. It automates the
 
 This document should help you start using Greentea. Please see the [htrun documentation](https://github.com/ARMmbed/htrun), the tool Greentea uses to drive tests, for the technical details of the interactions between the platform and the host machine.
 
+Because Greentea is an open source project, we accept contributions! Please see our [contributing document](CONTRIBUTING.md) for more information.
+
 ### Prerequistes
 
 Greentea requires [Python version 2.7](https://www.python.org/downloads/). It supports the following OSes:
