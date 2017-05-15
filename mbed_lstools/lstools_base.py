@@ -267,6 +267,12 @@ class MbedLsToolsBase:
         "9012": "SEEED_TINY_BLE",
         "9900": "NRF51_MICROBIT",
         "C002": "VK_RZ_A1H",
+        "C030": "UBLOX_C030_U201",
+        "C031": "UBLOX_C030_N211",
+        "C032": "UBLOX_C030_R404M",
+        "C033": "UBLOX_C030_R410M",
+        "C034": "UBLOX_C030_S200",
+        "C035": "UBLOX_C030_R3121",
         "FFFF": "K20 BOOTLOADER",
         "RIOT": "RIOT",
     }
