@@ -29,15 +29,14 @@ class SerialConnectorPrimitive(ConnectorPrimitive):
         ConnectorPrimitive.__init__(self, name)
         self.port = port
         self.baudrate = int(baudrate)
-        self.timeout = 0.01  # 10 milli sec
+        self.read_timeout = 0.01  # 10 milli sec
+        self.write_timeout = 5
         self.config = config
         self.target_id = self.config.get('target_id', None)
         self.polling_timeout = config.get('polling_timeout', 60)
         self.forced_reset_timeout = config.get('forced_reset_timeout', 1)
         self.skip_reset = config.get('skip_reset', False)
         self.serial = None
-
-        # Values used to call serial port listener...
 
         # Check if serial port for given target_id changed
         # If it does we will use new port to open connections and make sure reset plugin
@@ -55,18 +54,19 @@ class SerialConnectorPrimitive(ConnectorPrimitive):
             self.port = serial_port
 
         startTime = time.time()
-        self.logger.prn_inf("serial(port=%s, baudrate=%d, timeout=%s)"% (self.port, self.baudrate, self.timeout))
+        self.logger.prn_inf("serial(port=%s, baudrate=%d, read_timeout=%s, write_timeout=%d)"% (self.port, self.baudrate, self.read_timeout, self.write_timeout))
         while time.time() - startTime < self.polling_timeout:
             try:
                 # TIMEOUT: While creating Serial object timeout is delibrately passed as 0. Because blocking in Serial.read
                 # impacts thread and mutliprocess functioning in Python. Hence, instead in self.read() s delay (sleep()) is
                 # inserted to let serial buffer collect data and avoid spinning on non blocking read().
-                self.serial = Serial(self.port, baudrate=self.baudrate, timeout=0)
+                self.serial = Serial(self.port, baudrate=self.baudrate, timeout=0, write_timeout=self.write_timeout)
             except SerialException as e:
                 self.serial = None
-                self.LAST_ERROR = "connection lost, serial.Serial(%s, %d, %d): %s"% (self.port,
+                self.LAST_ERROR = "connection lost, serial.Serial(%s, %d, %d, %d): %s"% (self.port,
                     self.baudrate,
-                    self.timeout,
+                    self.read_timeout,
+                    self.write_timeout,
                     str(e))
                 self.logger.prn_err(str(e))
                 self.logger.prn_err("Retry after 1 sec until %s seconds" % self.polling_timeout)
@@ -100,7 +100,7 @@ class SerialConnectorPrimitive(ConnectorPrimitive):
         """! Read data from serial port RX buffer """
         # TIMEOUT: Since read is called in a loop, wait for self.timeout period before calling serial.read(). See
         # comment on serial.Serial() call above about timeout.
-        time.sleep(self.timeout)
+        time.sleep(self.read_timeout)
         c = str()
         try:
             if self.serial:
@@ -118,11 +118,12 @@ class SerialConnectorPrimitive(ConnectorPrimitive):
                 self.serial.write(payload)
                 if log:
                     self.logger.prn_txd(payload)
+                return True
         except SerialException as e:
             self.serial = None
             self.LAST_ERROR = "connection lost, serial.write(%d bytes): %s"% (len(payload), str(e))
             self.logger.prn_err(str(e))
-        return payload
+        return False
 
     def flush(self):
         if self.serial:

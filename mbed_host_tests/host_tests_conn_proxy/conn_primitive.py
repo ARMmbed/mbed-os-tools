@@ -37,13 +37,16 @@ class ConnectorPrimitive(object):
         """! Forms and sends Key-Value protocol message.
         @details On how to parse K-V sent from DUT see KiViBufferWalker::KIVI_REGEX
                  On how DUT sends K-V please see greentea_write_postamble() function in greentea-client
-        @return Returns buffer with K-V message sent to DUT
+        @return Returns buffer with K-V message sent to DUT on success, None on failure
         """
         # All Key-Value messages ends with newline character
         kv_buff = "{{%s;%s}}"% (key, value) + '\n'
-        self.write(kv_buff)
-        self.logger.prn_txd(kv_buff.rstrip())
-        return kv_buff
+
+        if self.write(kv_buff):
+            self.logger.prn_txd(kv_buff.rstrip())
+            return kv_buff
+        else:
+            return None
 
     def read(self, count):
         """! Read data from DUT

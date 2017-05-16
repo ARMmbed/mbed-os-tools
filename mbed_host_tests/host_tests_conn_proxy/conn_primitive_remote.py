@@ -124,7 +124,7 @@ class RemoteConnectorPrimitive(ConnectorPrimitive):
             self.selected_resource.write(payload)
             if log:
                 self.logger.prn_txd(payload)
-        return payload
+        return True
 
     def flush(self):
         pass
