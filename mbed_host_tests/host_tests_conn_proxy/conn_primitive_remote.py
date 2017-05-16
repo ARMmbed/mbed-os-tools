@@ -92,7 +92,6 @@ class RemoteConnectorPrimitive(ConnectorPrimitive):
             self.selected_resource.openConnection(parameters=serial_parameters)
         except self.remote_module.resources.ResourceError as e:
             self.logger.prn_inf("openConnection() failed")
-            self.selected_resource = None
             raise e
 
     def __remote_disconnect(self):
