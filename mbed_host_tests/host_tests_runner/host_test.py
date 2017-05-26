@@ -43,7 +43,8 @@ class HostTestResults(object):
             RESULT_NOT_DETECTED = "not_detected",
             RESULT_MBED_ASSERT = "mbed_assert",
             RESULT_PASSIVE = "passive",
-            RESULT_BUILD_FAILED = 'build_failed'
+            RESULT_BUILD_FAILED = 'build_failed',
+            RESULT_SYNC_FAILED = 'sync_failed'
         )
 
         # Magically creates attributes in this class corresponding
@@ -68,7 +69,8 @@ class HostTestResults(object):
             self.TestResults.RESULT_NOT_DETECTED,
             self.TestResults.RESULT_MBED_ASSERT,
             self.TestResults.RESULT_PASSIVE,
-            self.TestResults.RESULT_BUILD_FAILED
+            self.TestResults.RESULT_BUILD_FAILED,
+            self.TestResults.RESULT_SYNC_FAILED
         ]
 
     def get_test_result_int(self, test_result_str):

@@ -242,6 +242,7 @@ Key-value protocol was developed and is used to provide communication layer betw
     * User can't register callbacks to "system events" with few exceptions.
     * Reserved event/message keys have leading ```__``` in name:
       * ```__sync``` - sync message, used by master and DUT to handshake.
+      * ```__notify_sync_failed``` - sent by host when sync response not received from DUT.
       * ```__timeout``` - timeout in sec, sent by DUT after ```{{sync;UUID}}``` is received.
       * ```__version``` - ```greentea-client``` version send from DUT to host.
       * ```__host_test_name``` - host test name, sent by DUT after ```{{sync;UUID}}``` is received.

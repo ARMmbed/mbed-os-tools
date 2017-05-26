@@ -119,6 +119,11 @@ def conn_process(event_queue, dut_event_queue, config):
         connector.finish()
         event_queue.put(('__notify_conn_lost', error_msg, time()))
 
+    def __notify_sync_failed():
+        error_msg = connector.error()
+        connector.finish()
+        event_queue.put(('__notify_sync_failed', error_msg, time()))
+
     logger = HtrunLogger('CONN')
     logger.prn_inf("starting connection process...")
 
@@ -130,6 +135,7 @@ def conn_process(event_queue, dut_event_queue, config):
     sync_behavior = int(config.get('sync_behavior', 1))
     sync_timeout = config.get('sync_timeout', 1.0)
     conn_resource = config.get('conn_resource', 'serial')
+    last_sync = 0
 
     # Create connector instance with proper configuration
     connector = conn_primitive_factory(conn_resource, config, event_queue, logger)
@@ -156,6 +162,7 @@ def conn_process(event_queue, dut_event_queue, config):
             logger.prn_inf("resending new preamble '%s' after %0.2f sec"% (sync_uuid, timeout))
         else:
             logger.prn_inf("sending preamble '%s'"% sync_uuid)
+
         if connector.write_kv('__sync', sync_uuid):
             return sync_uuid
         else:
@@ -197,7 +204,6 @@ def conn_process(event_queue, dut_event_queue, config):
         logger.prn_inf("sending multiple __sync packets (specified with --sync=%s)"% sync_behavior)
 
         sync_uuid = __send_sync()
-
         if sync_uuid:
             sync_uuid_list.append(sync_uuid)
             sync_behavior -= 1
@@ -270,8 +276,16 @@ def conn_process(event_queue, dut_event_queue, config):
                         sync_uuid_list.append(sync_uuid)
                         sync_behavior -= 1
                         loop_timer = time()
+                        #Sync behavior will be zero and if last sync fails we should report connection
+                        #lost
+                        if sync_behavior == 0:
+                            last_sync = 1
                     else:
                         __notify_conn_lost()
                         break
+            elif last_sync == 1:
+                #SYNC lost connection event : Device not responding, send sync failed
+                __notify_sync_failed()
+                break
 
     return 0

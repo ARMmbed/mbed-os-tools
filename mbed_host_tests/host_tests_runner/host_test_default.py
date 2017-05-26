@@ -154,6 +154,7 @@ class DefaultTestSelector(DefaultTestSelectorBase):
 
         self.logger.prn_inf("starting host test process...")
 
+
         # Create device info here as it may change after restart.
         config = {
             "digest" : "serial",
@@ -224,7 +225,6 @@ class DefaultTestSelector(DefaultTestSelectorBase):
                 return elapsed_time, (key, value, timestamp)
 
         p = start_conn_process()
-
         conn_process_started = False
         try:
             (key, value, timestamp) = event_queue.get(timeout=self.options.process_start_timeout)
@@ -316,6 +316,13 @@ class DefaultTestSelector(DefaultTestSelectorBase):
                     elif key == '__sync':
                         # This is DUT-Host Test handshake event
                         self.logger.prn_inf("sync KV found, uuid=%s, timestamp=%f"% (str(value), timestamp))
+                    elif key == '__notify_sync_failed':
+                        # This event is sent by conn_process, SYNC failed
+                        self.logger.prn_err(value)
+                        self.logger.prn_wrn("stopped to consume events due to %s event"% key)
+                        callbacks_consume = False
+                        result = self.RESULT_SYNC_FAILED
+                        event_queue.put(('__exit_event_queue', 0, time()))
                     elif key == '__notify_conn_lost':
                         # This event is sent by conn_process, DUT connection was lost
                         self.logger.prn_err(value)
