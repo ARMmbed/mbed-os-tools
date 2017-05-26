@@ -48,6 +48,7 @@ TEST_RESULT_TIMEOUT = "TIMEOUT"
 TEST_RESULT_NO_IMAGE = "NO_IMAGE"
 TEST_RESULT_MBED_ASSERT = "MBED_ASSERT"
 TEST_RESULT_BUILD_FAILED = "BUILD_FAILED"
+TEST_RESULT_SYNC_FAILED = "SYNC_FAILED"
 
 TEST_RESULTS = [TEST_RESULT_OK,
                 TEST_RESULT_FAIL,
@@ -60,7 +61,8 @@ TEST_RESULTS = [TEST_RESULT_OK,
                 TEST_RESULT_TIMEOUT,
                 TEST_RESULT_NO_IMAGE,
                 TEST_RESULT_MBED_ASSERT,
-                TEST_RESULT_BUILD_FAILED
+                TEST_RESULT_BUILD_FAILED,
+                TEST_RESULT_SYNC_FAILED
                 ]
 
 TEST_RESULT_MAPPING = {"success" : TEST_RESULT_OK,
@@ -74,7 +76,8 @@ TEST_RESULT_MAPPING = {"success" : TEST_RESULT_OK,
                        "timeout" : TEST_RESULT_TIMEOUT,
                        "no_image" : TEST_RESULT_NO_IMAGE,
                        "mbed_assert" : TEST_RESULT_MBED_ASSERT,
-                       "build_failed" : TEST_RESULT_BUILD_FAILED
+                       "build_failed" : TEST_RESULT_BUILD_FAILED,
+                       "sync_failed" : TEST_RESULT_SYNC_FAILED
                        }
 
 
