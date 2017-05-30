@@ -135,7 +135,7 @@ def conn_process(event_queue, dut_event_queue, config):
     sync_behavior = int(config.get('sync_behavior', 1))
     sync_timeout = config.get('sync_timeout', 1.0)
     conn_resource = config.get('conn_resource', 'serial')
-    last_sync = 0
+    last_sync = False
 
     # Create connector instance with proper configuration
     connector = conn_primitive_factory(conn_resource, config, event_queue, logger)
@@ -279,11 +279,11 @@ def conn_process(event_queue, dut_event_queue, config):
                         #Sync behavior will be zero and if last sync fails we should report connection
                         #lost
                         if sync_behavior == 0:
-                            last_sync = 1
+                            last_sync = True
                     else:
                         __notify_conn_lost()
                         break
-            elif last_sync == 1:
+            elif last_sync == True:
                 #SYNC lost connection event : Device not responding, send sync failed
                 __notify_sync_failed()
                 break
