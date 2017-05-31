@@ -270,6 +270,7 @@ class MbedLsToolsBase:
         "9012": "SEEED_TINY_BLE",
         "9900": "NRF51_MICROBIT",
         "C002": "VK_RZ_A1H",
+        "C005": "MTM_MTCONNECT04S",
         "C030": "UBLOX_C030_U201",
         "C031": "UBLOX_C030_N211",
         "C032": "UBLOX_C030_R404M",
