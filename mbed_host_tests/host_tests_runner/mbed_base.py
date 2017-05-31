@@ -18,8 +18,11 @@ Author: Przemyslaw Wirkus <Przemyslaw.Wirkus@arm.com>
 """
 
 import json
+import os
+import mbed_lstools
 from time import sleep
 from mbed_host_tests import DEFAULT_BAUD_RATE
+from sets import Set
 import mbed_host_tests.host_tests_plugins as ht_plugins
 
 
@@ -83,6 +86,23 @@ class Mbed:
         """! Closure for copy_image_raw() method.
         @return Returns result from copy plugin
         """
+
+        def get_remount_count(disk_path, tries=2):
+            for cur_try in range(1, tries + 1):
+                try:
+                    files_on_disk = [x.upper() for x in os.listdir(disk_path)]
+                    print "Files on disk %s"% (files_on_disk)
+                    if 'DETAILS.TXT' in files_on_disk:
+                        with open(os.path.join(disk_path, 'DETAILS.TXT'), 'r') as details_txt:
+                            for line in details_txt.readlines():
+                                if 'Remount count:' in line:
+                                    return int(line.replace('Remount count: ', ''))
+                except OSError as e:
+                    print 'Failed to get remount count due to OSError. ' \
+                          'Retrying in 1 second (try %s of %s)' % (cur_try, tries)
+                    print e
+                    sleep(1)
+
         # Set-up closure environment
         if not image_path:
             image_path = self.image_path
@@ -93,9 +113,58 @@ class Mbed:
         if not port:
             port = self.port
 
+        target_id = self.target_id
+        initial_remount_count = get_remount_count(disk)
         # Call proper copy method
         result = self.copy_image_raw(image_path, disk, copy_method, port)
         sleep(self.program_cycle_s)
+
+        if target_id:
+            bad_files = Set(['ASSERT.TXT', 'FAIL.TXT'])
+
+            # Re-try at max 5 times with 0.5 sec in delay
+            for i in range(5):
+                # mbed_lstools.create() should be done inside the loop. Otherwise it will loop on same data.
+                mbeds = mbed_lstools.create()
+                mbeds_by_tid = mbeds.list_mbeds_by_targetid()   # key: target_id, value mbedls_dict()
+                if target_id in mbeds_by_tid:
+                    if 'mount_point' in mbeds_by_tid[target_id] and mbeds_by_tid[target_id]['mount_point']:
+                        if not initial_remount_count is None:
+                            new_remount_count = get_remount_count(disk)
+                            if not new_remount_count is None and new_remount_count == initial_remount_count:
+                                sleep(0.5)
+                                continue
+
+                        common_items = []
+                        try:
+                            items = Set([x.upper() for x in os.listdir(mbeds_by_tid[target_id]['mount_point'])])
+                            common_items = bad_files.intersection(items)
+                        except OSError as e:
+                            print "Failed to enumerate disk files, retrying"
+                            continue
+
+                        for common_item in common_items:
+                            full_path = os.path.join(mbeds_by_tid[target_id]['mount_point'], common_item)
+                            print "FS_ERROR: Found %s"% (full_path)
+                            bad_file_contents = "[failed to read bad file]"
+                            try:
+                                with open(full_path, "r") as bad_file:
+                                    bad_file_contents = bad_file.read()
+                            except IOError as error:
+                                print "ERROR opening '%s': %s" % (full_path, error)
+                            print "FS_ERROR: Contents\n%s"% (bad_file_contents)
+                            if common_item != 'FAIL.TXT':
+                                try:
+                                    os.remove(full_path)
+                                except OSError as error:
+                                    print "ERROR removing '%s': %s" % (full_path, error)
+                        if common_items:
+                            result = False
+                            if 'ASSERT.TXT' in common_items:
+                                raise Exception('ASSERT.TXT found!')
+                        break
+                sleep(0.5)
+        
         return result
 
     def copy_image_raw(self, image_path=None, disk=None, copy_method=None, port=None):
