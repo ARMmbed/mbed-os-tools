@@ -39,6 +39,10 @@ class BaseHostTestAbstract(object):
         if self.__event_queue:
             self.__event_queue.put(('__notify_conn_lost', text, time()))
 
+    def __notify_sync_failed(self, text):
+        if self.__event_queue:
+            self.__event_queue.put(('__notify_sync_failed', text, time()))
+
     def __notify_dut(self, key, value):
         """! Send data over serial to DUT """
         if self.__dut_event_queue:
