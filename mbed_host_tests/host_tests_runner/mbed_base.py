@@ -24,6 +24,7 @@ from time import sleep
 from mbed_host_tests import DEFAULT_BAUD_RATE
 from sets import Set
 import mbed_host_tests.host_tests_plugins as ht_plugins
+from mbed_host_tests.host_tests_logger import HtrunLogger
 
 
 class Mbed:
@@ -37,7 +38,7 @@ class Mbed:
         # For compatibility with old mbed. We can use command line options for Mbed object
         # or we can pass options directly from .
         self.options = options
-
+        self.logger = HtrunLogger('MBED')
         # Options related to copy / reset mbed device
         self.port = self.options.port
         self.disk = self.options.disk
@@ -74,13 +75,14 @@ class Mbed:
             # We need to normalize path before we open file
             json_test_configuration_path = self.options.json_test_configuration.strip("\"'")
             try:
-                print "MBED: Loading test configuration from '%s'..." % json_test_configuration_path
+                self.logger.prn_inf("Loading test configuration from '%s'..." % json_test_configuration_path)
                 with open(json_test_configuration_path) as data_file:
                     self.test_cfg = json.load(data_file)
             except IOError as e:
-                print "MBED: Test configuration JSON file '{0}' I/O error({1}): {2}".format(json_test_configuration_path, e.errno, e.strerror)
+                self.logger.prn_err("Test configuration JSON file '{0}' I/O error({1}): {2}"
+                                    .format(json_test_configuration_path, e.errno, e.strerror))
             except:
-                print "MBED: Test configuration JSON Unexpected error:", str(e)
+                self.logger.prn_err("Test configuration JSON Unexpected error:", str(e))
                 raise
 
     def copy_image(self, image_path=None, disk=None, copy_method=None, port=None, retry_copy=3):
@@ -98,9 +100,8 @@ class Mbed:
                                 if 'Remount count:' in line:
                                     return int(line.replace('Remount count: ', ''))
                 except OSError as e:
-                    print 'Failed to get remount count due to OSError. ' \
-                          'Retrying in 1 second (try %s of %s)' % (cur_try, tries)
-                    print e
+                    self.logger.prn_err("Failed to get remount count due to OSError.", str(e))
+                    self.logger.prn_inf("Retrying in 1 second (try %s of %s)" % (cur_try, tries))
                     sleep(1)
 
         # Set-up closure environment
@@ -118,7 +119,7 @@ class Mbed:
         flash_done = False
         target_id = self.target_id
 
-        for count in range(0,retry_copy):
+        for count in range(0, retry_copy):
             if flash_done:
                 break
             initial_remount_count = get_remount_count(disk)
@@ -129,54 +130,56 @@ class Mbed:
             if not result:
                 continue
 
-            if target_id:
-                bad_files = Set(['ASSERT.TXT', 'FAIL.TXT'])
+            if not target_id:
+                self.logger.prn_wrn("Target ID not found: Skipping flash check and retry")
+                break
+
+            bad_files = Set(['ASSERT.TXT', 'FAIL.TXT'])
 
                 # Re-try at max 5 times with 0.5 sec in delay
-                for i in range(5):
-                    # mbed_lstools.create() should be done inside the loop. Otherwise it will loop on same data.
-                    mbeds = mbed_lstools.create()
-                    mbeds_by_tid = mbeds.list_mbeds_by_targetid()   # key: target_id, value mbedls_dict()
+            for i in range(5):
+                # mbed_lstools.create() should be done inside the loop. Otherwise it will loop on same data.
+                mbeds = mbed_lstools.create()
+                mbeds_by_tid = mbeds.list_mbeds_by_targetid()   # key: target_id, value mbedls_dict()
 
-                    if target_id in mbeds_by_tid:
-                        if 'mount_point' in mbeds_by_tid[target_id] and mbeds_by_tid[target_id]['mount_point']:
-                            if not initial_remount_count is None:
-                                new_remount_count = get_remount_count(disk)
-                                if not new_remount_count is None and new_remount_count == initial_remount_count:
-                                    sleep(0.5)
-                                    continue
-
-                            common_items = []
-                            try:
-                                items = Set([x.upper() for x in os.listdir(mbeds_by_tid[target_id]['mount_point'])])
-                                common_items = bad_files.intersection(items)
-                            except OSError as e:
-                                print "Failed to enumerate disk files, retrying"
+                if target_id in mbeds_by_tid:
+                    if 'mount_point' in mbeds_by_tid[target_id] and mbeds_by_tid[target_id]['mount_point']:
+                        if not initial_remount_count is None:
+                            new_remount_count = get_remount_count(disk)
+                            if not new_remount_count is None and new_remount_count == initial_remount_count:
+                                sleep(0.5)
                                 continue
 
-                            for common_item in common_items:
-                                full_path = os.path.join(mbeds_by_tid[target_id]['mount_point'], common_item)
-                                print "FS_ERROR: Found %s"% (full_path)
-                                bad_file_contents = "[failed to read bad file]"
+                        common_items = []
+                        try:
+                            items = Set([x.upper() for x in os.listdir(mbeds_by_tid[target_id]['mount_point'])])
+                            common_items = bad_files.intersection(items)
+                        except OSError as e:
+                            print "Failed to enumerate disk files, retrying"
+                            continue
+
+                        for common_item in common_items:
+                            full_path = os.path.join(mbeds_by_tid[target_id]['mount_point'], common_item)
+                            self.logger.prn_err("Found %s"% (full_path))
+                            bad_file_contents = "[failed to read bad file]"
+                            try:
+                                with open(full_path, "r") as bad_file:
+                                    bad_file_contents = bad_file.read()
+                            except IOError as error:
+                                self.logger.prn_err("Error opening '%s': %s" % (full_path, error))
+
+                            self.logger.prn_err("Error file contents:\n%s"% (bad_file_contents))
+                            if common_item != 'FAIL.TXT':
                                 try:
-                                    with open(full_path, "r") as bad_file:
-                                        bad_file_contents = bad_file.read()
-                                except IOError as error:
-                                    print "ERROR opening '%s': %s" % (full_path, error)
-                                print "FS_ERROR: Contents\n%s"% (bad_file_contents)
-                                if common_item != 'FAIL.TXT':
-                                    try:
-                                        os.remove(full_path)
-                                    except OSError as error:
-                                        print "ERROR removing '%s': %s" % (full_path, error)
-                            if common_items:
-                                result = False
-                                if 'ASSERT.TXT' in common_items:
-                                    raise Exception('ASSERT.TXT found!')
-                            else:
-                                 flash_done = True
-                            break
-                        sleep(0.5)
+                                    os.remove(full_path)
+                                except OSError as error:
+                                    self.logger.prn_err("Error removing '%s': %s" % (full_path, error))
+                        if common_items:
+                            result = False
+                        else:
+                            flash_done = True
+                        break
+                    sleep(0.5)
 
         return result
 
