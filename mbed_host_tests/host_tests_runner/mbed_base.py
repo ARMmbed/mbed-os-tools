@@ -169,11 +169,6 @@ class Mbed:
                                 self.logger.prn_err("Error opening '%s': %s" % (full_path, error))
 
                             self.logger.prn_err("Error file contents:\n%s"% (bad_file_contents))
-                            if common_item != 'FAIL.TXT':
-                                try:
-                                    os.remove(full_path)
-                                except OSError as error:
-                                    self.logger.prn_err("Error removing '%s': %s" % (full_path, error))
                         if common_items:
                             result = False
                         else:
