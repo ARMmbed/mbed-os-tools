@@ -134,7 +134,7 @@ class Mbed:
                 self.logger.prn_wrn("Target ID not found: Skipping flash check and retry")
                 break
 
-            bad_files = Set(['ASSERT.TXT', 'FAIL.TXT'])
+            bad_files = Set(['FAIL.TXT'])
 
                 # Re-try at max 5 times with 0.5 sec in delay
             for i in range(5):
