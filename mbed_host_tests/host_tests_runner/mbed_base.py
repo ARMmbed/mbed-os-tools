@@ -85,12 +85,14 @@ class Mbed:
                 self.logger.prn_err("Test configuration JSON Unexpected error:", str(e))
                 raise
 
-    def copy_image(self, image_path=None, disk=None, copy_method=None, port=None, retry_copy=3):
+    def copy_image(self, image_path=None, disk=None, copy_method=None, port=None, retry_copy=5):
         """! Closure for copy_image_raw() method.
         @return Returns result from copy plugin
         """
-
         def get_remount_count(disk_path, tries=2):
+            """! Get the remount count from 'DETAILS.TXT' file
+            @return Returns count, None if not-available
+            """
             for cur_try in range(1, tries + 1):
                 try:
                     files_on_disk = [x.upper() for x in os.listdir(disk_path)]
@@ -99,44 +101,29 @@ class Mbed:
                             for line in details_txt.readlines():
                                 if 'Remount count:' in line:
                                     return int(line.replace('Remount count: ', ''))
+                            # Remount count not found in file
+                            return None
+                    # 'DETAILS.TXT file not found
+                    else:
+                        return None
+
                 except OSError as e:
                     self.logger.prn_err("Failed to get remount count due to OSError.", str(e))
                     self.logger.prn_inf("Retrying in 1 second (try %s of %s)" % (cur_try, tries))
                     sleep(1)
+            # Failed to get remount count
+            return None
 
-        # Set-up closure environment
-        if not image_path:
-            image_path = self.image_path
-        if not disk:
-            disk = self.disk
-        if not copy_method:
-            copy_method = self.copy_method
-        if not port:
-            port = self.port
-        if not retry_copy:
-            retry_copy = self.retry_copy
-
-        flash_done = False
-        target_id = self.target_id
-
-        for count in range(0, retry_copy):
-            if flash_done:
-                break
-            initial_remount_count = get_remount_count(disk)
-
-            # Call proper copy method
-            result = self.copy_image_raw(image_path, disk, copy_method, port)
-            sleep(self.program_cycle_s)
-            if not result:
-                continue
-
+        def check_flash_error(target_id, disk, initial_remount_count):
+            """! Check for flash errors
+            @return Returns false if FAIL.TXT present, else true
+            """
             if not target_id:
                 self.logger.prn_wrn("Target ID not found: Skipping flash check and retry")
-                break
+                return True
 
             bad_files = Set(['FAIL.TXT'])
-
-                # Re-try at max 5 times with 0.5 sec in delay
+            # Re-try at max 5 times with 0.5 sec in delay
             for i in range(5):
                 # mbed_lstools.create() should be done inside the loop. Otherwise it will loop on same data.
                 mbeds = mbed_lstools.create()
@@ -168,14 +155,35 @@ class Mbed:
                             except IOError as error:
                                 self.logger.prn_err("Error opening '%s': %s" % (full_path, error))
 
-                            self.logger.prn_err("Error file contents:\n%s"% (bad_file_contents))
+                            self.logger.prn_err("Error file contents:\n%s" % bad_file_contents)
                         if common_items:
-                            result = False
-                        else:
-                            flash_done = True
-                        break
-                    sleep(0.5)
+                            return False
+                sleep(0.5)
+            return True
 
+        # Set-up closure environment
+        if not image_path:
+            image_path = self.image_path
+        if not disk:
+            disk = self.disk
+        if not copy_method:
+            copy_method = self.copy_method
+        if not port:
+            port = self.port
+        if not retry_copy:
+            retry_copy = self.retry_copy
+        target_id = self.target_id
+
+        for count in range(0, retry_copy):
+            initial_remount_count = get_remount_count(disk)
+            # Call proper copy method
+            result = self.copy_image_raw(image_path, disk, copy_method, port)
+            sleep(self.program_cycle_s)
+            if not result:
+                continue
+            result = check_flash_error(target_id, disk, initial_remount_count)
+            if result:
+                break
         return result
 
     def copy_image_raw(self, image_path=None, disk=None, copy_method=None, port=None):
