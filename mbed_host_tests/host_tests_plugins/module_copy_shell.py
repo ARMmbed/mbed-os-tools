@@ -82,9 +82,9 @@ class HostTestPluginCopyMethod_Shell(HostTestPluginBase):
                     if os.name == 'posix':
                         result = self.run_command(cmd, shell=False)
                         if os.uname()[0] == 'Linux':
-                            result = self.run_command(["sync", "-f", destination_path])
+                            result = result and self.run_command(["sync", "-f", destination_path])
                         else:
-                            result = self.run_command(["sync"])
+                            result = result and self.run_command(["sync"])
                     else:
                         result = self.run_command(cmd)
         return result
