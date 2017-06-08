@@ -210,6 +210,13 @@ def init_host_test_cli_params():
                       help="Copy (flash the target) method selector. " + copy_methods_str,
                       metavar="COPY_METHOD")
 
+    parser.add_option("", "--retry-copy",
+                      dest="retry_copy",
+                      default=3,
+                      type=int,
+                      help="Number of attempts to flash the target",
+                      metavar="RETRY_COPY")
+
     reset_methods_str = "Plugin support: " + ', '.join(host_tests_plugins.get_plugin_caps('ResetMethod'))
 
     parser.add_option("-r", "--reset",

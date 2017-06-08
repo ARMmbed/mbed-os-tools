@@ -18,9 +18,13 @@ Author: Przemyslaw Wirkus <Przemyslaw.Wirkus@arm.com>
 """
 
 import json
+import os
+import mbed_lstools
 from time import sleep
 from mbed_host_tests import DEFAULT_BAUD_RATE
+from sets import Set
 import mbed_host_tests.host_tests_plugins as ht_plugins
+from mbed_host_tests.host_tests_logger import HtrunLogger
 
 
 class Mbed:
@@ -34,13 +38,14 @@ class Mbed:
         # For compatibility with old mbed. We can use command line options for Mbed object
         # or we can pass options directly from .
         self.options = options
-
+        self.logger = HtrunLogger('MBED')
         # Options related to copy / reset mbed device
         self.port = self.options.port
         self.disk = self.options.disk
         self.target_id = self.options.target_id
         self.image_path = self.options.image_path.strip('"') if self.options.image_path is not None else ''
         self.copy_method = self.options.copy_method
+        self.retry_copy = self.options.retry_copy
         self.program_cycle_s = float(self.options.program_cycle_s if self.options.program_cycle_s is not None else 2.0)
         self.polling_timeout = self.options.polling_timeout
 
@@ -70,19 +75,92 @@ class Mbed:
             # We need to normalize path before we open file
             json_test_configuration_path = self.options.json_test_configuration.strip("\"'")
             try:
-                print "MBED: Loading test configuration from '%s'..." % json_test_configuration_path
+                self.logger.prn_inf("Loading test configuration from '%s'..." % json_test_configuration_path)
                 with open(json_test_configuration_path) as data_file:
                     self.test_cfg = json.load(data_file)
             except IOError as e:
-                print "MBED: Test configuration JSON file '{0}' I/O error({1}): {2}".format(json_test_configuration_path, e.errno, e.strerror)
+                self.logger.prn_err("Test configuration JSON file '{0}' I/O error({1}): {2}"
+                                    .format(json_test_configuration_path, e.errno, e.strerror))
             except:
-                print "MBED: Test configuration JSON Unexpected error:", str(e)
+                self.logger.prn_err("Test configuration JSON Unexpected error:", str(e))
                 raise
 
-    def copy_image(self, image_path=None, disk=None, copy_method=None, port=None):
+    def copy_image(self, image_path=None, disk=None, copy_method=None, port=None, retry_copy=5):
         """! Closure for copy_image_raw() method.
         @return Returns result from copy plugin
         """
+        def get_remount_count(disk_path, tries=2):
+            """! Get the remount count from 'DETAILS.TXT' file
+            @return Returns count, None if not-available
+            """
+            for cur_try in range(1, tries + 1):
+                try:
+                    files_on_disk = [x.upper() for x in os.listdir(disk_path)]
+                    if 'DETAILS.TXT' in files_on_disk:
+                        with open(os.path.join(disk_path, 'DETAILS.TXT'), 'r') as details_txt:
+                            for line in details_txt.readlines():
+                                if 'Remount count:' in line:
+                                    return int(line.replace('Remount count: ', ''))
+                            # Remount count not found in file
+                            return None
+                    # 'DETAILS.TXT file not found
+                    else:
+                        return None
+
+                except OSError as e:
+                    self.logger.prn_err("Failed to get remount count due to OSError.", str(e))
+                    self.logger.prn_inf("Retrying in 1 second (try %s of %s)" % (cur_try, tries))
+                    sleep(1)
+            # Failed to get remount count
+            return None
+
+        def check_flash_error(target_id, disk, initial_remount_count):
+            """! Check for flash errors
+            @return Returns false if FAIL.TXT present, else true
+            """
+            if not target_id:
+                self.logger.prn_wrn("Target ID not found: Skipping flash check and retry")
+                return True
+
+            bad_files = Set(['FAIL.TXT'])
+            # Re-try at max 5 times with 0.5 sec in delay
+            for i in range(5):
+                # mbed_lstools.create() should be done inside the loop. Otherwise it will loop on same data.
+                mbeds = mbed_lstools.create()
+                mbeds_by_tid = mbeds.list_mbeds_by_targetid()   # key: target_id, value mbedls_dict()
+
+                if target_id in mbeds_by_tid:
+                    if 'mount_point' in mbeds_by_tid[target_id] and mbeds_by_tid[target_id]['mount_point']:
+                        if not initial_remount_count is None:
+                            new_remount_count = get_remount_count(disk)
+                            if not new_remount_count is None and new_remount_count == initial_remount_count:
+                                sleep(0.5)
+                                continue
+
+                        common_items = []
+                        try:
+                            items = Set([x.upper() for x in os.listdir(mbeds_by_tid[target_id]['mount_point'])])
+                            common_items = bad_files.intersection(items)
+                        except OSError as e:
+                            print "Failed to enumerate disk files, retrying"
+                            continue
+
+                        for common_item in common_items:
+                            full_path = os.path.join(mbeds_by_tid[target_id]['mount_point'], common_item)
+                            self.logger.prn_err("Found %s"% (full_path))
+                            bad_file_contents = "[failed to read bad file]"
+                            try:
+                                with open(full_path, "r") as bad_file:
+                                    bad_file_contents = bad_file.read()
+                            except IOError as error:
+                                self.logger.prn_err("Error opening '%s': %s" % (full_path, error))
+
+                            self.logger.prn_err("Error file contents:\n%s" % bad_file_contents)
+                        if common_items:
+                            return False
+                sleep(0.5)
+            return True
+
         # Set-up closure environment
         if not image_path:
             image_path = self.image_path
@@ -92,10 +170,20 @@ class Mbed:
             copy_method = self.copy_method
         if not port:
             port = self.port
+        if not retry_copy:
+            retry_copy = self.retry_copy
+        target_id = self.target_id
 
-        # Call proper copy method
-        result = self.copy_image_raw(image_path, disk, copy_method, port)
-        sleep(self.program_cycle_s)
+        for count in range(0, retry_copy):
+            initial_remount_count = get_remount_count(disk)
+            # Call proper copy method
+            result = self.copy_image_raw(image_path, disk, copy_method, port)
+            sleep(self.program_cycle_s)
+            if not result:
+                continue
+            result = check_flash_error(target_id, disk, initial_remount_count)
+            if result:
+                break
         return result
 
     def copy_image_raw(self, image_path=None, disk=None, copy_method=None, port=None):
