@@ -775,6 +775,10 @@ def exporter_memory_metrics_csv(test_result_ext, test_suite_properties=None):
                     report_key = '%s_%s_max_heap_usage' % (target_name, test_suite_name)
                     metrics_report[report_key] = memory_metrics['max_heap']
 
+                if 'reserved_heap' in memory_metrics:
+                    report_key = '%s_%s_reserved_heap_usage' % (target_name, test_suite_name)
+                    metrics_report[report_key] = memory_metrics['reserved_heap']
+
                 if 'thread_stack_summary' in memory_metrics:
                     thread_stack_summary = memory_metrics['thread_stack_summary']
 
@@ -789,6 +793,10 @@ def exporter_memory_metrics_csv(test_result_ext, test_suite_properties=None):
                     if 'max_stack_usage_total' in thread_stack_summary:
                         report_key = '%s_%s_max_stack_usage_total' % (target_name, test_suite_name)
                         metrics_report[report_key] = thread_stack_summary['max_stack_usage_total']
+
+                    if 'reserved_stack_total' in thread_stack_summary:
+                        report_key = '%s_%s_reserved_stack_total' % (target_name, test_suite_name)
+                        metrics_report[report_key] = thread_stack_summary['reserved_stack_total']
 
     column_names = sorted(metrics_report.keys())
     column_values = [str(metrics_report[x]) for x in column_names]
