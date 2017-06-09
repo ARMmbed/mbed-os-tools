@@ -906,7 +906,15 @@ def main_cli(opts, args, gt_instance_uuid=None):
         # merge partial test reports from different threads to final test report
         for t in execute_threads:
             try:
-                t.join() #blocking
+                # We can't block forever here since that prevents KeyboardInterrupts
+                # from being propagated correctly. Therefore, we just join with a
+                # timeout of 0.1 seconds until the thread isn't alive anymore.
+                # A time of 0.1 seconds is a fairly arbitrary choice. It needs
+                # to balance CPU utilization and responsiveness to keyboard interrupts.
+                # Checking 10 times a second seems to be stable and responsive.
+                while t.isAlive():
+                    t.join(0.1)
+
                 test_return_data = test_result_queue.get(False)
             except Exception as e:
                 # No test report generated
