@@ -88,7 +88,8 @@ class SerialConnectorPrimitive(ConnectorPrimitive):
             reset_type,
             serial=self.serial,
             disk=disk,
-            target_id=self.target_id)
+            target_id=self.target_id,
+            polling_timeout=self.config.get('polling_timeout'))
         # Post-reset sleep
         if delay:
             self.logger.prn_inf("waiting %.2f sec after reset"% delay)

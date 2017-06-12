@@ -18,6 +18,8 @@ Author: Przemyslaw Wirkus <Przemyslaw.Wirkus@arm.com>
 """
 
 import os
+import time
+
 from host_test_plugins import HostTestPluginBase
 
 # Note: This plugin is not fully functional, needs improvements
@@ -27,14 +29,12 @@ class HostTestPluginResetMethod_MPS2(HostTestPluginBase):
 
     @details Supports:
              reboot.txt   - startup from standby state, reboots when in run mode.
-             shutdown.txt - shutdown from run mode.
-             reset.txt    - reset FPGA during run mode.
     """
 
     # Plugin interface
     name = 'HostTestPluginResetMethod_MPS2'
     type = 'ResetMethod'
-    capabilities = ['reboot.txt', 'shutdown.txt', 'reset.txt']
+    capabilities = ['reboot.txt']
     required_parameters = ['disk']
 
     def __init__(self):
@@ -67,20 +67,23 @@ class HostTestPluginResetMethod_MPS2(HostTestPluginBase):
         @return Capability call return value
         """
         result = False
+        if not kwargs['disk']:
+            self.print_plugin_error("Error: disk not specified")
+            return False
+
+        destination_disk = kwargs.get('disk', None)
+
+        # This optional parameter can be used if TargetID is provided (-t switch)
+        target_id = kwargs.get('target_id', None)
+        pooling_timeout = kwargs.get('polling_timeout', 60)
         if self.check_parameters(capability, *args, **kwargs) is True:
 
             if capability == 'reboot.txt':
-                # TODO: Implement touch file for reboot
-                pass
-
-            elif capability == 'shutdown.txt':
-                # TODO: Implement touch file for shutdown
-                pass
-
-            elif capability == 'reset.txt':
-                # TODO: Implement touch file for reset
-                pass
-
+                reboot_file_path = os.path.join(destination_disk, capability)
+                reboot_fh = open(reboot_file_path, "w")
+                reboot_fh.close()
+                time.sleep(3)  # sufficient delay for device to boot up
+                result, destination_disk = self.check_mount_point_ready(destination_disk, target_id=target_id, timeout=pooling_timeout)
         return result
 
 def load_plugin():
