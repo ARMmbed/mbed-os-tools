@@ -70,6 +70,8 @@ class HostTestPluginCopyMethod_Shell(HostTestPluginBase):
                 # if mount point changed according to target_id use new mount point
                 # available in result (_, destination_disk) of check_mount_point_ready
                 mount_res, destination_disk = self.check_mount_point_ready(destination_disk, target_id=target_id, timeout=pooling_timeout)  # Blocking
+                if not mount_res:
+                    return result # mount point is not ready return
                 # Prepare correct command line parameter values
                 image_base_name = basename(image_path)
                 destination_path = join(destination_disk, image_base_name)
