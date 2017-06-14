@@ -92,7 +92,8 @@ class HostTestPluginCopyMethod_Mbed(HostTestPluginBase):
                     # if mount point changed according to target_id use new mount point
                     # available in result (_, destination_disk) of check_mount_point_ready
                     mount_res, destination_disk = self.check_mount_point_ready(destination_disk, target_id=self.target_id, timeout=pooling_timeout)  # Blocking
-                    result = self.generic_mbed_copy(image_path, destination_disk)
+                    if mount_res:
+                        result = self.generic_mbed_copy(image_path, destination_disk)
         return result
 
 

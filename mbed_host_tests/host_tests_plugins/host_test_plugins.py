@@ -151,7 +151,7 @@ class HostTestPluginBase:
                 self.print_plugin_info("Mount point for '%s' changed from '%s' to '%s'..."% (target_id, destination_disk, new_destination_disk))
                 destination_disk = new_destination_disk
 
-        result = False
+        result = True
         # Check if mount point we've promoted to be valid one (by optional target_id check above)
         # Let's wait for 30 * loop_delay + init_delay max
         if not access(destination_disk, F_OK):
@@ -163,6 +163,9 @@ class HostTestPluginBase:
                     break
                 sleep(loop_delay)
                 self.print_plugin_char('.')
+            else:
+                self.print_plugin_error("mount {} is not accessible ...".format(destination_disk))
+                result = False
         return (result, destination_disk)
 
     def check_serial_port_ready(self, serial_port, target_id=None, timeout=60):
