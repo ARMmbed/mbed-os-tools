@@ -539,13 +539,16 @@ def get_memory_metrics(output):
             thread_stack_size = int(thread_stack_size)
             thread_entry_arg_split = thread_entry_arg.split('-')
             thread_entry = thread_entry_arg_split[0]
-            thread_arg = thread_entry_arg_split[1]
+
             thread_info[thread_entry_arg] = {
                 'entry': thread_entry,
-                'arg': thread_arg,
                 'max_stack': thread_max_stack,
                 'stack_size': thread_stack_size
             }
+
+            if len(thread_entry_arg_split) > 1:
+                thread_arg = thread_entry_arg_split[1]
+                thread_info[thread_entry_arg]['arg'] = thread_arg
 
     thread_info_list = thread_info.values()
 
