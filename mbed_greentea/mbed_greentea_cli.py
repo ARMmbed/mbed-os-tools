@@ -219,6 +219,12 @@ def main():
                     help="Copy (flash the target) method selector. " + copy_methods_str,
                     metavar="COPY_METHOD")
 
+    reset_methods_str = "Plugin support: " + ', '.join(mbed_host_tests.host_tests_plugins.get_plugin_caps('ResetMethod'))
+    parser.add_option("-r", "--reset",
+                    dest="reset_method",
+                    help="Reset method selector. " + reset_methods_str,
+                    metavar="RESET_METHOD")
+
     parser.add_option('', '--parallel',
                     dest='parallel_test_exec',
                     default=1,
@@ -421,6 +427,8 @@ def run_test_thread(test_result_queue, test_queue, opts, mut, build, build_path,
     micro = mut['platform_name']
     program_cycle_s = get_platform_property(micro, "program_cycle_s")
     forced_reset_timeout = get_platform_property(micro, "forced_reset_timeout")
+    copy_method = get_platform_property(micro, "copy_method")
+    reset_method = get_platform_property(micro, "reset_method")
 
     while not test_queue.empty():
         try:
@@ -431,7 +439,14 @@ def run_test_thread(test_result_queue, test_queue, opts, mut, build, build_path,
 
         test_result = 'SKIPPED'
 
-        copy_method = opts.copy_method if opts.copy_method else 'shell'
+        if opts.copy_method:
+            copy_method = opts.copy_method
+        elif not copy_method:
+            copy_method = 'shell'
+
+        if opts.reset_method:
+            reset_method = opts.reset_method
+
         verbose = opts.verbose_test_result_only
         enum_host_tests_path = get_local_host_tests_dir(opts.enum_host_tests)
 
@@ -443,6 +458,7 @@ def run_test_thread(test_result_queue, test_queue, opts, mut, build, build_path,
                                          mut['target_id'],
                                          micro=micro,
                                          copy_method=copy_method,
+                                         reset=reset_method,
                                          program_cycle_s=program_cycle_s,
                                          forced_reset_timeout=forced_reset_timeout,
                                          digest_source=opts.digest_source,
