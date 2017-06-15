@@ -554,12 +554,13 @@ def get_memory_metrics(output):
 def get_thread_with_max_stack_size(thread_stack_info):
     max_thread_stack_size = 0
     max_thread = None
-
+    max_stack_usage_total = 0
     for cur_thread_stack_info in thread_stack_info:
         if cur_thread_stack_info['stack_size'] > max_thread_stack_size:
             max_thread_stack_size = cur_thread_stack_info['stack_size']
             max_thread = cur_thread_stack_info
-
+        max_stack_usage_total += cur_thread_stack_info['max_stack']
+    max_thread['max_stack_usage_total'] = max_stack_usage_total
     return max_thread
 
 def get_thread_stack_info_summary(thread_stack_info):
@@ -567,7 +568,8 @@ def get_thread_stack_info_summary(thread_stack_info):
     max_thread_info = get_thread_with_max_stack_size(thread_stack_info)
     summary = {
         'max_stack_size': max_thread_info['stack_size'],
-        'max_stack_usage': max_thread_info['max_stack']
+        'max_stack_usage': max_thread_info['max_stack'],
+        'max_stack_usage_total': max_thread_info['max_stack_usage_total']
     }
     return summary
 

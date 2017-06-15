@@ -786,6 +786,10 @@ def exporter_memory_metrics_csv(test_result_ext, test_suite_properties=None):
                         report_key = '%s_%s_max_stack_usage' % (target_name, test_suite_name)
                         metrics_report[report_key] = thread_stack_summary['max_stack_usage']
 
+                    if 'max_stack_usage_total' in thread_stack_summary:
+                        report_key = '%s_%s_max_stack_usage_total' % (target_name, test_suite_name)
+                        metrics_report[report_key] = thread_stack_summary['max_stack_usage_total']
+
     column_names = sorted(metrics_report.keys())
     column_values = [str(metrics_report[x]) for x in column_names]
 
