@@ -301,7 +301,7 @@ def run_host_test(image_path,
     result = get_test_result(htrun_output)
     result_test_cases = get_testcase_result(htrun_output)
     test_cases_summary = get_testcase_summary(htrun_output)
-    max_heap, thread_stack_info = get_memory_metrics(htrun_output)
+    max_heap, reserved_heap, thread_stack_info = get_memory_metrics(htrun_output)
 
     thread_stack_summary = []
 
@@ -310,6 +310,7 @@ def run_host_test(image_path,
 
     memory_metrics = {
         "max_heap": max_heap,
+        "reserved_heap": reserved_heap,
         "thread_stack_info": thread_stack_info,
         "thread_stack_summary": thread_stack_summary
     }
@@ -523,14 +524,21 @@ def get_memory_metrics(output):
         is a list of dictionaries with format {entry, arg, max_stack, stack_size}
     """
     max_heap_usage = None
+    reserved_heap = None
     thread_info = {}
     re_tc_max_heap_usage = re.compile(r"^\[(\d+\.\d+)\][^\{]+\{\{(max_heap_usage);(\d+)\}\}")
+    re_tc_reserved_heap = re.compile(r"^\[(\d+\.\d+)\][^\{]+\{\{(reserved_heap);(\d+)\}\}")
     re_tc_thread_info = re.compile(r"^\[(\d+\.\d+)\][^\{]+\{\{(__thread_info);\"([A-Fa-f0-9\-xX]+)\",(\d+),(\d+)\}\}")
     for line in output.splitlines():
         m = re_tc_max_heap_usage.search(line)
         if m:
             _, _, max_heap_usage = m.groups()
             max_heap_usage = int(max_heap_usage)
+
+        m = re_tc_reserved_heap.search(line)
+        if m:
+            _, _, reserved_heap = m.groups()
+            reserved_heap = int(reserved_heap)
 
         m = re_tc_thread_info.search(line)
         if m:
@@ -552,18 +560,21 @@ def get_memory_metrics(output):
 
     thread_info_list = thread_info.values()
 
-    return max_heap_usage, thread_info_list
+    return max_heap_usage, reserved_heap, thread_info_list
 
 def get_thread_with_max_stack_size(thread_stack_info):
     max_thread_stack_size = 0
     max_thread = None
     max_stack_usage_total = 0
+    reserved_stack_total = 0
     for cur_thread_stack_info in thread_stack_info:
         if cur_thread_stack_info['stack_size'] > max_thread_stack_size:
             max_thread_stack_size = cur_thread_stack_info['stack_size']
             max_thread = cur_thread_stack_info
         max_stack_usage_total += cur_thread_stack_info['max_stack']
+        reserved_stack_total += cur_thread_stack_info['stack_size']
     max_thread['max_stack_usage_total'] = max_stack_usage_total
+    max_thread['reserved_stack_total'] = reserved_stack_total
     return max_thread
 
 def get_thread_stack_info_summary(thread_stack_info):
@@ -572,7 +583,8 @@ def get_thread_stack_info_summary(thread_stack_info):
     summary = {
         'max_stack_size': max_thread_info['stack_size'],
         'max_stack_usage': max_thread_info['max_stack'],
-        'max_stack_usage_total': max_thread_info['max_stack_usage_total']
+        'max_stack_usage_total': max_thread_info['max_stack_usage_total'],
+        'reserved_stack_total': max_thread_info['reserved_stack_total']
     }
     return summary
 
