@@ -186,5 +186,8 @@ class MbedLsToolsDarwin(MbedLsToolsBase):
             return None
 
     def platform_name(self, target_id):
+        if target_id is None:
+            return None
+
         if target_id[:4] in self.manufacture_ids:
             return self.manufacture_ids[target_id[:4]]
