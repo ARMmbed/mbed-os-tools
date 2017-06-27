@@ -36,7 +36,7 @@ def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
 setup(name='mbed-host-tests',
-      version='1.1.8',
+      version='1.1.9',
       description=DESCRIPTION,
       long_description=read('README.md'),
       author=OWNER_NAMES,
