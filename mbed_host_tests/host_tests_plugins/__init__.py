@@ -41,6 +41,8 @@ import module_copy_stlink
 import module_reset_stlink
 import module_copy_ublox
 import module_reset_ublox
+import module_reset_mps2
+import module_copy_mps2
 #import module_copy_jn51xx
 #import module_reset_jn51xx
 
@@ -56,8 +58,8 @@ HOST_TEST_PLUGIN_REGISTRY.register_plugin(module_reset_mbed.load_plugin())
 HOST_TEST_PLUGIN_REGISTRY.register_plugin(module_copy_pyocd.load_plugin())
 
 # Extra platforms support
-#HOST_TEST_PLUGIN_REGISTRY.register_plugin(module_copy_mps2.load_plugin())
-#HOST_TEST_PLUGIN_REGISTRY.register_plugin(module_reset_mps2.load_plugin())
+HOST_TEST_PLUGIN_REGISTRY.register_plugin(module_copy_mps2.load_plugin())
+HOST_TEST_PLUGIN_REGISTRY.register_plugin(module_reset_mps2.load_plugin())
 HOST_TEST_PLUGIN_REGISTRY.register_plugin(module_copy_silabs.load_plugin())
 HOST_TEST_PLUGIN_REGISTRY.register_plugin(module_reset_silabs.load_plugin())
 HOST_TEST_PLUGIN_REGISTRY.register_plugin(module_copy_stlink.load_plugin())
