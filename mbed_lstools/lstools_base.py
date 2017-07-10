@@ -252,7 +252,7 @@ class MbedLsToolsBase:
         "5015": "ARM_MPS2_M7",
         "5020": "HOME_GATEWAY_6LOWPAN",
         "5500": "RZ_A1H",
-        "5501": "RZ_A1LU",
+        "5501": "GR_LYCHEE",
         "6660": "NZ32_SC151",
         "7010": "BLUENINJA_CDP_TZ01B",
         "7011": "TMPM066",
