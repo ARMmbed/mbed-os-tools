@@ -341,8 +341,8 @@ def get_testcase_count_and_names(output):
     testcase_count = 0
     testcase_names = []
 
-    re_tc_count = re.compile(r"^\[(\d+\.\d+)\]\[(\w+)\]\[(\w+)\] \{\{(__testcase_count);(\d+)\}\}")
-    re_tc_names = re.compile(r"^\[(\d+\.\d+)\]\[(\w+)\]\[(\w+)\] \{\{(__testcase_name);([^;]+)\}\}")
+    re_tc_count = re.compile(r"^\[(\d+\.\d+)\]\[(\w+)\]\[(\w+)\].*\{\{(__testcase_count);(\d+)\}\}")
+    re_tc_names = re.compile(r"^\[(\d+\.\d+)\]\[(\w+)\]\[(\w+)\].*\{\{(__testcase_name);([^;]+)\}\}")
 
     for line in output.splitlines():
 
