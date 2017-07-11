@@ -55,7 +55,9 @@ class MbedLsToolsWin7(MbedLsToolsBase):
             d['target_id_mbed_htm'] = mbed[5] if mbed[5] else None
             mbeds += [d]
 
-            if None in mbed:
+            # Set errorlevel if mount_point, target_id,
+            # serial_port or platform_name is missing
+            if None in mbed[0:3]:
                 self.ERRORLEVEL_FLAG = -1
 
         return mbeds
