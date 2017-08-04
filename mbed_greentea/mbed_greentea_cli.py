@@ -284,7 +284,7 @@ def main():
     parser.add_option('', '--sync',
                     dest='sync_packet',
                     default=5,
-                    help='Define how many times __sync packet will be sent to device: 0: none; -1: forever; 1,2,3... - number of  times (Default 2 time)')
+                    help='Define how many times __sync packet will be sent to device: 0: none; -1: forever; 1,2,3... - number of  times (Default 5 time)')
 
     parser.add_option('', '--lock',
                     dest='lock_by_target',
