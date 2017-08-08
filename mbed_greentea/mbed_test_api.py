@@ -272,7 +272,7 @@ def run_host_test(image_path,
             cmd += ["--run"]    # -f stores binary name!
 
     if sync_packet:
-        cmd+= ["--sync",sync_packet]
+        cmd += ["--sync",str(sync_packet)]
 
     gt_logger.gt_log_tab("calling mbedhtrun: %s"% " ".join(cmd), print_text=verbose)
     gt_logger.gt_log("mbed-host-test-runner: started")
