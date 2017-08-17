@@ -233,6 +233,7 @@ class MbedLsToolsBase:
         "2201": "WIZWIKI_W7500",
         "2202": "WIZWIKI_W7500ECO",
         "2203": "WIZWIKI_W7500P",
+        "2500": "ADV_WISE_1570",
         "3001": "LPC11U24",
         "4000": "LPC11U35_Y5_MBUG",
         "4005": "NRF51822_Y5_MBUG",
