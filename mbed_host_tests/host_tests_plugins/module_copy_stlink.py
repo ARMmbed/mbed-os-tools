@@ -18,7 +18,7 @@ Author: Przemyslaw Wirkus <Przemyslaw.Wirkus@arm.com>
 """
 
 import os
-from host_test_plugins import HostTestPluginBase
+from .host_test_plugins import HostTestPluginBase
 
 
 class HostTestPluginCopyMethod_Stlink(HostTestPluginBase):

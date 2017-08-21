@@ -122,14 +122,14 @@ def print_ht_list(verbose=False):
         script_path_str = HOSTREGISTRY.HOST_TESTS[ht].script_location if HOSTREGISTRY.HOST_TESTS[ht].script_location else 'mbed-host-tests'
         row = [ht, cls_str, script_path_str]
         pt.add_row(row)
-    print pt.get_string()
+    print(pt.get_string())
 
 def enum_host_tests(path, verbose=False):
     """ Enumerates and registers locally stored host tests
         Host test are derived from mbed_host_tests.BaseHostTest classes
     """
     if verbose:
-        print "HOST: Inspecting '%s' for local host tests..."% abspath(path)
+        print("HOST: Inspecting '%s' for local host tests..."% abspath(path))
 
     if path:
         # Normalize path and check proceed if directory 'path' exist
@@ -143,11 +143,11 @@ def enum_host_tests(path, verbose=False):
                     try:
                         mod = imp.load_source(ht[:-3], abs_path)
                     except Exception as e:
-                        print "HOST: Error! While loading local host test module '%s'"% abs_path
-                        print "HOST: %s"% str(e)
+                        print("HOST: Error! While loading local host test module '%s'"% abs_path)
+                        print("HOST: %s"% str(e))
                         continue
                     if verbose:
-                        print "HOST: Loading module '%s': "% (ht), str(mod)
+                        print("HOST: Loading module '%s': "% (ht), str(mod))
 
                     for mod_name, mod_obj in inspect.getmembers(mod):
                         if inspect.isclass(mod_obj):
@@ -160,8 +160,8 @@ def enum_host_tests(path, verbose=False):
                                 host_test_cls = mod_obj
                                 host_test_cls.script_location = abs_path
                                 if verbose:
-                                    print "HOST: Found host test implementation: %s -|> %s"% (str(mod_obj), str(BaseHostTest))
-                                    print "HOST: Registering '%s' as '%s'"% (str(host_test_cls), host_test_name)
+                                    print("HOST: Found host test implementation: %s -|> %s"% (str(mod_obj), str(BaseHostTest)))
+                                    print("HOST: Registering '%s' as '%s'"% (str(host_test_cls), host_test_name))
                                 HOSTREGISTRY.register_host_test(host_test_name, host_test_cls())
 
 def init_host_test_cli_params():

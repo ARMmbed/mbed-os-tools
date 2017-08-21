@@ -19,7 +19,7 @@ Author: Przemyslaw Wirkus <Przemyslaw.Wirkus@arm.com>
 
 import os
 from shutil import copy
-from host_test_plugins import HostTestPluginBase
+from .host_test_plugins import HostTestPluginBase
 
 
 class HostTestPluginCopyMethod_MPS2(HostTestPluginBase):
@@ -53,7 +53,7 @@ class HostTestPluginCopyMethod_MPS2(HostTestPluginBase):
             # sync command on mac ignores command line argumjents.
             if os.name == 'posix':
                 result = self.run_command('sync', '-f', destination_path, shell=True)
-        except Exception, e:
+        except Exception as e:
             self.print_plugin_error("shutil.copy('%s', '%s')"% (image_path, destination_path))
             self.print_plugin_error("Error: %s"% str(e))
             result = False

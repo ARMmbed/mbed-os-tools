@@ -29,11 +29,11 @@ class TestEvenCallbackDecorator(unittest.TestCase):
 
             @event_callback('Hi')
             def hi(self, key, value, timestamp):
-                print 'hi'
+                print('hi')
 
             @event_callback('Hello')
             def hello(self, key, value, timestamp):
-                print 'hello'
+                print('hello')
         h = Ht()
         h.setup()
         callbacks = h.get_callbacks()

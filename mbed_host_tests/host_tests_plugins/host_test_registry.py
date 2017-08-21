@@ -29,7 +29,7 @@ class HostTestRegistry:
 
         @param text Error message text message
         """
-        print "Plugin load failed. Reason: %s"% text
+        print("Plugin load failed. Reason: %s"% text)
 
     def register_plugin(self, plugin):
         """! Registers and stores plugin inside registry for further use.

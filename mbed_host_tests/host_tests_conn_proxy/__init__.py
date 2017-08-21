@@ -17,4 +17,4 @@ limitations under the License.
 Author: Przemyslaw Wirkus <Przemyslaw.Wirkus@arm.com>
 """
 
-from conn_proxy import conn_process
+from .conn_proxy import conn_process

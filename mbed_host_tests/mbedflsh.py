@@ -21,7 +21,7 @@ import sys
 import optparse
 
 ### Flashing/Reset API provided by mbed--host-tests (mbedhtrun)
-import host_tests_plugins
+from . import host_tests_plugins
 
 
 def cmd_parser_setup():
@@ -76,7 +76,7 @@ def main():
     if opts.version:
         import pkg_resources  # part of setuptools
         version = pkg_resources.require("mbed-host-tests")[0].version
-        print version
+        print(version)
         sys.exit(0)
     elif opts.list_plugins:    # --plugins option
         host_tests_plugins.print_plugin_info()
@@ -85,7 +85,7 @@ def main():
         pass
 
     if opts.filename:
-        print "mbedflsh: opening file %s..."% opts.filename
+        print("mbedflsh: opening file %s..."% opts.filename)
         result = host_tests_plugins.call_plugin('CopyMethod',
             opts.copy_method,
             image_path=opts.filename,
