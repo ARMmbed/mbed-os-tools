@@ -233,7 +233,7 @@ class MbedLsToolsWin7(MbedLsToolsBase):
     def regbin2str(self, regbin):
         """! Decode registry binary to readable string
         """
-        return filter(lambda ch: ch in string.printable, regbin)
+        return ''.join(filter(lambda ch: ch in string.printable, regbin.decode('ascii', errors='ignore')))
 
     def mount_point_ready(self, path):
         """! Check if a mount point is ready for file operations
