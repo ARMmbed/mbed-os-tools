@@ -296,7 +296,7 @@ class MbedLsToolsLinuxGeneric(MbedLsToolsBase):
         mount_media_pattern = "^/[a-zA-Z0-9/]*/" + dev_name  + " on (/[a-zA-Z0-9_\-/]*) "
         mmp = re.compile(mount_media_pattern)
         for mount in mount_list:
-            m = mmp.search(mount.decode('utf-8'))
+            m = mmp.search(mount)
             if m and len(m.groups()):
                 return m.group(1)
         return None
