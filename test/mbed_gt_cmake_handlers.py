@@ -58,7 +58,7 @@ add_test(mbed-client-test-helloworld-mbedclient "mbed-client-test-helloworld-mbe
         self.assertIn('mbed-client-test-mbedclient-smokeTest', result)
         self.assertIn('mbed-client-test-helloworld-mbedclient', result)
 
-        for test_case, test_case_path in result.iteritems():
+        for test_case, test_case_path in result.items():
             self.assertEqual(test_case_path.startswith(LINK_TARGET), True)
             self.assertEqual(test_case_path.endswith(BINARY_TYPE), True)
 

@@ -210,7 +210,7 @@ class TestBuild:
         :return:
         """
         assert TestBuild.KW_TESTS in build_spec, "Build spec should contain key '%s'" % TestBuild.KW_TESTS
-        for name, test_json in build_spec[TestBuild.KW_TESTS].iteritems():
+        for name, test_json in build_spec[TestBuild.KW_TESTS].items():
             test = Test(name, default_flash_method=self.__default_flash_method)
             test.parse(test_json)
             self.__tests[name] = test
@@ -269,7 +269,7 @@ class TestSpec:
         :return:
         """
         assert TestSpec.KW_BUILDS, "Test spec should contain key '%s'" % TestSpec.KW_BUILDS
-        for build_name, build in spec[TestSpec.KW_BUILDS].iteritems():
+        for build_name, build in spec[TestSpec.KW_BUILDS].items():
             mandatory_keys = [TestBuild.KW_PLATFORM, TestBuild.KW_TOOLCHAIN,
                               TestBuild.KW_BAUD_RATE,
                               TestBuild.KW_BUILD_BASE_PATH]
@@ -302,7 +302,7 @@ class TestSpec:
                     result.append(tb)
         else:
             # When filtering by name is not defined we will return all builds objects
-            result = self.__target_test_spec.values()
+            result = list(self.__target_test_spec.values())
         return result
 
     def get_test_build(self, build_name):
