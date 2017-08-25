@@ -36,7 +36,7 @@
 
 # Description
 
-```mbed-ls``` is a _Python 2.7_ module that detects and lists mbed-enabled devices connected to the host computer. It will be delivered as a redistributable Python module (package) and command line tool.
+```mbed-ls``` is a Python (2 and 3) module that detects and lists mbed-enabled devices connected to the host computer. It will be delivered as a redistributable Python module (package) and command line tool.
 
 Currently supported operating system:
 
@@ -71,7 +71,7 @@ $ pip install mbed-ls --upgrade
 
 ## Installation from Python sources
 
-**Prerequisites:** you need to have [Python 2.7.x](https://www.python.org/download/releases/2.7/) installed on your system.
+**Prerequisites:** you need to have [Python 2.7.x](https://www.python.org/download/releases/2.7/) or [Python 3.6.x](https://www.python.org/downloads/release/python-362/) installed on your system.
 
 **Note:** if your OS is Windows, please follow the installation instructions [for the serial port driver](https://developer.mbed.org/handbook/Windows-serial-configuration).
 
