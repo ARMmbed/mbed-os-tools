@@ -82,7 +82,7 @@ class MbedListingestCase(unittest.TestCase):
         for p in platforms:
             self.assertIs(type(p), str)
             self.assertIs(type(platforms[p]), int)
-            self.assertTrue(type(platforms[p]) >= 0)
+            self.assertTrue(platforms[p] >= 0)
 
     def test_get_dummy_platform(self):
         p = self.mbeds.get_dummy_platform('K64F')
