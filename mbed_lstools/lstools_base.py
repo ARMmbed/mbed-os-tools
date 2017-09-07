@@ -140,6 +140,7 @@ class MbedLsToolsBase:
         "0760": "NUCLEO_L073RZ",
         "0764": "DISCO_L475VG_IOT01A",
         "0765": "NUCLEO_L476RG",
+        "0766": "SILICA_SENSOR_NODE",
         "0770": "NUCLEO_L432KC",
         "0775": "NUCLEO_F303K8",
         "0777": "NUCLEO_F446RE",
