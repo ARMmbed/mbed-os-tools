@@ -227,7 +227,11 @@ class DefaultTestSelector(DefaultTestSelectorBase):
 
         conn_process_started = False
         try:
-            (key, value, timestamp) = event_queue.get(timeout=self.options.process_start_timeout)
+            # Wait for the start event. Process start timeout does not apply in
+            # Global resource manager case as it may take a while for resource
+            # to be available.
+            (key, value, timestamp) = event_queue.get(
+                timeout=None if self.options.global_resource_mgr else self.options.process_start_timeout)
 
             if key == '__conn_process_start':
                 conn_process_started = True
