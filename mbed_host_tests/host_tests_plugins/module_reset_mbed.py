@@ -19,7 +19,7 @@ Author: Przemyslaw Wirkus <Przemyslaw.Wirkus@arm.com>
 
 import re
 import pkg_resources
-from host_test_plugins import HostTestPluginBase
+from .host_test_plugins import HostTestPluginBase
 
 
 class HostTestPluginResetMethod_Mbed(HostTestPluginBase):
@@ -97,7 +97,7 @@ class HostTestPluginResetMethod_Mbed(HostTestPluginBase):
             # The following break_condition = False is needed to release the reset signal on the target mcu.
             try:
                 serial.break_condition = False
-            except Exception, e:
+            except Exception as e:
                 self.print_plugin_error("Error while doing 'serial.break_condition = False' : %s"% str(e))
                 result = False
         return result

@@ -21,7 +21,7 @@ import time
 from serial import Serial, SerialException
 from mbed_host_tests import host_tests_plugins
 from mbed_host_tests.host_tests_plugins.host_test_plugins import HostTestPluginBase
-from conn_primitive import ConnectorPrimitive, ConnectorPrimitiveException
+from .conn_primitive import ConnectorPrimitive, ConnectorPrimitiveException
 
 
 class SerialConnectorPrimitive(ConnectorPrimitive):

@@ -16,6 +16,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import six
 import unittest
 from mbed_host_tests.host_tests_registry import HostRegistry
 
@@ -50,11 +51,11 @@ class HostRegistryTestCase(unittest.TestCase):
         for i, ht_name in enumerate(self.HOSTREGISTRY.HOST_TESTS):
             ht = self.HOSTREGISTRY.HOST_TESTS[ht_name]
             if ht and hasattr(ht, 'setup') and callable(getattr(ht, 'setup')):
-                self.assertEqual(1, ht.setup.func_code.co_argcount)
+                self.assertEqual(1, six.get_function_code(ht.setup).co_argcount)
             if ht and hasattr(ht, 'result') and callable(getattr(ht, 'result')):
-                self.assertEqual(1, ht.result.func_code.co_argcount)
+                self.assertEqual(1, six.get_function_code(ht.result).co_argcount)
             if ht and hasattr(ht, 'teardown') and callable(getattr(ht, 'teardown')):
-                self.assertEqual(1, ht.teardown.func_code.co_argcount)
+                self.assertEqual(1, six.get_function_code(ht.teardown).co_argcount)
 
 
 if __name__ == '__main__':

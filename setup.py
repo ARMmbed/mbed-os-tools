@@ -24,6 +24,7 @@ Author: Przemyslaw Wirkus <Przemyslaw.Wirkus@arm.com>
 
 import os
 from distutils.core import setup
+from io import open
 from setuptools import find_packages
 
 DESCRIPTION = "mbed tools used to flash, reset and supervise test execution for mbed-enabled devices"
@@ -33,7 +34,7 @@ OWNER_EMAILS = 'Przemyslaw.Wirkus@arm.com, Azim.Khan@arm.com, Stefan.Gutmann@arm
 
 # Utility function to cat in a file (used for the README)
 def read(fname):
-    return open(os.path.join(os.path.dirname(__file__), fname)).read()
+    return open(os.path.join(os.path.dirname(__file__), fname), encoding="utf8").read()
 
 setup(name='mbed-host-tests',
       version='1.1.9',

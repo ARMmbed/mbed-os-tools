@@ -23,4 +23,4 @@ Host registry is used to store all host tests (by id) which can be called from t
 
 """
 
-from host_registry import HostRegistry
+from .host_registry import HostRegistry

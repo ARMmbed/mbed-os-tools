@@ -19,7 +19,7 @@ Author: Russ Butler <russ.butler@arm.com>
 
 import re
 import pkg_resources
-from host_test_plugins import HostTestPluginBase
+from .host_test_plugins import HostTestPluginBase
 from os.path import join, basename
 from pyOCD.board import MbedBoard
 

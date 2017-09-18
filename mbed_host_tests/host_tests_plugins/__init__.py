@@ -24,25 +24,25 @@ This package can be extended with new packages to add more generic functionality
 
 """
 
-import host_test_registry
+from . import host_test_registry
 
 # This plugins provide 'flashing' and 'reset' methods to host test scripts
-import module_copy_shell
-import module_copy_mbed
-import module_reset_mbed
-import module_power_cycle_mbed
-import module_copy_pyocd
-import module_reset_pyocd
+from . import module_copy_shell
+from . import module_copy_mbed
+from . import module_reset_mbed
+from . import module_power_cycle_mbed
+from . import module_copy_pyocd
+from . import module_reset_pyocd
 
 # Additional, non standard platforms
-import module_copy_silabs
-import module_reset_silabs
-import module_copy_stlink
-import module_reset_stlink
-import module_copy_ublox
-import module_reset_ublox
-import module_reset_mps2
-import module_copy_mps2
+from . import module_copy_silabs
+from . import module_reset_silabs
+from . import module_copy_stlink
+from . import module_reset_stlink
+from . import module_copy_ublox
+from . import module_reset_ublox
+from . import module_reset_mps2
+from . import module_copy_mps2
 #import module_copy_jn51xx
 #import module_reset_jn51xx
 
@@ -101,4 +101,4 @@ def get_plugin_info():
 def print_plugin_info():
     """! Prints plugins' information in user friendly way
     """
-    print HOST_TEST_PLUGIN_REGISTRY
+    print(HOST_TEST_PLUGIN_REGISTRY)

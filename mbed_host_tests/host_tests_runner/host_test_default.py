@@ -23,7 +23,10 @@ import sys
 import traceback
 from time import time
 from sre_compile import error
-from Queue import Empty as QueueEmpty   # Queue here refers to the module, not a class
+if (sys.version_info > (3, 0)):
+    from queue import Empty as QueueEmpty # Queue here refers to the module, not a class
+else:
+    from Queue import Empty as QueueEmpty
 
 from mbed_host_tests import BaseHostTest
 from multiprocessing import Process, Queue, Lock
@@ -66,7 +69,7 @@ class DefaultTestSelector(DefaultTestSelectorBase):
             if options.version:         # --version
                 import pkg_resources    # part of setuptools
                 version = pkg_resources.require("mbed-host-tests")[0].version
-                print version
+                print(version)
                 sys.exit(0)
 
             if options.send_break_cmd:  # -b with -p PORT (and optional -r RESET_TYPE)
@@ -296,7 +299,7 @@ class DefaultTestSelector(DefaultTestSelectorBase):
                                 self.logger.prn_err("host test setup() failed, reason:")
                                 self.logger.prn_inf("==== Traceback start ====")
                                 for line in traceback.format_exc().splitlines():
-                                    print line
+                                    print(line)
                                 self.logger.prn_inf("==== Traceback end ====")
                                 result = self.RESULT_ERROR
                                 event_queue.put(('__exit_event_queue', 0, time()))
@@ -403,7 +406,7 @@ class DefaultTestSelector(DefaultTestSelectorBase):
             self.logger.prn_err("something went wrong in event main loop!")
             self.logger.prn_inf("==== Traceback start ====")
             for line in traceback.format_exc().splitlines():
-                print line
+                print(line)
             self.logger.prn_inf("==== Traceback end ====")
             result = self.RESULT_ERROR
 

@@ -18,7 +18,7 @@ Author: Russ Butler <russ.butler@arm.com>
 """
 
 import os
-from host_test_plugins import HostTestPluginBase
+from .host_test_plugins import HostTestPluginBase
 from pyOCD.board import MbedBoard
 from intelhex import IntelHex
 import itertools
@@ -26,7 +26,7 @@ import itertools
 
 def _enum_continguous_addr_start_end(addr_list):
     """Generator to get contiguous address ranges with start and end address"""
-    for _, b in itertools.groupby(enumerate(addr_list), lambda (x, y): y - x):
+    for _, b in itertools.groupby(enumerate(addr_list), lambda x_y: x_y[1] - x_y[0]):
         b = list(b)
         yield b[0][1], b[-1][1]
 

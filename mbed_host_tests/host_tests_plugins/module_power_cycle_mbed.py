@@ -21,7 +21,7 @@ import os
 import json
 import time
 import requests
-from host_test_plugins import HostTestPluginBase
+from .host_test_plugins import HostTestPluginBase
 
 
 class HostTestPluginPowerCycleResetMethod(HostTestPluginBase):
@@ -80,7 +80,7 @@ class HostTestPluginPowerCycleResetMethod(HostTestPluginBase):
             ip = os.environ['MBED_TAS_RM_IP']
             port = os.environ['MBED_TAS_RM_PORT']
             return ip, port
-        except KeyError, e:
+        except KeyError as e:
             self.print_plugin_error("HOST: Failed to read environment variable (" + str(e) + "). Can't perform hardware reset.")
 
         return None
@@ -155,7 +155,7 @@ class HostTestPluginPowerCycleResetMethod(HostTestPluginBase):
         self.__run_request(ip, port, switch_on_req)
         resp = poll_state("ON")
         if resp and resp['sub_requests'][0]['state'] == 'ON' and resp['sub_requests'][0]["mount_point"] != "Not Connected":
-            for k, v in resp['sub_requests'][0].iteritems():
+            for k, v in resp['sub_requests'][0].viewitems():
                 device_info[k] = v
             result = True
         else:

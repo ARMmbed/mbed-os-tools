@@ -16,4 +16,4 @@ limitations under the License.
 """
 
 # base host test class
-from base_host_test import BaseHostTest, event_callback
+from .base_host_test import BaseHostTest, event_callback

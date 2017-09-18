@@ -19,7 +19,7 @@ Author: Przemyslaw Wirkus <Przemyslaw.Wirkus@arm.com>
 
 import os
 from os.path import join, basename
-from host_test_plugins import HostTestPluginBase
+from .host_test_plugins import HostTestPluginBase
 
 
 class HostTestPluginCopyMethod_Shell(HostTestPluginBase):

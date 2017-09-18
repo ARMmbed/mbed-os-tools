@@ -20,7 +20,7 @@ Author: Przemyslaw Wirkus <Przemyslaw.Wirkus@arm.com>
 import os
 import time
 
-from host_test_plugins import HostTestPluginBase
+from .host_test_plugins import HostTestPluginBase
 
 # Note: This plugin is not fully functional, needs improvements
 

@@ -17,13 +17,17 @@ limitations under the License.
 """
 
 import re
+import sys
 import uuid
 from time import time
-from Queue import Empty as QueueEmpty   # Queue here refers to the module, not a class
 from mbed_host_tests.host_tests_logger import HtrunLogger
-from conn_primitive_serial import SerialConnectorPrimitive
-from conn_primitive_remote import RemoteConnectorPrimitive
+from .conn_primitive_serial import SerialConnectorPrimitive
+from .conn_primitive_remote import RemoteConnectorPrimitive
 
+if (sys.version_info > (3, 0)):
+    from queue import Empty as QueueEmpty # Queue here refers to the module, not a class
+else:
+    from Queue import Empty as QueueEmpty
 
 class KiViBufferWalker():
     """! Simple auxiliary class used to walk through a buffer and search for KV tokens """

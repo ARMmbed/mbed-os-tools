@@ -17,6 +17,6 @@ limitations under the License.
 Author: Przemyslaw Wirkus <Przemyslaw.Wirkus@arm.com>
 """
 
-from host_functional import reset_dev
-from host_functional import flash_dev
-from host_functional import handle_send_break_cmd
+from .host_functional import reset_dev
+from .host_functional import flash_dev
+from .host_functional import handle_send_break_cmd

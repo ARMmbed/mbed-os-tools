@@ -17,4 +17,4 @@ limitations under the License.
 Author: Przemyslaw Wirkus <Przemyslaw.Wirkus@arm.com>
 """
 
-from ht_logger import HtrunLogger
+from .ht_logger import HtrunLogger

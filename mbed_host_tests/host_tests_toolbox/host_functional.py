@@ -77,7 +77,7 @@ def reset_dev(port=None,
             sleep(reset_timeout)
         except SerialException as e:
             if verbose:
-                print "%s" % (str(e))
+                print("%s" % (str(e)))
             result = False
     return result
 
@@ -109,36 +109,36 @@ def handle_send_break_cmd(port,
         baudrate = DEFAULT_BAUD_RATE
 
     if verbose:
-        print "mbedhtrun: serial port configuration: %s:%s:%s"% (port, str(baudrate), str(timeout))
+        print("mbedhtrun: serial port configuration: %s:%s:%s"% (port, str(baudrate), str(timeout)))
 
     try:
         serial_port = Serial(port, baudrate=baudrate, timeout=timeout)
     except Exception as e:
-        print "mbedhtrun: %s" % (str(e))
-        print json.dumps({
+        print("mbedhtrun: %s" % (str(e)))
+        print(json.dumps({
             "port" : port,
             "disk" : disk,
             "baudrate" : baudrate,
             "timeout" : timeout,
             "reset_type" : reset_type,
-            }, indent=4)
+            }, indent=4))
         return False
 
     serial_port.flush()
     # Reset using one of the plugins
     result = host_tests_plugins.call_plugin('ResetMethod', reset_type, serial=serial_port, disk=disk)
     if not result:
-        print "mbedhtrun: reset plugin failed"
-        print json.dumps({
+        print("mbedhtrun: reset plugin failed")
+        print(json.dumps({
             "port" : port,
             "disk" : disk,
             "baudrate" : baudrate,
             "timeout" : timeout,
             "reset_type" : reset_type
-            }, indent=4)
+            }, indent=4))
         return False
 
-    print "mbedhtrun: serial dump started (use ctrl+c to break)"
+    print("mbedhtrun: serial dump started (use ctrl+c to break)")
     try:
         while True:
             test_output = serial_port.read(512)
@@ -146,11 +146,11 @@ def handle_send_break_cmd(port,
                 sys.stdout.write('%s'% test_output)
             if "{end}" in test_output:
                 if verbose:
-                    print
-                    print "mbedhtrun: stopped (found '{end}' terminator)"
+                    print()
+                    print("mbedhtrun: stopped (found '{end}' terminator)")
                 break
     except KeyboardInterrupt:
-        print "ctrl+c break"
+        print("ctrl+c break")
 
     serial_port.close()
     return True

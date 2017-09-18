@@ -22,7 +22,6 @@ import os
 import mbed_lstools
 from time import sleep
 from mbed_host_tests import DEFAULT_BAUD_RATE
-from sets import Set
 import mbed_host_tests.host_tests_plugins as ht_plugins
 from mbed_host_tests.host_tests_logger import HtrunLogger
 
@@ -122,7 +121,7 @@ class Mbed:
                 self.logger.prn_wrn("Target ID not found: Skipping flash check and retry")
                 return True
 
-            bad_files = Set(['FAIL.TXT'])
+            bad_files = set(['FAIL.TXT'])
             # Re-try at max 5 times with 0.5 sec in delay
             for i in range(5):
                 # mbed_lstools.create() should be done inside the loop. Otherwise it will loop on same data.
@@ -139,10 +138,10 @@ class Mbed:
 
                         common_items = []
                         try:
-                            items = Set([x.upper() for x in os.listdir(mbeds_by_tid[target_id]['mount_point'])])
+                            items = set([x.upper() for x in os.listdir(mbeds_by_tid[target_id]['mount_point'])])
                             common_items = bad_files.intersection(items)
                         except OSError as e:
-                            print "Failed to enumerate disk files, retrying"
+                            print("Failed to enumerate disk files, retrying")
                             continue
 
                         for common_item in common_items:
