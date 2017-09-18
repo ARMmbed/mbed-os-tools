@@ -121,7 +121,7 @@ def run_host_test(image_path,
                   max_failed_properties=5,
                   enum_host_tests_path=None,
                   global_resource_mgr=None,
-                  sync_packet=None,
+                  num_sync_packtes=None,
                   run_app=None):
     """! This function runs host test supervisor (executes mbedhtrun) and checks output from host test process.
     @param image_path Path to binary file for flashing
@@ -137,7 +137,7 @@ def run_host_test(image_path,
     @param json_test_cfg Additional test configuration file path passed to host tests in JSON format
     @param max_failed_properties After how many unknown properties we will assume test is not ported
     @param enum_host_tests_path Directory where locally defined host tests may reside
-    @param sync_packet sync packets to send for host <---> device communication
+    @param num_sync_packtes sync packets to send for host <---> device communication
     @param run_app Run application mode flag (we run application and grab serial port data)
     @param digest_source if None mbedhtrun will be executed. If 'stdin',
            stdin will be used via StdInObserver or file (if
@@ -271,8 +271,8 @@ def run_host_test(image_path,
         if run_app:
             cmd += ["--run"]    # -f stores binary name!
 
-    if sync_packet:
-        cmd += ["--sync",str(sync_packet)]
+    if num_sync_packtes:
+        cmd += ["--sync",str(num_sync_packtes)]
 
     gt_logger.gt_log_tab("calling mbedhtrun: %s"% " ".join(cmd), print_text=verbose)
     gt_logger.gt_log("mbed-host-test-runner: started")
