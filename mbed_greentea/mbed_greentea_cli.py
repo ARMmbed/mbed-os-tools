@@ -281,6 +281,11 @@ def main():
                     default=None,
                     help='Shuffle seed (If you want to reproduce your shuffle order please use seed provided in test summary)')
 
+    parser.add_option('', '--sync',
+                    dest='num_sync_packtes',
+                    default=5,
+                    help='Define how many times __sync packet will be sent to device: 0: none; -1: forever; 1,2,3... - number of  times (the default is 5 packets)')
+
     parser.add_option('', '--lock',
                     dest='lock_by_target',
                     default=False,
@@ -465,6 +470,7 @@ def run_test_thread(test_result_queue, test_queue, opts, mut, build, build_path,
                                          json_test_cfg=opts.json_test_configuration,
                                          enum_host_tests_path=enum_host_tests_path,
                                          global_resource_mgr=opts.global_resource_mgr,
+                                         num_sync_packtes=opts.num_sync_packtes,
                                          verbose=verbose)
 
         # Some error in htrun, abort test execution
