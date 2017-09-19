@@ -23,6 +23,7 @@ Author: Przemyslaw Wirkus <Przemyslaw.Wirkus@arm.com>
 """
 
 import os
+from io import open
 from distutils.core import setup
 from setuptools import find_packages
 
