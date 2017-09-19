@@ -122,6 +122,8 @@ class MbedLsToolsBase:
         "0500": "SPANSION_PLACEHOLDER",
         "0505": "SPANSION_PLACEHOLDER",
         "0510": "SPANSION_PLACEHOLDER",
+        "0602": "EV_COG_AD3029LZ",
+        "0603": "EV_COG_AD4050LZ",
         "0700": "NUCLEO_F103RB",
         "0705": "NUCLEO_F302R8",
         "0710": "NUCLEO_L152RE",
