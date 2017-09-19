@@ -23,18 +23,19 @@ Author: Przemyslaw Wirkus <Przemyslaw.Wirkus@arm.com>
 """
 
 import os
+from io import open
 from distutils.core import setup
 from setuptools import find_packages
 
 
-LICENSE = open('LICENSE').read()
+LICENSE = open('LICENSE', encoding="utf-8").read()
 DESCRIPTION = "mbed 3.0 onwards test suite, codename Greentea. The test suite is a collection of tools that enable automated testing on mbed-enabled platforms"
 OWNER_NAMES = 'Anna Bridge, Azim Khan'
 OWNER_EMAILS = 'Anna.Bridge@arm.com, Azim.Khan@arm.com'
 
 # Utility function to cat in a file (used for the README)
 def read(fname):
-    return open(os.path.join(os.path.dirname(__file__), fname)).read()
+    return open(os.path.join(os.path.dirname(__file__), fname), encoding="utf-8").read()
 
 setup(name='mbed-greentea',
       version='1.2.6',
@@ -53,8 +54,8 @@ setup(name='mbed-greentea',
       },
       install_requires=["PrettyTable>=0.7.2",
         "PySerial>=3.0",
-        "mbed-host-tests>=1.1.0",
-        "mbed-ls>=1.1.0",
+        "mbed-host-tests>=1.1.10",
+        "mbed-ls>=1.2.15",
         "junit-xml",
         "lockfile",
         "mock",

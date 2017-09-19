@@ -77,7 +77,7 @@ def get_platform_name_from_yotta_target(target):
         data = f.read()
         try:
             target_json = json.loads(data)
-        except (TypeError, ValueError), e:
+        except (TypeError, ValueError) as e:
             gt_logger.gt_log_err('Failed to load json data from target.json! error [%s]\n' % str(e) +
                                  'Can not determine required mbed platform name!')
             return None
@@ -185,7 +185,7 @@ def get_test_spec_from_yt_module(opts):
         # Find tests
         ctest_test_list = load_ctest_testsuite(base_path,
                                                binary_type=get_binary_type_for_platform(platform))
-        for name, path in ctest_test_list.iteritems():
+        for name, path in ctest_test_list.items():
             t = Test(name)
             t.add_binary(path, TestBinary.BIN_TYPE_BOOTABLE)
             tb.add_test(name, t)

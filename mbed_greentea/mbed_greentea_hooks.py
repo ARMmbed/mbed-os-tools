@@ -69,10 +69,10 @@ class GreenteaCliTestHook(GreenteaTestHook):
         gt_logger.gt_log_tab("hook command: %s"% cmd)
         (_stdout, _stderr, ret) = self.run_cli_process(cmd)
         if _stdout:
-            print _stdout
+            print(_stdout)
         if ret:
             gt_logger.gt_log_err("hook exited with error: %d, dumping stderr..."% ret)
-            print _stderr
+            print(_stderr)
         return ret
 
     @staticmethod
@@ -230,7 +230,7 @@ class GreenteaHooks():
                             if hook_expression.startswith('$'):
                                 self.HOOKS[hook_name] = GreenteaCliTestHook(hook_name, hook_expression[1:])
         except IOError as e:
-            print str(e)
+            print(str(e))
             self.HOOKS = None
 
     def is_hooked_to(self, hook_name):

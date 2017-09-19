@@ -28,7 +28,7 @@ def export_to_file(file_name, payload):
         with open(file_name, 'w') as f:
             f.write(payload)
     except IOError as e:
-        print "Exporting report to file failed: ", str(e)
+        print("Exporting report to file failed: ", str(e))
         result = False
     return result
 
@@ -78,7 +78,7 @@ def exporter_text(test_result_ext, test_suite_properties=None):
             row = []
 
     result_pt = pt.get_string()
-    result_res = ' / '.join(['%s %s' % (value, key) for (key, value) in {k: v for k, v in result_dict.items() if v != 0}.iteritems()])
+    result_res = ' / '.join(['%s %s' % (value, key) for (key, value) in {k: v for k, v in result_dict.items() if v != 0}.items()])
     return result_pt, result_res
 
 def exporter_testcase_text(test_result_ext, test_suite_properties=None):
@@ -139,7 +139,7 @@ def exporter_testcase_text(test_result_ext, test_suite_properties=None):
                 row = []
 
     result_pt = pt.get_string()
-    result_res = ' / '.join(['%s %s' % (value, key) for (key, value) in {k: v for k, v in result_testcase_dict.items() if v != 0}.iteritems()])
+    result_res = ' / '.join(['%s %s' % (value, key) for (key, value) in {k: v for k, v in result_testcase_dict.items() if v != 0}.items()])
     return result_pt, result_res
 
 def exporter_testcase_junit(test_result_ext, test_suite_properties=None):
@@ -166,7 +166,7 @@ def exporter_testcase_junit(test_result_ext, test_suite_properties=None):
             except UnicodeDecodeError as e:
                 err_mgs = "(UnicodeDecodeError) exporter_testcase_junit:", str(e)
                 tc_stdout = err_mgs
-                print err_mgs
+                print(err_mgs)
 
             # testcase_result stores info about test case results
             testcase_result = test['testcase_result']
@@ -190,7 +190,7 @@ def exporter_testcase_junit(test_result_ext, test_suite_properties=None):
                 except UnicodeDecodeError as e:
                     err_mgs = "(UnicodeDecodeError) exporter_testcase_junit:" + str(e)
                     tc_stderr = err_mgs
-                    print err_mgs
+                    print(err_mgs)
 
                 tc_class = target_name + '.' + test_suite_name
 
@@ -300,7 +300,7 @@ html_template = """
             .test-column {
                 padding-right: 15px;
             }
-            
+
             .overlay {
                 width: 100%%;
                 height: 100%%;
@@ -452,7 +452,7 @@ def get_result_colour_class_css():
 
     # Create CSS classes for all of the allocated colours
     css = ""
-    for result, colour in TEST_RESULT_COLOURS.iteritems():
+    for result, colour in TEST_RESULT_COLOURS.items():
         css += colour_class_template % ("result-%s" % result.lower().replace("_", "-"),
                                         colour)
 
@@ -490,7 +490,7 @@ def get_dropdown_html(div_id, dropdown_name, content, title_classes="", output_t
                                     <div id="%s" class="dropdown-content%s">%s
                                     </div>
                                 </div>"""
-    
+
     dropdown_classes = ""
     if output_text:
         dropdown_classes += " output-text"
@@ -562,7 +562,7 @@ def get_result_overlay_testcases_dropdown_menu(result_div_id, test_results):
     testcase_results_info = ""
 
     # Loop through the test cases giving them a number to create a unique id
-    for index, (testcase_result_name, testcase_result) in enumerate(test_results['testcase_result'].iteritems()):
+    for index, (testcase_result_name, testcase_result) in enumerate(test_results['testcase_result'].items()):
         testcase_results_info += get_result_overlay_testcase_dropdown(result_div_id, index, testcase_result_name, testcase_result)
 
     result_testcases_dropdown = get_dropdown_html(testcase_results_div_id,
@@ -662,7 +662,7 @@ def exporter_html(test_result_ext, test_suite_properties=None):
     unique_test_names = set()
     platforms_toolchains = {}
     # Populate a set of all of the unique tests
-    for platform_toolchain, test_list in test_result_ext.iteritems():
+    for platform_toolchain, test_list in test_result_ext.items():
         # Format of string is <PLATFORM>-<TOOLCHAIN>
         # <PLATFORM> can however contain '-' such as "frdm-k64f"
         # <TOOLCHAIN> is split with '_' fortunately, as in "gcc_arm"
@@ -689,7 +689,7 @@ def exporter_html(test_result_ext, test_suite_properties=None):
                     <center>%s</center>
                 </td>"""
 
-    for platform, toolchains in platforms_toolchains.iteritems():
+    for platform, toolchains in platforms_toolchains.items():
         platform_row += platform_cell_template % (len(toolchains), platform)
         for toolchain in toolchains:
             toolchain_row += center_cell_template % toolchain
@@ -704,10 +704,10 @@ def exporter_html(test_result_ext, test_suite_properties=None):
     # Loop through the tests and get the results for the different platforms and toolchains
     for test_name in unique_test_names:
         this_row = test_cell_template % test_name
-        for platform, toolchains in platforms_toolchains.iteritems():
+        for platform, toolchains in platforms_toolchains.items():
             for toolchain in toolchains:
                 test_results = None
-                
+
                 if test_name in test_result_ext["%s-%s" % (platform, toolchain)]:
                     test_results = test_result_ext["%s-%s" % (platform, toolchain)][test_name]
                 else:
@@ -726,7 +726,6 @@ def exporter_html(test_result_ext, test_suite_properties=None):
 
                 test_results['single_test_passes'] = 0
                 test_results['single_test_count'] = 0
-                    
                 result_div_id = "target_%s_toolchain_%s_test_%s" % (platform, toolchain, test_name.replace('-', '_'))
 
                 result_overlay = get_result_overlay(result_div_id,
@@ -736,11 +735,11 @@ def exporter_html(test_result_ext, test_suite_properties=None):
                                                     test_results)
                 
                 # Loop through the test cases and count the passes and failures
-                for index, (testcase_result_name, testcase_result) in enumerate(test_results['testcase_result'].iteritems()):
+                for index, (testcase_result_name, testcase_result) in enumerate(test_results['testcase_result'].items()):
                     test_results['single_test_passes'] += testcase_result['passed']
                     test_results['single_test_count'] += 1
 
-                result_class = get_result_colour_class(test_results['single_test_result'])             
+                result_class = get_result_colour_class(test_results['single_test_result'])
                 this_row += result_cell_template % (result_class,
                                                     result_div_id,
                                                     test_results['single_test_result'],

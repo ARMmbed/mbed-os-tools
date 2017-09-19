@@ -68,7 +68,7 @@ def parse_ctesttestfile_line(link_target, binary_type, line, verbose=False):
         m = re_ptrn.search(line)
         if m and len(m.groups()) > 0:
             if verbose:
-                print m.group(1) + binary_type
+                print(m.group(1) + binary_type)
             test_case = m.group(1)
             test_case_path = os.path.join(link_target, 'test', m.group(1) + binary_type)
             return test_case, test_case_path
@@ -106,7 +106,7 @@ def list_binaries_for_targets(build_dir='./build', verbose_footer=False):
 
     if verbose_footer:
         print
-        print "Example: execute 'mbedgt -t TARGET_NAME -n TEST_NAME' to run test TEST_NAME for target TARGET_NAME"
+        print("Example: execute 'mbedgt -t TARGET_NAME -n TEST_NAME' to run test TEST_NAME for target TARGET_NAME")
 
 def list_binaries_for_builds(test_spec, verbose_footer=False):
     """! Parse test spec and list binaries (BOOTABLE) in lexicographical order
@@ -121,4 +121,4 @@ def list_binaries_for_builds(test_spec, verbose_footer=False):
 
     if verbose_footer:
         print
-        print "Example: execute 'mbedgt -t BUILD_NAME -n TEST_NAME' to run test TEST_NAME for build TARGET_NAME in current test specification"
+        print("Example: execute 'mbedgt -t BUILD_NAME -n TEST_NAME' to run test TEST_NAME for build TARGET_NAME in current test specification")
