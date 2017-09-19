@@ -41,8 +41,7 @@
 Currently supported operating system:
 
 * Windows 7.
-* Ubuntu.
-* Linux (generic).
+* Linux.
 * Mac OS X (Darwin).
 * Raspbian Jessie Lite.
 
