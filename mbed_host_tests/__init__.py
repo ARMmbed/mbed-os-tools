@@ -217,6 +217,13 @@ def init_host_test_cli_params():
                       help="Number of attempts to flash the target",
                       metavar="RETRY_COPY")
 
+    parser.add_option("", "--tag-filters",
+                      dest="tag_filters",
+                      default="",
+                      type=str,
+                      help="Comma seperated list of device tags used when allocating a target to specify required hardware or attributes [--tag-filters tag1,tag2]",
+                      metavar="TAG_FILTERS")
+
     reset_methods_str = "Plugin support: " + ', '.join(host_tests_plugins.get_plugin_caps('ResetMethod'))
 
     parser.add_option("-r", "--reset",
