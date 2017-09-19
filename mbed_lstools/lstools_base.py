@@ -67,6 +67,7 @@ class MbedLsToolsBase:
         self.DEBUG_FLAG = False     # Used to enable debug code / prints
         self.ERRORLEVEL_FLAG = 0    # Used to return success code to environment
         self.retarget_data = {}          # Used to retarget mbed-enabled platform properties
+        self.list_unmounted = False # if True, unmounted mbeds are included in output list
 
         # Create in HOME directory place for mbed-ls to store information
         self.mbedls_home_dir_init()
@@ -487,14 +488,14 @@ class MbedLsToolsBase:
                     self.debug(self.list_mbeds_ext.__name__, ("retargeting", target_id, mbeds[i]))
 
             # Add interface chip meta data to mbed structure
-            details_txt = self.get_details_txt(val['mount_point'])
+            details_txt = self.get_details_txt(val['mount_point']) if val['mount_point'] else None
             if details_txt:
                 for field in details_txt:
                     field_name = 'daplink_' + field.lower().replace(' ', '_')
                     if field_name not in mbeds[i]:
                         mbeds[i][field_name] = details_txt[field]
 
-            mbed_htm = self.get_mbed_htm(val['mount_point'])
+            mbed_htm = self.get_mbed_htm(val['mount_point']) if val['mount_point'] else None
             if mbed_htm:
                 for field in mbed_htm:
                     field_name = 'daplink_' + field.lower().replace(' ', '_')

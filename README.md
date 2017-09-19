@@ -187,6 +187,8 @@ $ mbedls
 
 If you want to use ```mbedls``` in your toolchain, continuous integration or automation script and do not necessarily want to use the Python module ```mbed_lstools``` - this solution is for you.
 
+On some Linux systems, USB mass storage devices are not automatically mounted and do not show up when running `mbedls` by default. If you would like to include these not mounted devices in `mbedls` output, you can run mbed-ls with the `-u` option, such as `$ mbedls -u`.
+
 ## Exporting mbedls output to JSON
 
 You can export mbedls outputs to JSON format: just use the ```---json``` switch and dump your file on the screen or redirect to a file. It should help you further automate your processes.
