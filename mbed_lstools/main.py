@@ -24,7 +24,6 @@ import optparse
 import platform
 
 from .lstools_win7 import MbedLsToolsWin7
-from .lstools_ubuntu import MbedLsToolsUbuntu
 from .lstools_linux_generic import MbedLsToolsLinuxGeneric
 from .lstools_darwin import MbedLsToolsDarwin
 
@@ -41,7 +40,6 @@ def create(**kwargs):
     mbed_os = mbed_os_support()
     if mbed_os is not None:
         if mbed_os == 'Windows7': result = MbedLsToolsWin7(**kwargs)
-        elif mbed_os == 'Ubuntu': result = MbedLsToolsUbuntu(**kwargs)
         elif mbed_os == 'LinuxGeneric': result = MbedLsToolsLinuxGeneric(**kwargs)
         elif mbed_os == 'Darwin': result = MbedLsToolsDarwin(**kwargs)
     return result
@@ -58,8 +56,6 @@ def mbed_os_support():
     os_info = mbed_lstools_os_info()
     if (os_info[0] == 'nt' and os_info[1] == 'Windows'):
         result = 'Windows7'
-    elif (os_info[0] == 'posix' and os_info[1] == 'Linux' and ('Ubuntu' in os_info[3])):
-        result = 'Ubuntu'
     elif (os_info[0] == 'posix' and os_info[1] == 'Linux'):
         result = 'LinuxGeneric'
     elif (os_info[0] == 'posix' and os_info[1] == 'Darwin'):
