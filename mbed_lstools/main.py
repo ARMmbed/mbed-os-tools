@@ -27,6 +27,10 @@ from .lstools_win7 import MbedLsToolsWin7
 from .lstools_linux_generic import MbedLsToolsLinuxGeneric
 from .lstools_darwin import MbedLsToolsDarwin
 
+import logging
+
+logger = logging.getLogger("mbedls.main")
+
 
 def create(**kwargs):
     """! Factory used to create host OS specific mbed-lstools object
@@ -166,16 +170,23 @@ def mbedls_main():
         return version
 
     (opts, args) = cmd_parser_setup()
+
+    root_logger = logging.getLogger("")
+    logging.basicConfig()
+    if opts.debug:
+        root_logger.setLevel(logging.DEBUG)
+    else:
+        root_logger.setLevel(logging.INFO)
+    logger.debug("mbed-ls ver. %s", get_mbedls_version())
+    logger.debug("host: %s",  str((mbed_lstools_os_info())))
+
     mbeds = create(skip_retarget=opts.skip_retarget,
                    list_unmounted=opts.list_unmounted)
 
     if mbeds is None:
-        sys.stderr.write('This platform is not supported! Pull requests welcome at github.com/ARMmbed/mbed-ls\n')
+        logger.critical('This platform is not supported! Pull requests welcome at github.com/ARMmbed/mbed-ls')
         sys.exit(-1)
 
-    mbeds.DEBUG_FLAG = opts.debug
-    mbeds.debug(__name__, "mbed-ls ver. " + get_mbedls_version())
-    mbeds.debug(__name__, "host: " +  str((mbed_lstools_os_info())))
 
     if opts.list_platforms:
         print(mbeds.list_manufacture_ids())
@@ -220,6 +231,6 @@ def mbedls_main():
     else:
         print(mbeds.get_string(border=not opts.simple, header=not opts.simple))
 
-    mbeds.debug(__name__, "Return code: %d" % mbeds.ERRORLEVEL_FLAG)
+    logger.debug("Return code: %d", mbeds.ERRORLEVEL_FLAG)
 
     sys.exit(mbeds.ERRORLEVEL_FLAG)

@@ -22,6 +22,10 @@ import platform
 
 from .lstools_base import MbedLsToolsBase
 
+import logging
+
+logger = logging.getLogger("mbedls.lstools_darwin")
+
 class MbedLsToolsDarwin(MbedLsToolsBase):
     """ MbedLsToolsDarwin supports mbed-enabled platforms detection on Mac OS X
     """

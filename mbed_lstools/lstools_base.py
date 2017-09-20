@@ -23,7 +23,9 @@ import json
 from os import listdir
 from os.path import isfile, join
 from fasteners import InterProcessLock
+import logging
 
+logger = logging.getLogger("mbedls.lstools_base")
 
 def timed_mbedls_lock(timeout):
     """
@@ -37,7 +39,7 @@ def timed_mbedls_lock(timeout):
         lock = InterProcessLock(self.lock_file)
         acquired = lock.acquire(blocking=False)
         if not acquired:
-            self.debug("timed_mbedls_lock", "Waiting %d seconds for mock file lock." % timeout)
+            logger.debug("timed_mbedls_lock", "Waiting %d seconds for mock file lock.", timeout)
             acquired = lock.acquire(blocking=True, timeout=timeout)
         if acquired:
             try:
@@ -47,7 +49,7 @@ def timed_mbedls_lock(timeout):
                 raise e
             lock.release()
         else:
-            self.err("timed_mbedls_lock", "Failed to acquired mock file lock in %d seconds!" % timeout)
+            logger.error("Failed to acquired mock file lock in %d seconds!", timeout)
             sys.exit(1)
         return ret
 
@@ -64,8 +66,6 @@ class MbedLsToolsBase:
         """ ctor
         """
         #extra flags
-        self.DEBUG_FLAG = False     # Used to enable debug code / prints
-        self.ERRORLEVEL_FLAG = 0    # Used to return success code to environment
         self.retarget_data = {}          # Used to retarget mbed-enabled platform properties
         self.list_unmounted = False # if True, unmounted mbeds are included in output list
 
@@ -311,7 +311,7 @@ class MbedLsToolsBase:
             try:
                 os.makedirs(os.path.join(self.HOME_DIR, self.MBEDLS_HOME_DIR))
             except os.error as e:
-                self.err(str(e))
+                logging.exception(e)
 
     def mbedls_get_mocks(self):
         """! Load existing mocking configuration from current user $HOME directory
@@ -319,7 +319,7 @@ class MbedLsToolsBase:
         """
         mock_ids = self.mock_read()
         if mock_ids:
-            self.debug(self.mbedls_get_mocks.__name__, "mock data found, %d entries"% len(mock_ids))
+            logger.debug("mock data found, %d entries", len(mock_ids))
             for mid in mock_ids:
                 self.manufacture_ids[mid] = mock_ids[mid]
 
@@ -352,11 +352,9 @@ class MbedLsToolsBase:
                 with open(filename, "r") as f:
                     return json.load(f)
             except IOError as e:
-                self.err("reading file '%s' failed: %s"% (os.path.abspath(filename),
-                    str(e)))
+                logging.exception(e)
             except ValueError as e:
-                self.err("reading file '%s' content failed: %s"% (os.path.abspath(filename),
-                    str(e)))
+                logging.exception(e)
             return {}
 
         result = {}
@@ -385,11 +383,9 @@ class MbedLsToolsBase:
                     f.write(json.dumps(mock_ids, indent=4))
                     return True
             except IOError as e:
-                self.err("writing file '%s' failed: %s"% (os.path.abspath(filename),
-                    str(e)))
+                logger.exception(e)
             except ValueError as e:
-                self.err("writing file '%s' content failed: %s"% (os.path.abspath(filename),
-                    str(e)))
+                logger.exception(e)
             return False
 
         result = write_mock_file(self.MOCK_HOME_FILE_NAME, mock_ids)
@@ -401,16 +397,14 @@ class MbedLsToolsBase:
         @return Curent retarget configuration (dictionary)
         """
         if os.path.isfile(self.RETARGET_FILE_NAME):
-            self.debug(self.retarget_read.__name__, "reading retarget file %s"% self.RETARGET_FILE_NAME)
+            logger.debug("reading retarget file %s", self.RETARGET_FILE_NAME)
             try:
                 with open(self.RETARGET_FILE_NAME, "r") as f:
                     return json.load(f)
             except IOError as e:
-                self.err("reading file '%s' failed: %s"% (os.path.abspath(self.RETARGET_FILE_NAME),
-                    str(e)))
+                logger.exception(e)
             except ValueError as e:
-                self.err("reading file '%s' content failed: %s"% (os.path.abspath(self.RETARGET_FILE_NAME),
-                    str(e)))
+                logger.exception(e)
         return {}
 
     def retarget(self):
@@ -432,14 +426,14 @@ class MbedLsToolsBase:
         # Operations on mocked structure
         if oper == '+':
             mock_ids[mid] = platform_name
-            self.debug(self.mock_manufacture_ids.__name__, "mock_ids['%s'] = '%s'"% (mid, platform_name))
+            logger.debug("mock_ids['%s'] = '%s'", mid, platform_name)
         elif oper in ['-', '!']:
             if mid in mock_ids:
                 mock_ids.pop(mid)
-                self.debug(self.mock_manufacture_ids.__name__, "removing '%s' mock"% mid)
+                logger.debug("removing '%s' mock", mid)
             elif mid == '*':
                 mock_ids = {}   # Zero mocking set
-                self.debug(self.mock_manufacture_ids.__name__, "zero mocking set")
+                logger.debug("zero mocking set")
 
         self.mock_write(mock_ids)
         return mock_ids
@@ -485,7 +479,7 @@ class MbedLsToolsBase:
                 target_id = val['target_id']
                 if target_id in self.retarget_data:
                     mbeds[i].update(self.retarget_data[target_id])
-                    self.debug(self.list_mbeds_ext.__name__, ("retargeting", target_id, mbeds[i]))
+                    logger.debug("retargeting %s to %s", target_id, mbeds[i])
 
             # Add interface chip meta data to mbed structure
             details_txt = self.get_details_txt(val['mount_point']) if val['mount_point'] else None
@@ -502,7 +496,7 @@ class MbedLsToolsBase:
                     if field_name not in mbeds[i]:
                         mbeds[i][field_name] = mbed_htm[field]
 
-            self.debug(self.list_mbeds_ext.__name__, (mbeds[i]['platform_name_unique'], val['target_id']))
+            logger.debug((mbeds[i]['platform_name_unique'], val['target_id']))
         return mbeds
 
     def get_dummy_platform(self, platform_name):
@@ -572,22 +566,6 @@ class MbedLsToolsBase:
         #self.manufacture_ids = {}   # TODO: load this values from file
         pass
 
-    def err(self, text):
-        """! Prints error messages
-        @param text Text to be included in error message
-        @details Function prints directly on console
-        """
-        print('error: {}'.format(text))
-
-    def debug(self, name, text):
-        """! Prints error messages
-        @param name Called function name
-        @param text Text to be included in debug message
-        @details Function prints directly on console
-        """
-        if self.DEBUG_FLAG:
-            print('debug @%s.%s: %s'% (self.__class__.__name__, name, text))
-
     def __str__(self):
         """! Object to string casting
 
@@ -636,11 +614,9 @@ class MbedLsToolsBase:
                     result = json.load(data_file)
                 except ValueError as json_error_msg:
                     result = None
-                    if verbose:
-                        print("Error parsing file(%s): %s" % (json_spec_filename, json_error_msg))
+                    logging.error("Parsing file(%s): %s", json_spec_filename, json_error_msg)
         except IOError as fileopen_error_msg:
-            if verbose:
-                print("Warning: %s" % (fileopen_error_msg))
+            logging.warning(fileopen_error_msg)
         return result
 
     def get_mbed_htm_target_id(self, mount_point):
@@ -708,9 +684,9 @@ class MbedLsToolsBase:
                             with open(mbed_htm_path, 'r') as f:
                                 result = f.readlines()
                         except IOError:
-                            self.debug(self.get_mbed_htm_target_id.__name__, ('Failed to open file', mbed_htm_path))
+                            logger.debug('Failed to open file %s', mbed_htm_path)
             except OSError:
-                self.debug(self.get_mbed_htm_target_id.__name__, ('Failed to list mount point', mount_point))
+                logger.debug('Failed to list mount point %s', mount_point)
 
         return result
 
@@ -744,7 +720,7 @@ class MbedLsToolsBase:
                     with open(path_to_details_txt, 'r') as f:
                         result = self.parse_details_txt(f.readlines())
                 except IOError as e:
-                    self.debug(self.get_details_txt.__name__, ('Failed to open file', path_to_details_txt + '\n' + str(e)))
+                    logger.debug('Failed to open file %s: %s', path_to_details_txt, str(e))
         return result if result else None
 
     def parse_details_txt(self, lines):
@@ -770,16 +746,16 @@ class MbedLsToolsBase:
         m = re.search('\?code=([a-fA-F0-9]+)', line)
         if m:
             result = m.groups()[0]
-            self.debug(self.scan_html_line_for_target_id.__name__, line.strip())
-            self.debug(self.scan_html_line_for_target_id.__name__, (m.groups(), result))
+            logger.debug("scan_html_line_for_taget_id %s", line.strip())
+            logger.debug("scan_html_line_for_target_id %s %s", m.groups(), result)
             return result
         # Last resort, we can try to see if old mbed.htm format is there
         else:
             m = re.search('\?auth=([a-fA-F0-9]+)', line)
             if m:
                 result = m.groups()[0]
-                self.debug(self.scan_html_line_for_target_id.__name__, line.strip())
-                self.debug(self.scan_html_line_for_target_id.__name__, (m.groups(), result))
+                logger.debug("scan_html_line_for_taget_id %s", line.strip())
+                logger.debug("scan_html_line_for_target_id %s %s", m.groups(), result)
                 return result
         return None
 
@@ -790,9 +766,9 @@ class MbedLsToolsBase:
         result = os.path.exists(path)
 
         if result:
-            self.debug(self.mount_point_ready.__name__, "Mount point %s is ready" % path)
+            logger.debug("Mount point %s is ready", path)
         else:
-            self.debug(self.mount_point_ready.__name__, "Mount point %s does not exist" % (path))
+            logger.debug("Mount point %s does not exist", path)
 
         return result
 

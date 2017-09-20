@@ -22,6 +22,10 @@ import string
 
 from .lstools_base import MbedLsToolsBase
 
+import logging
+
+logger = logging.getLogger("mbedls.lstools_win7")
+
 
 class MbedLsToolsWin7(MbedLsToolsBase):
     """ Class derived from MbedLsToolsBase ports mbed-ls functionality for Windows 7 OS
@@ -89,7 +93,7 @@ class MbedLsToolsWin7(MbedLsToolsBase):
         self.winreg.Enum = self.winreg.OpenKey(self.winreg.HKEY_LOCAL_MACHINE, r'SYSTEM\CurrentControlSet\Enum')
         usb_devs = self.winreg.OpenKey(self.winreg.Enum, 'USB')
 
-        self.debug(self.get_mbed_com_port.__name__, 'ID: ' + tid)
+        logger.debug('get_mbed_com_port ID: %s', tid)
 
         # first try to find all devs keys (by tid)
         dev_keys = []
@@ -104,7 +108,7 @@ class MbedLsToolsWin7(MbedLsToolsBase):
             try:
                 param = self.winreg.OpenKey(key, "Device Parameters")
                 port = self.winreg.QueryValueEx(param, 'PortName')[0]
-                self.debug(self.get_mbed_com_port.__name__, port)
+                logger.debug('get_mbed_com_port port %s', port)
                 return port
             except:
                 pass
@@ -120,7 +124,7 @@ class MbedLsToolsWin7(MbedLsToolsBase):
                             ports += [self.get_mbed_com_port(dev)]
                 for port in ports:
                     if port:
-                        self.debug(self.get_mbed_com_port.__name__, port)
+                        logger.debug("get_mbed_com_port port %s", port)
                         return port
             except:
                 pass
@@ -168,7 +172,7 @@ class MbedLsToolsWin7(MbedLsToolsBase):
                 continue
             tid = m.group(1)
             mbeds += [(mountpoint, tid)]
-            self.debug(self.get_mbeds.__name__, (mountpoint, tid))
+            logger.debug((mountpoint, tid))
         return mbeds
 
     def get_mbed_target_id(self, mnt, target_usb_id):
@@ -214,8 +218,7 @@ class MbedLsToolsWin7(MbedLsToolsBase):
         for ven in self.usb_vendor_list:
             result += [d for d in self.get_dos_devices() if ven.upper() in d[1].upper()]
 
-        for r in result:
-            self.debug(self.get_mbed_devices.__name__, r)
+        logger.debug("get_mbed_devices result %s", result)
         return result
 
     def get_dos_devices(self):
@@ -248,8 +251,9 @@ class MbedLsToolsWin7(MbedLsToolsBase):
         result = True if retcode == 0 else False
 
         if result:
-            self.debug(self.mount_point_ready.__name__, "Mount point %s is ready" % path)
+            logger.debug("Mount point %s is ready", path)
         else:
-            self.debug(self.mount_point_ready.__name__, "Mount point %s reported not ready with error '%s'" % (path, stderr.strip()))
+            logger.debug("Mount point %s reported not ready with error '%s'",
+                          path, stderr.strip())
 
         return result
