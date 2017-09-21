@@ -45,7 +45,6 @@ class BasicTestCase(unittest.TestCase):
 
     def test_list_manufacture_ids(self):
         table_str = self.base.list_manufacture_ids()
-
         self.assertTrue(isinstance(table_str, basestring))
 
     def test_mock_read(self):

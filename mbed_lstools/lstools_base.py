@@ -22,306 +22,59 @@ from os.path import expanduser
 import json
 from os import listdir
 from os.path import isfile, join
-from fasteners import InterProcessLock
 import logging
+
+from .platform_database import PlatformDatabase, LOCAL_PLATFORM_DATABASE, \
+    LOCAL_MOCKS_DATABASE
 
 logger = logging.getLogger("mbedls.lstools_base")
 
-def timed_mbedls_lock(timeout):
-    """
-    Implements Inter Process Lock using fasteners.InterProcessLock and adding a timeout feature to avoid wait forever.
-
-    :param timeout:     Time to wait for acquiring lock. Else an exception is raised.
-    :return:
-    """
-    def wrapper(self, *args):
-        ret = None
-        lock = InterProcessLock(self.lock_file)
-        acquired = lock.acquire(blocking=False)
-        if not acquired:
-            logger.debug("timed_mbedls_lock", "Waiting %d seconds for mock file lock.", timeout)
-            acquired = lock.acquire(blocking=True, timeout=timeout)
-        if acquired:
-            try:
-                ret = wrapper.original(self, *args)
-            except Exception as e:
-                lock.release()
-                raise e
-            lock.release()
-        else:
-            logger.error("Failed to acquired mock file lock in %d seconds!", timeout)
-            sys.exit(1)
-        return ret
-
-    def func(original):
-        wrapper.original = original
-        return wrapper
-    return func
-
 
 class MbedLsToolsBase:
-    """ Base class for mbed-lstools, defines mbed-ls tools interface for mbed-enabled devices detection for various hosts
+    """ Base class for mbed-lstools, defines mbed-ls tools interface for
+    mbed-enabled devices detection for various hosts
     """
-    def __init__(self, **kwargs):
-        """ ctor
-        """
-        #extra flags
-        self.retarget_data = {}          # Used to retarget mbed-enabled platform properties
-        self.list_unmounted = False # if True, unmounted mbeds are included in output list
-
-        # Create in HOME directory place for mbed-ls to store information
-        self.mbedls_home_dir_init()
-        self.lock_file = os.path.join(MbedLsToolsBase.HOME_DIR,
-                                      MbedLsToolsBase.MBEDLS_HOME_DIR, MbedLsToolsBase.MBEDLS_GLOBAL_LOCK)
-        self.mbedls_get_mocks()
-        # skip retarget if specified to skip in arguments
-        if 'skip_retarget' not in kwargs or not kwargs['skip_retarget']:
-            self.retarget()
 
     # Which OSs are supported by this module
     # Note: more than one OS can be supported by mbed-lstools_* module
     os_supported = []
 
-    # Dictionary describing mapping between manufacturers' ids and platform name.
-    manufacture_ids = {
-        "0001": "LPC2368",
-        "0002": "LPC2368",
-        "0003": "LPC2368",
-        "0004": "LPC2368",
-        "0005": "LPC2368",
-        "0006": "LPC2368",
-        "0007": "LPC2368",
-        "0100": "LPC2368",
-        "0183": "UBLOX_C027",
-        "0200": "KL25Z",
-        "0201": "KW41Z",
-        "0210": "KL05Z",
-        "0214": "HEXIWEAR",
-        "0217": "K82F",
-        "0218": "KL82Z",
-        "0220": "KL46Z",
-        "0230": "K20D50M",
-        "0231": "K22F",
-        "0240": "K64F",
-        "0245": "K64F",
-        "0250": "KW24D",
-        "0261": "KL27Z",
-        "0262": "KL43Z",
-        "0300": "MTS_GAMBIT",
-        "0305": "MTS_MDOT_F405RG",
-        "0310": "MTS_DRAGONFLY_F411RE",
-        "0311": "K66F",
-        "0315": "MTS_MDOT_F411RE",
-        "0350": "XDOT_L151CC",
-        "0400": "MAXWSNENV",
-        "0405": "MAX32600MBED",
-        "0406": "MAX32620MBED",
-        "0407": "MAX32620HSP",
-        "0408": "MAX32625NEXPAQ",
-        "0409": "MAX32630FTHR",
-        "0415": "MAX32625MBED",
-        "0500": "SPANSION_PLACEHOLDER",
-        "0505": "SPANSION_PLACEHOLDER",
-        "0510": "SPANSION_PLACEHOLDER",
-        "0602": "EV_COG_AD3029LZ",
-        "0603": "EV_COG_AD4050LZ",
-        "0700": "NUCLEO_F103RB",
-        "0705": "NUCLEO_F302R8",
-        "0710": "NUCLEO_L152RE",
-        "0715": "NUCLEO_L053R8",
-        "0720": "NUCLEO_F401RE",
-        "0725": "NUCLEO_F030R8",
-        "0730": "NUCLEO_F072RB",
-        "0735": "NUCLEO_F334R8",
-        "0740": "NUCLEO_F411RE",
-        "0743": "DISCO_F413ZH",
-        "0744": "NUCLEO_F410RB",
-        "0745": "NUCLEO_F303RE",
-        "0747": "NUCLEO_F303ZE",
-        "0750": "NUCLEO_F091RC",
-        "0755": "NUCLEO_F070RB",
-        "0760": "NUCLEO_L073RZ",
-        "0764": "DISCO_L475VG_IOT01A",
-        "0765": "NUCLEO_L476RG",
-        "0766": "SILICA_SENSOR_NODE",
-        "0770": "NUCLEO_L432KC",
-        "0775": "NUCLEO_F303K8",
-        "0777": "NUCLEO_F446RE",
-        "0778": "NUCLEO_F446ZE",
-        "0780": "NUCLEO_L011K4",
-        "0785": "NUCLEO_F042K6",
-        "0788": "DISCO_F469NI",
-        "0790": "NUCLEO_L031K6",
-        "0791": "NUCLEO_F031K6",
-        "0795": "DISCO_F429ZI",
-        "0796": "NUCLEO_F429ZI",
-        "0797": "NUCLEO_F439ZI",
-        "0799": "ST_PLACEHOLDER",
-        "0805": "DISCO_L053C8",
-        "0810": "DISCO_F334C8",
-        "0815": "DISCO_F746NG",
-        "0816": "NUCLEO_F746ZG",
-        "0817": "DISCO_F769NI",
-        "0818": "NUCLEO_F767ZI",
-        "0819": "NUCLEO_F756ZG",
-        "0820": "DISCO_L476VG",
-        "0821": "NUCLEO_L452RE",
-        "0823": "NUCLEO_L496ZG",
-        "0824": "LPC824",
-        "0826": "NUCLEO_F412ZG",
-        "0827": "NUCLEO_L486RG",
-        "0828": "NUCLEO_L496ZG_P",
-        "0829": "NUCLEO_L452RE_P",
-        "0833": "DISCO_L072CZ_LRWAN1",
-        "0835": "NUCLEO_F207ZG",
-        "0840": "B96B_F446VE",
-        "0900": "XPRO_SAMR21",
-        "0905": "XPRO_SAMW25",
-        "0910": "XPRO_SAML21",
-        "0915": "XPRO_SAMD21",
-        "1000": "LPC2368",
-        "1001": "LPC2368",
-        "1010": "LPC1768",
-        "1017": "HRM1017",
-        "1018": "SSCI824",
-        "1019": "TY51822R3",
-        "1022": "RO359B",
-        "1034": "LPC11U34",
-        "1040": "LPC11U24",
-        "1045": "LPC11U24",
-        "1050": "LPC812",
-        "1054": "LPC54114",
-        "1056": "LPC54608",
-        "1060": "LPC4088",
-        "1061": "LPC11U35_401",
-        "1062": "LPC4088_DM",
-        "1070": "NRF51822",
-        "1075": "NRF51822_OTA",
-        "1080": "OC_MBUINO",
-        "1090": "RBLAB_NRF51822",
-        "1095": "RBLAB_BLENANO",
-        "1100": "NRF51_DK",
-        "1101": "NRF52_DK",
-        "1102": "NRF52840_DK",
-        "1105": "NRF51_DK_OTA",
-        "1114": "LPC1114",
-        "1120": "NRF51_DONGLE",
-        "1130": "NRF51822_SBK",
-        "1140": "WALLBOT_BLE",
-        "1168": "LPC11U68",
-        "1200": "NCS36510",
-        "1234": "UBLOX_C027",
-        "1235": "UBLOX_C027",
-        "1236": "UBLOX_EVK_ODIN_W2",
-        "1237": "UBLOX_EVK_NINA_B1",
-        "1300": "NUC472-NUTINY",
-        "1301": "NUMBED",
-        "1302": "NUMAKER_PFM_NUC472",
-        "1303": "NUMAKER_PFM_M453",
-        "1304": "NUMAKER_PFM_M487",
-        "1305": "NUMAKER_PFM_M2351",
-        "1306": "NUMAKER_PFM_NANO130",
-        "1307": "NUMAKER_PFM_NUC240",
-        "1549": "LPC1549",
-        "1600": "LPC4330_M4",
-        "1605": "LPC4330_M4",
-        "2000": "EFM32_G8XX_STK",
-        "2005": "EFM32HG_STK3400",
-        "2010": "EFM32WG_STK3800",
-        "2015": "EFM32GG_STK3700",
-        "2020": "EFM32LG_STK3600",
-        "2025": "EFM32TG_STK3300",
-        "2030": "EFM32ZG_STK3200",
-        "2035": "EFM32PG_STK3401",
-        "2040": "EFM32PG12_STK3402",
-        "2041": "TB_SENSE_12",
-        "2045": "TB_SENSE_1",
-        "2100": "XBED_LPC1768",
-        "2201": "WIZWIKI_W7500",
-        "2202": "WIZWIKI_W7500ECO",
-        "2203": "WIZWIKI_W7500P",
-        "2500": "ADV_WISE_1570",
-        "3001": "LPC11U24",
-        "4000": "LPC11U35_Y5_MBUG",
-        "4005": "NRF51822_Y5_MBUG",
-        "4100": "MOTE_L152RC",
-        "4337": "LPC4337",
-        "4500": "DELTA_DFCM_NNN40",
-        "4501": "DELTA_DFBM_NQ620",
-        "4502": "DELTA_DFCM_NNN50",
-        "4600": "REALTEK_RTL8195AM",
-        "5000": "ARM_MPS2",
-        "5001": "ARM_MPS2_M0",
-        "5002": "ARM_BEETLE_SOC",
-        "5003": "ARM_MPS2_M0P",
-        "5005": "ARM_MPS2_M0DS",
-        "5007": "ARM_MPS2_M1",
-        "5009": "ARM_MPS2_M3",
-        "5011": "ARM_MPS2_M4",
-        "5015": "ARM_MPS2_M7",
-        "5020": "HOME_GATEWAY_6LOWPAN",
-        "5500": "RZ_A1H",
-        "5501": "GR_LYCHEE",
-        "6660": "NZ32_SC151",
-        "7010": "BLUENINJA_CDP_TZ01B",
-        "7011": "TMPM066",
-        "7402": "MBED_BR_HAT",
-        "7778": "TEENSY3_1",
-        "8001": "UNO_91H",
-        "9001": "LPC1347",
-        "9002": "LPC11U24",
-        "9003": "LPC1347",
-        "9004": "ARCH_PRO",
-        "9006": "LPC11U24",
-        "9007": "LPC11U35_501",
-        "9008": "XADOW_M0",
-        "9009": "ARCH_BLE",
-        "9010": "ARCH_GPRS",
-        "9011": "ARCH_MAX",
-        "9012": "SEEED_TINY_BLE",
-        "9900": "NRF51_MICROBIT",
-        "C002": "VK_RZ_A1H",
-        "C005": "MTM_MTCONNECT04S",
-        "C006": "VBLUNO51",
-        "C030": "UBLOX_C030_U201",
-        "C031": "UBLOX_C030_N211",
-        "C032": "UBLOX_C030_R404M",
-        "C033": "UBLOX_C030_R410M",
-        "C034": "UBLOX_C030_S200",
-        "C035": "UBLOX_C030_R3121",
-        "FFFF": "K20 BOOTLOADER",
-        "RIOT": "RIOT",
-    }
-
     # Directory where we will store global (OS user specific mocking)
     HOME_DIR = expanduser("~")
-    MBEDLS_HOME_DIR = '.mbed-ls'
     MOCK_FILE_NAME = '.mbedls-mock'
-    MBEDLS_GLOBAL_LOCK = 'mbedls-lock'
-    MOCK_HOME_FILE_NAME = os.path.join(HOME_DIR, MBEDLS_HOME_DIR, MOCK_FILE_NAME)
     RETARGET_FILE_NAME = 'mbedls.json'
     DETAILS_TXT_NAME = 'DETAILS.TXT'
     MBED_HTM_NAME = 'mbed.htm'
 
-    def mbedls_home_dir_init(self):
-        """! Initialize data in home directory for locking features
-        @details Create '.mbed-ls' sub-directory in current user $HOME directory
+    def __init__(self, **kwargs):
+        """ ctor
         """
-        if not os.path.isdir(os.path.join(self.HOME_DIR, self.MBEDLS_HOME_DIR)):
-            try:
-                os.makedirs(os.path.join(self.HOME_DIR, self.MBEDLS_HOME_DIR))
-            except os.error as e:
-                logging.exception(e)
+        self.retarget_data = {}          # Used to retarget mbed-enabled platform properties
 
-    def mbedls_get_mocks(self):
-        """! Load existing mocking configuration from current user $HOME directory
-        @details If there is a local mocking data use it and add / override manufacture_ids
+        platform_dbs = []
+        if isfile(self.MOCK_FILE_NAME) or ("force_mock" in kwargs and kwargs['force_mock']):
+            platform_dbs.append(self.MOCK_FILE_NAME)
+        elif isfile(LOCAL_MOCKS_DATABASE):
+            platform_dbs.append(LOCAL_MOCKS_DATABASE)
+        platform_dbs.append(LOCAL_PLATFORM_DATABASE)
+        self.plat_db = PlatformDatabase(platform_dbs,
+                                        primary_database=platform_dbs[0])
+
+        if 'skip_retarget' not in kwargs or not kwargs['skip_retarget']:
+            self.retarget()
+
+    def mock_manufacture_id(self, mid, platform_name, oper='+'):
+        """! Replace (or add if manufacture id doesn't exist) entry in self.manufacture_ids
+        @param oper '+' add new mock / override existing entry
+                    '-' remove mid from mocking entry
+        @return Mocked structure (json format)
         """
-        mock_ids = self.mock_read()
-        if mock_ids:
-            logger.debug("mock data found, %d entries", len(mock_ids))
-            for mid in mock_ids:
-                self.manufacture_ids[mid] = mock_ids[mid]
+        if oper is '+':
+            self.plat_db.add(mid, platform_name, permanent=True)
+        elif oper is '-':
+            self.plat_db.remove(mid, permanent=True)
+        else:
+            raise ValueError("oper can only be [+-]")
 
     def list_manufacture_ids(self):
         """! Creates list of all available mappings for target_id -> Platform
@@ -334,63 +87,10 @@ class MbedLsToolsBase:
         for col in columns:
             pt.align[col] = 'l'
 
-        for target_id_prefix in sorted(self.manufacture_ids.keys()):
-            platform_name = self.manufacture_ids[target_id_prefix]
+        for target_id_prefix, platform_name in sorted(self.plat_db.items()):
             pt.add_row([target_id_prefix, platform_name])
 
         return pt.get_string()
-
-    @timed_mbedls_lock(60)
-    def mock_read(self):
-        """! Load mocking data from local file
-        @details Uses file locking for operation on Mock
-                 configuration file in current user $HOME directory
-        @return Curent mocking configuration (dictionary)
-        """
-        def read_mock_file(filename):
-            try:
-                with open(filename, "r") as f:
-                    return json.load(f)
-            except IOError as e:
-                logging.exception(e)
-            except ValueError as e:
-                logging.exception(e)
-            return {}
-
-        result = {}
-
-        # This read is for backward compatibility
-        # When user already have on its system local mock-up it will work
-        # overwriting global one
-        if isfile(self.MOCK_FILE_NAME):
-            result = read_mock_file(self.MOCK_FILE_NAME)
-        elif isfile(self.MOCK_HOME_FILE_NAME):
-            result = read_mock_file(self.MOCK_HOME_FILE_NAME)
-
-        return result
-
-    @timed_mbedls_lock(60)
-    def mock_write(self, mock_ids):
-        """! Write current mocking structure
-        @param mock_ids JSON mock data to dump to file
-        @details Uses file locking for operation on Mock
-                 configuration file in current user $HOME directory
-        @return True if configuration operation was success, else False
-        """
-        def write_mock_file(filename, mock_ids):
-            try:
-                with open(filename, "w") as f:
-                    f.write(json.dumps(mock_ids, indent=4))
-                    return True
-            except IOError as e:
-                logger.exception(e)
-            except ValueError as e:
-                logger.exception(e)
-            return False
-
-        result = write_mock_file(self.MOCK_HOME_FILE_NAME, mock_ids)
-
-        return result
 
     def retarget_read(self):
         """! Load retarget data from local file
@@ -399,7 +99,7 @@ class MbedLsToolsBase:
         if os.path.isfile(self.RETARGET_FILE_NAME):
             logger.debug("reading retarget file %s", self.RETARGET_FILE_NAME)
             try:
-                with open(self.RETARGET_FILE_NAME, "r") as f:
+                with open(self.RETARGET_FILE_NAME, "r", encoding="utf-8") as f:
                     return json.load(f)
             except IOError as e:
                 logger.exception(e)
@@ -414,29 +114,6 @@ class MbedLsToolsBase:
         """
         self.retarget_data = self.retarget_read()
         return self.retarget_data
-
-    def mock_manufacture_ids(self, mid, platform_name, oper='+'):
-        """! Replace (or add if manufacture id doesn't exist) entry in self.manufacture_ids
-        @param oper '+' add new mock / override existing entry
-                    '-' remove mid from mocking entry
-        @return Mocked structure (json format)
-        """
-        mock_ids = self.mock_read()
-
-        # Operations on mocked structure
-        if oper == '+':
-            mock_ids[mid] = platform_name
-            logger.debug("mock_ids['%s'] = '%s'", mid, platform_name)
-        elif oper in ['-', '!']:
-            if mid in mock_ids:
-                mock_ids.pop(mid)
-                logger.debug("removing '%s' mock", mid)
-            elif mid == '*':
-                mock_ids = {}   # Zero mocking set
-                logger.debug("zero mocking set")
-
-        self.mock_write(mock_ids)
-        return mock_ids
 
     # Note: 'Ven_SEGGER' - This is used to detect devices from EFM family, they use Segger J-LInk to wrap MSD and CDC
     usb_vendor_list = ['Ven_MBED', 'Ven_SEGGER', 'Ven_ARM_V2M']
@@ -557,14 +234,6 @@ class MbedLsToolsBase:
             target_id = mbed['target_id']
             result[target_id] = mbed
         return result
-
-    # Private part, methods used to drive interface functions
-    def load_mbed_description(self, file_name):
-        """! Load JSON file with mbeds' description (mapping between target id and platform name)
-            Sets self.manufacture_ids with mapping between manufacturers' ids and platform name.
-        """
-        #self.manufacture_ids = {}   # TODO: load this values from file
-        pass
 
     def __str__(self):
         """! Object to string casting
