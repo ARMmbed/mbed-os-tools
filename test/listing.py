@@ -46,12 +46,8 @@ class MbedListingestCase(unittest.TestCase):
         self.assertNotEqual(None, self.mbeds.list_mbeds_ext())
         self.assertIs(type(self.mbeds.list_mbeds_ext()), list)
 
-    def test_manufacture_ids_type(self):
-        self.assertIs(type(self.mbeds.manufacture_ids), dict)
-
     def test_manufacture_ids_format(self):
-        for dev in self.mbeds.manufacture_ids:
-            self.assertIs(type(dev), str)
+        for dev in self.mbeds.plat_db.all_ids():
             self.assertEqual(len(dev), 4)
 
     def test_list_mbeds_mandatory_fields_exist(self):
