@@ -19,6 +19,10 @@ import re
 
 from .lstools_base import MbedLsToolsBase
 
+import logging
+
+logger = logging.getLogger("mbedls.lstools_linux")
+
 
 class MbedLsToolsLinuxGeneric(MbedLsToolsBase):
     """ MbedLsToolsLinuxGeneric supports mbed-enabled platforms detection across Linux family
@@ -115,9 +119,10 @@ class MbedLsToolsLinuxGeneric(MbedLsToolsBase):
             if mbed['mount_point'] != None or self.list_unmounted:
                 result.append(mbed)
             else:
-                self.debug(self.list_mbeds.__name__,
+                logger.warning(
                     "MBED with target id '%s' is connected, but not mounted. "
-                    "Use the '-u' flag to include it in the list." % mbed['target_id'])
+                    "Use the '-u' flag to include it in the list.",
+                    mbed['target_id'])
 
             if None in mbed:
                 self.ERRORLEVEL_FLAG = -1
@@ -146,7 +151,7 @@ class MbedLsToolsLinuxGeneric(MbedLsToolsBase):
                     line = line.decode('utf8')
                 if not line.lower().startswith('total '):    # total 0
                     result.append(line)
-                    self.debug(self.get_dev_by_id_process.__name__, line)
+                    logger.debug("get_dev_by_id_process line %s", line)
         return result
 
     def get_dev_by_id(self, subdir):
@@ -164,7 +169,7 @@ class MbedLsToolsLinuxGeneric(MbedLsToolsBase):
         result = []
         cmd = 'mount | grep vfat'
 
-        self.debug(self.get_mounts.__name__, cmd)
+        logger.debug("get_mounts cmd %s", cmd)
 
         _stdout, _, retval = self.run_cli_process(cmd)
 
@@ -172,7 +177,7 @@ class MbedLsToolsLinuxGeneric(MbedLsToolsBase):
             for line in _stdout.splitlines():
                 line = line.rstrip()
                 result.append(line)
-                self.debug(self.get_mounts.__name__, line)
+                logger.debug("get_mounts line %s", line)
         return result
 
     def get_disk_hex_ids(self, disk_list):
