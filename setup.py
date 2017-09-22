@@ -55,6 +55,10 @@ setup(name='mbed-ls',
           "fasteners",
           "xdg>=1.0"
       ],
+      tests_require = [
+          "mock>=2",
+          "pytest>=3"
+      ],
       extras_require = {
           "colorized_logs": ["colorlog"]
       }
