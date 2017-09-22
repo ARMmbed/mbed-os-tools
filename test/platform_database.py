@@ -22,9 +22,16 @@ import errno
 import logging
 import tempfile
 import json
-from mock import patch, MagicMock
+from mock import patch, MagicMock, DEFAULT
+from io import StringIO
 
-from mbed_lstools.platform_database import PlatformDatabase
+from mbed_lstools.platform_database import PlatformDatabase, DEFAULT_PLATFORM_DB,\
+    LOCAL_PLATFORM_DATABASE
+
+try:
+    unicode
+except NameError:
+    unicode = str
 
 class EmptyPlatformDatabaseTests(unittest.TestCase):
     """ Basic test cases with an empty database
@@ -38,6 +45,38 @@ class EmptyPlatformDatabaseTests(unittest.TestCase):
 
     def tearDown(self):
         pass
+
+    def test_broken_database_io(self):
+        """Verify that the platform database still works without a
+        working backing file
+        """
+        with patch("mbed_lstools.platform_database.open") as _open:
+            _open.side_effect = IOError("Bogus")
+            self.pdb = PlatformDatabase([self.base_db.name])
+            self.pdb.add("1234", "MYTARGET")
+            self.assertEqual(self.pdb.get("1234"), "MYTARGET")
+
+    def test_broken_database_bad_json(self):
+        """Verify that the platform database still works without a
+        working backing file
+        """
+        self.base_db.write(b'{{}')
+        self.base_db.seek(0)
+        self.pdb = PlatformDatabase([self.base_db.name])
+        self.pdb.add("1234", "MYTARGET")
+        self.assertEqual(self.pdb.get("1234"), "MYTARGET")
+
+    def test_broken_database(self):
+        """Verify that the platform database correctly reset's its database
+        """
+        with patch("mbed_lstools.platform_database.open") as _open:
+            stringio = MagicMock()
+            _open.side_effect = (IOError("Bogus"), stringio)
+            self.pdb = PlatformDatabase([LOCAL_PLATFORM_DATABASE])
+            stringio.__enter__.return_value.write.assert_called_with(
+                unicode(json.dumps(DEFAULT_PLATFORM_DB)))
+            self.pdb.add("1234", "MYTARGET")
+            self.assertEqual(self.pdb.get("1234"), "MYTARGET")
 
     def test_bogus_database(self):
         """Basic empty database test
@@ -123,16 +162,19 @@ class OverriddenPlatformDatabaseTests(unittest.TestCase):
         self.assertEqual(set(self.pdb.all_ids()), set(['0123', '1234']))
         self.assertBaseUnchanged()
 
-    def test_add_override(self):
+    def test_load_override(self):
         """Check that adding a platform goes to the Override database and
         you can no longer query for the base database definition and
         that the override database was not written to disk
         """
-        self.pdb.add('0123', 'Overriding_Platform')
+        self.overriding_db.write(json.dumps(dict([('0123', 'Overriding_Platform')])).
+                                 encode('utf-8'))
+        self.overriding_db.seek(0)
+        self.pdb = PlatformDatabase([self.overriding_db.name, self.base_db.name],
+                                    primary_database=self.overriding_db.name)
         self.assertIn(('0123', 'Overriding_Platform'), list(self.pdb.items()))
         self.assertEqual(set(self.pdb.all_ids()), set(['0123']))
         self.assertEqual(self.pdb.get('0123'), 'Overriding_Platform')
-        self.assertOverrideUnchanged()
         self.assertBaseUnchanged()
 
     def test_add_override_permanent(self):
@@ -219,4 +261,13 @@ class InternalLockingChecks(unittest.TestCase):
         self.pdb.add('7155', 'Junk', permanent=True)
         assert self.acquire.called, 'Lock acquire should have been called'
         self.base_db.seek(0)
+        self.assertEqual(self.base_db.read(), b'{}')
+
+    def test_update_ambiguous(self):
+        """Test that the backing file is not updated when lock acquisition fails
+        """
+        self.pdb._prim_db = None
+        self.pdb.add('7155', 'Junk', permanent=True)
+        self.acquire.assert_not_called()
+        self.release.assert_not_called()
         self.assertEqual(self.base_db.read(), b'{}')
