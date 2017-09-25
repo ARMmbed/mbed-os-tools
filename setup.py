@@ -52,4 +52,9 @@ setup(name='mbed-ls',
       },
       install_requires=[
         "PrettyTable>=0.7.2",
-        "fasteners"])
+          "fasteners"
+      ],
+      extras_require = {
+          "colorized_logs": ["colorlog"]
+      }
+)
