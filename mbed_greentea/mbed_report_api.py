@@ -38,6 +38,13 @@ def exporter_json(test_result_ext, test_suite_properties=None):
     @details This is a machine friendly format
     """
     import json
+    for target in test_result_ext.values():
+        for suite in target.values():
+            try:
+                suite["single_test_output"] = suite["single_test_output"]\
+                                              .decode("unicode_escape")
+            except KeyError:
+                pass
     return json.dumps(test_result_ext, indent=4)
 
 
@@ -211,7 +218,10 @@ def exporter_testcase_junit(test_result_ext, test_suite_properties=None):
                 test_cases.append(tc)
 
             ts_name = target_name
-            test_build_properties = test_suite_properties[target_name] if target_name in test_suite_properties else None
+            if test_suite_properties and target_name in test_suite_properties:
+                test_build_properties = test_suite_properties[target_name] 
+            else:
+                test_build_properties = None
             ts = TestSuite(ts_name, test_cases, properties=test_build_properties)
             test_suites.append(ts)
 
@@ -584,7 +594,9 @@ def get_result_overlay_dropdowns(result_div_id, test_results):
     result_output_div_id = "%s_output" % result_div_id
     result_output_dropdown = get_dropdown_html(result_output_div_id,
                                                "Test Output",
-                                               test_results['single_test_output'].rstrip("\n"),
+                                               test_results['single_test_output']
+                                               .decode("unicode-escape")
+                                               .rstrip("\n"),
                                                output_text=True)
 
     # Add a dropdown for the testcases if they are present
@@ -740,10 +752,14 @@ def exporter_html(test_result_ext, test_suite_properties=None):
                     test_results['single_test_count'] += 1
 
                 result_class = get_result_colour_class(test_results['single_test_result'])
+                try:
+                    percent_pass = int((test_results['single_test_passes']*100.0)/test_results['single_test_count'])
+                except ZeroDivisionError:
+                    percent_pass = 100
                 this_row += result_cell_template % (result_class,
                                                     result_div_id,
                                                     test_results['single_test_result'],
-                                                    int((test_results['single_test_passes']*100.0)/test_results['single_test_count']),
+                                                    percent_pass,
                                                     test_results['single_test_passes'],
                                                     test_results['single_test_count'],
                                                     result_overlay)
