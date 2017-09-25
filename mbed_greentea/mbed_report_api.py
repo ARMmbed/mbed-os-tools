@@ -211,7 +211,10 @@ def exporter_testcase_junit(test_result_ext, test_suite_properties=None):
                 test_cases.append(tc)
 
             ts_name = target_name
-            test_build_properties = test_suite_properties[target_name] if target_name in test_suite_properties else None
+            if test_suite_properties and target_name in test_suite_properties:
+                test_build_properties = test_suite_properties[target_name] 
+            else:
+                test_build_properties = None
             ts = TestSuite(ts_name, test_cases, properties=test_build_properties)
             test_suites.append(ts)
 
