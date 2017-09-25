@@ -38,6 +38,13 @@ def exporter_json(test_result_ext, test_suite_properties=None):
     @details This is a machine friendly format
     """
     import json
+    for target in test_result_ext.values():
+        for suite in target.values():
+            try:
+                suite["single_test_output"] = suite["single_test_output"]\
+                                              .decode("unicode_escape")
+            except KeyError:
+                pass
     return json.dumps(test_result_ext, indent=4)
 
 
@@ -587,7 +594,9 @@ def get_result_overlay_dropdowns(result_div_id, test_results):
     result_output_div_id = "%s_output" % result_div_id
     result_output_dropdown = get_dropdown_html(result_output_div_id,
                                                "Test Output",
-                                               test_results['single_test_output'].rstrip("\n"),
+                                               test_results['single_test_output']
+                                               .decode("unicode-escape")
+                                               .rstrip("\n"),
                                                output_text=True)
 
     # Add a dropdown for the testcases if they are present

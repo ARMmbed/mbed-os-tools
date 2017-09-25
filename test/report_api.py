@@ -39,16 +39,16 @@ class ReportEmitting(unittest.TestCase):
         test_data = {
             'k64f-gcc_arm': {
                 'garbage_test_suite' :{
-                    'single_test_result': 'NOT_RAN',
-                    'elapsed_time': 0.0,
-                    'build_path': 'N/A',
-                    'build_path_abs': 'N/A',
-                    'copy_method': 'N/A',
-                    'image_path': 'N/A',
-                    'single_test_output': 'N/A',
-                    'platform_name': 'k64f',
-                    'test_bin_name': 'N/A',
-                    'testcase_result': {},
+                    u'single_test_result': u'NOT_RAN',
+                    u'elapsed_time': 0.0,
+                    u'build_path': u'N/A',
+                    u'build_path_abs': u'N/A',
+                    u'copy_method': u'N/A',
+                    u'image_path': u'N/A',
+                    u'single_test_output': b'N/A',
+                    u'platform_name': u'k64f',
+                    u'test_bin_name': u'N/A',
+                    u'testcase_result': {},
                 }
             }
         }
