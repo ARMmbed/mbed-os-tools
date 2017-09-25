@@ -740,10 +740,14 @@ def exporter_html(test_result_ext, test_suite_properties=None):
                     test_results['single_test_count'] += 1
 
                 result_class = get_result_colour_class(test_results['single_test_result'])
+                try:
+                    percent_pass = int((test_results['single_test_passes']*100.0)/test_results['single_test_count'])
+                except ZeroDivisionError:
+                    percent_pass = 100
                 this_row += result_cell_template % (result_class,
                                                     result_div_id,
                                                     test_results['single_test_result'],
-                                                    int((test_results['single_test_passes']*100.0)/test_results['single_test_count']),
+                                                    percent_pass,
                                                     test_results['single_test_passes'],
                                                     test_results['single_test_count'],
                                                     result_overlay)
