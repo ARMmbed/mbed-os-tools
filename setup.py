@@ -51,8 +51,13 @@ setup(name='mbed-ls',
         ],
       },
       install_requires=[
-        "PrettyTable>=0.7.2",
-          "fasteners"
+          "PrettyTable>=0.7.2",
+          "fasteners",
+          "xdg>=1.0"
+      ],
+      tests_require = [
+          "mock>=2",
+          "pytest>=3"
       ],
       extras_require = {
           "colorized_logs": ["colorlog"]

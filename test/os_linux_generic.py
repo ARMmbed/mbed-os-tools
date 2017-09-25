@@ -18,6 +18,7 @@ limitations under the License.
 
 import unittest
 from mbed_lstools.lstools_linux_generic import MbedLsToolsLinuxGeneric
+from mbed_lstools.platform_database import LOCAL_PLATFORM_DATABASE
 
 
 class LinuxPortTestCase(unittest.TestCase):
@@ -59,6 +60,7 @@ class LinuxPortTestCase(unittest.TestCase):
             "0720": "NUCLEO_F401RE",    # Under test
             "0725": "NUCLEO_F030R8",
         }
+        self.linux_generic.plat_db._dbs[LOCAL_PLATFORM_DATABASE] = self.tids
 
         self.disk_list_1 = [
           "total 0",

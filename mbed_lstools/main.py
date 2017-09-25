@@ -191,7 +191,8 @@ def mbedls_main():
     logger.debug("host: %s",  str((mbed_lstools_os_info())))
 
     mbeds = create(skip_retarget=opts.skip_retarget,
-                   list_unmounted=opts.list_unmounted)
+                   list_unmounted=opts.list_unmounted,
+                   force_mock=opts.mock_platform)
 
     if mbeds is None:
         logger.critical('This platform is not supported! Pull requests welcome at github.com/ARMmbed/mbed-ls')
@@ -214,12 +215,14 @@ def mbedls_main():
                 if mid and mid[0] in ['+', '-']:
                     oper = mid[0]   # Operation (character)
                     mid = mid[1:]   # We remove operation character
-                mbeds.mock_manufacture_ids(mid, platform_name, oper=oper)
+                mbeds.mock_manufacture_id(mid, platform_name, oper=oper)
             elif token and token[0] in ['-', '!']:
                 # Operations where do not specify data after colon: --mock=-1234,-7678
                 oper = token[0]
                 mid = token[1:]
-                mbeds.mock_manufacture_ids(mid, 'dummy', oper=oper)
+                mbeds.mock_manufacture_id(mid, 'dummy', oper=oper)
+            else:
+                logger.error("Could not parse mock from token: '%s'", token)
         if opts.json:
             print(json.dumps(mbeds.mock_read(), indent=4))
 
