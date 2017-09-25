@@ -172,7 +172,17 @@ def mbedls_main():
     (opts, args) = cmd_parser_setup()
 
     root_logger = logging.getLogger("")
-    logging.basicConfig()
+    try:
+        import colorlog
+
+        handler = colorlog.StreamHandler()
+        handler.setFormatter(colorlog.ColoredFormatter(
+            '%(log_color)s%(levelname)s%(reset)s:%(name)s:%(message)s'))
+
+        root_logger = colorlog.getLogger('mbedls')
+        root_logger.addHandler(handler)
+    except ImportError:
+        logging.basicConfig()
     if opts.debug:
         root_logger.setLevel(logging.DEBUG)
     else:
