@@ -24,6 +24,7 @@ import json
 from os import listdir
 from os.path import isfile, join
 import logging
+from abc import ABCMeta, abstractmethod
 
 from .platform_database import PlatformDatabase, LOCAL_PLATFORM_DATABASE, \
     LOCAL_MOCKS_DATABASE
@@ -31,10 +32,12 @@ from .platform_database import PlatformDatabase, LOCAL_PLATFORM_DATABASE, \
 logger = logging.getLogger("mbedls.lstools_base")
 
 
-class MbedLsToolsBase:
+class MbedLsToolsBase(object):
     """ Base class for mbed-lstools, defines mbed-ls tools interface for
     mbed-enabled devices detection for various hosts
     """
+
+    __metaclass__ = ABCMeta
 
     # Which OSs are supported by this module
     # Note: more than one OS can be supported by mbed-lstools_* module
@@ -48,7 +51,7 @@ class MbedLsToolsBase:
     MBED_HTM_NAME = 'mbed.htm'
     ERRORLEVEL_FLAG = 0
 
-    def __init__(self, **kwargs):
+    def __init__(self, list_unmounted=False, **kwargs):
         """ ctor
         """
         self.retarget_data = {}          # Used to retarget mbed-enabled platform properties
@@ -61,9 +64,57 @@ class MbedLsToolsBase:
         platform_dbs.append(LOCAL_PLATFORM_DATABASE)
         self.plat_db = PlatformDatabase(platform_dbs,
                                         primary_database=platform_dbs[0])
+        self.list_unmounted = list_unmounted
 
         if 'skip_retarget' not in kwargs or not kwargs['skip_retarget']:
             self.retarget()
+
+    @abstractmethod
+    def find_candidates(self):
+        """Find all candidate devices connected to this computer
+
+        Note: Should not open any files
+
+        @return A dict with the keys 'mount_point', 'serial_port' and 'usb_target_id'
+        """
+        raise NotImplemented
+
+    def list_mbeds(self):
+        """ List details of connected devices
+        @return Returns list of structures with detailed info about each mbed
+        @details Function returns list of dictionaries with mbed attributes 'mount_point', TargetID name etc.
+        Function returns mbed list with platform names if possible
+        """
+        candidates = list(self.find_candidates())
+        logger.debug("Candidates for display %r", candidates)
+        result = []
+        for device in candidates:
+            if not device['mount_point'] :
+                if  (device['target_id_usb_id'] and device['serial_port'] and
+                     not self.list_unmounted):
+                    logger.warning(
+                        "MBED with target id '%s' is connected, but not mounted. "
+                        "Use the '-u' flag to include it in the list.",
+                        device['target_id_usb_id'])
+            else:
+                htm_target_id = self.read_htm_target_id(device['mount_point'])
+                if htm_target_id:
+                    target_id_prefix = htm_target_id.decode('utf-8')[0:4]
+                    logging.debug("Found htm target id, %s, for usb target id %s",
+                                  htm_target_id, device['target_id_usb_id'])
+                    device['target_id'] = htm_target_id
+                else:
+                    logging.warning("Could not read htm on from usb id %s. "
+                                    "Falling back to usb id",
+                                    device['target_id_usb_id'])
+                    device['target_id'] = device['target_id_usb_id']
+                device['platform_name'] = self.plat_db.get(
+                    device['target_id'][0:4])
+                device['target_id_mbed_htm'] = htm_target_id
+                result.append(device)
+
+        return result
+
 
     def mock_manufacture_id(self, mid, platform_name, oper='+'):
         """! Replace (or add if manufacture id doesn't exist) entry in self.manufacture_ids
@@ -119,22 +170,6 @@ class MbedLsToolsBase:
 
     # Note: 'Ven_SEGGER' - This is used to detect devices from EFM family, they use Segger J-LInk to wrap MSD and CDC
     usb_vendor_list = ['Ven_MBED', 'Ven_SEGGER', 'Ven_ARM_V2M']
-
-    # Interface
-    def list_mbeds(self):
-        """! Get information about mbeds connected to device
-        @return Returns None or if no error MBED_BOARDS = [ <MBED_BOARD>, ]
-        @details MBED_BOARD
-        {
-            'mount_point' : <>,
-            'serial_port' : <>,
-            'target_id' : <>,
-            'platform_name' : <>,
-            'daplink_version' : <>,
-        }
-        # If field unknown, place None
-        """
-        return None
 
     def list_mbeds_ext(self):
         """! Function adds extra information for each mbed device
@@ -290,7 +325,7 @@ class MbedLsToolsBase:
             logging.warning(fileopen_error_msg)
         return result
 
-    def get_mbed_htm_target_id(self, mount_point):
+    def read_htm_target_id(self, mount_point):
         """! Function scans mbed.htm to get information about TargetID.
         @param mount_point mbed mount point (disk / drive letter)
         @return Function returns targetID, in case of failure returns None.

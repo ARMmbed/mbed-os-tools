@@ -28,70 +28,36 @@ logger = logging.getLogger("mbedls.lstools_win7")
 
 
 class MbedLsToolsWin7(MbedLsToolsBase):
-    """ Class derived from MbedLsToolsBase ports mbed-ls functionality for Windows 7 OS
+    """ mbed-enabled platform detection for Windows
     """
     def __init__(self, **kwargs):
-        """ MbedLsToolsWin7 supports mbed enabled platforms detection across Windows7 OS family
-        """
         MbedLsToolsBase.__init__(self, **kwargs)
         self.os_supported.append('Windows7')
         if sys.version_info[0] < 3:
             import _winreg as winreg
         else:
             import winreg
-        self.winreg = winreg
 
-    def list_mbeds(self):
-        """! Returns detailed list of connected mbeds
-            @return Returns list of structures with detailed info about each mbed
-            @details Function returns list of dictionaries with mbed attributes such as mount point, TargetID name etc.
-        """
-        self.ERRORLEVEL_FLAG = 0
+    def find_candidates(self):
+        return [
+            {
+                'mount_point': mnt,
+                'target_id_usb_id': id,
+                'serial_port': self._com_port(id)
+            }
+            for mnt, id in self.get_mbeds()
+            if self.mount_point_ready(mnt)
+        ]
 
-        mbeds = []
-        for mbed in self.discover_connected_mbeds():
-            d = {}
-            d['mount_point'] = mbed[0] if mbed[0] else None
-            d['target_id'] = mbed[1] if mbed[1] else None
-            d['serial_port'] = mbed[2] if mbed[2] else None
-            d['platform_name'] = mbed[3] if mbed[3] else None
-            d['target_id_usb_id'] = mbed[4] if mbed[4] else None
-            d['target_id_mbed_htm'] = mbed[5] if mbed[5] else None
-            mbeds += [d]
-
-            # Set errorlevel if mount_point, target_id,
-            # serial_port or platform_name is missing
-            if None in mbed[0:3]:
-                self.ERRORLEVEL_FLAG = -1
-
-        return mbeds
-
-    def discover_connected_mbeds(self):
-        """! Function produces list of mbeds with additional information and bind mbed with correct TargetID
-            @return Returns [(<mbed_mount_point>, <mbed_id>, <com port>, <board model>,
-                              <usb_target_id>, <htm_target_id>), ..]
-            @details Notice: this function is permissive: adds new elements in-places when and if found
-        """
-        mbeds = [(m[0], m[1], None, None) for m in self.get_connected_mbeds()]
-        for i in range(len(mbeds)):
-            mbed = mbeds[i]
-            mnt = mbed[0]
-            mbed_id, mbed_htm_target_id = self.get_mbed_target_id(mnt, mbed[1])
-            mbed_id_prefix = mbed_id[0:4]
-            board = self.plat_db.get(mbed_id_prefix)
-            port = self.get_mbed_com_port(mbed[1])
-            mbeds[i] = (mnt, mbed_id, port, board, mbed[1], mbed_htm_target_id)
-        return mbeds
-
-    def get_mbed_com_port(self, tid):
+    def _com_port(self, tid):
         """! Function checks mbed serial port in Windows registry entries
         @param tid TargetID
         @return Returns None if port is not found. In normal circumstances it should never return None
         @details This goes through a whole new loop, but this assures that even if serial port (COM)
                  is not detected, we still get the rest of info like mount point etc.
         """
-        self.winreg.Enum = self.winreg.OpenKey(self.winreg.HKEY_LOCAL_MACHINE, r'SYSTEM\CurrentControlSet\Enum')
-        usb_devs = self.winreg.OpenKey(self.winreg.Enum, 'USB')
+        winreg.Enum = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, r'SYSTEM\CurrentControlSet\Enum')
+        usb_devs = winreg.OpenKey(winreg.Enum, 'USB')
 
         logger.debug('get_mbed_com_port ID: %s', tid)
 
@@ -99,15 +65,15 @@ class MbedLsToolsWin7(MbedLsToolsBase):
         dev_keys = []
         for vid in self.iter_keys(usb_devs):
             try:
-                dev_keys += [self.winreg.OpenKey(vid, tid)]
+                dev_keys += [winreg.OpenKey(vid, tid)]
             except:
                 pass
 
         # then try to get port directly from "Device Parameters"
         for key in dev_keys:
             try:
-                param = self.winreg.OpenKey(key, "Device Parameters")
-                port = self.winreg.QueryValueEx(param, 'PortName')[0]
+                param = winreg.OpenKey(key, "Device Parameters")
+                port = winreg.QueryValueEx(param, 'PortName')[0]
                 logger.debug('get_mbed_com_port port %s', port)
                 return port
             except:
@@ -117,7 +83,7 @@ class MbedLsToolsWin7(MbedLsToolsBase):
         for key in dev_keys:
             try:
                 ports = []
-                parent_id = self.winreg.QueryValueEx(key, 'ParentIdPrefix')[0]
+                parent_id = winreg.QueryValueEx(key, 'ParentIdPrefix')[0]
                 for VID in self.iter_keys(usb_devs):
                     for dev in self.iter_keys_as_str(VID):
                         if parent_id in dev:
@@ -138,13 +104,6 @@ class MbedLsToolsWin7(MbedLsToolsBase):
 
         # If everything fails, return None
         return None
-
-    def get_connected_mbeds(self):
-        """! Function  return mbeds with existing mount point
-        @return Returns [(<mbed_mount_point>, <mbed_id>), ..]
-        @details Helper function
-        """
-        return [m for m in self.get_mbeds() if self.mount_point_ready(m[0])]
 
     def get_connected_mbeds_usb_ids(self):
         """! Function  return mbeds with existing mount point's
@@ -175,38 +134,25 @@ class MbedLsToolsWin7(MbedLsToolsBase):
             logger.debug((mountpoint, tid))
         return mbeds
 
-    def get_mbed_target_id(self, mnt, target_usb_id):
-        """! Function gets the mbed target and HTM IDs
-        @param mnt mbed mount point (disk / drive letter)
-        @param target_usb_id mbed target USB ID
-        @return Function returns (<target_id>, <htm_target_id>)
-        @details Helper function
-        """
-        mbed_htm_target_id = self.get_mbed_htm_target_id(mnt)
-        # Deducing mbed-enabled TargetID based on available targetID definition DB.
-        # If TargetID from USBID is not recognized we will try to check URL in mbed.htm
-        mbed_id = mbed_htm_target_id if mbed_htm_target_id is not None else target_usb_id
-        return mbed_id, mbed_htm_target_id
-
     # =============================== Registry ====================================
 
     def iter_keys_as_str(self, key):
         """! Iterate over subkeys of a key returning subkey as string
         """
-        for i in range(self.winreg.QueryInfoKey(key)[0]):
-            yield self.winreg.EnumKey(key, i)
+        for i in range(winreg.QueryInfoKey(key)[0]):
+            yield winreg.EnumKey(key, i)
 
     def iter_keys(self, key):
         """! Iterate over subkeys of a key
         """
-        for i in range(self.winreg.QueryInfoKey(key)[0]):
-            yield self.winreg.OpenKey(key, self.winreg.EnumKey(key, i))
+        for i in range(winreg.QueryInfoKey(key)[0]):
+            yield winreg.OpenKey(key, winreg.EnumKey(key, i))
 
     def iter_vals(self, key):
         """! Iterate over values of a key
         """
-        for i in range(self.winreg.QueryInfoKey(key)[1]):
-            yield self.winreg.EnumValue(key, i)
+        for i in range(winreg.QueryInfoKey(key)[1]):
+            yield winreg.EnumValue(key, i)
 
     def get_mbed_devices(self):
         """! Get MBED devices (connected or not)
@@ -230,7 +176,7 @@ class MbedLsToolsWin7(MbedLsToolsBase):
     def get_mounted_devices(self):
         """! Get all mounted devices (connected or not)
         """
-        mounts = self.winreg.OpenKey(self.winreg.HKEY_LOCAL_MACHINE, 'SYSTEM\MountedDevices')
+        mounts = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, 'SYSTEM\MountedDevices')
         return [val for val in self.iter_vals(mounts)]
 
     def regbin2str(self, regbin):
