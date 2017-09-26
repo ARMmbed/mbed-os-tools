@@ -29,23 +29,23 @@ class LinuxPortTestCase(unittest.TestCase):
         self.linux_generic = MbedLsToolsLinuxGeneric()
 
         self.vfat_devices = [
-            "/dev/sdb on /media/usb0 type vfat (rw,noexec,nodev,sync,noatime,nodiratime,gid=1000,uid=1000,dmask=000,fmask=000)",
-            "/dev/sdd on /media/usb2 type vfat (rw,noexec,nodev,sync,noatime,nodiratime,gid=1000,uid=1000,dmask=000,fmask=000)",
-            "/dev/sde on /media/usb3 type vfat (rw,noexec,nodev,sync,noatime,nodiratime,gid=1000,uid=1000,dmask=000,fmask=000)",
-            "/dev/sdc on /media/usb1 type vfat (rw,noexec,nodev,sync,noatime,nodiratime,gid=1000,uid=1000,dmask=000,fmask=000)"
+            b"/dev/sdb on /media/usb0 type vfat (rw,noexec,nodev,sync,noatime,nodiratime,gid=1000,uid=1000,dmask=000,fmask=000)",
+            b"/dev/sdd on /media/usb2 type vfat (rw,noexec,nodev,sync,noatime,nodiratime,gid=1000,uid=1000,dmask=000,fmask=000)",
+            b"/dev/sde on /media/usb3 type vfat (rw,noexec,nodev,sync,noatime,nodiratime,gid=1000,uid=1000,dmask=000,fmask=000)",
+            b"/dev/sdc on /media/usb1 type vfat (rw,noexec,nodev,sync,noatime,nodiratime,gid=1000,uid=1000,dmask=000,fmask=000)"
         ]
 
         self.vfat_devices_ext = [
-            "/dev/sdb on /media/MBED_xxx type vfat (rw,noexec,nodev,sync,noatime,nodiratime,gid=1000,uid=1000,dmask=000,fmask=000)",
-            "/dev/sdd on /media/MBED___x type vfat (rw,noexec,nodev,sync,noatime,nodiratime,gid=1000,uid=1000,dmask=000,fmask=000)",
-            "/dev/sde on /media/MBED-xxx type vfat (rw,noexec,nodev,sync,noatime,nodiratime,gid=1000,uid=1000,dmask=000,fmask=000)",
-            "/dev/sdc on /media/MBED_x-x type vfat (rw,noexec,nodev,sync,noatime,nodiratime,gid=1000,uid=1000,dmask=000,fmask=000)",
+            b"/dev/sdb on /media/MBED_xxx type vfat (rw,noexec,nodev,sync,noatime,nodiratime,gid=1000,uid=1000,dmask=000,fmask=000)",
+            b"/dev/sdd on /media/MBED___x type vfat (rw,noexec,nodev,sync,noatime,nodiratime,gid=1000,uid=1000,dmask=000,fmask=000)",
+            b"/dev/sde on /media/MBED-xxx type vfat (rw,noexec,nodev,sync,noatime,nodiratime,gid=1000,uid=1000,dmask=000,fmask=000)",
+            b"/dev/sdc on /media/MBED_x-x type vfat (rw,noexec,nodev,sync,noatime,nodiratime,gid=1000,uid=1000,dmask=000,fmask=000)",
 
-            "/dev/sda on /mnt/NUCLEO type vfat (rw,relatime,uid=999,fmask=0133,dmask=0022,codepage=437,iocharset=ascii,shortname=mixed,utf8,flush,errors=remount-ro,uhelper=ldm)",
-            "/dev/sdf on /mnt/NUCLEO_ type vfat (rw,relatime,uid=999,fmask=0133,dmask=0022,codepage=437,iocharset=ascii,shortname=mixed,utf8,flush,errors=remount-ro,uhelper=ldm)",
-            "/dev/sdg on /mnt/DAPLINK type vfat (rw,relatime,sync,uid=999,fmask=0022,dmask=0022,codepage=437,iocharset=ascii,shortname=mixed,errors=remount-ro,uhelper=ldm)",
-            "/dev/sdh on /mnt/DAPLINK_ type vfat (rw,relatime,sync,uid=999,fmask=0022,dmask=0022,codepage=437,iocharset=ascii,shortname=mixed,errors=remount-ro,uhelper=ldm)",
-            "/dev/sdi on /mnt/DAPLINK__ type vfat (rw,relatime,sync,uid=999,fmask=0022,dmask=0022,codepage=437,iocharset=ascii,shortname=mixed,errors=remount-ro,uhelper=ldm)",
+            b"/dev/sda on /mnt/NUCLEO type vfat (rw,relatime,uid=999,fmask=0133,dmask=0022,codepage=437,iocharset=ascii,shortname=mixed,utf8,flush,errors=remount-ro,uhelper=ldm)",
+            b"/dev/sdf on /mnt/NUCLEO_ type vfat (rw,relatime,uid=999,fmask=0133,dmask=0022,codepage=437,iocharset=ascii,shortname=mixed,utf8,flush,errors=remount-ro,uhelper=ldm)",
+            b"/dev/sdg on /mnt/DAPLINK type vfat (rw,relatime,sync,uid=999,fmask=0022,dmask=0022,codepage=437,iocharset=ascii,shortname=mixed,errors=remount-ro,uhelper=ldm)",
+            b"/dev/sdh on /mnt/DAPLINK_ type vfat (rw,relatime,sync,uid=999,fmask=0022,dmask=0022,codepage=437,iocharset=ascii,shortname=mixed,errors=remount-ro,uhelper=ldm)",
+            b"/dev/sdi on /mnt/DAPLINK__ type vfat (rw,relatime,sync,uid=999,fmask=0022,dmask=0022,codepage=437,iocharset=ascii,shortname=mixed,errors=remount-ro,uhelper=ldm)",
         ]
 
         # get_detected / get_not_detected (1 missing lpc1768)
@@ -102,16 +102,9 @@ class LinuxPortTestCase(unittest.TestCase):
             "lrwxrwxrwx 1 root 13 Mar 15 08:35 usb-ARM_DAPLink_CMSIS-DAP_0240000029164e45001b0012706e000df301000097969900-if01 -> ../../ttyACM2"
         ]
 
-        self.mount_list_rpi_1 = [
-            "/dev/sdd on /media/iot/DAPLINK1 type vfat (rw,nosuid,nodev,uid=1000,gid=1000,shortname=mixed,dmask=0077,utf8=1,showexec,flush,uhelper=udisks2)"
-            "/dev/sdb on /media/iot/DAPLINK2 type vfat (rw,nosuid,nodev,uid=1000,gid=1000,shortname=mixed,dmask=0077,utf8=1,showexec,flush,uhelper=udisks2)",
-            "/dev/sde on /media/iot/DAPLINK3 type vfat (rw,nosuid,nodev,uid=1000,gid=1000,shortname=mixed,dmask=0077,utf8=1,showexec,flush,uhelper=udisks2)",
-            "/dev/sdc on /media/iot/DAPLINK type vfat (rw,nosuid,nodev,uid=1000,gid=1000,shortname=mixed,dmask=0077,utf8=1,showexec,flush,uhelper=udisks2)"
-        ]
-
         self.mount_list_1 = [
-          "/dev/sdb on /media/usb0 type vfat (rw,noexec,nodev,sync,noatime,nodiratime,gid=1000,uid=1000,dmask=000,fmask=000)",
-          "/dev/sdc on /media/usb1 type vfat (rw,noexec,nodev,sync,noatime,nodiratime,gid=1000,uid=1000,dmask=000,fmask=000)"
+          b"/dev/sdb on /media/usb0 type vfat (rw,noexec,nodev,sync,noatime,nodiratime,gid=1000,uid=1000,dmask=000,fmask=000)",
+          b"/dev/sdc on /media/usb1 type vfat (rw,noexec,nodev,sync,noatime,nodiratime,gid=1000,uid=1000,dmask=000,fmask=000)"
         ]
 
         # get_detected / get_not_detected (1 missing lpc1768, more platforms)
@@ -163,11 +156,11 @@ class LinuxPortTestCase(unittest.TestCase):
         ]
 
         self.mount_list_2 = [
-          "/dev/sdb on /media/usb0 type vfat (rw,noexec,nodev,sync,noatime,nodiratime,gid=1000,uid=1000,dmask=000,fmask=000)",
-          "/dev/sdc on /media/usb1 type vfat (rw,noexec,nodev,sync,noatime,nodiratime,gid=1000,uid=1000,dmask=000,fmask=000)",
-          "/dev/sdd on /media/usb2 type vfat (rw,noexec,nodev,sync,noatime,nodiratime,gid=1000,uid=1000,dmask=000,fmask=000)",
-          "/dev/sde on /media/usb3 type vfat (rw,noexec,nodev,sync,noatime,nodiratime,gid=1000,uid=1000,dmask=000,fmask=000)",
-          "/dev/sdf on /media/usb4 type vfat (rw,noexec,nodev,sync,noatime,nodiratime,gid=1000,uid=1000,dmask=000,fmask=000)"
+          b"/dev/sdb on /media/usb0 type vfat (rw,noexec,nodev,sync,noatime,nodiratime,gid=1000,uid=1000,dmask=000,fmask=000)",
+          b"/dev/sdc on /media/usb1 type vfat (rw,noexec,nodev,sync,noatime,nodiratime,gid=1000,uid=1000,dmask=000,fmask=000)",
+          b"/dev/sdd on /media/usb2 type vfat (rw,noexec,nodev,sync,noatime,nodiratime,gid=1000,uid=1000,dmask=000,fmask=000)",
+          b"/dev/sde on /media/usb3 type vfat (rw,noexec,nodev,sync,noatime,nodiratime,gid=1000,uid=1000,dmask=000,fmask=000)",
+          b"/dev/sdf on /media/usb4 type vfat (rw,noexec,nodev,sync,noatime,nodiratime,gid=1000,uid=1000,dmask=000,fmask=000)"
         ]
 
         self.disk_list_3 = [
@@ -206,7 +199,7 @@ class LinuxPortTestCase(unittest.TestCase):
         ]
 
         self.mount_list_4 = [
-            "/dev/sdb on /media/przemek/DAPLINK type vfat (rw,nosuid,nodev,relatime,uid=1000,gid=1000,fmask=0022,dmask=0022,codepage=437,iocharset=iso8859-1,shortname=mixed,showexec,utf8,flush,errors=remount-ro,uhelper=udisks2)"
+            b"/dev/sdb on /media/przemek/DAPLINK type vfat (rw,nosuid,nodev,relatime,uid=1000,gid=1000,fmask=0022,dmask=0022,codepage=437,iocharset=iso8859-1,shortname=mixed,showexec,utf8,flush,errors=remount-ro,uhelper=udisks2)"
         ]
 
     def tearDown(self):
