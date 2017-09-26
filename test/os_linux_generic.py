@@ -17,6 +17,7 @@ limitations under the License.
 """
 
 import unittest
+from mock import patch
 from mbed_lstools.lstools_linux_generic import MbedLsToolsLinuxGeneric
 from mbed_lstools.platform_database import LOCAL_PLATFORM_DATABASE
 
@@ -59,6 +60,7 @@ class LinuxPortTestCase(unittest.TestCase):
             "0715": "NUCLEO_L053R8",
             "0720": "NUCLEO_F401RE",    # Under test
             "0725": "NUCLEO_F030R8",
+            "0740": "NUCLEO_F411RE",    # Under test
         }
         self.linux_generic.plat_db._dbs[LOCAL_PLATFORM_DATABASE] = self.tids
 
@@ -448,6 +450,19 @@ class LinuxPortTestCase(unittest.TestCase):
         self.assertEqual([], id_disks)
         self.assertEqual([], id_serial)
 
+    def test_detect_a_stlink_dev(self):
+        with patch("mbed_lstools.lstools_linux_generic.MbedLsToolsLinuxGeneric.get_dev_by_id") as _dev_by_id,\
+             patch("mbed_lstools.lstools_linux_generic.MbedLsToolsLinuxGeneric.get_detected") as _detected,\
+             patch("mbed_lstools.lstools_linux_generic.MbedLsToolsLinuxGeneric.get_mounts") as _mounts,\
+             patch("mbed_lstools.lstools_linux_generic.MbedLsToolsLinuxGeneric.get_not_detected") as _not_detected,\
+             patch("mbed_lstools.lstools_linux_generic.MbedLsToolsLinuxGeneric.get_mbed_htm_target_id") as _htm:
+            _not_detected.return_value = [[None, u'sdg', '/mnt/foo', u'/dev/ttyACM0', u'usb-MBED_microcontroller_066EFF514951775087053511-0:0 -> ../../sdg']]
+            _detected.return_value = []
+            _htm.return_value = u'0740022107296148386DF735'
+            self.assertEqual(self.linux_generic.plat_db.get(u'0740'), u'NUCLEO_F411RE')
+            result = self.linux_generic.list_mbeds()
+            assert result[0]['target_id'].startswith(u'0740')
+            self.assertEqual(result[0]['platform_name'], u'NUCLEO_F411RE')
 
 if __name__ == '__main__':
     unittest.main()
