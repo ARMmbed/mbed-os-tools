@@ -53,7 +53,7 @@ setup(name='mbed-ls',
       install_requires=[
           "PrettyTable>=0.7.2",
           "fasteners",
-          "xdg>=1.0"
+          "appdirs>=1.4"
       ],
       tests_require = [
           "mock>=2",

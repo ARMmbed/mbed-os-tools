@@ -25,7 +25,7 @@ from copy import copy
 from io import open
 from os import makedirs
 from os.path import join, dirname
-from xdg import XDG_DATA_HOME
+from appdirs import user_data_dir
 from fasteners import InterProcessLock
 
 try:
@@ -36,8 +36,8 @@ except NameError:
 logger = logging.getLogger("mbedls.platform_database")
 logging.basicConfig(level=logging.DEBUG)
 
-LOCAL_PLATFORM_DATABASE = join(XDG_DATA_HOME, "mbedls", "platforms.json")
-LOCAL_MOCKS_DATABASE = join(XDG_DATA_HOME, "mbedls", "mock.json")
+LOCAL_PLATFORM_DATABASE = join(user_data_dir("mbedls"), "platforms.json")
+LOCAL_MOCKS_DATABASE = join(user_data_dir("mbedls"), "mock.json")
 
 DEFAULT_PLATFORM_DB = {
     u'0001': u'LPC2368',
