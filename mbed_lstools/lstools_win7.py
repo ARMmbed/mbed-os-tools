@@ -49,7 +49,7 @@ class MbedLsToolsWin7(MbedLsToolsBase):
         self.ERRORLEVEL_FLAG = 0
 
         mbeds = []
-        for mbed in self.discover_connected_mbeds(self.manufacture_ids):
+        for mbed in self.discover_connected_mbeds():
             d = {}
             d['mount_point'] = mbed[0] if mbed[0] else None
             d['target_id'] = mbed[1] if mbed[1] else None
@@ -66,7 +66,7 @@ class MbedLsToolsWin7(MbedLsToolsBase):
 
         return mbeds
 
-    def discover_connected_mbeds(self, defs={}):
+    def discover_connected_mbeds(self):
         """! Function produces list of mbeds with additional information and bind mbed with correct TargetID
             @return Returns [(<mbed_mount_point>, <mbed_id>, <com port>, <board model>,
                               <usb_target_id>, <htm_target_id>), ..]
@@ -78,7 +78,7 @@ class MbedLsToolsWin7(MbedLsToolsBase):
             mnt = mbed[0]
             mbed_id, mbed_htm_target_id = self.get_mbed_target_id(mnt, mbed[1])
             mbed_id_prefix = mbed_id[0:4]
-            board = defs[mbed_id_prefix] if mbed_id_prefix in defs else None
+            board = self.plat_db.get(mbed_id_prefix)
             port = self.get_mbed_com_port(mbed[1])
             mbeds[i] = (mnt, mbed_id, port, board, mbed[1], mbed_htm_target_id)
         return mbeds
