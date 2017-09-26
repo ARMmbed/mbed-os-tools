@@ -83,7 +83,7 @@ class MbedLsToolsLinuxGeneric(MbedLsToolsBase):
         mount_ids = self.get_mounts()
 
         # Extra data to identify mbeds by target_id
-        tids = self.plat_db.all_ids()
+        tids = list(self.plat_db.all_ids())
 
         # Listing known and undetected / orphan devices
         mbeds = self.get_detected(tids, disk_ids, serial_ids, mount_ids)
@@ -112,7 +112,7 @@ class MbedLsToolsLinuxGeneric(MbedLsToolsBase):
                 mbed_htm_target_id_prefix = mbed_htm_target_id[0:4]
                 if mbed_htm_target_id_prefix in tids:
                     # We need to update platform_name and corresponding TargetID (not USBID, but from mbed.htm)
-                    mbed['platform_name'] = tids[mbed_htm_target_id_prefix]
+                    mbed['platform_name'] = self.plat_db.get(mbed_htm_target_id_prefix)
                     mbed['target_id'] = mbed_htm_target_id
             mbed['target_id_usb_id'] = tid
             mbed['target_id_mbed_htm'] = mbed_htm_target_id
