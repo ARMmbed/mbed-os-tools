@@ -23,6 +23,10 @@ import logging
 
 from mbed_lstools.lstools_base import MbedLsToolsBase
 
+class DummyLsTools(MbedLsToolsBase):
+    def find_candidates(self):
+        return []
+
 try:
     basestring
 except NameError:
@@ -34,7 +38,7 @@ class BasicTestCase(unittest.TestCase):
     """
 
     def setUp(self):
-        self.base = MbedLsToolsBase()
+        self.base = DummyLsTools()
 
     def tearDown(self):
         pass
