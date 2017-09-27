@@ -20,12 +20,14 @@ import unittest
 import os
 import errno
 import logging
+from mock import patch
 
 from mbed_lstools.lstools_base import MbedLsToolsBase
 
 class DummyLsTools(MbedLsToolsBase):
+    return_value = []
     def find_candidates(self):
-        return []
+        return self.return_value
 
 try:
     basestring
@@ -43,9 +45,23 @@ class BasicTestCase(unittest.TestCase):
     def tearDown(self):
         pass
 
-    def test_example(self):
-        self.assertEqual(True, True)
-        self.assertNotEqual(True, False)
+    def test_list_mbeds(self):
+        self.base.return_value = [{'mount_point': 'dummy_mount_point',
+                                   'target_id_usb_id': '0240DEADBEEF',
+                                   'serial_port': "dummy_serial_port"},
+                                  {'mount_point': None,
+                                   'target_id_usb_id': '00000000000',
+                                   'serial_port': 'not_valid'}]
+        with patch("mbed_lstools.lstools_base.MbedLsToolsBase.read_htm_target_id") as _read_htm,\
+             patch("mbed_lstools.lstools_base.PlatformDatabase.get") as _get:
+            _read_htm.return_value = "0241BEEFDEAD"
+            _get.return_value = 'foo_target'
+            to_check = self.base.list_mbeds()
+            _read_htm.assert_called_once_with('dummy_mount_point')
+            _get.assert_called_once_with('0241')
+        self.assertEqual(len(to_check), 1)
+        self.assertEqual(to_check[0]['target_id'], "0241BEEFDEAD")
+        self.assertEqual(to_check[0]['platform_name'], 'foo_target')
 
     def test_list_manufacture_ids(self):
         table_str = self.base.list_manufacture_ids()
