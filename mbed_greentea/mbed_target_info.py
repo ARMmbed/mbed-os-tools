@@ -142,17 +142,10 @@ def parse_yotta_json_for_build_name(yotta_json_content):
     @param yotta_json_content Content of .yotta_json file
     @return String with set yotta target name, None if no target found
     """
-    result = None
-    if 'build' in yotta_json_content:
-        if 'target' in yotta_json_content['build']:
-            # yotta_json_content['build']['target'] should be something like this: "frdm-k64f-gcc,*"
-            # We will split this string using ','. Because split will always return an array
-            # with at least 1 element we can select first element to be target name
-            try:
-                result = yotta_json_content['build']['target'].split(',')[0]
-            except IndexError:
-                result = None
-    return result
+    try:
+        return yotta_json_content['build']['target'].split(',')[0]
+    except KeyError:
+        return None
 
 def get_yotta_target_from_local_config(yotta_json='.yotta.json'):
     """! Load yotta target from local configuration file
@@ -167,15 +160,17 @@ def get_yotta_target_from_local_config(yotta_json='.yotta.json'):
       }
     }
     """
-    result = None
-    if os.path.exists(yotta_json):
-        try:
-            gt_logger.gt_log("parsing local file '%s' for target information"% yotta_json)
-            with open(yotta_json, 'r') as f:
-                result = parse_yotta_json_for_build_name(json.load(f))
-        except Exception as e:
-            print(str(e))
-    return result
+    if not os.path.exists(yotta_json):
+        return None
+
+    try:
+        gt_logger.gt_log("parsing local file '%s' for target information"% yotta_json)
+
+        with open(yotta_json, 'r') as f:
+            return parse_yotta_json_for_build_name(json.load(f))
+    except (IOError, ValueError) as e:
+        gt_logger.gt_log(str(e))
+    return None
 
 def get_mbed_target_from_current_dir():
     """! Function uses yotta target command to check current target
@@ -223,39 +218,50 @@ def get_mbed_targets_from_yotta_local_module(mbed_classic_name, yotta_targets_pa
     """
     result = []
 
-    if os.path.exists(yotta_targets_path):
-        # All local diorectories with yotta targets
-        target_dirs = [target_dir_name for target_dir_name in os.listdir(yotta_targets_path) if os.path.isdir(os.path.join(yotta_targets_path, target_dir_name))]
+    if not os.path.exists(yotta_targets_path):
+        return result
 
-        gt_logger.gt_log("local yotta target search in '%s' for compatible mbed-target '%s'"% (gt_logger.gt_bright(yotta_targets_path), gt_logger.gt_bright(mbed_classic_name.lower().strip())))
+    # All local directories with yotta targets
+    target_dirs = [target_dir_name for target_dir_name in os.listdir(yotta_targets_path) if os.path.isdir(os.path.join(yotta_targets_path, target_dir_name))]
 
-        for target_dir in target_dirs:
-            path = os.path.join(yotta_targets_path, target_dir, 'target.json')
-            try:
-                with open(path, 'r') as data_file:
-                    target_json_data = json.load(data_file)
-                    yotta_target_name = parse_mbed_target_from_target_json(mbed_classic_name, target_json_data)
-                    if yotta_target_name:
-                        target_dir_name = os.path.join(yotta_targets_path, target_dir)
-                        gt_logger.gt_log_tab("inside '%s' found compatible target '%s'"% (gt_logger.gt_bright(target_dir_name), gt_logger.gt_bright(yotta_target_name)))
-                        result.append(yotta_target_name)
-            except IOError as e:
-                gt_logger.gt_log_err(str(e))
+    gt_logger.gt_log("local yotta target search in '%s' for compatible mbed-target '%s'"% (gt_logger.gt_bright(yotta_targets_path), gt_logger.gt_bright(mbed_classic_name.lower().strip())))
+
+    for target_dir in target_dirs:
+        path = os.path.join(yotta_targets_path, target_dir, 'target.json')
+        try:
+            with open(path, 'r') as data_file:
+                target_json_data = json.load(data_file)
+                yotta_target_name = parse_mbed_target_from_target_json(mbed_classic_name, target_json_data)
+                if yotta_target_name:
+                    target_dir_name = os.path.join(yotta_targets_path, target_dir)
+                    gt_logger.gt_log_tab("inside '%s' found compatible target '%s'"% (gt_logger.gt_bright(target_dir_name), gt_logger.gt_bright(yotta_target_name)))
+                    result.append(yotta_target_name)
+        except IOError as e:
+            gt_logger.gt_log_err(str(e))
     return result
 
 def parse_mbed_target_from_target_json(mbed_classic_name, target_json_data):
-    result = None
-    if target_json_data and 'keywords' in target_json_data:
-        for keyword in target_json_data['keywords']:
-            # Keywords with mbed-target data embedded in to identify target
-            if keyword.startswith('mbed-target:'):
-                mbed_target, mbed_name = keyword.split(':')
-                if mbed_name.lower() == mbed_classic_name.lower():
-                    # Check in case name of the target is not specified
-                    if 'name' in target_json_data:
-                        yotta_target_name = target_json_data['name']
-                        return yotta_target_name
-    return result
+    if not target_json_data:
+        return None
+
+    if not 'keywords' in target_json_data:
+        return None
+
+    for keyword in target_json_data['keywords']:
+        if not keyword.startswith('mbed-target:'):
+            continue
+
+        mbed_target, mbed_name = keyword.split(':')
+
+        if mbed_name.lower() != mbed_classic_name.lower():
+            continue
+
+        if 'name' not in target_json_data:
+            continue
+
+        return target_json_data['name']
+
+    return None
 
 def get_mbed_targets_from_yotta(mbed_classic_name):
     """! Function is using 'yotta search' command to fetch matching mbed device target's name
@@ -295,7 +301,6 @@ def add_target_info_mapping(mbed_classic_name, map_platform_to_yt_target=None, u
     @return Returns TARGET_INFO_MAPPING updated with new targets
     @details Note: function mutates TARGET_INFO_MAPPING
     """
-
     yotta_target_search = get_mbed_targets_from_yotta_local_module(mbed_classic_name)
     if use_yotta_registry:
         # We can also use yotta registry to check for target compatibility (slower)
@@ -304,8 +309,8 @@ def add_target_info_mapping(mbed_classic_name, map_platform_to_yt_target=None, u
         yotta_target_search = list(set(yotta_target_search))    # Reduce repeated values
 
     # Add extra targets to already existing and detected in the system platforms
-    if mbed_classic_name in map_platform_to_yt_target:
-        yotta_target_search = list(set(yotta_target_search + map_platform_to_yt_target[mbed_classic_name]))
+    if map_platform_to_yt_target and mbed_classic_name in map_platform_to_yt_target:
+            yotta_target_search = list(set(yotta_target_search + map_platform_to_yt_target[mbed_classic_name]))
 
     # Check if this targets are already there
     if mbed_classic_name not in TARGET_INFO_MAPPING:
@@ -320,26 +325,32 @@ def add_target_info_mapping(mbed_classic_name, map_platform_to_yt_target=None, u
         }
 
     target_desc = TARGET_INFO_MAPPING[mbed_classic_name]
-    if 'yotta_targets' in target_desc:
-        # All yt targets supported by 'mbed_classic_name' board
-        mbeds_yt_targets = []
-        for target in target_desc['yotta_targets']:
-            mbeds_yt_targets.append(target['yotta_target'])
-        # Check if any of yotta targets is new to TARGET_INFO_MAPPING
-        for new_yt_target in yotta_target_search:
-            if new_yt_target not in mbeds_yt_targets:
-                # gt_logger.gt_log_tab("discovered extra target '%s'"% new_yt_target)
-                # We want to at least guess toolchain type by target's name sufix
-                mbed_toolchain = 'UNKNOWN'
-                for toolchain_sufix in TARGET_TOOLCAHINS:
-                    if new_yt_target.endswith(toolchain_sufix):
-                        mbed_toolchain = TARGET_TOOLCAHINS[toolchain_sufix]
-                        break
+    if 'yotta_targets' not in target_desc:
+        return TARGET_INFO_MAPPING
 
-                TARGET_INFO_MAPPING[mbed_classic_name]['yotta_targets'].append({
-                    'yotta_target': new_yt_target,
-                    'mbed_toolchain': mbed_toolchain
-                    })
+    # All yt targets supported by 'mbed_classic_name' board
+    mbeds_yt_targets = []
+    for target in target_desc['yotta_targets']:
+        mbeds_yt_targets.append(target['yotta_target'])
+
+    # Check if any of yotta targets is new to TARGET_INFO_MAPPING
+    for new_yt_target in yotta_target_search:
+        if new_yt_target in mbeds_yt_targets:
+            continue
+
+        gt_logger.gt_log_tab("discovered extra target '%s'"% new_yt_target)
+        # We want to at least guess toolchain type by target's name suffix
+        mbed_toolchain = 'UNKNOWN'
+        for toolchain_suffix in TARGET_TOOLCAHINS:
+            if new_yt_target.endswith(toolchain_suffix):
+                mbed_toolchain = TARGET_TOOLCAHINS[toolchain_suffix]
+                break
+
+        TARGET_INFO_MAPPING[mbed_classic_name]['yotta_targets'].append({
+            'yotta_target': new_yt_target,
+            'mbed_toolchain': mbed_toolchain
+            })
+
     return TARGET_INFO_MAPPING
 
 def get_mbed_clasic_target_info(mbed_classic_name, map_platform_to_yt_target=None, use_yotta_registry=False):

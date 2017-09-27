@@ -157,6 +157,7 @@ def exporter_testcase_junit(test_result_ext, test_suite_properties=None):
     @return String containing Junit XML formatted test result output
     """
     from junit_xml import TestSuite, TestCase
+    import sys
 
     test_suites = []
 
@@ -165,11 +166,11 @@ def exporter_testcase_junit(test_result_ext, test_suite_properties=None):
         for test_suite_name in test_results:
             test = test_results[test_suite_name]
 
-            # tc_elapsed_sec = test['elapsed_time']
-            tc_stdout = str() #test['single_test_output']
-
             try:
-                tc_stdout = test['single_test_output'].decode('unicode_escape').encode('ascii','ignore')
+                if sys.version_info >= (3, 0):
+                    tc_stdout = str(test['single_test_output']).encode('ascii', 'ignore')
+                else:
+                    tc_stdout = test['single_test_output'].decode('unicode_escape').encode('ascii', 'ignore')
             except UnicodeDecodeError as e:
                 err_mgs = "(UnicodeDecodeError) exporter_testcase_junit:", str(e)
                 tc_stdout = err_mgs
@@ -193,7 +194,12 @@ def exporter_testcase_junit(test_result_ext, test_suite_properties=None):
                 result_text = testcase_result[tc_name].get('result_text', "UNDEF")
 
                 try:
-                    tc_stderr = '\n'.join(utest_log).decode('unicode_escape').encode('ascii','ignore')
+                    lines = '\n'.join(utest_log)
+
+                    if sys.version_info >= (3, 0):
+                        tc_stderr = str(lines).encode('ascii', 'ignore')
+                    else:
+                        tc_stderr = lines.decode('unicode_escape').encode('ascii', 'ignore')
                 except UnicodeDecodeError as e:
                     err_mgs = "(UnicodeDecodeError) exporter_testcase_junit:" + str(e)
                     tc_stderr = err_mgs
@@ -218,10 +224,12 @@ def exporter_testcase_junit(test_result_ext, test_suite_properties=None):
                 test_cases.append(tc)
 
             ts_name = target_name
-            if test_suite_properties and target_name in test_suite_properties:
-                test_build_properties = test_suite_properties[target_name] 
+
+            if test_suite_properties is not None:
+                test_build_properties = test_suite_properties[target_name] if target_name in test_suite_properties else None
             else:
                 test_build_properties = None
+
             ts = TestSuite(ts_name, test_cases, properties=test_build_properties)
             test_suites.append(ts)
 

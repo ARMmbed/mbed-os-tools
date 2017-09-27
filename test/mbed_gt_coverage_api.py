@@ -16,6 +16,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import os
 import unittest
 from mbed_greentea import mbed_coverage_api
 
@@ -45,6 +46,19 @@ class GreenteaCoverageAPI(unittest.TestCase):
         r = mbed_coverage_api.coverage_pack_hex_payload('.6164636772.')    # '.' -> 0x00
         self.assertEqual(bytearray(b'\x00adcgr\x00'), r)
 
+    def test_coverage_dump_file_valid(self):
+        import tempfile
+
+        payload = bytearray(b'PAYLOAD')
+        handle, path = tempfile.mkstemp("test_file")
+        mbed_coverage_api.coverage_dump_file(".", path, payload)
+
+        with open(path, 'r') as f:
+            read_data = f.read()
+
+        self.assertEqual(read_data, payload.decode("utf-8"))
+        os.close(handle)
+        os.remove(path)
 
 if __name__ == '__main__':
     unittest.main()

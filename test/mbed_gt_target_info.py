@@ -16,6 +16,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import os
+import shutil
+import tempfile
 import unittest
 
 from mock import patch
@@ -254,7 +257,106 @@ mbed-gcc 1.1.0
         r = mbed_target_info.get_mbed_target_from_current_dir()
         self.assertEqual('frdm-k64f-gcc', r)
 
+    def test_get_yotta_target_from_local_config_invalid_path(self):
+        result = mbed_target_info.get_yotta_target_from_local_config("invalid_path.json")
+
+        self.assertIsNone(result)
+
+    def test_get_yotta_target_from_local_config_valid_path(self):
+        payload = '{"build": { "target": "test_target"}}'
+        handle, path = tempfile.mkstemp("test_file")
+
+        with open(path, 'w+') as f:
+            f.write(payload)
+
+        result = mbed_target_info.get_yotta_target_from_local_config(path)
+
+        self.assertIsNotNone(result)
+        self.assertEqual(result, "test_target")
+
+    def test_get_yotta_target_from_local_config_failed_open(self):
+        handle, path = tempfile.mkstemp()
+
+        with open(path, 'w+') as f:
+            result = mbed_target_info.get_yotta_target_from_local_config(path)
+
+            self.assertIsNone(result)
+
+    def test_get_mbed_targets_from_yotta_local_module_invalid_path(self):
+        result = mbed_target_info.get_mbed_targets_from_yotta_local_module("null", "invalid_path")
+        self.assertEqual(result, [])
+
+    def test_get_mbed_targets_from_yotta_local_module_invalid_target(self):
+        base_path = tempfile.mkdtemp()
+        targ_path = tempfile.mkdtemp("target-1", dir=base_path)
+        handle, targ_file = tempfile.mkstemp("target.json", dir=targ_path)
+
+        result = mbed_target_info.get_mbed_targets_from_yotta_local_module("null", base_path)
+
+        self.assertEqual(result, [])
+
+    def test_get_mbed_targets_from_yotta_local_module_valid(self):
+        payload = '{"name": "test_name", "keywords": [ "mbed-target:k64f" ]}'
+        base_path = tempfile.mkdtemp()
+        tar1_path = tempfile.mkdtemp("target-1", dir=base_path)
+        tar1_file = os.path.join(tar1_path, "target.json")
+
+        with open(tar1_file, 'w+') as f:
+            f.write(payload)
+
+        result = mbed_target_info.get_mbed_targets_from_yotta_local_module("k64f", base_path)
+        self.assertIsNot(result, None)
+        self.assertEqual(result[0], "test_name")
+
+        shutil.rmtree(base_path)
+
+    def test_parse_mbed_target_from_target_json_missing_json_data(self):
+        result = mbed_target_info.parse_mbed_target_from_target_json("null", "null")
+        self.assertIsNone(result)
+
+    def test_parse_mbed_target_from_target_json_missing_keywords(self):
+        data = {}
+        result = mbed_target_info.parse_mbed_target_from_target_json("null", data)
+        self.assertIsNone(result)
+
+    def test_parse_mbed_target_from_target_json_missing_target(self):
+        data = {}
+        data["keywords"] = {}
+        result = mbed_target_info.parse_mbed_target_from_target_json("null", data)
+        self.assertIsNone(result)
+
+    def test_parse_mbed_target_from_target_json_missing_name(self):
+        data = {}
+        data["keywords"] = ["mbed-target:null"]
+        result = mbed_target_info.parse_mbed_target_from_target_json("null", data)
+        self.assertIsNone(result)
+
+    # def test_get_mbed_targets_from_yotta(self):
+    #     result = mbed_target_info.get_mbed_targets_from_yotta("k64f")
+
+    def test_parse_add_target_info_mapping(self):
+        result = mbed_target_info.add_target_info_mapping("null")
+
+
+    def test_get_platform_property_from_targets(self):
+        result = mbed_target_info.get_platform_property_from_targets({}, {})
+
+
     def test_parse_yotta_json_for_build_name(self):
+        self.assertEqual("", mbed_target_info.parse_yotta_json_for_build_name(
+            {
+                "build": {
+                    "target": ""
+                }
+            }
+        ))
+
+        self.assertEqual(None, mbed_target_info.parse_yotta_json_for_build_name(
+            {
+                "build": {}
+            }
+        ))
+
         self.assertEqual('frdm-k64f-gcc', mbed_target_info.parse_yotta_json_for_build_name(
             {
               "build": {
@@ -305,6 +407,6 @@ mbed-gcc 1.1.0
             }
         ))
 
-        
+
 if __name__ == '__main__':
     unittest.main()

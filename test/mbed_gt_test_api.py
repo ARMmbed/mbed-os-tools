@@ -325,6 +325,29 @@ Plugin info: HostTestPluginBase::BasePlugin: Waiting up to 60 sec for '024000003
 [1467205014.31][HTST][INF] {{result;success}}
 """
 
+        self.OUTPUT_WITH_MEMORY_METRICS = """mbedgt: mbed-host-test-runner: started
+[1459245860.90][CONN][RXD] {{__testcase_summary;4;0}}
+[1459245860.92][CONN][INF] found KV pair in stream: {{end;success}}, queued...
+[1459245860.92][CONN][RXD] {{end;success}}
+[1459245860.92][CONN][INF] found KV pair in stream: {{max_heap_usage;2284}}, queued...
+[1459245860.92][CONN][RXD] {{end;success}}
+[1459245860.92][CONN][INF] found KV pair in stream: {{reserved_heap;124124}}, queued...
+[1459245860.92][CONN][RXD] {{end;success}}
+[1459245860.92][CONN][INF] found KV pair in stream: {{__thread_info;"BE-EF",42,24}}, queued...
+[1459245860.92][CONN][RXD] {{end;success}}
+[1459245860.92][HTST][INF] __notify_complete(True)
+[1459245860.92][CONN][RXD] {{__coverage_start;c:\Work\core-util/source/PoolAllocator.cpp.gcda;6164636772393034c2733f32...a33e...b9}}
+[1459245860.92][HTST][INF] test suite run finished after 0.90 sec...
+[1459245860.94][HTST][INF] CONN exited with code: 0
+[1459245860.94][HTST][INF] No events in queue
+[1459245860.94][HTST][INF] stopped consuming events
+[1459245860.94][HTST][INF] host test result() call skipped, received: True
+[1459245860.94][HTST][WRN] missing __exit event from DUT
+[1459245860.94][HTST][INF] calling blocking teardown()
+[1459245860.94][HTST][INF] teardown() finished
+[1459245860.94][HTST][INF] {{result;success}}
+"""
+
     def tearDown(self):
         pass
 
@@ -475,6 +498,25 @@ Plugin info: HostTestPluginBase::BasePlugin: Waiting up to 60 sec for '024000003
         self.assertEqual(r['C strings: strpbrk']['result_text'], 'SKIPPED')
         self.assertEqual(r['C strings: strtok']['result_text'], 'ERROR')
 
+
+    def test_get_test_results_empty_output(self):
+        result = mbed_test_api.get_test_result("")
+        self.assertEqual(result, "TIMEOUT")
+
+    def test_get_memory_metrics(self):
+        result = mbed_test_api.get_memory_metrics(self.OUTPUT_WITH_MEMORY_METRICS)
+
+        self.assertEqual(result[0], 2284)
+        self.assertEqual(result[1], 124124)
+        thread_info = list(result[2])[0]
+        self.assertIn("entry", thread_info)
+        self.assertEqual(thread_info["entry"], "BE")
+        self.assertIn("stack_size", thread_info)
+        self.assertEqual(thread_info["stack_size"], 24)
+        self.assertIn("max_stack", thread_info)
+        self.assertEqual(thread_info["max_stack"], 42)
+        self.assertIn("arg", thread_info)
+        self.assertEqual(thread_info["arg"], "EF")
 
 if __name__ == '__main__':
     unittest.main()

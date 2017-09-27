@@ -115,7 +115,7 @@ def list_binaries_for_builds(test_spec, verbose_footer=False):
     """
     test_builds = test_spec.get_test_builds()
     for tb in test_builds:
-        gt_logger.gt_log("available tests for built '%s', location '%s'"% (tb.get_name(), tb.get_path()))
+        gt_logger.gt_log("available tests for build '%s', location '%s'"% (tb.get_name(), tb.get_path()))
         for tc in sorted(tb.get_tests().keys()):
             gt_logger.gt_log_tab("test '%s'"% tc)
 
