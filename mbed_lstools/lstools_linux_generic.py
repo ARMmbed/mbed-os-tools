@@ -99,6 +99,6 @@ class MbedLsToolsLinuxGeneric(MbedLsToolsBase):
         """
         logging.debug("Converting device list %r", dev_list)
         for dl in dev_list:
-            match = self.nlp.search(dl.decode('utf-8'))
+            match = self.nlp.search(dl)
             if match:
                 yield match.group("usbid"), _readlink(dl)

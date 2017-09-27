@@ -99,10 +99,9 @@ class MbedLsToolsBase(object):
             else:
                 htm_target_id = self.read_htm_target_id(device['mount_point'])
                 if htm_target_id:
-                    target_id_prefix = htm_target_id.decode('utf-8')[0:4]
                     logging.debug("Found htm target id, %s, for usb target id %s",
                                   htm_target_id, device['target_id_usb_id'])
-                    device['target_id'] = htm_target_id
+                    device['target_id'] = htm_target_id.decode('utf-8')
                 else:
                     logging.warning("Could not read htm on from usb id %s. "
                                     "Falling back to usb id",

@@ -54,7 +54,7 @@ class BasicTestCase(unittest.TestCase):
                                    'serial_port': 'not_valid'}]
         with patch("mbed_lstools.lstools_base.MbedLsToolsBase.read_htm_target_id") as _read_htm,\
              patch("mbed_lstools.lstools_base.PlatformDatabase.get") as _get:
-            _read_htm.return_value = "0241BEEFDEAD"
+            _read_htm.return_value = b"0241BEEFDEAD"
             _get.return_value = 'foo_target'
             to_check = self.base.list_mbeds()
             _read_htm.assert_called_once_with('dummy_mount_point')
