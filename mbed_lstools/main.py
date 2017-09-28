@@ -174,13 +174,8 @@ def mbedls_main():
     root_logger = logging.getLogger("")
     try:
         import colorlog
-
-        handler = colorlog.StreamHandler()
-        handler.setFormatter(colorlog.ColoredFormatter(
-            '%(log_color)s%(levelname)s%(reset)s:%(name)s:%(message)s'))
-
-        root_logger = colorlog.getLogger('mbedls')
-        root_logger.addHandler(handler)
+        colorlog.basicConfig(
+            format='%(log_color)s%(levelname)s%(reset)s:%(name)s:%(message)s')
     except ImportError:
         logging.basicConfig()
     if opts.debug:
