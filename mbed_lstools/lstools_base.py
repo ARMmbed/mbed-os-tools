@@ -43,6 +43,10 @@ def deprecated(reason):
         return new_func
     return actual_decorator
 
+class FSInteraction(object):
+    BeforeFilter = 1
+    AfterFilter = 2
+    Never = 3
 
 class MbedLsToolsBase(object):
     """ Base class for mbed-lstools, defines mbed-ls tools interface for
@@ -91,15 +95,32 @@ class MbedLsToolsBase(object):
         """
         raise NotImplemented
 
-    def list_mbeds(self):
+    @deprecated("Functionality has been moved into 'list_mbeds'. "
+                "Please use list_mbeds with 'unique_names=True' and "
+                "'read_details_txt=True'")
+    def list_mbeds_ext(self):
+        """! Function adds extra information for each mbed device
+        @return Returns list of mbed devices plus extended data like 'platform_name_unique'
+        @details Get information about mbeds with extended parameters/info included
+        """
+
+        return self.list_mbeds(unique_names=True, read_details_txt=True)
+
+    def list_mbeds(
+            self, fs_interaction=FSInteraction.BeforeFilter,
+            platform_name_filters=[], unique_names=False,
+            read_details_txt=False):
         """ List details of connected devices
         @return Returns list of structures with detailed info about each mbed
         @details Function returns list of dictionaries with mbed attributes 'mount_point', TargetID name etc.
         Function returns mbed list with platform names if possible
         """
+        platform_count = {}
         candidates = list(self.find_candidates())
         logger.debug("Candidates for display %r", candidates)
         result = []
+        platform_name_matcher = re.compile("|".join("({})".format(pf) for pf
+                                                    in platform_name_filters))
         for device in candidates:
             if not device['mount_point'] :
                 if  (device['target_id_usb_id'] and device['serial_port'] and
@@ -109,22 +130,82 @@ class MbedLsToolsBase(object):
                         "Use the '-u' flag to include it in the list.",
                         device['target_id_usb_id'])
             else:
-                htm_target_id = self._read_htm_target_id(device['mount_point'])
-                if htm_target_id:
-                    logging.debug("Found htm target id, %s, for usb target id %s",
-                                  htm_target_id, device['target_id_usb_id'])
-                    device['target_id'] = htm_target_id.decode('utf-8')
-                else:
-                    logging.warning("Could not read htm on from usb id %s. "
-                                    "Falling back to usb id",
-                                    device['target_id_usb_id'])
-                    device['target_id'] = device['target_id_usb_id']
-                device['platform_name'] = self.plat_db.get(
-                    device['target_id'][0:4])
-                device['target_id_mbed_htm'] = htm_target_id
-                result.append(device)
+                maybe_device = {
+                    FSInteraction.BeforeFilter: self._fs_before_id_check,
+                    FSInteraction.AfterFilter: self._fs_after_id_check,
+                    FSInteraction.Never: self._fs_never
+                }[fs_interaction](device, platform_name_matcher)
+                if maybe_device:
+                    if unique_names:
+                        name = device['platform_name']
+                        platform_count.setdefault(name, -1)
+                        platform_count[name] += 1
+                        device['platform_name_unique'] = (
+                            "%s[%d]" % (name, platform_count[name]))
+                    if read_details_txt:
+                        details_txt = self._details_txt(device['mount_point']) or {}
+                        device.update({"daplink_%s" % f.lower().replace(' ', '_'): v
+                                       for f, v in details_txt.items()})
+                    try:
+                        device.update(self.retarget_data[device['target_id']])
+                        logger.debug("retargeting %s to %s",
+                                     device['target_id'], mbeds[i])
+                    except KeyError:
+                        pass
+                    result.append(maybe_device)
 
         return result
+
+    def _fs_never(self, device, pn):
+        """Filter device without touching the file system of the device"""
+        device['target_id'] = device['target_id_usb_id']
+        device['target_id_mbed_htm'] = None
+        device['platform_name'] = self.plat_db.get(device['target_id'][0:4])
+        if device['platform_name'] and pn.match(device['platform_name']):
+            return device
+        else:
+            return None
+
+    def _fs_before_id_check(self, device, pn):
+        """Filter device after touching the file system of the device.
+        Said another way: Touch the file system before filtering
+        """
+        self._update_device_from_htm(device)
+        if device['platform_name'] and pn.match(device['platform_name']):
+            return device
+        else:
+            return None
+
+    def _fs_after_id_check(self, device, pn):
+        """Filter device before touching the file system of the device.
+        Said another way: Touch the file system after filtering
+        """
+        plat_name = self.plat_db.get(device['target_id_usb_id'][0:4])
+        if plat_name and pn.match(plat_name):
+            self._update_device_from_htm(device)
+            return device
+        else:
+            return None
+
+    def _update_device_from_htm(self, device):
+        """Set the 'target_id', 'target_id_mbed_htm', 'platform_name' and
+        'daplink_*' attributes by reading from mbed.htm on the device
+        """
+        htm_target_id, daplink_info = self._read_htm_ids(device['mount_point'])
+        if daplink_info:
+            device.update({"daplink_%s" % f.lower().replace(' ', '_'): v
+                           for f, v in daplink_info.items()})
+        if htm_target_id:
+            logging.debug("Found htm target id, %s, for usb target id %s",
+                            htm_target_id, device['target_id_usb_id'])
+            device['target_id'] = htm_target_id
+        else:
+            logging.warning("Could not read htm on from usb id %s. "
+                            "Falling back to usb id",
+                            device['target_id_usb_id'])
+            device['target_id'] = device['target_id_usb_id']
+        device['target_id_mbed_htm'] = htm_target_id
+        device['platform_name'] = self.plat_db.get(device['target_id'][0:4])
 
     def mock_manufacture_id(self, mid, platform_name, oper='+'):
         """! Replace (or add if manufacture id doesn't exist) entry in self.manufacture_ids
@@ -183,47 +264,6 @@ class MbedLsToolsBase(object):
     # Note: 'Ven_SEGGER' - This is used to detect devices from EFM family, they use Segger J-LInk to wrap MSD and CDC
     usb_vendor_list = ['Ven_MBED', 'Ven_SEGGER', 'Ven_ARM_V2M']
 
-    def list_mbeds_ext(self):
-        """! Function adds extra information for each mbed device
-        @return Returns list of mbed devices plus extended data like 'platform_name_unique'
-        @details Get information about mbeds with extended parameters/info included
-        """
-        platform_names = {} # Count existing platforms and assign unique number
-
-        mbeds = self.list_mbeds()
-        for i, val in enumerate(mbeds):
-            platform_name = val['platform_name']
-            if platform_name not in platform_names:
-                platform_names[platform_name] = 0
-            else:
-                platform_names[platform_name] += 1
-            # Assign normalized, unique string at the end of target name: TARGET_NAME[x] where x is an ordinal integer
-            val['platform_name_unique'] = "%s[%d]" % (platform_name, platform_names[platform_name])
-
-            # Retarget values from retarget (mbedls.json) file
-            if self.retarget_data and 'target_id' in val:
-                target_id = val['target_id']
-                if target_id in self.retarget_data:
-                    mbeds[i].update(self.retarget_data[target_id])
-                    logger.debug("retargeting %s to %s", target_id, mbeds[i])
-
-            # Add interface chip meta data to mbed structure
-            details_txt = self._details_txt(val['mount_point']) if val['mount_point'] else None
-            if details_txt:
-                for field in details_txt:
-                    field_name = 'daplink_' + field.lower().replace(' ', '_')
-                    if field_name not in mbeds[i]:
-                        mbeds[i][field_name] = details_txt[field]
-
-            mbed_htm = self._read_htm_build(val['mount_point']) if val['mount_point'] else None
-            if mbed_htm:
-                for field in mbed_htm:
-                    field_name = 'daplink_' + field.lower().replace(' ', '_')
-                    if field_name not in mbeds[i]:
-                        mbeds[i][field_name] = mbed_htm[field]
-
-            logger.debug((mbeds[i]['platform_name_unique'], val['target_id']))
-        return mbeds
 
     def get_dummy_platform(self, platform_name):
         """! Returns simple dummy platform """
@@ -309,7 +349,7 @@ class MbedLsToolsBase(object):
         """
         from prettytable import PrettyTable
         result = ''
-        mbeds = self.list_mbeds_ext()
+        mbeds = self.list_mbeds(unique_names=True, read_details_txt=True)
         if mbeds:
             """ ['platform_name', 'mount_point', 'serial_port', 'target_id'] - columns generated from USB auto-detection
                 ['platform_name_unique', ...] - columns generated outside detection subsystem (OS dependent detection)
@@ -349,20 +389,33 @@ class MbedLsToolsBase(object):
     @deprecated("This method will be removed from the public API. "
                 "Please use 'list_mbeds' instead")
     def get_htm_target_id(self, mount_point):
-        return self._read_htm_target_id(mount_point)
+        target_id, _ = self._read_htm_ids(mount_point)
+        return target_id
 
-    def _read_htm_target_id(self, mount_point):
+    @deprecated("This method will be removed from the public API. "
+                "Please use 'list_mbeds' instead")
+    def get_mbed_htm(self, mount_point):
+        _, build_info = self._read_htm_ids(mount_point)
+        return build_info
+
+    def _read_htm_ids(self, mount_point):
         """! Function scans mbed.htm to get information about TargetID.
         @param mount_point mbed mount point (disk / drive letter)
         @return Function returns targetID, in case of failure returns None.
         @details Note: This function should be improved to scan variety of boards' mbed.htm files
         """
-        result = None
-        for line in self.get_mbed_htm_lines(mount_point):
-            target_id = self.scan_html_line_for_target_id(line)
-            if target_id:
-                return target_id
-        return result
+        result = {}
+        target_id = None
+        for line in self._htm_lines(mount_point):
+            target_id = target_id or self._target_id_from_htm(line)
+            ver_bld = self._mbed_htm_comment_section_ver_build(line)
+            if ver_bld:
+                result['version'], result['build'] = ver_bld
+
+            m = re.search(r'url=([\w\d\:/\\\?\.=-_]+)', line)
+            if m:
+                result['url'] = m.group(1).strip()
+        return target_id, result
 
     @deprecated("This method will be removed from the public API. "
                 "Please use 'list_mbeds' instead")
@@ -391,27 +444,6 @@ class MbedLsToolsBase(object):
             version_str, build_str = m.groups()
             return (version_str.strip(), build_str.strip())
         return None
-
-    @deprecated("This method will be removed from the public API. "
-                "Please use 'list_mbeds' instead")
-    def get_mbed_htm(self, mount_point):
-        return self._read_htm_build(mount_point)
-
-    def _read_htm_build(self, mount_point):
-        """! Check for version, build date/timestamp, URL in mbed.htm file
-        @param mount_point Where to look for mbed.htm file
-        @return Dictoionary with additional DAPlink names
-        """
-        result = {}
-        for line in self._htm_lines(mount_point):
-            ver_bld = self._mbed_htm_comment_section_ver_build(line)
-            if ver_bld:
-                result['version'], result['build'] = ver_bld
-
-            m = re.search(r'url=([\w\d\:/\\\?\.=-_]+)', line)
-            if m:
-                result['url'] = m.group(1).strip()
-        return result
 
     @deprecated("This method will be removed from the public API. "
                 "Please use 'list_mbeds' instead")
