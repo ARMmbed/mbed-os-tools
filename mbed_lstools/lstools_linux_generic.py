@@ -82,7 +82,7 @@ class MbedLsToolsLinuxGeneric(MbedLsToolsBase):
         @result Returns list of all mounted vfat devices
         @details Uses Linux shell command: 'mount'
         """
-        _stdout, _, retval = self.run_cli_process('mount')
+        _stdout, _, retval = self._run_cli_process('mount')
         if not retval:
             for line in _stdout.splitlines():
                 if b'vfat' in line:

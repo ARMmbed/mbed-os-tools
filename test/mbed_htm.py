@@ -47,54 +47,54 @@ class ParseMbedHTMTestCase(unittest.TestCase):
         pass
 
     def test_mbed_htm_k64f_url(self):
-        target_id = self.mbeds.scan_html_line_for_target_id(self.test_mbed_htm_k64f_url_str)
+        target_id = self.mbeds._target_id_from_htm(self.test_mbed_htm_k64f_url_str)
         self.assertEqual('02400203D94B0E7724B7F3CF', target_id)
 
     def test_mbed_htm_l152re_url(self):
-        target_id = self.mbeds.scan_html_line_for_target_id(self.test_mbed_htm_l152re_url_str)
+        target_id = self.mbeds._target_id_from_htm(self.test_mbed_htm_l152re_url_str)
         self.assertEqual('07100200656A9A955A0F0CB8', target_id)
 
     def test_mbed_htm_lpc1768_url(self):
-        target_id = self.mbeds.scan_html_line_for_target_id(self.test_mbed_htm_lpc1768_url_str)
+        target_id = self.mbeds._target_id_from_htm(self.test_mbed_htm_lpc1768_url_str)
         self.assertEqual('101000000000000000000002F7F1869557200730298d254d3ff3509e3fe4722d', target_id)
 
     def test_daplink_nucleo_l031k6_url(self):
-        target_id = self.mbeds.scan_html_line_for_target_id(self.test_mbed_htm_nucleo_l031k6_str)
+        target_id = self.mbeds._target_id_from_htm(self.test_mbed_htm_nucleo_l031k6_str)
         self.assertEqual('07900221461663077952F5AA', target_id)
 
     def test_daplink_240_mbed_html(self):
-        target_id = self.mbeds.scan_html_line_for_target_id(self.test_daplink_240_mbed_html_str)
+        target_id = self.mbeds._target_id_from_htm(self.test_daplink_240_mbed_html_str)
         self.assertEqual('0240000029164e45002f0012706e0006f301000097969900', target_id)
 
     def test_mbed_htm_nrf51_url(self):
-        target_id = self.mbeds.scan_html_line_for_target_id(self.test_mbed_htm_nrf51_url_str)
+        target_id = self.mbeds._target_id_from_htm(self.test_mbed_htm_nrf51_url_str)
         self.assertEqual('1100021952333120353935373130313232323032AFD5DFD8', target_id)
 
     def get_mbed_htm_comment_section_ver_build(self):
         # Incorrect data
-        ver_bld = self.mbeds.get_mbed_htm_comment_section_ver_build('<!-- Version: XXXX Build: Mar 26 2014 13:22:20 -->')
+        ver_bld = self.mbeds._mbed_htm_comment_section_ver_build('<!-- Version: XXXX Build: Mar 26 2014 13:22:20 -->')
         self.assertIsNone(ver_bld)
 
-        ver_bld = self.mbeds.get_mbed_htm_comment_section_ver_build('<!-- mbed Platform Website and Authentication Shortcut -->')
+        ver_bld = self.mbeds._mbed_htm_comment_section_ver_build('<!-- mbed Platform Website and Authentication Shortcut -->')
         self.assertIsNone(ver_bld)
 
-        ver_bld = self.mbeds.get_mbed_htm_comment_section_ver_build('')
+        ver_bld = self.mbeds._mbed_htm_comment_section_ver_build('')
         self.assertIsNone(ver_bld)
 
         # Correct data
-        ver_bld = self.mbeds.get_mbed_htm_comment_section_ver_build('<!-- Version: 0200 Build: Mar 26 2014 13:22:20 -->')
+        ver_bld = self.mbeds._mbed_htm_comment_section_ver_build('<!-- Version: 0200 Build: Mar 26 2014 13:22:20 -->')
         self.assertIsNotNone(ver_bld)
         self.assertEqual(('0200', 'Mar 26 2014 13:22:20'), ver_bld)
 
-        ver_bld = self.mbeds.get_mbed_htm_comment_section_ver_build('<!-- Version: 0200 Build: Aug 27 2014 13:29:28 -->')
+        ver_bld = self.mbeds._mbed_htm_comment_section_ver_build('<!-- Version: 0200 Build: Aug 27 2014 13:29:28 -->')
         self.assertIsNotNone(ver_bld)
         self.assertEqual(('0200', 'Aug 27 2014 13:29:28'), ver_bld)
 
-        ver_bld = self.mbeds.get_mbed_htm_comment_section_ver_build('<!-- Version: 0219 Build: Feb  2 2016 15:20:54 Git Commit SHA: 0853ba0cdeae2436c52efcba0ba76a6434c200ff Git local mods:No-->')
+        ver_bld = self.mbeds._mbed_htm_comment_section_ver_build('<!-- Version: 0219 Build: Feb  2 2016 15:20:54 Git Commit SHA: 0853ba0cdeae2436c52efcba0ba76a6434c200ff Git local mods:No-->')
         self.assertIsNotNone(ver_bld)
         self.assertEqual(('0219', 'Feb  2 2016 15:20:54'), ver_bld)
 
-        ver_bld = self.mbeds.get_mbed_htm_comment_section_ver_build('<!-- Version: 0.14.3. build 471 -->')
+        ver_bld = self.mbeds._mbed_htm_comment_section_ver_build('<!-- Version: 0.14.3. build 471 -->')
         self.assertIsNotNone(ver_bld)
         self.assertEqual(('0.14.3', '471'), ver_bld)
 

@@ -60,7 +60,7 @@ Interface CRC: 0x26764ebf
         self.assertEqual(4, len(lines))
 
         # Check parsing content
-        result = self.mbeds.parse_details_txt(lines)
+        result = self.mbeds._parse_details(lines)
         self.assertEqual(4, len(result))
         self.assertIn('Version', result)
         self.assertIn('Build', result)
@@ -76,7 +76,7 @@ Interface CRC: 0x26764ebf
         self.assertEqual(11, len(lines))
 
         # Check parsing content
-        result = self.mbeds.parse_details_txt(lines)
+        result = self.mbeds._parse_details(lines)
         self.assertEqual(11, len(result))   # 12th would be comment
         self.assertIn('Unique ID', result)
         self.assertIn('HIF ID', result)
