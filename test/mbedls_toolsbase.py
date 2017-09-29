@@ -49,14 +49,14 @@ class BasicTestCase(unittest.TestCase):
 
     def test_list_mbeds(self):
         self.base.return_value = [{'mount_point': 'dummy_mount_point',
-                                   'target_id_usb_id': '0240DEADBEEF',
+                                   'target_id_usb_id': u'0240DEADBEEF',
                                    'serial_port': "dummy_serial_port"},
                                   {'mount_point': None,
                                    'target_id_usb_id': '00000000000',
                                    'serial_port': 'not_valid'}]
         with patch("mbed_lstools.lstools_base.MbedLsToolsBase._read_htm_ids") as _read_htm,\
              patch("mbed_lstools.lstools_base.PlatformDatabase.get") as _get:
-            _read_htm.return_value = (b"0241BEEFDEAD", {})
+            _read_htm.return_value = (u'0241BEEFDEAD', {})
             _get.return_value = 'foo_target'
             to_check = self.base.list_mbeds()
             _read_htm.assert_called_once_with('dummy_mount_point')
