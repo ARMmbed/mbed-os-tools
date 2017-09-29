@@ -24,8 +24,12 @@ from .lstools_base import MbedLsToolsBase
 
 import logging
 
-logger = logging.getLogger("mbedls.lstools_win7")
+if sys.version_info[0] < 3:
+    import _winreg as winreg
+else:
+    import winreg
 
+logger = logging.getLogger("mbedls.lstools_win7")
 
 class MbedLsToolsWin7(MbedLsToolsBase):
     """ mbed-enabled platform detection for Windows
@@ -33,10 +37,6 @@ class MbedLsToolsWin7(MbedLsToolsBase):
     def __init__(self, **kwargs):
         MbedLsToolsBase.__init__(self, **kwargs)
         self.os_supported.append('Windows7')
-        if sys.version_info[0] < 3:
-            import _winreg as winreg
-        else:
-            import winreg
 
     def find_candidates(self):
         return [
