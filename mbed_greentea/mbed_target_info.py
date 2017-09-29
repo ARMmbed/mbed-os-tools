@@ -241,25 +241,16 @@ def get_mbed_targets_from_yotta_local_module(mbed_classic_name, yotta_targets_pa
     return result
 
 def parse_mbed_target_from_target_json(mbed_classic_name, target_json_data):
-    if not target_json_data:
-        return None
-
-    if not 'keywords' in target_json_data:
+    if (not target_json_data or
+        'keywords' not in target_json_data or
+        'name' not in target_json_data):
         return None
 
     for keyword in target_json_data['keywords']:
-        if not keyword.startswith('mbed-target:'):
-            continue
-
-        mbed_target, mbed_name = keyword.split(':')
-
-        if mbed_name.lower() != mbed_classic_name.lower():
-            continue
-
-        if 'name' not in target_json_data:
-            continue
-
-        return target_json_data['name']
+        target, _, name = keyword.partition(':')
+        if  (target == "mbed-target" and
+             name.lower() == mbed_classic_name.lower()):
+            return target_json_data['name']
 
     return None
 
