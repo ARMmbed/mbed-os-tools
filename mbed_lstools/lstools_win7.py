@@ -95,27 +95,8 @@ class MbedLsToolsWin7(MbedLsToolsBase):
             except:
                 pass
 
-        # Check for a target USB ID from tid
-        target_usb_ids = self.get_connected_mbeds_usb_ids()
-        if tid in target_usb_ids:
-            if target_usb_ids[tid] != tid:
-                # Try again with the target USB ID
-                return self.get_mbed_com_port(target_usb_ids[tid])
-
         # If everything fails, return None
         return None
-
-    def get_connected_mbeds_usb_ids(self):
-        """! Function  return mbeds with existing mount point's
-             target ID mapped to their target USB ID
-        @return Returns {<target_id>: <target_usb_id>, ...}
-        @details Helper function
-        """
-        connected_mbeds_ids = {}
-        for mbed in self.get_connected_mbeds():
-            target_id, htm_target_id = self.get_mbed_target_id(mbed[0], mbed[1])
-            connected_mbeds_ids[target_id] = mbed[1]
-        return connected_mbeds_ids
 
     def get_mbeds(self):
         """! Function filters devices' mount points for valid TargetID
