@@ -13,7 +13,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import six
+import sys
 import unittest
+
 from mock import patch
 from mbed_greentea.mbed_greentea_hooks import GreenteaCliTestHook
 from mbed_greentea.mbed_greentea_hooks import LcovHook
@@ -26,6 +29,14 @@ class GreenteaCliTestHookTest(unittest.TestCase):
 
     def tearDown(self):
         pass
+
+    def test_format_before_run(self):
+        command = LcovHook.format_before_run("command {expansion}", None, verbose=True)
+        self.assertEqual(command, "command {expansion}")
+
+        expansions = ["test", "test2"]
+        command = LcovHook.format_before_run("command {expansion}", {"expansion": expansions}, verbose=True)
+        self.assertEqual(command, "command ['test', 'test2']")
 
     def test_expand_parameters_with_1_list(self):
         # Simple list

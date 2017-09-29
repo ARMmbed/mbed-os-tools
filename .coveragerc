@@ -4,8 +4,16 @@ include =
 
 [report]
 exclude_lines =
-    pragma: no cover
+    class GreenteaHook.*
     def __repr__
+    def run_test_thread.*
+    except ImportError.*
+    except IOError.*
+    except OSError.*
+    except UnicodeDecodeError.*
+    gt_logger.*
+    if __name__ == .__main__.:
+    main().*
+    pragma: no cover
     raise AssertionError
     raise NotImplementedError
-    if __name__ == .__main__.:

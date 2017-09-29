@@ -16,8 +16,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import os
+import mock
+import six
+import sys
 import unittest
-from mbed_greentea import cmake_handlers
+
+from mbed_greentea import cmake_handlers, tests_spec
 
 class GreenteaCmakeHandlers(unittest.TestCase):
     """ Basic true asserts to see that testing is executed
@@ -48,7 +53,7 @@ add_test(mbed-client-test-helloworld-mbedclient "mbed-client-test-helloworld-mbe
         result = {}
         no_skipped_lines = 0
         for line in self.ctesttestfile.splitlines():
-            line_parse = cmake_handlers.parse_ctesttestfile_line(LINK_TARGET, BINARY_TYPE, line, verbose=False)
+            line_parse = cmake_handlers.parse_ctesttestfile_line(LINK_TARGET, BINARY_TYPE, line, verbose=True)
             if line_parse:
                 test_case, test_case_path = line_parse
                 result[test_case] = test_case_path
@@ -64,6 +69,78 @@ add_test(mbed-client-test-helloworld-mbedclient "mbed-client-test-helloworld-mbe
 
         self.assertEqual(len(result), 2)        # We parse two entries
         self.assertEqual(no_skipped_lines, 6)   # We skip six lines in this file
+
+    def test_load_ctest_testsuite_missing_link_target(self):
+        null_link_target = None
+        null_suite = cmake_handlers.load_ctest_testsuite(null_link_target)
+        self.assertEqual(null_suite, {})
+
+
+    def test_load_ctest_testsuite(self):
+        root_path = os.path.dirname(os.path.realpath(__file__))
+        emty_path = os.path.join(root_path, "resources", "empty")
+        full_path = os.path.join(root_path, "resources", "not-empty")
+
+        # Empty LINK_TARGET
+        empty_link_target = emty_path
+        empty_suite = cmake_handlers.load_ctest_testsuite(empty_link_target)
+        self.assertEqual(empty_suite, {})
+
+        # Not empty LINK_TARGET
+        link_target = full_path
+        test_suite = cmake_handlers.load_ctest_testsuite(link_target)
+        self.assertIsNotNone(test_suite)
+        self.assertIn('mbed-client-test-mbedclient-smokeTest', test_suite)
+        self.assertIn('mbed-client-test-helloworld-mbedclient', test_suite)
+
+
+    def test_list_binaries_for_targets(self):
+        root_path = os.path.dirname(os.path.realpath(__file__))
+        null_path = os.path.join(root_path, "resources", "empty", "test")
+        full_path = os.path.join(root_path, "resources")
+
+        def run_and_capture(path, verbose=False):
+            sys.stdout = stdout_capture = six.StringIO()
+            cmake_handlers.list_binaries_for_targets(build_dir=path, verbose_footer=verbose)
+            sys.stdout = sys.__stdout__
+
+            return stdout_capture.getvalue()
+
+        # Test empty target directory
+        output = run_and_capture(null_path)
+        self.assertTrue("no tests found in current location" in output)
+
+        # Test empty target directory (Verbose output)
+        output = run_and_capture(null_path, verbose=True)
+        self.assertTrue("no tests found in current location" in output)
+        self.assertTrue("Example: execute 'mbedgt -t TARGET_NAME -n TEST_NAME' to run test TEST_NAME for target TARGET_NAME" in output)
+
+        # Test non-empty target directory
+        output = run_and_capture(full_path)
+        self.assertTrue("available tests for target" in output)
+
+
+    def test_list_binaries_for_builds(self):
+        root_path = os.path.dirname(os.path.realpath(__file__))
+        spec_path = os.path.join(root_path, "resources", "test_spec.json")
+
+        spec = tests_spec.TestSpec(spec_path)
+
+        for verbose in [True, False]:
+            # Capture logging output
+            sys.stdout = stdout_capture = six.StringIO()
+            cmake_handlers.list_binaries_for_builds(spec, verbose_footer=verbose)
+            sys.stdout = sys.__stdout__
+
+            output = stdout_capture.getvalue()
+            self.assertTrue("available tests for build 'K64F-ARM'" in output)
+            self.assertTrue("available tests for build 'K64F-GCC'" in output)
+            self.assertTrue("tests-example-1" in output)
+            self.assertTrue("tests-example-2" in output)
+            self.assertTrue("tests-example-7" in output)
+
+            if verbose == True:
+                self.assertTrue("Example: execute" in output)
 
 if __name__ == '__main__':
     unittest.main()

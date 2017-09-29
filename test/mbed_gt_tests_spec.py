@@ -16,8 +16,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import os
 import unittest
-from mbed_greentea.tests_spec import TestSpec, TestBinary
+from mbed_greentea.tests_spec import Test, TestBinary, TestBuild, TestSpec
 
 simple_test_spec = {
     "builds": {
@@ -78,6 +79,70 @@ class TestsSpecFunctionality(unittest.TestCase):
     def test_example(self):
         self.assertEqual(True, True)
         self.assertNotEqual(True, False)
+
+    def test_initialise_test_spec_with_filename(self):
+        root_path = os.path.dirname(os.path.realpath(__file__))
+        spec_path = os.path.join(root_path, "resources", "test_spec.json")
+
+        self.test_spec = TestSpec(spec_path)
+        test_builds = self.test_spec.get_test_builds()
+
+        build = list(filter(lambda x: x.get_name() == "K64F-ARM", test_builds))[0]
+        self.assertEqual(build.get_name(), "K64F-ARM")
+        self.assertEqual(build.get_platform(), "K64F")
+        self.assertEqual(build.get_baudrate(), 9600)
+        self.assertEqual(build.get_path(), "./BUILD/K64F/ARM")
+
+        self.assertEqual(len(build.get_tests()), 2)
+        self.assertTrue("tests-example-1" in build.get_tests())
+        self.assertTrue("tests-example-2" in build.get_tests())
+
+        test = build.get_tests()["tests-example-1"]
+        self.assertEqual(test.get_name(), "tests-example-1")
+        self.assertEqual(test.get_binary().get_path(), "./BUILD/K64F/ARM/tests-mbedmicro-rtos-mbed-mail.bin")
+
+        self.assertIs(type(test_builds), list)
+        self.assertEqual(len(test_builds), 2)
+
+    def test_initialise_test_spec_with_invalid_filename(self):
+        root_path = os.path.dirname(os.path.realpath(__file__))
+        spec_path = os.path.join(root_path, "resources", "null.json")
+
+        self.test_spec = TestSpec(spec_path)
+        test_builds = self.test_spec.get_test_builds()
+
+    def test_manually_add_test_binary(self):
+        test_name = "example-test"
+        test_path = "test-path"
+        test = Test(test_name)
+        self.assertEqual(test.get_name(), test_name)
+        self.assertEqual(test.get_binary(), None)
+
+        test.add_binary(test_path, "bootable")
+        self.assertEqual(test.get_binary().get_path(), test_path)
+
+    def test_manually_add_test_to_build(self):
+        name = "example-test"
+        test = Test(name)
+        test_build = TestBuild("build", "K64F", "ARM", 9600, "./")
+
+        self.assertEqual(len(test_build.get_tests()), 0)
+        test_build.add_test(name, test)
+        self.assertEqual(len(test_build.get_tests()), 1)
+        self.assertTrue(name in test_build.get_tests())
+
+    def test_manually_add_test_build_to_test_spec(self):
+        test_name = "example-test"
+        test = Test(test_name)
+        test_spec = TestSpec(None)
+        build_name = "example-build"
+        test_build = TestBuild(build_name, "K64F", "ARM", 9600, "./")
+        test_build.add_test(test_name, test)
+
+        self.assertEqual(len(test_spec.get_test_builds()), 0)
+        test_spec.add_test_builds(build_name, test_build)
+        self.assertEqual(len(test_spec.get_test_builds()), 1)
+        self.assertTrue(build_name in test_spec.get_test_builds()[0].get_name())
 
     def test_get_test_builds(self):
         self.test_spec = TestSpec()

@@ -123,7 +123,7 @@ def greentea_release_target_id(target_id, gt_instance_uuid):
             with open(GREENTEA_KETTLE_PATH, 'w') as kettle_file:
                 json.dump(current_brew, kettle_file, indent=4)
 
-def get_json_data_from_file(json_spec_filename, verbose=False):
+def get_json_data_from_file(json_spec_filename):
     """ Loads from file JSON formatted string to data structure
     """
     result = None
@@ -138,7 +138,7 @@ def get_json_data_from_file(json_spec_filename, verbose=False):
     return result
 
 def greentea_kettle_info():
-    """ generates human friendly info about current cettle state
+    """ generates human friendly info about current kettle state
 
     @details
     {
