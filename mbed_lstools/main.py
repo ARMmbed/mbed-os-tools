@@ -23,10 +23,6 @@ import json
 import optparse
 import platform
 
-from .lstools_win7 import MbedLsToolsWin7
-from .lstools_linux_generic import MbedLsToolsLinuxGeneric
-from .lstools_darwin import MbedLsToolsDarwin
-
 import logging
 
 logger = logging.getLogger("mbedls.main")
@@ -43,9 +39,15 @@ def create(**kwargs):
     result = None
     mbed_os = mbed_os_support()
     if mbed_os is not None:
-        if mbed_os == 'Windows7': result = MbedLsToolsWin7(**kwargs)
-        elif mbed_os == 'LinuxGeneric': result = MbedLsToolsLinuxGeneric(**kwargs)
-        elif mbed_os == 'Darwin': result = MbedLsToolsDarwin(**kwargs)
+        if mbed_os == 'Windows7':
+            from .lstools_win7 import MbedLsToolsWin7
+            result = MbedLsToolsWin7(**kwargs)
+        elif mbed_os == 'LinuxGeneric':
+            from .lstools_linux_generic import MbedLsToolsLinuxGeneric
+            result = MbedLsToolsLinuxGeneric(**kwargs)
+        elif mbed_os == 'Darwin':
+            from .lstools_darwin import MbedLsToolsDarwin
+            result = MbedLsToolsDarwin(**kwargs)
     return result
 
 
