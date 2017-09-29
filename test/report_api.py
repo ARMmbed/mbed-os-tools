@@ -45,7 +45,7 @@ class ReportEmitting(unittest.TestCase):
                     u'build_path_abs': u'N/A',
                     u'copy_method': u'N/A',
                     u'image_path': u'N/A',
-                    u'single_test_output': b'N/A',
+                    u'single_test_output': b'\x80abc\uXXXX' ,
                     u'platform_name': u'k64f',
                     u'test_bin_name': u'N/A',
                     u'testcase_result': {},
