@@ -185,15 +185,16 @@ additional results from https://yotta-private.herokuapp.com:
 
     def test_parse_mbed_target_from_target_json(self):
         target_json_data = {
-          "name": "frdm-k64f-armcc",
-          "version": "0.1.4",
-          "keywords": [
-            "mbed-target:k64f",
-            "mbed-official",
-            "k64f",
-            "frdm-k64f",
-            "armcc"
-          ],
+            "name": "frdm-k64f-armcc",
+            "version": "0.1.4",
+            "keywords": [
+                "mbed-target:k64f",
+                "mbed-target::garbage",
+                "mbed-official",
+                "k64f",
+                "frdm-k64f",
+                "armcc"
+            ],
         }
 
         # Positive tests
