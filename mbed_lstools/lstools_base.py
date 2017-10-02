@@ -23,7 +23,7 @@ from os.path import expanduser
 from io import open
 import json
 from os import listdir
-from os.path import isfile, join
+from os.path import isfile, join, exists, isdir
 import logging
 from abc import ABCMeta, abstractmethod
 
