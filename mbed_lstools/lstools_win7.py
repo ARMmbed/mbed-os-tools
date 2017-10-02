@@ -56,10 +56,13 @@ class MbedLsToolsWin7(MbedLsToolsBase):
         @details This goes through a whole new loop, but this assures that even if serial port (COM)
                  is not detected, we still get the rest of info like mount point etc.
         """
-        winreg.Enum = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, r'SYSTEM\CurrentControlSet\Enum')
+        winreg.Enum = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE,
+                                     r'SYSTEM\CurrentControlSet\Enum')
         usb_devs = winreg.OpenKey(winreg.Enum, 'USB')
+        logger.debug("_com_port usb_devs %r",
+                     list(self.iter_keys_as_str(usb_devs)))
 
-        logger.debug('get_mbed_com_port ID: %s', tid)
+        logger.debug('_com_port ID: %s', tid)
 
         # first try to find all devs keys (by tid)
         dev_keys = []
@@ -68,13 +71,16 @@ class MbedLsToolsWin7(MbedLsToolsBase):
                 dev_keys += [winreg.OpenKey(vid, tid)]
             except:
                 pass
+        logger.debug("_com_port dev_keys %r",
+                     [list(self.iter_keys_as_str(k)) for k in dev_keys])
 
         # then try to get port directly from "Device Parameters"
         for key in dev_keys:
             try:
                 param = winreg.OpenKey(key, "Device Parameters")
                 port = winreg.QueryValueEx(param, 'PortName')[0]
-                logger.debug('get_mbed_com_port port %s', port)
+                logger.debug('_com_port param %r port %r',
+                             list(self.iter_keys_as_str(param)), port)
                 return port
             except:
                 pass
@@ -88,9 +94,9 @@ class MbedLsToolsWin7(MbedLsToolsBase):
                     for dev in self.iter_keys_as_str(VID):
                         if parent_id in dev:
                             ports += [self._com_port(dev)]
+                logger.debug("_com_port ports %r", ports)
                 for port in ports:
                     if port:
-                        logger.debug("get_mbed_com_port port %s", port)
                         return port
             except:
                 pass
@@ -112,7 +118,7 @@ class MbedLsToolsWin7(MbedLsToolsBase):
                 continue
             tid = m.group(1)
             mbeds += [(mountpoint, tid)]
-            logger.debug((mountpoint, tid))
+            logger.debug("get_mbeds mount_point %s usb_id %s", mountpoint, tid)
         return mbeds
 
     # =============================== Registry ====================================
@@ -132,6 +138,7 @@ class MbedLsToolsWin7(MbedLsToolsBase):
     def iter_vals(self, key):
         """! Iterate over values of a key
         """
+        logger.debug("iter_vals %r", key)
         for i in range(winreg.QueryInfoKey(key)[1]):
             yield winreg.EnumValue(key, i)
 
@@ -145,7 +152,7 @@ class MbedLsToolsWin7(MbedLsToolsBase):
         for ven in self.usb_vendor_list:
             result += [d for d in self.get_dos_devices() if ven.upper() in d[1].upper()]
 
-        logger.debug("get_mbed_devices result %s", result)
+        logger.debug("get_mbed_devices result %r", result)
         return result
 
     def get_dos_devices(self):
@@ -158,9 +165,11 @@ class MbedLsToolsWin7(MbedLsToolsBase):
         """! Get all mounted devices (connected or not)
         """
         mounts = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, 'SYSTEM\MountedDevices')
+        logger.debug("get_mounted_devices %r", mounts)
         return [val for val in self.iter_vals(mounts)]
 
     def regbin2str(self, regbin):
         """! Decode registry binary to readable string
         """
-        return ''.join(filter(lambda ch: ch in string.printable, regbin.decode('ascii', errors='ignore')))
+        return ''.join(filter(lambda ch: ch in string.printable,
+                              regbin.decode('ascii', errors='ignore')))

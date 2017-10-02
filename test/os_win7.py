@@ -19,12 +19,11 @@ limitations under the License.
 import unittest
 import sys
 from mock import MagicMock
-_winreg = MagicMock
 
-if sys.version_info[0] < 3:
-    sys.modules['_winreg']  = _winreg
-else:
-    sys.modules['winreg'] = _winreg
+# Mock the winreg and _winreg module for non-windows python
+_winreg = MagicMock()
+sys.modules['_winreg']  = _winreg
+sys.modules['winreg'] = _winreg
 
 
 from mbed_lstools.lstools_win7 import MbedLsToolsWin7
@@ -35,11 +34,18 @@ class Win7TestCase(unittest.TestCase):
     """
 
     def setUp(self):
-        pass
+        self.lstool = MbedLsToolsWin7()
 
     def test_os_supported(self):
         pass
 
+    def test_empty_reg(self):
+        _winreg.QueryInfoKey.return_value = (0, 0)
+        self.lstool.find_candidates()
+        _winreg.OpenKey.assert_called_with(_winreg.HKEY_LOCAL_MACHINE,
+                                           'SYSTEM\MountedDevices')
+        _winreg.QueryInfoKey.assert_called_with(_winreg.OpenKey.return_value)
+        pass
 
 if __name__ == '__main__':
     unittest.main()
