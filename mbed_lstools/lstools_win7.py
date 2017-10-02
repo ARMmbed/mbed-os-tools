@@ -87,7 +87,7 @@ class MbedLsToolsWin7(MbedLsToolsBase):
                 for VID in self.iter_keys(usb_devs):
                     for dev in self.iter_keys_as_str(VID):
                         if parent_id in dev:
-                            ports += [self.get_mbed_com_port(dev)]
+                            ports += [self._com_port(dev)]
                 for port in ports:
                     if port:
                         logger.debug("get_mbed_com_port port %s", port)
