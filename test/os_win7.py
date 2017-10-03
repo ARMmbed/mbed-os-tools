@@ -65,11 +65,12 @@ class Win7TestCase(unittest.TestCase):
                 (b'\\DosDevices\\F:',
                  b'_\x00?\x00?\x00_\x00U\x00S\x00B\x00S\x00T\x00O\x00R\x00#\x00D\x00i\x00s\x00k\x00&\x00V\x00e\x00n\x00_\x00M\x00B\x00E\x00D\x00&\x00P\x00r\x00o\x00d\x00_\x00V\x00F\x00S\x00&\x00R\x00e\x00v\x00_\x000\x00.\x001\x00#\x000\x002\x004\x000\x000\x000\x000\x000\x003\x002\x000\x004\x004\x00e\x004\x005\x000\x000\x003\x006\x007\x000\x000\x009\x009\x009\x007\x00b\x000\x000\x000\x008\x006\x007\x008\x001\x000\x000\x000\x000\x009\x007\x009\x006\x009\x009\x000\x000\x00&\x000\x00#\x00{\x005\x003\x00f\x005\x006\x003\x000\x007\x00-\x00b\x006\x00b\x00f\x00-\x001\x001\x00d\x000\x00-\x009\x004\x00f\x002\x00-\x000\x000\x00a\x000\x00c\x009\x001\x00e\x00f\x00b\x008\x00b\x00}\x00'),
                 (b'\\DosDevices\\D:',
-                 b'_\x00?\x00?\x00_\x00U\x00S\x00B\x00S\x00T\x00O\x00R\x00#\x00D\x00i\x00s\x00k\x00&\x00V\x00e\x00n\x00_\x00S\x00E\x00G\x00G\x00E\x00R\x00&\x00P\x00r\x00\x00o\x00d\x00_\x00M\x00S\x00D\x00_\x00V\x00o\x00l\x00u\x00m\x00e\x00&\x00R\x00e\x00v\x00_\x001\x00.\x000\x000#\x008\x00&\x001\x00b\x008\x00e\x001\x000\x002\x00b\x00&\x000\x00&\x000\x000\x000\x004\x004\x000\x000\x003\x005\x005\x002\x002\x00&\x000\x00#\x00{\x005\x003\x00f\x005\x006\x003\x000\x007\x00-\x00b\x006\x00b\x00f\x00-\x001\x001\x00d\x000\x00-\x009\x004\x00f\x002\x00-\x000\x000\x00a\x000\x00c\x009\x001\x00e\x00f\x00b\x008\x00b\x00}\x00')],
+                 u'_??_USBSTOR#Disk&Ven_SEGGER&Prod_MSD_Volume&Rev_1.00#8&1b8e102b&0&000440035522&0#{53f56307-b6bf-11d0-94f2-00a0c91efb8b}'.encode('utf-16le'))],
             ((((((None, 'SYSTEM\CurrentControlSet\Enum'), 'USB'),
                 'VID_0416&PID_511E'), '000440035522'), 'Device Parameters'), 'PortName'): ('COM7', None)
         }
         key_dict = {
+            (None, 'SYSTEM\CurrentControlSet\Enum'): ['USB'],
             ((((None, 'SYSTEM\CurrentControlSet\Enum'), 'USB'), 'VID_0416&PID_511E'), '000440035522'): ['Device Parameters', 'Properties'],
             ((None, 'SYSTEM\CurrentControlSet\Enum'), 'USB'):
             ['ROOT_HUB30', 'VID_0416&PID_511E', 'VID_0416&PID_511E&MI_00',
@@ -93,17 +94,30 @@ class Win7TestCase(unittest.TestCase):
              'VID_8087&PID_0A2B', 'Vid_80EE&Pid_CAFE']
         }
         def open_key_effect(key, subkey):
-            return key, subkey
+            if ((key, subkey) in set(value_dict.keys() + key_dict.keys()) or
+                key in set(value_dict.keys() + key_dict.keys())):
+                return key, subkey
+            else:
+                raise OSError((key, subkey))
         _winreg.OpenKey.side_effect = open_key_effect
         def enum_value(key, index):
-            a, b = value_dict[key][index]
-            return a, b, None
+            try:
+                a, b = value_dict[key][index]
+                return a, b, None
+            except KeyError:
+                raise OSError
         _winreg.EnumValue.side_effect = enum_value
         def enum_key(key, index):
-            return key_dict[key][index]
+            try:
+                return key_dict[key][index]
+            except KeyError:
+                raise OSError
         _winreg.EnumKey.side_effect = enum_key
         def query_value(key, subkey):
-            return value_dict[(key, subkey)]
+            try:
+                return value_dict[(key, subkey)]
+            except KeyError:
+                raise OSError
         _winreg.QueryValueEx.side_effect = query_value
         def query_info_key(key):
             return (len(key_dict.get(key, [])),

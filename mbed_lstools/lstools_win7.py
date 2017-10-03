@@ -61,32 +61,31 @@ class MbedLsToolsWin7(MbedLsToolsBase):
         logger.debug("_com_port usb_devs %r",
                      list(self.iter_keys_as_str(usb_devs)))
 
-        logger.debug('_com_port ID: %s', tid)
-
-        # first try to find all devs keys (by tid)
+        logger.debug("_com_port looking up usb id in all usb devices")
         dev_keys = []
-        for vid in self.iter_keys(usb_devs):
+        for name, vid in zip(self.iter_keys_as_str(usb_devs),
+                             self.iter_keys(usb_devs)):
             try:
-                dev_keys += [winreg.OpenKey(vid, tid)]
-            except Exception as e:
-                logger.debug("Exception %r %s", vid, str(e))
+                dev_keys.append(winreg.OpenKey(vid, tid))
+                if logger.isEnabledFor(logging.DEBUG):
+                    logger.debug(
+                        "Found usb id %s in %s with subkeys %r", tid, name,
+                        list(self.iter_keys_as_str(winreg.OpenKey(vid, tid))))
+            except OSError:
                 pass
-        logger.debug("_com_port dev_keys %r",
-                     [list(self.iter_keys_as_str(k)) for k in dev_keys])
 
         logger.debug("_com_port Detecting port with Device Parameter")
         for key in dev_keys:
             try:
                 param = winreg.OpenKey(key, "Device Parameters")
-                logger.debug('_com_port param %r', param)
                 port, regtype = winreg.QueryValueEx(param, 'PortName')
                 logger.debug('_com_port port %r regtype %r', port, regtype)
                 return port
-            except Exception as e:
+            except OSError as e:
                 logger.debug("Exception %r %s", key, str(e))
                 pass
 
-        logger.debug("_com_port Detecting port By following symlinks")
+        logger.debug("_com_port Detecting port by following symlinks")
         for key in dev_keys:
             try:
                 ports = []
@@ -101,7 +100,7 @@ class MbedLsToolsWin7(MbedLsToolsBase):
                         maybe_port = self._com_port(dev)
                         if maybe_port:
                             return maybe_port
-            except Exception as e:
+            except OSError as e:
                 logger.debug("Exception %r %s", key, str(e))
                 pass
 
