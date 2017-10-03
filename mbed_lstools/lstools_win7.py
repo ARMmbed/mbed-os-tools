@@ -78,8 +78,7 @@ class MbedLsToolsWin7(MbedLsToolsBase):
         for key in dev_keys:
             try:
                 param = winreg.OpenKey(key, "Device Parameters")
-                logger.debug('_com_port param %r',
-                             list(self.iter_keys_as_str(param)))
+                logger.debug('_com_port param %r', param)
                 port, regtype = winreg.QueryValueEx(param, 'PortName')
                 logger.debug('_com_port port %r regtype %r', port, regtype)
                 return port
@@ -162,6 +161,8 @@ class MbedLsToolsWin7(MbedLsToolsBase):
                 logger.debug("Found Mount point %s with usb ID %s",point,
                              printable_label)
                 yield (point.decode('utf-8', 'ignore'), printable_label)
+            else:
+                logger.debug("Skipping Mount point %r label %r", point, label)
 
     @staticmethod
     def regbin2str(regbin):
