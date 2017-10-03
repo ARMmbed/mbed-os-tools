@@ -112,6 +112,14 @@ class MbedLsToolsBase(object):
             read_details_txt=False):
         """ List details of connected devices
         @return Returns list of structures with detailed info about each mbed
+        @param fs_interaction A member of the FSInteraction class that picks the
+          trade of between quality of service and speed
+        @param platform_name_filters A series of regular expressions to filter
+          filter targets by
+        @param unique_names A boolean controlling the presence of the
+          'platform_unique_name' member of the output dict
+        @param read_details_text A boolean controlling the presense of the
+          output dict attributes read from "DETAILS.TXT"
         @details Function returns list of dictionaries with mbed attributes 'mount_point', TargetID name etc.
         Function returns mbed list with platform names if possible
         """
