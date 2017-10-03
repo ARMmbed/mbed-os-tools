@@ -68,36 +68,42 @@ class MbedLsToolsWin7(MbedLsToolsBase):
         for vid in self.iter_keys(usb_devs):
             try:
                 dev_keys += [winreg.OpenKey(vid, tid)]
-            except:
+            except Exception as e:
+                logger.debug("Exception %r %s", vid, str(e))
                 pass
         logger.debug("_com_port dev_keys %r",
                      [list(self.iter_keys_as_str(k)) for k in dev_keys])
 
-        # then try to get port directly from "Device Parameters"
+        logger.debug("_com_port Detecting port with Device Parameter")
         for key in dev_keys:
             try:
                 param = winreg.OpenKey(key, "Device Parameters")
-                port = winreg.QueryValueEx(param, 'PortName')[0]
-                logger.debug('_com_port param %r port %r',
-                             list(self.iter_keys_as_str(param)), port)
+                logger.debug('_com_port param %r',
+                             list(self.iter_keys_as_str(param)))
+                port, regtype = winreg.QueryValueEx(param, 'PortName')
+                logger.debug('_com_port port %r regtype %r', port, regtype)
                 return port
-            except:
+            except Exception as e:
+                logger.debug("Exception %r %s", key, str(e))
                 pass
 
-        # else follow symbolic dev links in registry
+        logger.debug("_com_port Detecting port By following symlinks")
         for key in dev_keys:
             try:
                 ports = []
-                parent_id = winreg.QueryValueEx(key, 'ParentIdPrefix')[0]
+                parent_id, regtype = winreg.QueryValueEx(key, 'ParentIdPrefix')
+                logger.debug("_com_port parent_id %r regtype %r")
                 for VID in self.iter_keys(usb_devs):
-                    for dev in self.iter_keys_as_str(VID):
-                        if parent_id in dev:
-                            ports += [self._com_port(dev)]
-                logger.debug("_com_port ports %r", ports)
-                for port in ports:
-                    if port:
-                        return port
-            except:
+                    candidate_keys = [k for k in self.iter_keys_as_str(VID)
+                                      if parent_id in k]
+                    for dev in candidate_keys:
+                        logger.debug(
+                            "_com_port recursive port detection with %r", dev)
+                        maybe_port = self._com_port(dev)
+                        if maybe_port:
+                            return maybe_port
+            except Exception as e:
+                logger.debug("Exception %r %s", key, str(e))
                 pass
 
         # If everything fails, return None
