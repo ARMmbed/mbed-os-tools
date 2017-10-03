@@ -59,37 +59,41 @@ class Win7TestCase(unittest.TestCase):
         _winreg.SaveKey.assert_not_called()
 
     def test_one_nucleo_dev(self):
+        _winreg.HKEY_LOCAL_MACHINE = None
         value_dict = {
-            'SYSTEM\MountedDevices': [
+            (None, 'SYSTEM\MountedDevices'): [
                 ('\\DosDevices\\F:',
                  b'_??_USBSTOR#Disk&Ven_MBED&Prod_microcontroller&Rev_1.0#8&bcddc05&0&0672FF485550755187045151&0#{53f56307-b6bf-11d0-94f2-00a0c91efb8b}'),
                 ('\\DosDevices\\D:',
                  b'_??_USBSTOR#Disk&Ven_SEGGER&Prod_MSD_Volume&Rev_1.00#8&1b8e102b&0&000440035522&0#{53f56307-b6bf-11d0-94f2-00a0c91efb8b}')],
+            ((((((None, 'SYSTEM\CurrentControlSet\Enum'), 'USB'),
+                'VID_0416&PID_511E'), '000440035522'), 'Device Parameters'), 'PortName'): ('COM7', None)
         }
         key_dict = {
-            '000440035522': ['Device Parameters', 'Properties'],
-            'USB': ['ROOT_HUB30', 'VID_0416&PID_511E', 'VID_0416&PID_511E&MI_00',
-                    'VID_0416&PID_511E&MI_01', 'VID_046D&PID_C03D',
-                    'VID_046D&PID_C313', 'VID_046D&PID_C313&MI_00',
-                    'VID_046D&PID_C313&MI_01', 'VID_046D&PID_C52B',
-                    'VID_046D&PID_C52B&MI_00', 'VID_046D&PID_C52B&MI_01',
-                    'VID_046D&PID_C52B&MI_02', 'VID_0483&PID_374B',
-                    'VID_0483&PID_374B&MI_00', 'VID_0483&PID_374B&MI_01',
-                    'VID_0483&PID_374B&MI_02', 'VID_0930&PID_6545',
-                    'VID_0D28&PID_0204', 'VID_0D28&PID_0204&MI_00',
-                    'VID_0D28&PID_0204&MI_01', 'VID_0D28&PID_0204&MI_03',
-                    'VID_1366&PID_1015', 'VID_1366&PID_1015&MI_00',
-                    'VID_1366&PID_1015&MI_02', 'VID_1366&PID_1015&MI_03',
-                    'VID_138A&PID_0090', 'VID_17EF&PID_100F', 'VID_17EF&PID_1010',
-                    'VID_17EF&PID_6019', 'VID_18D1&PID_4EE1', 'VID_195D&PID_2047',
-                    'VID_195D&PID_2047&MI_00', 'VID_195D&PID_2047&MI_01',
-                    'VID_195D&PID_2047&MI_02', 'VID_1A40&PID_0101', 'VID_1FD2&PID_5003',
-                    'VID_1FD2&PID_5003&MI_00', 'VID_1FD2&PID_5003&MI_01',
-                    'VID_413C&PID_2107', 'VID_5986&PID_0706', 'VID_5986&PID_0706&MI_00',
-                    'VID_8087&PID_0A2B', 'Vid_80EE&Pid_CAFE']
+            ((((None, 'SYSTEM\CurrentControlSet\Enum'), 'USB'), 'VID_0416&PID_511E'), '000440035522'): ['Device Parameters', 'Properties'],
+            ((None, 'SYSTEM\CurrentControlSet\Enum'), 'USB'):
+            ['ROOT_HUB30', 'VID_0416&PID_511E', 'VID_0416&PID_511E&MI_00',
+             'VID_0416&PID_511E&MI_01', 'VID_046D&PID_C03D',
+             'VID_046D&PID_C313', 'VID_046D&PID_C313&MI_00',
+             'VID_046D&PID_C313&MI_01', 'VID_046D&PID_C52B',
+             'VID_046D&PID_C52B&MI_00', 'VID_046D&PID_C52B&MI_01',
+             'VID_046D&PID_C52B&MI_02', 'VID_0483&PID_374B',
+             'VID_0483&PID_374B&MI_00', 'VID_0483&PID_374B&MI_01',
+             'VID_0483&PID_374B&MI_02', 'VID_0930&PID_6545',
+             'VID_0D28&PID_0204', 'VID_0D28&PID_0204&MI_00',
+             'VID_0D28&PID_0204&MI_01', 'VID_0D28&PID_0204&MI_03',
+             'VID_1366&PID_1015', 'VID_1366&PID_1015&MI_00',
+             'VID_1366&PID_1015&MI_02', 'VID_1366&PID_1015&MI_03',
+             'VID_138A&PID_0090', 'VID_17EF&PID_100F', 'VID_17EF&PID_1010',
+             'VID_17EF&PID_6019', 'VID_18D1&PID_4EE1', 'VID_195D&PID_2047',
+             'VID_195D&PID_2047&MI_00', 'VID_195D&PID_2047&MI_01',
+             'VID_195D&PID_2047&MI_02', 'VID_1A40&PID_0101', 'VID_1FD2&PID_5003',
+             'VID_1FD2&PID_5003&MI_00', 'VID_1FD2&PID_5003&MI_01',
+             'VID_413C&PID_2107', 'VID_5986&PID_0706', 'VID_5986&PID_0706&MI_00',
+             'VID_8087&PID_0A2B', 'Vid_80EE&Pid_CAFE']
         }
-        def open_key_effect(_, cls):
-            return cls
+        def open_key_effect(key, subkey):
+            return key, subkey
         _winreg.OpenKey.side_effect = open_key_effect
         def enum_value(key, index):
             return value_dict[key][index]
@@ -97,6 +101,9 @@ class Win7TestCase(unittest.TestCase):
         def enum_key(key, index):
             return key_dict[key][index]
         _winreg.EnumKey.side_effect = enum_key
+        def query_value(key, subkey):
+            return value_dict[(key, subkey)]
+        _winreg.QueryValueEx.side_effect = query_value
         def query_info_key(key):
             return (len(key_dict.get(key, [])),
                     len(value_dict.get(key, [])))
