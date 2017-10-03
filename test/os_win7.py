@@ -96,7 +96,8 @@ class Win7TestCase(unittest.TestCase):
             return key, subkey
         _winreg.OpenKey.side_effect = open_key_effect
         def enum_value(key, index):
-            return value_dict[key][index]
+            a, b = value_dict[key][index]
+            return a, b, None
         _winreg.EnumValue.side_effect = enum_value
         def enum_key(key, index):
             return key_dict[key][index]

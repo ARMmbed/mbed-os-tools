@@ -155,7 +155,7 @@ class MbedLsToolsWin7(MbedLsToolsBase):
         """
         upper_ven = [ven.upper() for ven in self.usb_vendor_list]
         mounts_key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, 'SYSTEM\MountedDevices')
-        for point, label in self.iter_vals(mounts_key):
+        for point, label, _ in self.iter_vals(mounts_key):
             if (b'DosDevices' in point and
                 any(v in label.decode('utf-8', 'ignore').upper() for v in upper_ven)):
                 printable_label = self.regbin2str(label)
