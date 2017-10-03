@@ -310,7 +310,7 @@ def add_target_info_mapping(mbed_classic_name, map_platform_to_yt_target=None, u
 
     # Add extra targets to already existing and detected in the system platforms
     if map_platform_to_yt_target and mbed_classic_name in map_platform_to_yt_target:
-            yotta_target_search = list(set(yotta_target_search + map_platform_to_yt_target[mbed_classic_name]))
+        yotta_target_search = list(set(yotta_target_search + map_platform_to_yt_target[mbed_classic_name]))
 
     # Check if this targets are already there
     if mbed_classic_name not in TARGET_INFO_MAPPING:

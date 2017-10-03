@@ -226,7 +226,7 @@ def exporter_testcase_junit(test_result_ext, test_suite_properties=None):
             ts_name = target_name
 
             if test_suite_properties is not None:
-                test_build_properties = test_suite_properties[target_name] if target_name in test_suite_properties else None
+                test_build_properties = test_suite_properties.get(target_name, None)
             else:
                 test_build_properties = None
 
