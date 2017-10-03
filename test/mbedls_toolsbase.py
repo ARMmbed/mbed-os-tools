@@ -55,7 +55,9 @@ class BasicTestCase(unittest.TestCase):
                                    'target_id_usb_id': '00000000000',
                                    'serial_port': 'not_valid'}]
         with patch("mbed_lstools.lstools_base.MbedLsToolsBase._read_htm_ids") as _read_htm,\
+             patch("mbed_lstools.lstools_base.MbedLsToolsBase.mount_point_ready") as _mpr,\
              patch("mbed_lstools.lstools_base.PlatformDatabase.get") as _get:
+            _mpr.return_value = True
             _read_htm.return_value = (u'0241BEEFDEAD', {})
             _get.return_value = 'foo_target'
             to_check = self.base.list_mbeds()

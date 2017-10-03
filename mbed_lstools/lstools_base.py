@@ -122,9 +122,10 @@ class MbedLsToolsBase(object):
         platform_name_matcher = re.compile("|".join("({})".format(pf) for pf
                                                     in platform_name_filters))
         for device in candidates:
-            if not device['mount_point'] :
-                if  (device['target_id_usb_id'] and device['serial_port'] and
-                     not self.list_unmounted):
+            if  ((not device['mount_point'] or
+                  not self.mount_point_ready(device['mount_point'])) and
+                 not self.list_unmounted):
+                if  (device['target_id_usb_id'] and device['serial_port']):
                     logger.warning(
                         "MBED with target id '%s' is connected, but not mounted. "
                         "Use the '-u' flag to include it in the list.",
