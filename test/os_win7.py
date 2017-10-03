@@ -62,9 +62,9 @@ class Win7TestCase(unittest.TestCase):
         _winreg.HKEY_LOCAL_MACHINE = None
         value_dict = {
             (None, 'SYSTEM\MountedDevices'): [
-                ('\\DosDevices\\F:',
+                (b'\\DosDevices\\F:',
                  b'_??_USBSTOR#Disk&Ven_MBED&Prod_microcontroller&Rev_1.0#8&bcddc05&0&0672FF485550755187045151&0#{53f56307-b6bf-11d0-94f2-00a0c91efb8b}'),
-                ('\\DosDevices\\D:',
+                (b'\\DosDevices\\D:',
                  b'_??_USBSTOR#Disk&Ven_SEGGER&Prod_MSD_Volume&Rev_1.00#8&1b8e102b&0&000440035522&0#{53f56307-b6bf-11d0-94f2-00a0c91efb8b}')],
             ((((((None, 'SYSTEM\CurrentControlSet\Enum'), 'USB'),
                 'VID_0416&PID_511E'), '000440035522'), 'Device Parameters'), 'PortName'): ('COM7', None)
