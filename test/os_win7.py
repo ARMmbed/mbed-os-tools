@@ -47,6 +47,17 @@ class Win7TestCase(unittest.TestCase):
         _winreg.QueryInfoKey.assert_called_with(_winreg.OpenKey.return_value)
         pass
 
+    def assertNoRegMut(self):
+        """Assert that the registry was not mutated in this test"""
+        _winreg.CreateKey.assert_not_called()
+        _winreg.CreateKeyEx.assert_not_called()
+        _winreg.DeleteKey.assert_not_called()
+        _winreg.DeleteKeyEx.assert_not_called()
+        _winreg.DeleteValue.assert_not_called()
+        _winreg.SetValue.assert_not_called()
+        _winreg.SetValueEx.assert_not_called()
+        _winreg.SaveKey.assert_not_called()
+
     def test_one_nucleo_dev(self):
         value_dict = {
             'SYSTEM\MountedDevices': [
@@ -92,6 +103,7 @@ class Win7TestCase(unittest.TestCase):
         _winreg.QueryInfoKey.side_effect = query_info_key
         devices = self.lstool.find_candidates()
         print(devices)
+        self.assertNoRegMut()
 
 
 if __name__ == '__main__':

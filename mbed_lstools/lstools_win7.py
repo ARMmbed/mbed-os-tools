@@ -46,7 +46,6 @@ class MbedLsToolsWin7(MbedLsToolsBase):
                 'serial_port': self._com_port(id)
             }
             for mnt, id in self.get_mbeds()
-            if self.mount_point_ready(mnt)
         ]
 
     def _com_port(self, tid):
@@ -148,27 +147,19 @@ class MbedLsToolsWin7(MbedLsToolsBase):
         @details Note: We will detect also non-standard MBED devices mentioned on 'usb_vendor_list' list.
                  This will help to detect boards like EFM boards.
         """
-        result = []
-        for ven in self.usb_vendor_list:
-            result += [d for d in self.get_dos_devices() if ven.upper() in d[1].upper()]
-
+        upper_ven = [ven.upper() for ven in self.usb_vendor_list]
+        mounts_key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, 'SYSTEM\MountedDevices')
+        result = [(point, self.regbin2str(label))
+                  for point, label in self.iter_vals(mounts_key)
+                  if ('DosDevices' in point and
+                      any(v in label.upper() for v in upper_ven))]
         logger.debug("get_mbed_devices result %r", result)
         return result
 
-    def get_dos_devices(self):
-        """! Get DOS devices (connected or not)
-        """
-        ddevs = [dev for dev in self.get_mounted_devices() if 'DosDevices' in dev[0]]
-        return [(d[0], self.regbin2str(d[1])) for d in ddevs]
 
-    def get_mounted_devices(self):
-        """! Get all mounted devices (connected or not)
-        """
-        mounts = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, 'SYSTEM\MountedDevices')
-        logger.debug("get_mounted_devices %r", mounts)
-        return [val for val in self.iter_vals(mounts)]
 
-    def regbin2str(self, regbin):
+    @staticmethod
+    def regbin2str(regbin):
         """! Decode registry binary to readable string
         """
         return ''.join(filter(lambda ch: ch in string.printable,
