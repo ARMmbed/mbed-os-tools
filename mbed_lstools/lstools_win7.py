@@ -155,18 +155,11 @@ class MbedLsToolsWin7(MbedLsToolsBase):
         upper_ven = [ven.upper() for ven in self.usb_vendor_list]
         mounts_key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, 'SYSTEM\MountedDevices')
         for point, label, _ in self.iter_vals(mounts_key):
+            printable_label = label.decode('utf-16le', 'ignore')
             if (b'DosDevices' in point and
-                any(v in label.decode('utf-8', 'ignore').upper() for v in upper_ven)):
-                printable_label = self.regbin2str(label)
+                any(v in printable_label.upper() for v in upper_ven)):
                 logger.debug("Found Mount point %s with usb ID %s",point,
                              printable_label)
                 yield (point.decode('utf-8', 'ignore'), printable_label)
             else:
                 logger.debug("Skipping Mount point %r label %r", point, label)
-
-    @staticmethod
-    def regbin2str(regbin):
-        """! Decode registry binary to readable string
-        """
-        return ''.join(filter(lambda ch: ch in string.printable,
-                              regbin.decode('ascii', errors='ignore')))
