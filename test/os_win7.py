@@ -35,6 +35,20 @@ class Win7TestCase(unittest.TestCase):
 
     def setUp(self):
         self.lstool = MbedLsToolsWin7()
+        _winreg.HKEY_LOCAL_MACHINE = None
+        _winreg.OpenKey.side_effect = None
+        _winreg.EnumValue.side_effect = None
+        _winreg.EnumKey.side_effect = None
+        _winreg.QueryValue.side_effect = None
+        _winreg.QueryInfoKey.side_effect = None
+        _winreg.CreateKey.reset_mock()
+        _winreg.CreateKeyEx.reset_mock()
+        _winreg.DeleteKey.reset_mock()
+        _winreg.DeleteKeyEx.reset_mock()
+        _winreg.DeleteValue.reset_mock()
+        _winreg.SetValue.reset_mock()
+        _winreg.SetValueEx.reset_mock()
+        _winreg.SaveKey.reset_mock()
 
     def test_os_supported(self):
         pass
@@ -58,12 +72,43 @@ class Win7TestCase(unittest.TestCase):
         _winreg.SetValueEx.assert_not_called()
         _winreg.SaveKey.assert_not_called()
 
+    def setUpRegistry(self, value_dict, key_dict):
+        all_keys = set(value_dict.keys()) | set(key_dict.keys())
+        def open_key_effect(key, subkey):
+            if ((key, subkey) in all_keys or key in all_keys):
+                return key, subkey
+            else:
+                raise OSError((key, subkey))
+        _winreg.OpenKey.side_effect = open_key_effect
+        def enum_value(key, index):
+            try:
+                a, b = value_dict[key][index]
+                return a, b, None
+            except KeyError:
+                raise OSError
+        _winreg.EnumValue.side_effect = enum_value
+        def enum_key(key, index):
+            try:
+                return key_dict[key][index]
+            except KeyError:
+                raise OSError
+        _winreg.EnumKey.side_effect = enum_key
+        def query_value(key, subkey):
+            try:
+                return value_dict[(key, subkey)]
+            except KeyError:
+                raise OSError
+        _winreg.QueryValueEx.side_effect = query_value
+        def query_info_key(key):
+            return (len(key_dict.get(key, [])),
+                    len(value_dict.get(key, [])))
+        _winreg.QueryInfoKey.side_effect = query_info_key
+
     def test_one_nucleo_dev(self):
-        _winreg.HKEY_LOCAL_MACHINE = None
         value_dict = {
             (None, 'SYSTEM\MountedDevices'): [
                 (b'\\DosDevices\\F:',
-                 b'_\x00?\x00?\x00_\x00U\x00S\x00B\x00S\x00T\x00O\x00R\x00#\x00D\x00i\x00s\x00k\x00&\x00V\x00e\x00n\x00_\x00M\x00B\x00E\x00D\x00&\x00P\x00r\x00o\x00d\x00_\x00V\x00F\x00S\x00&\x00R\x00e\x00v\x00_\x000\x00.\x001\x00#\x000\x002\x004\x000\x000\x000\x000\x000\x003\x002\x000\x004\x004\x00e\x004\x005\x000\x000\x003\x006\x007\x000\x000\x009\x009\x009\x007\x00b\x000\x000\x000\x008\x006\x007\x008\x001\x000\x000\x000\x000\x009\x007\x009\x006\x009\x009\x000\x000\x00&\x000\x00#\x00{\x005\x003\x00f\x005\x006\x003\x000\x007\x00-\x00b\x006\x00b\x00f\x00-\x001\x001\x00d\x000\x00-\x009\x004\x00f\x002\x00-\x000\x000\x00a\x000\x00c\x009\x001\x00e\x00f\x00b\x008\x00b\x00}\x00'),
+                 u'_??_USBSTOR#Disk&Ven_MBED&Prod_VFS&Rev_0.1#0240000032044e4500367009997b00086781000097969900&0#{53f56307-b6bf-11d0-94f2-00a0c91efb8b}'.encode('utf-16le')),
                 (b'\\DosDevices\\D:',
                  u'_??_USBSTOR#Disk&Ven_SEGGER&Prod_MSD_Volume&Rev_1.00#8&1b8e102b&0&000440035522&0#{53f56307-b6bf-11d0-94f2-00a0c91efb8b}'.encode('utf-16le'))],
             ((((((None, 'SYSTEM\CurrentControlSet\Enum'), 'USB'),
@@ -93,38 +138,14 @@ class Win7TestCase(unittest.TestCase):
              'VID_413C&PID_2107', 'VID_5986&PID_0706', 'VID_5986&PID_0706&MI_00',
              'VID_8087&PID_0A2B', 'Vid_80EE&Pid_CAFE']
         }
-        def open_key_effect(key, subkey):
-            if ((key, subkey) in set(value_dict.keys() + key_dict.keys()) or
-                key in set(value_dict.keys() + key_dict.keys())):
-                return key, subkey
-            else:
-                raise OSError((key, subkey))
-        _winreg.OpenKey.side_effect = open_key_effect
-        def enum_value(key, index):
-            try:
-                a, b = value_dict[key][index]
-                return a, b, None
-            except KeyError:
-                raise OSError
-        _winreg.EnumValue.side_effect = enum_value
-        def enum_key(key, index):
-            try:
-                return key_dict[key][index]
-            except KeyError:
-                raise OSError
-        _winreg.EnumKey.side_effect = enum_key
-        def query_value(key, subkey):
-            try:
-                return value_dict[(key, subkey)]
-            except KeyError:
-                raise OSError
-        _winreg.QueryValueEx.side_effect = query_value
-        def query_info_key(key):
-            return (len(key_dict.get(key, [])),
-                    len(value_dict.get(key, [])))
-        _winreg.QueryInfoKey.side_effect = query_info_key
+        self.setUpRegistry(value_dict, key_dict)
         devices = self.lstool.find_candidates()
-        print(devices)
+        self.assertIn(
+            {
+                'mount_point': u'D:',
+                'serial_port': 'COM7',
+                'target_id_usb_id': u'000440035522'
+            }, devices)
         self.assertNoRegMut()
 
 
