@@ -162,47 +162,55 @@ def parse_cli(to_parse):
     parser = argparse.ArgumentParser()
     parser.set_defaults(command=print_table)
 
-    commands = parser.add_mutually_exclusive_group()
+    commands = parser.add_argument_group('sub commands')\
+                     .add_mutually_exclusive_group()
     commands.add_argument(
         '-s', '--simple', dest='command', action='store_const',
-        const=print_simple, help='Parser friendly verbose mode')
+        const=print_simple,
+        help='list attached targets without column headers and borders')
     commands.add_argument(
         '-j', '--json', dest='command', action='store_const',
         const=mbeds_as_json,
-        help='JSON formatted list of targets detailed information')
+        help='list attached targets with detailed information in JSON format')
     commands.add_argument(
         '-J', '--json-by-target-id', dest='command', action='store_const',
         const=json_by_target_id,
-        help='JSON formatted dictionary ordered by TargetID of targets detailed information')
+        help='map attached target to from their target ID to their detailed '
+        'information in JSON format')
     commands.add_argument(
         '-p', '--json-platforms', dest='command', action='store_const',
         const=json_platforms,
-        help='JSON formatted list of available platforms')
+        help='list attached platform names in JSON format.')
     commands.add_argument(
         '-P', '--json-platforms-ext', dest='command', action='store_const',
         const=json_platforms_ext,
-        help='JSON formatted dictionary of platforms count')
+        help='map attached platform names to the number of attached boards in '
+        'JSON format')
     commands.add_argument(
-        '-l', '--list', dest='command', action='store_const', const=list_platforms,
-        help='List all platforms and corresponding TargetID values mapped by mbed-ls')
+        '-l', '--list', dest='command', action='store_const',
+        const=list_platforms,
+        help='list all target IDs and their corresponding platform names '
+        'understood by mbed-ls')
     commands.add_argument(
         '--version', dest='command', action='store_const', const=print_version,
-        help='Prints package version and exits')
+        help='print package version and exit')
     commands.add_argument(
-        '-m', '--mock',
-        help='Add locally manufacturers id and platform name. Example --mock=12B4:NEW_PLATFORM')
+        '-m', '--mock', metavar='ID:NAME',
+        help='substitute or create a target ID to platform name mapping used'
+        'when invoking mbedls in the current directory')
 
     parser.add_argument(
         '--skip-retarget', dest='skip_retarget', default=False,
         action="store_true",
-        help='Ignores file ./mbedls.json with retarget data')
+        help='skip parsing and interpretation of the re-target file,'
+        ' `./mbedls.json`')
     parser.add_argument(
         '-u', '--list-unmounted', dest='list_unmounted', default=False,
         action='store_true',
-        help='List unmounted mbeds in addition to ones that are mounted.')
+        help='list mbeds, regardless of whether they are mounted or not')
     parser.add_argument(
         '-d', '--debug', dest='debug', default=False, action="store_true",
-        help='Outputs extra debug information')
+        help='outputs extra debug information useful when creating issues!')
 
     args = parser.parse_args(to_parse)
     if args.mock:
