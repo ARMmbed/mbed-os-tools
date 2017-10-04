@@ -109,7 +109,7 @@ def print_simple(mbeds, args):
     return print_mbeds(mbeds, args, True)
 
 def mock_platform(mbeds, args):
-    for token in args.mock_platform.split(','):
+    for token in args.mock.split(','):
         if ':' in token:
             oper = '+' # Default
             mid, platform_name = token.split(':')
@@ -190,7 +190,7 @@ def parse_cli(to_parse):
         '--version', dest='command', action='store_const', const=print_version,
         help='Prints package version and exits')
     commands.add_argument(
-        '-m', '--mock', dest='command', action='store_const', const=mock_platform,
+        '-m', '--mock',
         help='Add locally manufacturers id and platform name. Example --mock=12B4:NEW_PLATFORM')
 
     parser.add_argument(
@@ -205,7 +205,10 @@ def parse_cli(to_parse):
         '-d', '--debug', dest='debug', default=False, action="store_true",
         help='Outputs extra debug information')
 
-    return parser.parse_args(to_parse)
+    args = parser.parse_args(to_parse)
+    if args.mock:
+        args.command = mock_platform
+    return args
 
 def mbedls_main():
     """! Function used to drive CLI (command line interface) application
