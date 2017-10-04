@@ -127,6 +127,6 @@ class CLIParser(unittest.TestCase):
             pass
 
     def test_parse_cli_single_param(self):
-        for p in ['j', 'J', 'p', 'P', '-version', 'd', 'u', 'm']:
+        for p in ['j', 'J', 'p', 'P', '-version', 'd', 'u']:
             args = cli.parse_cli(['-' + p])
             assert callable(args.command)
