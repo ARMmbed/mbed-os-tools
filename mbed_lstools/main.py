@@ -20,10 +20,9 @@ limitations under the License.
 import os
 import sys
 import json
-import optparse
+import argparse
 import platform
 from collections import defaultdict
-
 import logging
 
 logger = logging.getLogger("mbedls.main")
@@ -83,96 +82,72 @@ def mbed_lstools_os_info():
     return result
 
 
-def cmd_parser_setup():
+def parse_cli():
     """! Configure CLI (Command Line OPtions) options
 
     @return Returns OptionParser's tuple of (options, arguments)
 
     @details Add new command line options here to control 'mbedls' command line iterface
     """
-    parser = optparse.OptionParser()
+    parser = argparse.ArgumentParser()
 
-    parser.add_option('-s', '--simple',
-                      dest='simple',
-                      default=False,
-                      action="store_true",
-                      help='Parser friendly verbose mode')
+    commands = parser.add_mutually_exclusive_group()
+    commands.add_argument(
+        '-s', '--simple', dest='simple', default=False, action="store_true",
+        help='Parser friendly verbose mode')
+    commands.add_argument(
+        '-j', '--json', dest='json', default=False, action="store_true",
+        help='JSON formatted list of targets detailed information')
+    commands.add_argument(
+        '-J', '--json-by-target-id', dest='json_by_target_id', default=False,
+        action="store_true",
+        help='JSON formatted dictionary ordered by TargetID of targets detailed information')
+    commands.add_argument(
+        '-p', '--json-platforms', dest='json_platforms', default=False,
+        action="store_true",
+        help='JSON formatted list of available platforms')
+    commands.add_argument(
+        '-P', '--json-platforms-ext', dest='json_platforms_ext', default=False,
+        action="store_true",
+        help='JSON formatted dictionary of platforms count')
+    commands.add_argument(
+        '-l', '--list', dest='list_platforms', default=False,
+        action="store_true",
+        help='List all platforms and corresponding TargetID values mapped by mbed-ls')
+    commands.add_argument(
+        '--version', dest='version', default=False,
+        action="store_true",
+        help='Prints package version and exits')
+    commands.add_argument(
+        '-m', '--mock', dest='mock_platform',
+        help='Add locally manufacturers id and platform name. Example --mock=12B4:NEW_PLATFORM')
 
-    parser.add_option('-l', '--list',
-                      dest='list_platforms',
-                      default=False,
-                      action="store_true",
-                      help='List all platforms and corresponding TargetID values mapped by mbed-ls')
+    parser.add_argument(
+        '--skip-retarget', dest='skip_retarget', default=False,
+        action="store_true",
+        help='Ignores file ./mbedls.json with retarget data')
+    parser.add_argument(
+        '-u', '--list-unmounted', dest='list_unmounted', default=False,
+        action='store_true',
+        help='List unmounted mbeds in addition to ones that are mounted.')
+    parser.add_argument(
+        '-d', '--debug', dest='debug', default=False, action="store_true",
+        help='Outputs extra debug information')
 
-    parser.add_option('-m', '--mock',
-                      dest='mock_platform',
-                      help='Add locally manufacturers id and platform name. Example --mock=12B4:NEW_PLATFORM')
+    return parser.parse_args()
 
-    parser.add_option('-j', '--json',
-                      dest='json',
-                      default=False,
-                      action="store_true",
-                      help='JSON formatted list of targets detailed information')
-
-    parser.add_option('-J', '--json-by-target-id',
-                      dest='json_by_target_id',
-                      default=False,
-                      action="store_true",
-                      help='JSON formatted dictionary ordered by TargetID of targets detailed information')
-
-    parser.add_option('-p', '--json-platforms',
-                      dest='json_platforms',
-                      default=False,
-                      action="store_true",
-                      help='JSON formatted list of available platforms')
-
-    parser.add_option('-P', '--json-platforms-ext',
-                      dest='json_platforms_ext',
-                      default=False,
-                      action="store_true",
-                      help='JSON formatted dictionary of platforms count')
-
-    parser.add_option('', '--skip-retarget',
-                      dest='skip_retarget',
-                      default=False,
-                      action="store_true",
-                      help='Ignores file ./mbedls.json with retarget data')
-
-    parser.add_option('-u', '--list-unmounted',
-                      dest='list_unmounted',
-                      default=False,
-                      action='store_true',
-                      help='List unmounted mbeds in addition to ones that are mounted.')
-
-    parser.add_option('-d', '--debug',
-                      dest='debug',
-                      default=False,
-                      action="store_true",
-                      help='Outputs extra debug information')
-
-    parser.add_option('', '--version',
-                      dest='version',
-                      default=False,
-                      action="store_true",
-                      help='Prints package version and exits')
-
-    (opts, args) = parser.parse_args()
-    return (opts, args)
-
+def get_mbedls_version():
+    """! Get mbed-ls Python module version string """
+    import pkg_resources  # part of setuptools
+    version = pkg_resources.require("mbed-ls")[0].version
+    return version
 
 def mbedls_main():
     """! Function used to drive CLI (command line interface) application
     @return Function exits with success code
     @details Function exits back to command line with ERRORLEVEL
     """
-
-    def get_mbedls_version():
-        """! Get mbed-ls Python module version string """
-        import pkg_resources  # part of setuptools
-        version = pkg_resources.require("mbed-ls")[0].version
-        return version
-
-    (opts, args) = cmd_parser_setup()
+    args = parse_cli()
 
     root_logger = logging.getLogger("")
     try:
@@ -181,32 +156,32 @@ def mbedls_main():
             format='%(log_color)s%(levelname)s%(reset)s:%(name)s:%(message)s')
     except ImportError:
         logging.basicConfig()
-    if opts.debug:
+    if args.debug:
         root_logger.setLevel(logging.DEBUG)
     else:
         root_logger.setLevel(logging.INFO)
     logger.debug("mbed-ls ver. %s", get_mbedls_version())
     logger.debug("host: %s",  str((mbed_lstools_os_info())))
 
-    mbeds = create(skip_retarget=opts.skip_retarget,
-                   list_unmounted=opts.list_unmounted,
-                   force_mock=opts.mock_platform)
+    mbeds = create(skip_retarget=args.skip_retarget,
+                   list_unmounted=args.list_unmounted,
+                   force_mock=args.mock_platform)
 
     if mbeds is None:
         logger.critical('This platform is not supported! Pull requests welcome at github.com/ARMmbed/mbed-ls')
         sys.exit(-1)
 
 
-    if opts.list_platforms:
+    if args.list_platforms:
         print(mbeds.list_manufacture_ids())
         sys.exit(0)
 
-    if opts.mock_platform:
-        if opts.mock_platform == '*':
-            if opts.json:
+    if args.mock_platform:
+        if args.mock_platform == '*':
+            if args.json:
                 print(json.dumps(mbeds.mock_read(), indent=4))
 
-        for token in opts.mock_platform.split(','):
+        for token in args.mock_platform.split(','):
             if ':' in token:
                 oper = '+' # Default
                 mid, platform_name = token.split(':')
@@ -222,30 +197,30 @@ def mbedls_main():
             else:
                 logger.error("Could not parse mock from token: '%s'", token)
 
-    elif opts.json:
+    elif args.json:
         print(json.dumps(mbeds.list_mbeds(unique_names=True,
                                           read_details_txt=True),
                          indent=4, sort_keys=True))
 
-    elif opts.json_by_target_id:
+    elif args.json_by_target_id:
         print(json.dumps({m['target_id']: m for m
                           in mbeds.list_mbeds(unique_names=True,
                                               read_details_txt=True)},
                          indent=4, sort_keys=True))
 
-    elif opts.json_platforms:
+    elif args.json_platforms:
         platforms = set()
         for d in mbeds.list_mbeds():
             platforms |= set([d['platform_name']])
         print(json.dumps(list(platforms), indent=4, sort_keys=True))
 
-    elif opts.json_platforms_ext:
+    elif args.json_platforms_ext:
         platforms = defaultdict(lambda: 0)
         for d in mbeds.list_mbeds():
             platforms[d['platform_name']] += 1
         print(json.dumps(platforms, indent=4, sort_keys=True))
 
-    elif opts.version:
+    elif args.version:
         print(get_mbedls_version())
 
     else:
