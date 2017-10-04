@@ -31,10 +31,9 @@ logger = logging.getLogger("mbedls.main")
 def create(**kwargs):
     """! Factory used to create host OS specific mbed-lstools object
 
-    :param kwargs: To pass arguments transparently to MbedLsToolsBase class.
+    :param kwargs: keyword arguments to pass along to the constructors
     @return Returns MbedLsTools object or None if host OS is not supported
 
-    @details Function detects host OS. Each host platform should be ported to support new host platform (OS)
     """
     result = None
     mbed_os = mbed_os_support()
@@ -210,11 +209,7 @@ def parse_cli(to_parse):
         args.command = mock_platform
     return args
 
-def mbedls_main():
-    """! Function used to drive CLI (command line interface) application
-    @return Function exits with success code
-    """
-    root_logger = logging.getLogger("")
+def start_logging():
     try:
         import colorlog
         colorlog.basicConfig(
@@ -222,8 +217,15 @@ def mbedls_main():
     except ImportError:
         logging.basicConfig()
 
-    args = parse_cli(sys.argv)
+def mbedls_main():
+    """! Function used to drive CLI (command line interface) application
+    @return Function exits with success code
+    """
+    start_logging()
 
+    args = parse_cli(sys.argv[1:])
+
+    root_logger = logging.getLogger("")
     if args.debug:
         root_logger.setLevel(logging.DEBUG)
     else:
