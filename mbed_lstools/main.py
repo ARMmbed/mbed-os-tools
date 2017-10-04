@@ -22,6 +22,7 @@ import sys
 import json
 import optparse
 import platform
+from collections import defaultdict
 
 import logging
 
@@ -220,26 +221,44 @@ def mbedls_main():
                 mbeds.mock_manufacture_id(mid, 'dummy', oper=oper)
             else:
                 logger.error("Could not parse mock from token: '%s'", token)
-        if opts.json:
-            print(json.dumps(mbeds.mock_read(), indent=4))
 
     elif opts.json:
-        print(json.dumps(mbeds.list_mbeds_ext(), indent=4, sort_keys=True))
+        print(json.dumps(mbeds.list_mbeds(unique_names=True,
+                                          read_details_txt=True),
+                         indent=4, sort_keys=True))
 
     elif opts.json_by_target_id:
-        print(json.dumps(mbeds.list_mbeds_by_targetid(), indent=4, sort_keys=True))
+        print(json.dumps({m['target_id']: m for m
+                          in mbeds.list_mbeds(unique_names=True,
+                                              read_details_txt=True)},
+                         indent=4, sort_keys=True))
 
     elif opts.json_platforms:
-        print(json.dumps(mbeds.list_platforms(), indent=4, sort_keys=True))
+        platforms = set()
+        for d in mbeds.list_mbeds():
+            platforms |= set([d['platform_name']])
+        print(json.dumps(list(platforms), indent=4, sort_keys=True))
 
     elif opts.json_platforms_ext:
-        print(json.dumps(mbeds.list_platforms_ext(), indent=4, sort_keys=True))
+        platforms = defaultdict(lambda: 0)
+        for d in mbeds.list_mbeds():
+            platforms[d['platform_name']] += 1
+        print(json.dumps(platforms, indent=4, sort_keys=True))
 
     elif opts.version:
         print(get_mbedls_version())
 
     else:
-        print(mbeds.get_string(border=not opts.simple, header=not opts.simple))
+        devices = mbeds.list_mbeds(unique_names=True, read_details_txt=True)
+        if devices:
+            from prettytable import PrettyTable
+            columns = ['platform_name', 'platform_name_unique', 'mount_point',
+                       'serial_port', 'target_id', 'daplink_version']
+            pt = PrettyTable(columns)
+            for d in devices:
+                pt.add_row([d.get(col, None) or 'unknown' for col in columns])
+            print(pt.get_string(border=True, header=True, padding_width=1,
+                                sortby='platform_name_unique'))
 
     logger.debug("Return code: %d", mbeds.ERRORLEVEL_FLAG)
 
