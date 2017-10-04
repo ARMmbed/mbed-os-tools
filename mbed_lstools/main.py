@@ -175,7 +175,7 @@ def parse_cli(to_parse):
     commands.add_argument(
         '-J', '--json-by-target-id', dest='command', action='store_const',
         const=json_by_target_id,
-        help='map attached target to from their target ID to their detailed '
+        help='map attached targets from their target ID to their detailed '
         'information in JSON format')
     commands.add_argument(
         '-p', '--json-platforms', dest='command', action='store_const',
