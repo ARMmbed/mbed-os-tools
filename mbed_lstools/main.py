@@ -151,7 +151,7 @@ def json_platforms_ext(mbeds, args):
         platforms[d['platform_name']] += 1
     print(json.dumps(platforms, indent=4, sort_keys=True))
 
-def parse_cli():
+def parse_cli(to_parse):
     """! Parse the command line
 
     @return Retrun a namespace that contains:
@@ -205,7 +205,7 @@ def parse_cli():
         '-d', '--debug', dest='debug', default=False, action="store_true",
         help='Outputs extra debug information')
 
-    return parser.parse_args()
+    return parser.parse_args(to_parse)
 
 def mbedls_main():
     """! Function used to drive CLI (command line interface) application
@@ -219,7 +219,7 @@ def mbedls_main():
     except ImportError:
         logging.basicConfig()
 
-    args = parse_cli()
+    args = parse_cli(sys.argv)
 
     if args.debug:
         root_logger.setLevel(logging.DEBUG)
