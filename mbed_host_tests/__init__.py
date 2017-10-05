@@ -202,7 +202,7 @@ def init_host_test_cli_params():
                       dest="sync_timeout",
                       default=5,
                       type=int,
-                      help="Define delay between between __sync packet (Default is 5 seconds)",
+                      help="Define delay in seconds between __sync packet (Default is 5 seconds)",
                       metavar="SYNC_TIMEOUT")
 
     parser.add_option("-f", "--image-path",
