@@ -6,11 +6,11 @@ python:
 
 install:
   - pip install coverage
+  - pip install coveralls
   - pip install prettytable
 
-script: python setup.py test
+script: coverage run setup.py test
 
 after_success:
-  - coverage run setup.py test
   - coverage html
   - coveralls
