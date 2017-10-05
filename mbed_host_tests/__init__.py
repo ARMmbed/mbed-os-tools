@@ -198,6 +198,13 @@ def init_host_test_cli_params():
                       help="Define how many times __sync packet will be sent to device: 0: none; -1: forever; 1,2,3... - number of times (Default 2 time)",
                       metavar="SYNC_BEHAVIOR")
 
+    parser.add_option("", "--sync-timeout",
+                      dest="sync_timeout",
+                      default=5,
+                      type=int,
+                      help="Define delay in seconds between __sync packet (Default is 5 seconds)",
+                      metavar="SYNC_TIMEOUT")
+
     parser.add_option("-f", "--image-path",
                       dest="image_path",
                       help="Path with target's binary image",
