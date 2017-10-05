@@ -65,7 +65,6 @@ class MbedLsToolsBase(object):
     RETARGET_FILE_NAME = 'mbedls.json'
     DETAILS_TXT_NAME = 'DETAILS.TXT'
     MBED_HTM_NAME = 'mbed.htm'
-    ERRORLEVEL_FLAG = 0
 
     def __init__(self, list_unmounted=False, **kwargs):
         """ ctor
