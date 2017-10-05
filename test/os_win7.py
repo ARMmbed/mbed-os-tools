@@ -26,7 +26,7 @@ sys.modules['_winreg']  = _winreg
 sys.modules['winreg'] = _winreg
 
 
-from mbed_lstools.lstools_win7 import MbedLsToolsWin7
+from mbed_lstools.windows import MbedLsToolsWin7
 
 
 class Win7TestCase(unittest.TestCase):
