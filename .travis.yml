@@ -6,6 +6,7 @@ python:
 
 install:
   - pip install coverage
+  - pip install coveralls
   - pip install prettytable
   - pip install PySerial
   - pip install mbed-ls
@@ -14,8 +15,8 @@ install:
   - pip install lockfile
   - pip install colorama
 
-script: python setup.py test
+script: coverage run setup.py test
 
 after_success:
-  - coverage run setup.py test
   - coverage html
+  - coveralls
