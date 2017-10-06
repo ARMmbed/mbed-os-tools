@@ -39,13 +39,13 @@ def create(**kwargs):
     mbed_os = mbed_os_support()
     if mbed_os is not None:
         if mbed_os == 'Windows7':
-            from .lstools_win7 import MbedLsToolsWin7
+            from .windows import MbedLsToolsWin7
             result = MbedLsToolsWin7(**kwargs)
         elif mbed_os == 'LinuxGeneric':
-            from .lstools_linux_generic import MbedLsToolsLinuxGeneric
+            from .linux import MbedLsToolsLinuxGeneric
             result = MbedLsToolsLinuxGeneric(**kwargs)
         elif mbed_os == 'Darwin':
-            from .lstools_darwin import MbedLsToolsDarwin
+            from .darwin import MbedLsToolsDarwin
             result = MbedLsToolsDarwin(**kwargs)
     return result
 

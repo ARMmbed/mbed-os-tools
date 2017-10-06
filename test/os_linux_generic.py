@@ -18,8 +18,7 @@ limitations under the License.
 
 import unittest
 from mock import patch
-from mbed_lstools.lstools_linux_generic import MbedLsToolsLinuxGeneric
-from mbed_lstools.platform_database import LOCAL_PLATFORM_DATABASE
+from mbed_lstools.linux import MbedLsToolsLinuxGeneric
 
 
 class LinuxPortTestCase(unittest.TestCase):
@@ -40,7 +39,7 @@ class LinuxPortTestCase(unittest.TestCase):
     ]
 
     def test_get_mount_point_basic(self):
-        with patch('mbed_lstools.lstools_linux_generic.MbedLsToolsLinuxGeneric._run_cli_process') as _cliproc:
+        with patch('mbed_lstools.linux.MbedLsToolsLinuxGeneric._run_cli_process') as _cliproc:
             _cliproc.return_value = (b'\n'.join(self.vfat_devices), None, 0)
             mount_dict = dict(self.linux_generic._fat_mounts())
             _cliproc.assert_called_once_with('mount')
@@ -64,7 +63,7 @@ class LinuxPortTestCase(unittest.TestCase):
     ]
 
     def test_get_mount_point_ext(self):
-        with patch('mbed_lstools.lstools_linux_generic.MbedLsToolsLinuxGeneric._run_cli_process') as _cliproc:
+        with patch('mbed_lstools.linux.MbedLsToolsLinuxGeneric._run_cli_process') as _cliproc:
             _cliproc.return_value = (b'\n'.join(self.vfat_devices_ext), None, 0)
             mount_dict = dict(self.linux_generic._fat_mounts())
             _cliproc.assert_called_once_with('mount')
@@ -80,10 +79,10 @@ class LinuxPortTestCase(unittest.TestCase):
         self.assertEqual('/mnt/DAPLINK__', mount_dict['/dev/sdi'])
 
     def find_candidates_with_patch(self, mount_list, link_dict, listdir_dict):
-        with patch('mbed_lstools.lstools_linux_generic.MbedLsToolsLinuxGeneric._run_cli_process') as _cliproc,\
-             patch('mbed_lstools.lstools_linux_generic.readlink') as _readlink,\
-             patch('mbed_lstools.lstools_linux_generic.listdir') as _listdir,\
-             patch('mbed_lstools.lstools_linux_generic.isdir') as _isdir:
+        with patch('mbed_lstools.linux.MbedLsToolsLinuxGeneric._run_cli_process') as _cliproc,\
+             patch('mbed_lstools.linux.readlink') as _readlink,\
+             patch('mbed_lstools.linux.listdir') as _listdir,\
+             patch('mbed_lstools.linux.isdir') as _isdir:
             _isdir.return_value = True
             _cliproc.return_value = (b'\n'.join(mount_list), None, 0)
             def do_readlink(link):
@@ -347,3 +346,4 @@ class LinuxPortTestCase(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+    
