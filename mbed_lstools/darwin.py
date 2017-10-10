@@ -25,19 +25,70 @@ from .lstools_base import MbedLsToolsBase
 import logging
 
 logger = logging.getLogger("mbedls.lstools_darwin")
+mbed_volume_name_match = re.compile(r'\b(mbed|SEGGER MSD)\b', re.I)
 
 def _find_TTY(obj):
     ''' Find the first tty (AKA IODialinDevice) that we can find in the
         children of the specified object, or None if no tty is present.
     '''
-    if 'IODialinDevice' in obj:
+    try:
         return obj['IODialinDevice']
-    if 'IORegistryEntryChildren' in obj:
-        for child in obj['IORegistryEntryChildren']:
+    except KeyError:
+        for child in obj.get('IORegistryEntryChildren', []):
             found = _find_TTY(child)
             if found:
                 return found
-    return None
+        return None
+
+
+def _prune(current, keys):
+    """ Reduce the amount of data we have to sift through to only 
+        include the specified keys, and children that contain the
+        specified keys
+    """
+    pruned_current = {k: current[k] for k in keys if k in current}
+    pruned_children = list(
+      filter(None, [_prune(c, keys) for c in 
+                    current.get('IORegistryEntryChildren', [])]))
+    keep_current = any(k in current for k in keys) or pruned_children
+    if keep_current:
+        if pruned_children:
+            pruned_current['IORegistryEntryChildren'] = pruned_children
+        return pruned_current
+    else:
+        return {}
+
+
+def _dfs_usb_info(obj, parents):
+    """ Find all of the usb info that we can from this particular IORegistry 
+        tree with depth first search (and searching the parent stack....)
+    """
+    output = {}
+    if  ('BSD Name' in obj and obj['BSD Name'].startswith('disk') and
+         mbed_volume_name_match.search(obj['IORegistryEntryName'])):
+        disk_id = obj['BSD Name']
+        usb_info = {
+                'serial':None,
+             'vendor_id':None,
+            'product_id':None,
+                   'tty':None,
+        }
+        for parent in [obj] + parents:
+            if 'USB Serial Number' in parent:
+                usb_info['serial'] = parent['USB Serial Number']
+            if 'idVendor' in parent and 'idProduct' in parent:
+                usb_info['vendor_id'] = parent['idVendor']
+                usb_info['product_id'] = parent['idProduct']
+            if usb_info['serial']:
+            	usb_info['tty'] = _find_TTY(parent)
+            if all(usb_info.values()):
+                break
+        logger.debug("found usb info %r", usb_info)
+        output[disk_id] = usb_info
+    for child in obj.get('IORegistryEntryChildren', []):
+        output.update(_dfs_usb_info(child, [obj] + parents))
+    return output
+
 
 class MbedLsToolsDarwin(MbedLsToolsBase):
     """ mbed-enabled platform detection on Mac OS X
@@ -45,8 +96,6 @@ class MbedLsToolsDarwin(MbedLsToolsBase):
 
     def __init__(self, **kwargs):
         MbedLsToolsBase.__init__(self, **kwargs)
-        self.mbed_volume_name_match = re.compile(r'(\bmbed\b|\bSEGGER MSD\b)',
-                                                 re.I)
         self.mac_version = float('.'.join(platform.mac_ver()[0].split('.')[:2]))
 
     def find_candidates(self):
@@ -61,14 +110,18 @@ class MbedLsToolsDarwin(MbedLsToolsBase):
                 'serial_port': volumes[v]['tty'],
                 'target_id_usb_id': volumes[v].get('serial')
             } for v in set(volumes.keys()) and set(mounts.keys())
+            if v in mounts and v in volumes
         ]
 
     def _mount_points(self):
         ''' Returns map {volume_id: mount_point} '''
         diskutil_ls = subprocess.Popen(['diskutil', 'list', '-plist'], stdout=subprocess.PIPE)
-        diskutil_ls.wait()
         disks = plistlib.readPlist(diskutil_ls.stdout)
+        diskutil_ls.wait()
 
+        if logger.isEnabledFor(logging.DEBUG):
+            import pprint
+            logger.debug("disks dict \n%s", pprint.PrettyPrinter(indent=2).pformat(disks))
         return {disk['DeviceIdentifier']: disk.get('MountPoint', None)
                 for disk in disks['AllDisksAndPartitions']}
 
@@ -94,39 +147,21 @@ class MbedLsToolsDarwin(MbedLsToolsBase):
 
         for usb_controller in usb_controllers:
             ioreg_usb = subprocess.Popen(['ioreg', '-a', '-r', cmp_par, usb_controller, '-l'], stdout=subprocess.PIPE)
-            ioreg_usb.wait()
             try:
                 usb_tree = plistlib.readPlist(ioreg_usb.stdout)
             except:
                 usb_tree = []
+            ioreg_usb.wait()
 
         r = {}
 
-        def findVolumesRecursive(obj, parents):
-            if  ('BSD Name' in obj and obj['BSD Name'].startswith('disk') and
-                 self.mbed_volume_name_match.search(obj['IORegistryEntryName'])):
-                disk_id = obj['BSD Name']
-                usb_info = {
-                        'serial':None,
-                     'vendor_id':None,
-                    'product_id':None,
-                           'tty':None,
-                }
-                for parent in [obj] + parents:
-                    if 'USB Serial Number' in parent:
-                        usb_info['serial'] = parent['USB Serial Number']
-                    if 'idVendor' in parent and 'idProduct' in parent:
-                        usb_info['vendor_id'] = parent['idVendor']
-                        usb_info['product_id'] = parent['idProduct']
-                    if usb_info['serial']:
-                        usb_info['tty'] = _find_TTY(parent)
-                        break
-                r[disk_id] = usb_info
-            if 'IORegistryEntryChildren' in obj:
-                for child in obj['IORegistryEntryChildren']:
-                    findVolumesRecursive(child, [obj] + parents)
+        for name, obj in enumerate(usb_tree):
+            pruned_obj = _prune(obj, ['USB Serial Number', 'idVendor', 'BSD Name',
+                                      'IORegistryEntryName', 'idProduct', 'IODialinDevice'])
+            if logger.isEnabledFor(logging.DEBUG):
+                import pprint
+                logger.debug("finding in \n%s", pprint.PrettyPrinter(indent=2).pformat(pruned_obj))
+            r.update(_dfs_usb_info(pruned_obj, []))
 
-        for obj in usb_tree:
-            findVolumesRecursive(obj, [])
-
+        logger.debug("_volumes return %r", r)
         return r
