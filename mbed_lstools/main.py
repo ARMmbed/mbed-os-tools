@@ -233,7 +233,7 @@ def mbedls_main():
 
     args = parse_cli(sys.argv[1:])
 
-    root_logger = logging.getLogger("")
+    root_logger = logging.getLogger("mbedls")
     if args.debug:
         root_logger.setLevel(logging.DEBUG)
     else:
