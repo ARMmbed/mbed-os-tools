@@ -29,6 +29,8 @@ from abc import ABCMeta, abstractmethod
 
 from .platform_database import PlatformDatabase, LOCAL_PLATFORM_DATABASE, \
     LOCAL_MOCKS_DATABASE
+mbedls_root_logger = logging.getLogger("mbedls")
+mbedls_root_logger.setLevel(logging.WARNING)
 
 logger = logging.getLogger("mbedls.lstools_base")
 
