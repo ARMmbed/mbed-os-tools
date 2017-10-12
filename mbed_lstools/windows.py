@@ -23,13 +23,15 @@ import string
 from .lstools_base import MbedLsToolsBase
 
 import logging
+logger = logging.getLogger("mbedls.lstools_win7")
+DEBUG = logging.DEBUG
+del logging
 
 if sys.version_info[0] < 3:
     import _winreg as winreg
 else:
     import winreg
 
-logger = logging.getLogger("mbedls.lstools_win7")
 
 class MbedLsToolsWin7(MbedLsToolsBase):
     """ mbed-enabled platform detection for Windows
@@ -67,7 +69,7 @@ class MbedLsToolsWin7(MbedLsToolsBase):
                              self.iter_keys(usb_devs)):
             try:
                 dev_keys.append(winreg.OpenKey(vid, tid))
-                if logger.isEnabledFor(logging.DEBUG):
+                if logger.isEnabledFor(DEBUG):
                     logger.debug(
                         "Found usb id %s in %s with subkeys %r", tid, name,
                         list(self.iter_keys_as_str(winreg.OpenKey(vid, tid))))

@@ -16,13 +16,14 @@ limitations under the License.
 """
 
 import re
-import logging
 from os.path import join, isdir, dirname, abspath
 from os import listdir, readlink
 
 from .lstools_base import MbedLsToolsBase
 
+import logging
 logger = logging.getLogger("mbedls.lstools_linux")
+del logging
 
 def _readlink(link):
     content = readlink(link)
@@ -97,7 +98,7 @@ class MbedLsToolsLinuxGeneric(MbedLsToolsBase):
         @details Uses regular expressions to get a USBID (TargeTIDs) a "by-id"
           symbolic link
         """
-        logging.debug("Converting device list %r", dev_list)
+        logger.debug("Converting device list %r", dev_list)
         for dl in dev_list:
             match = self.nlp.search(dl)
             if match:

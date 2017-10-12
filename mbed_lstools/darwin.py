@@ -23,8 +23,10 @@ import platform
 from .lstools_base import MbedLsToolsBase
 
 import logging
-
 logger = logging.getLogger("mbedls.lstools_darwin")
+DEBUG = logging.DEBUG
+del logging
+
 mbed_volume_name_match = re.compile(r'\b(mbed|SEGGER MSD)\b', re.I)
 
 def _find_TTY(obj):
@@ -119,7 +121,7 @@ class MbedLsToolsDarwin(MbedLsToolsBase):
         disks = plistlib.readPlist(diskutil_ls.stdout)
         diskutil_ls.wait()
 
-        if logger.isEnabledFor(logging.DEBUG):
+        if logger.isEnabledFor(DEBUG):
             import pprint
             logger.debug("disks dict \n%s", pprint.PrettyPrinter(indent=2).pformat(disks))
         return {disk['DeviceIdentifier']: disk.get('MountPoint', None)
@@ -158,7 +160,7 @@ class MbedLsToolsDarwin(MbedLsToolsBase):
         for name, obj in enumerate(usb_tree):
             pruned_obj = _prune(obj, ['USB Serial Number', 'idVendor', 'BSD Name',
                                       'IORegistryEntryName', 'idProduct', 'IODialinDevice'])
-            if logger.isEnabledFor(logging.DEBUG):
+            if logger.isEnabledFor(DEBUG):
                 import pprint
                 logger.debug("finding in \n%s", pprint.PrettyPrinter(indent=2).pformat(pruned_obj))
             r.update(_dfs_usb_info(pruned_obj, []))
