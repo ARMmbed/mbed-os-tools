@@ -80,8 +80,8 @@ class LinuxPortTestCase(unittest.TestCase):
 
     def find_candidates_with_patch(self, mount_list, link_dict, listdir_dict):
         with patch('mbed_lstools.linux.MbedLsToolsLinuxGeneric._run_cli_process') as _cliproc,\
-             patch('mbed_lstools.linux.readlink') as _readlink,\
-             patch('mbed_lstools.linux.listdir') as _listdir,\
+             patch('os.readlink') as _readlink,\
+             patch('os.listdir') as _listdir,\
              patch('mbed_lstools.linux.isdir') as _isdir:
             _isdir.return_value = True
             _cliproc.return_value = (b'\n'.join(mount_list), None, 0)
@@ -346,4 +346,3 @@ class LinuxPortTestCase(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-    
