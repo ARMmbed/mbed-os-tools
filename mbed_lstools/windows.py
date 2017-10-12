@@ -109,21 +109,40 @@ class MbedLsToolsWin7(MbedLsToolsBase):
         # If everything fails, return None
         return None
 
+    def _drive_letters(self):
+        """! Function for finding all drive letters
+        @return Returns an array of all drive letters present
+        """
+        cmd = ['fsutil', 'fsinfo', 'drives']
+        logger.debug('running command: %s' % (' '.join(cmd)))
+        stdout, _, retval = self._run_cli_process(cmd)
+        logger.debug('return code: %d' % retval)
+        logger.debug('output: %s' % stdout)
+
+        if not retval:
+            drive_list = re.match('\s*Drives: (.*)', stdout.decode('utf-8')).group(1)
+            return drive_list.strip().replace('\\', '').split(' ')
+        return []
+
+
     def get_mbeds(self):
         """! Function filters devices' mount points for valid TargetID
         @return Returns [(<mbed_mount_point>, <mbed_id>), ..]
         @details TargetID should be a hex string with 10-48 chars
         """
         mbeds = []
+        drive_letters = set(self._drive_letters())
+        logger.debug('Found drive letters: %s' % ', '.join(drive_letters))
         for mbed in self.get_mbed_devices():
             mountpoint = re.match('.*\\\\(.:)$', mbed[0]).group(1)
-            # TargetID is a hex string with 10-48 chars
-            m = re.search('[&#]([0-9A-Za-z]{10,48})[&#]', mbed[1])
-            if not m:
-                continue
-            tid = m.group(1)
-            mbeds += [(mountpoint, tid)]
-            logger.debug("get_mbeds mount_point %s usb_id %s", mountpoint, tid)
+            if mountpoint in drive_letters:
+                # TargetID is a hex string with 10-48 chars
+                m = re.search('[&#]([0-9A-Za-z]{10,48})[&#]', mbed[1])
+                if not m:
+                    continue
+                tid = m.group(1)
+                mbeds += [(mountpoint, tid)]
+                logger.debug("get_mbeds mount_point %s usb_id %s", mountpoint, tid)
         return mbeds
 
     # =============================== Registry ====================================
