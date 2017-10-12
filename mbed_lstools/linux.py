@@ -97,7 +97,7 @@ class MbedLsToolsLinuxGeneric(MbedLsToolsBase):
         @details Uses regular expressions to get a USBID (TargeTIDs) a "by-id"
           symbolic link
         """
-        logging.debug("Converting device list %r", dev_list)
+        logger.debug("Converting device list %r", dev_list)
         for dl in dev_list:
             match = self.nlp.search(dl)
             if match:
