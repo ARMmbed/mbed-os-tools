@@ -171,31 +171,31 @@ class MbedLsToolsBase(object):
         device['target_id'] = device['target_id_usb_id']
         device['target_id_mbed_htm'] = None
         device['platform_name'] = self.plat_db.get(device['target_id'][0:4])
-        if device['platform_name'] and pn.match(device['platform_name']):
-            return device
-        else:
+        if device['platform_name'] and not pn.match(device['platform_name']):
             return None
+        else:
+            return device
 
     def _fs_before_id_check(self, device, pn):
         """Filter device after touching the file system of the device.
         Said another way: Touch the file system before filtering
         """
         self._update_device_from_htm(device)
-        if device['platform_name'] and pn.match(device['platform_name']):
-            return device
-        else:
+        if device['platform_name'] and not pn.match(device['platform_name']):
             return None
+        else:
+            return device
 
     def _fs_after_id_check(self, device, pn):
         """Filter device before touching the file system of the device.
         Said another way: Touch the file system after filtering
         """
         plat_name = self.plat_db.get(device['target_id_usb_id'][0:4])
-        if plat_name and pn.match(plat_name):
+        if plat_name and not pn.match(plat_name):
+            return None
+        else:
             self._update_device_from_htm(device)
             return device
-        else:
-            return None
 
     def _update_device_from_htm(self, device):
         """Set the 'target_id', 'target_id_mbed_htm', 'platform_name' and
