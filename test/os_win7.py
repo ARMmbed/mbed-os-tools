@@ -18,16 +18,14 @@ limitations under the License.
 
 import unittest
 import sys
-from mock import MagicMock
+from mock import MagicMock, patch
 
 # Mock the winreg and _winreg module for non-windows python
 _winreg = MagicMock()
 sys.modules['_winreg']  = _winreg
 sys.modules['winreg'] = _winreg
 
-
 from mbed_lstools.windows import MbedLsToolsWin7
-
 
 class Win7TestCase(unittest.TestCase):
     """ Basic test cases checking trivial asserts
@@ -139,14 +137,22 @@ class Win7TestCase(unittest.TestCase):
              'VID_8087&PID_0A2B', 'Vid_80EE&Pid_CAFE']
         }
         self.setUpRegistry(value_dict, key_dict)
-        devices = self.lstool.find_candidates()
-        self.assertIn(
-            {
+
+        with patch('mbed_lstools.windows.MbedLsToolsWin7._run_cli_process') as _cliproc:
+            expected_info = {
                 'mount_point': u'D:',
                 'serial_port': 'COM7',
                 'target_id_usb_id': u'000440035522'
-            }, devices)
-        self.assertNoRegMut()
+            }
+            _cliproc.return_value = (b'\nDrives: C:\ D:\ F:\ Z:\ \n', None, 0)
+            devices = self.lstool.find_candidates()
+            self.assertIn(expected_info, devices)
+            self.assertNoRegMut()
+
+            _cliproc.return_value = (b'\nDrives: C:\ F:\ Z:\ \n', None, 0)
+            devices = self.lstool.find_candidates()
+            self.assertNotIn(expected_info, devices)
+            self.assertNoRegMut()
 
 
 if __name__ == '__main__':
