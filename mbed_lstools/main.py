@@ -25,6 +25,9 @@ import platform
 from collections import defaultdict
 import logging
 
+# Make sure that any global generic setup is run
+from . import lstools_base
+
 logger = logging.getLogger("mbedls.main")
 
 
