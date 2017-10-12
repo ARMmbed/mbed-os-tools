@@ -17,7 +17,7 @@ limitations under the License.
 
 import re
 from os.path import join, isdir, dirname, abspath
-from os import listdir, readlink
+import os
 
 from .lstools_base import MbedLsToolsBase
 
@@ -26,7 +26,7 @@ logger = logging.getLogger("mbedls.lstools_linux")
 del logging
 
 def _readlink(link):
-    content = readlink(link)
+    content = os.readlink(link)
     if content.startswith(".."):
         return abspath(join(dirname(link), content))
     else:
@@ -67,7 +67,7 @@ class MbedLsToolsLinuxGeneric(MbedLsToolsBase):
         """
         dir = join("/dev", device_type, "by-id")
         if isdir(dir):
-            to_ret = dict(self._hex_ids([join(dir, f) for f in listdir(dir)]))
+            to_ret = dict(self._hex_ids([join(dir, f) for f in os.listdir(dir)]))
             logger.debug("Found %s devices by id %r", device_type, to_ret)
             return to_ret
         else:
