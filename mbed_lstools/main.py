@@ -23,12 +23,13 @@ import json
 import argparse
 import platform
 from collections import defaultdict
-import logging
 
 # Make sure that any global generic setup is run
 from . import lstools_base
 
+import logging
 logger = logging.getLogger("mbedls.main")
+del logging
 
 
 def create(**kwargs):
@@ -236,11 +237,13 @@ def mbedls_main():
 
     args = parse_cli(sys.argv[1:])
 
+    import logging
     root_logger = logging.getLogger("mbedls")
     if args.debug:
         root_logger.setLevel(logging.DEBUG)
     else:
         root_logger.setLevel(logging.INFO)
+    del logging
     logger.debug("mbed-ls ver. %s", get_version())
     logger.debug("host: %s",  str(mbed_lstools_os_info()))
 

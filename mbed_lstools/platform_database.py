@@ -18,7 +18,6 @@ limitations under the License.
 """Functions that manage a platform database"""
 
 import json
-import logging
 import re
 from collections import OrderedDict
 from copy import copy
@@ -33,8 +32,9 @@ try:
 except NameError:
     unicode = str
 
+import logging
 logger = logging.getLogger("mbedls.platform_database")
-logging.basicConfig(level=logging.DEBUG)
+del logging
 
 LOCAL_PLATFORM_DATABASE = join(user_data_dir("mbedls"), "platforms.json")
 LOCAL_MOCKS_DATABASE = join(user_data_dir("mbedls"), "mock.json")
