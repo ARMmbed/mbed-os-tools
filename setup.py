@@ -34,7 +34,7 @@ def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname), encoding="utf8").read()
 
 setup(name='mbed-ls',
-      version='1.2.15',
+      version='1.3.2',
       description=DESCRIPTION,
       long_description=read('README.md'),
       author=OWNER_NAMES,
