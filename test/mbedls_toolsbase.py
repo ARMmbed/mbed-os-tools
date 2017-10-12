@@ -24,7 +24,7 @@ import re
 from mock import patch
 from copy import deepcopy
 
-from mbed_lstools.lstools_base import MbedLsToolsBase
+from mbed_lstools.lstools_base import MbedLsToolsBase, FSInteraction
 
 class DummyLsTools(MbedLsToolsBase):
     return_value = []
@@ -66,6 +66,24 @@ class BasicTestCase(unittest.TestCase):
         self.assertEqual(len(to_check), 1)
         self.assertEqual(to_check[0]['target_id'], "0241BEEFDEAD")
         self.assertEqual(to_check[0]['platform_name'], 'foo_target')
+
+    def test_list_mbeds(self):
+        self.base.return_value = [{'mount_point': 'dummy_mount_point',
+                                   'target_id_usb_id': u'not_in_target_db',
+                                   'serial_port': "dummy_serial_port"}]
+        for qos in [FSInteraction.BeforeFilter, FSInteraction.AfterFilter]:
+            with patch("mbed_lstools.lstools_base.MbedLsToolsBase._read_htm_ids") as _read_htm,\
+                patch("mbed_lstools.lstools_base.MbedLsToolsBase.mount_point_ready") as _mpr,\
+                patch("mbed_lstools.lstools_base.PlatformDatabase.get") as _get:
+                _mpr.return_value = True
+                _read_htm.return_value = (u'not_in_target_db', {})
+                _get.return_value = None
+                to_check = self.base.list_mbeds()
+                _read_htm.assert_called_once_with('dummy_mount_point')
+                _get.assert_called_once_with('not_')
+            self.assertEqual(len(to_check), 1)
+            self.assertEqual(to_check[0]['target_id'], "not_in_target_db")
+            self.assertEqual(to_check[0]['platform_name'], None)
 
     def test_list_manufacture_ids(self):
         table_str = self.base.list_manufacture_ids()
