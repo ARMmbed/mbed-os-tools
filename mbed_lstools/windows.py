@@ -118,7 +118,7 @@ class MbedLsToolsWin7(MbedLsToolsBase):
         logger.debug('output: %s' % stdout)
 
         if not retval:
-            drive_list = re.match('\s*Drives: (.*)', stdout).group(1)
+            drive_list = re.match('\s*Drives: (.*)', stdout.decode('utf-8')).group(1)
             return drive_list.strip().replace('\\', '').split(' ')
         return []
 
