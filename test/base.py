@@ -130,3 +130,7 @@ class CLIParser(unittest.TestCase):
         for p in ['j', 'J', 'p', 'P', '-version', 'd', 'u']:
             args = cli.parse_cli(['-' + p])
             assert callable(args.command)
+
+class CLISetup(unittest.TestCase):
+    def test_start_logging(self):
+        cli.start_logging()
