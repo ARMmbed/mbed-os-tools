@@ -227,7 +227,9 @@ def start_logging():
         colorlog.basicConfig(
             format='%(log_color)s%(levelname)s%(reset)s:%(name)s:%(message)s')
     except ImportError:
+        import logging
         logging.basicConfig()
+        del logging
 
 def mbedls_main():
     """! Function used to drive CLI (command line interface) application
