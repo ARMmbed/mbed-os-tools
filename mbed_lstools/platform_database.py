@@ -267,7 +267,8 @@ class PlatformDatabase(object):
         self._keys = set()
         for db in database_files:
             try:
-                new_db = json.load(open(db, encoding="utf-8"))
+                with open(db, encoding="utf-8") as db_json_file:
+                    new_db = json.load(db_json_file)
                 duplicates = set(self._keys).intersection(set(new_db.keys()))
                 if duplicates:
                     logger.warning(
