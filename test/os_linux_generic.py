@@ -17,6 +17,7 @@ limitations under the License.
 '''
 
 import unittest
+import sys
 from mock import patch
 from mbed_lstools.linux import MbedLsToolsLinuxGeneric
 
@@ -79,6 +80,9 @@ class LinuxPortTestCase(unittest.TestCase):
         self.assertEqual('/mnt/DAPLINK__', mount_dict['/dev/sdi'])
 
     def find_candidates_with_patch(self, mount_list, link_dict, listdir_dict):
+        if not getattr(sys.modules['os'], 'readlink', None):
+            sys.modules['os'].readlink = None
+
         with patch('mbed_lstools.linux.MbedLsToolsLinuxGeneric._run_cli_process') as _cliproc,\
              patch('os.readlink') as _readlink,\
              patch('os.listdir') as _listdir,\
@@ -86,9 +90,13 @@ class LinuxPortTestCase(unittest.TestCase):
             _isdir.return_value = True
             _cliproc.return_value = (b'\n'.join(mount_list), None, 0)
             def do_readlink(link):
+                # Fix for testing on Windows
+                link = link.replace('\\', '/')
                 return link_dict[link]
             _readlink.side_effect = do_readlink
             def do_listdir(dir):
+                # Fix for testing on Windows
+                dir = dir.replace('\\', '/')
                 return listdir_dict[dir]
             _listdir.side_effect = do_listdir
             ret_val = self.linux_generic.find_candidates()
