@@ -105,9 +105,9 @@ class Win7TestCase(unittest.TestCase):
     def test_one_nucleo_dev(self):
         value_dict = {
             (None, 'SYSTEM\MountedDevices'): [
-                (b'\\DosDevices\\F:',
+                ('\\DosDevices\\F:',
                  u'_??_USBSTOR#Disk&Ven_MBED&Prod_VFS&Rev_0.1#0240000032044e4500367009997b00086781000097969900&0#{53f56307-b6bf-11d0-94f2-00a0c91efb8b}'.encode('utf-16le')),
-                (b'\\DosDevices\\D:',
+                ('\\DosDevices\\D:',
                  u'_??_USBSTOR#Disk&Ven_SEGGER&Prod_MSD_Volume&Rev_1.00#8&1b8e102b&0&000440035522&0#{53f56307-b6bf-11d0-94f2-00a0c91efb8b}'.encode('utf-16le'))],
             ((((((None, 'SYSTEM\CurrentControlSet\Enum'), 'USB'),
                 'VID_0416&PID_511E'), '000440035522'), 'Device Parameters'), 'PortName'): ('COM7', None)
