@@ -47,7 +47,7 @@ class BasicTestCase(unittest.TestCase):
     def tearDown(self):
         pass
 
-    def test_list_mbeds(self):
+    def test_list_mbeds_valid_platform(self):
         self.base.return_value = [{'mount_point': 'dummy_mount_point',
                                    'target_id_usb_id': u'0240DEADBEEF',
                                    'serial_port': "dummy_serial_port"},
@@ -67,7 +67,7 @@ class BasicTestCase(unittest.TestCase):
         self.assertEqual(to_check[0]['target_id'], "0241BEEFDEAD")
         self.assertEqual(to_check[0]['platform_name'], 'foo_target')
 
-    def test_list_mbeds(self):
+    def test_list_mbeds_invalid_platform(self):
         self.base.return_value = [{'mount_point': 'dummy_mount_point',
                                    'target_id_usb_id': u'not_in_target_db',
                                    'serial_port': "dummy_serial_port"}]

@@ -38,13 +38,14 @@ class EmptyPlatformDatabaseTests(unittest.TestCase):
     """
 
     def setUp(self):
-        self.base_db = tempfile.NamedTemporaryFile(prefix='base')
+        self.base_db_path = os.path.join(tempfile.mkdtemp(), 'base')
+        self.base_db = open(self.base_db_path, 'w+b')
         self.base_db.write(b'{}')
         self.base_db.seek(0)
-        self.pdb = PlatformDatabase([self.base_db.name])
+        self.pdb = PlatformDatabase([self.base_db_path])
 
     def tearDown(self):
-        pass
+        self.base_db.close()
 
     def test_broken_database_io(self):
         """Verify that the platform database still works without a
@@ -52,7 +53,7 @@ class EmptyPlatformDatabaseTests(unittest.TestCase):
         """
         with patch("mbed_lstools.platform_database.open") as _open:
             _open.side_effect = IOError("Bogus")
-            self.pdb = PlatformDatabase([self.base_db.name])
+            self.pdb = PlatformDatabase([self.base_db_path])
             self.pdb.add("1234", "MYTARGET")
             self.assertEqual(self.pdb.get("1234"), "MYTARGET")
 
@@ -60,9 +61,9 @@ class EmptyPlatformDatabaseTests(unittest.TestCase):
         """Verify that the platform database still works without a
         working backing file
         """
-        self.base_db.write(b'{{}')
+        self.base_db.write(b'{}')
         self.base_db.seek(0)
-        self.pdb = PlatformDatabase([self.base_db.name])
+        self.pdb = PlatformDatabase([self.base_db_path])
         self.pdb.add("1234", "MYTARGET")
         self.assertEqual(self.pdb.get("1234"), "MYTARGET")
 
@@ -119,20 +120,24 @@ class OverriddenPlatformDatabaseTests(unittest.TestCase):
     """
 
     def setUp(self):
-        self.base_db = tempfile.NamedTemporaryFile(prefix='base')
+        self.temp_dir = tempfile.mkdtemp()
+        self.base_db_path = os.path.join(self.temp_dir, 'base')
+        self.base_db = open(self.base_db_path, 'w+b')
         self.base_db.write(json.dumps(dict([('0123', 'Base_Platform')])).
                            encode('utf-8'))
         self.base_db.seek(0)
-        self.overriding_db = tempfile.NamedTemporaryFile(prefix='overriding')
+        self.overriding_db_path = os.path.join(self.temp_dir, 'overriding')
+        self.overriding_db = open(self.overriding_db_path, 'w+b')
         self.overriding_db.write(b'{}')
         self.overriding_db.seek(0)
-        self.pdb = PlatformDatabase([self.overriding_db.name, self.base_db.name],
-                                    primary_database=self.overriding_db.name)
+        self.pdb = PlatformDatabase([self.overriding_db_path, self.base_db_path],
+                                    primary_database=self.overriding_db_path)
         self.base_db.seek(0)
         self.overriding_db.seek(0)
 
     def tearDown(self):
-        pass
+        self.base_db.close()
+        self.overriding_db.close()
 
     def assertBaseUnchanged(self):
         """Assert that the base database has not changed
@@ -170,8 +175,8 @@ class OverriddenPlatformDatabaseTests(unittest.TestCase):
         self.overriding_db.write(json.dumps(dict([('0123', 'Overriding_Platform')])).
                                  encode('utf-8'))
         self.overriding_db.seek(0)
-        self.pdb = PlatformDatabase([self.overriding_db.name, self.base_db.name],
-                                    primary_database=self.overriding_db.name)
+        self.pdb = PlatformDatabase([self.overriding_db_path, self.base_db_path],
+                                    primary_database=self.overriding_db_path)
         self.assertIn(('0123', 'Overriding_Platform'), list(self.pdb.items()))
         self.assertEqual(set(self.pdb.all_ids()), set(['0123']))
         self.assertEqual(self.pdb.get('0123'), 'Overriding_Platform')
@@ -231,14 +236,16 @@ class InternalLockingChecks(unittest.TestCase):
         self.mocked_lock = patch('mbed_lstools.platform_database.InterProcessLock', spec=True).start()
         self.acquire = self.mocked_lock.return_value.acquire
         self.release = self.mocked_lock.return_value.release
-        self.base_db = tempfile.NamedTemporaryFile(prefix='base')
+
+        self.base_db_path = os.path.join(tempfile.mkdtemp(), 'base')
+        self.base_db = open(self.base_db_path, 'w+b')
         self.base_db.write(b'{}')
         self.base_db.seek(0)
-        self.pdb = PlatformDatabase([self.base_db.name])
+        self.pdb = PlatformDatabase([self.base_db_path])
         self.addCleanup(patch.stopall)
 
     def tearDown(self):
-        pass
+        self.base_db.close()
 
     def test_no_update(self):
         """Test that no locks are used when no modifications are specified
