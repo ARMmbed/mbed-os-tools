@@ -358,7 +358,7 @@ mbed-gcc 1.1.0
         with patch("mbed_greentea.mbed_target_info._find_targets_json") as _find,\
              patch("mbed_greentea.mbed_target_info.open") as _open:
             _find.return_value = iter(["foo"])
-            _open.return_value = StringIO("{")
+            _open.return_value.__enter__.return_value = StringIO("{")
             result = mbed_target_info._get_platform_property_from_targets("not_a_platform", "not_a_property", "default")
             self.assertIsNone(result)
 
@@ -366,7 +366,7 @@ mbed-gcc 1.1.0
         with patch("mbed_greentea.mbed_target_info._find_targets_json") as _find,\
              patch("mbed_greentea.mbed_target_info.open") as _open:
             _find.return_value = iter(["foo"])
-            _open.return_value = StringIO("{}")
+            _open.return_value.__enter__.return_value = StringIO("{}")
             result = mbed_target_info._get_platform_property_from_targets("not_a_platform", "not_a_property", "default")
             self.assertIsNone(result)
 
@@ -374,7 +374,7 @@ mbed-gcc 1.1.0
         with patch("mbed_greentea.mbed_target_info._find_targets_json") as _find,\
              patch("mbed_greentea.mbed_target_info.open") as _open:
             _find.return_value = iter(["foo"])
-            _open.return_value = StringIO("{\"K64F\": {}}")
+            _open.return_value.__enter__.return_value = StringIO("{\"K64F\": {}}")
             result = mbed_target_info._get_platform_property_from_targets("K64F", "not_a_property", "default")
             self.assertEqual(result, "default")
 
@@ -382,7 +382,7 @@ mbed-gcc 1.1.0
         with patch("mbed_greentea.mbed_target_info._find_targets_json") as _find,\
              patch("mbed_greentea.mbed_target_info.open") as _open:
             _find.return_value = iter(["foo"])
-            _open.return_value = StringIO("{\"K64F\": {\"copy_method\": \"cp\"}}")
+            _open.return_value.__enter__.return_value = StringIO("{\"K64F\": {\"copy_method\": \"cp\"}}")
             result = mbed_target_info._get_platform_property_from_targets("K64F", "copy_method", "default")
             self.assertEqual("cp", result)
 

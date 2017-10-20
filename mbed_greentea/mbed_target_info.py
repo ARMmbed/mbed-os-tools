@@ -21,7 +21,16 @@ import os
 import re
 import json
 from os import walk
-from contextlib import suppress
+try:
+    from contextlib import suppress
+except ImportError:
+    from contextlib import contextmanager
+    @contextmanager
+    def suppress(*excs):
+        try:
+            yield
+        except excs:
+            pass
 from mbed_greentea.mbed_common_api import run_cli_process
 from mbed_greentea.mbed_greentea_log import gt_logger
 
