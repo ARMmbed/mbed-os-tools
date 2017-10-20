@@ -341,102 +341,102 @@ mbed-gcc 1.1.0
 
 
     def test_get_platform_property_from_targets_no_json(self):
-        with patch("mbed_greentea.mbed_target_info.find_targets_json") as _find:
+        with patch("mbed_greentea.mbed_target_info._find_targets_json") as _find:
             _find.return_value = iter([])
-            result = mbed_target_info.get_platform_property_from_targets("not_a_platform", "not_a_property", "default")
+            result = mbed_target_info._get_platform_property_from_targets("not_a_platform", "not_a_property", "default")
             self.assertIsNone(result)
 
     def test_get_platform_property_from_targets_no_file(self):
-        with patch("mbed_greentea.mbed_target_info.find_targets_json") as _find,\
+        with patch("mbed_greentea.mbed_target_info._find_targets_json") as _find,\
              patch("mbed_greentea.mbed_target_info.open") as _open:
             _find.return_value = iter(["foo"])
             _open.side_effect = IOError
-            result = mbed_target_info.get_platform_property_from_targets("not_a_platform", "not_a_property", "default")
+            result = mbed_target_info._get_platform_property_from_targets("not_a_platform", "not_a_property", "default")
             self.assertIsNone(result)
 
     def test_get_platform_property_from_targets_invalid_json(self):
-        with patch("mbed_greentea.mbed_target_info.find_targets_json") as _find,\
+        with patch("mbed_greentea.mbed_target_info._find_targets_json") as _find,\
              patch("mbed_greentea.mbed_target_info.open") as _open:
             _find.return_value = iter(["foo"])
             _open.return_value = StringIO("{")
-            result = mbed_target_info.get_platform_property_from_targets("not_a_platform", "not_a_property", "default")
+            result = mbed_target_info._get_platform_property_from_targets("not_a_platform", "not_a_property", "default")
             self.assertIsNone(result)
 
     def test_get_platform_property_from_targets_empty_json(self):
-        with patch("mbed_greentea.mbed_target_info.find_targets_json") as _find,\
+        with patch("mbed_greentea.mbed_target_info._find_targets_json") as _find,\
              patch("mbed_greentea.mbed_target_info.open") as _open:
             _find.return_value = iter(["foo"])
             _open.return_value = StringIO("{}")
-            result = mbed_target_info.get_platform_property_from_targets("not_a_platform", "not_a_property", "default")
+            result = mbed_target_info._get_platform_property_from_targets("not_a_platform", "not_a_property", "default")
             self.assertIsNone(result)
 
     def test_get_platform_property_from_targets_no_value(self):
-        with patch("mbed_greentea.mbed_target_info.find_targets_json") as _find,\
+        with patch("mbed_greentea.mbed_target_info._find_targets_json") as _find,\
              patch("mbed_greentea.mbed_target_info.open") as _open:
             _find.return_value = iter(["foo"])
             _open.return_value = StringIO("{\"K64F\": {}}")
-            result = mbed_target_info.get_platform_property_from_targets("K64F", "not_a_property", "default")
+            result = mbed_target_info._get_platform_property_from_targets("K64F", "not_a_property", "default")
             self.assertEqual(result, "default")
 
     def test_get_platform_property_from_targets_in_json(self):
-        with patch("mbed_greentea.mbed_target_info.find_targets_json") as _find,\
+        with patch("mbed_greentea.mbed_target_info._find_targets_json") as _find,\
              patch("mbed_greentea.mbed_target_info.open") as _open:
             _find.return_value = iter(["foo"])
             _open.return_value = StringIO("{\"K64F\": {\"copy_method\": \"cp\"}}")
-            result = mbed_target_info.get_platform_property_from_targets("K64F", "copy_method", "default")
+            result = mbed_target_info._get_platform_property_from_targets("K64F", "copy_method", "default")
             self.assertEqual("cp", result)
 
     def test_find_targets_json(self):
         with patch("mbed_greentea.mbed_target_info.walk") as _walk:
             _walk.return_value = iter([("", ["foo"], []), ("foo", [], ["targets.json"])])
-            result = list(mbed_target_info.find_targets_json("bogus_path"))
+            result = list(mbed_target_info._find_targets_json("bogus_path"))
             self.assertEqual(result, ["foo/targets.json"])
 
     def test_find_targets_json_ignored(self):
         with patch("mbed_greentea.mbed_target_info.walk") as _walk:
             walk_result =[("", [".build"], [])]
             _walk.return_value = iter(walk_result)
-            result = list(mbed_target_info.find_targets_json("bogus_path"))
+            result = list(mbed_target_info._find_targets_json("bogus_path"))
             self.assertEqual(result, [])
             self.assertEqual(walk_result, [("", [], [])])
 
     def test_platform_property_from_targets_json_empty(self):
-        result = mbed_target_info.platform_property_from_targets_json(
+        result = mbed_target_info._platform_property_from_targets_json(
             {}, "not_a_target", "not_a_property", "default"
         )
         self.assertIsNone(result)
 
     def test_platform_property_from_targets_json_base_target(self):
-        result = mbed_target_info.platform_property_from_targets_json(
+        result = mbed_target_info._platform_property_from_targets_json(
             {"K64F": {"copy_method": "cp"}}, "K64F", "copy_method", "default"
         )
         self.assertEqual(result, "cp")
 
     def test_platform_property_from_targets_json_inherits(self):
-        result = mbed_target_info.platform_property_from_targets_json(
+        result = mbed_target_info._platform_property_from_targets_json(
             {"K64F": {"inherits": ["Target"]}, "Target": {"copy_method": "cp"}},
             "K64F", "copy_method", "default"
         )
         self.assertEqual(result, "cp")
 
     def test_platform_property_from_default_missing(self):
-        result = mbed_target_info.get_platform_property_from_default("not_a_property")
+        result = mbed_target_info._get_platform_property_from_default("not_a_property")
         self.assertIsNone(result)
 
     def test_platform_property_from_default(self):
-        result = mbed_target_info.get_platform_property_from_default("copy_method")
+        result = mbed_target_info._get_platform_property_from_default("copy_method")
         self.assertEqual(result, "default")
 
     def test_platform_property_from_info_mapping_bad_platform(self):
-        result = mbed_target_info.get_platform_property_from_info_mapping("not_a_platform", "not_a_property")
+        result = mbed_target_info._get_platform_property_from_info_mapping("not_a_platform", "not_a_property")
         self.assertIsNone(result)
 
     def test_platform_property_from_info_mapping_missing(self):
-        result = mbed_target_info.get_platform_property_from_info_mapping("K64F", "not_a_property")
+        result = mbed_target_info._get_platform_property_from_info_mapping("K64F", "not_a_property")
         self.assertIsNone(result)
 
     def test_platform_property_from_info_mapping(self):
-        result = mbed_target_info.get_platform_property_from_info_mapping("K64F", "copy_method")
+        result = mbed_target_info._get_platform_property_from_info_mapping("K64F", "copy_method")
         self.assertEqual(result, "default")
 
 
@@ -457,9 +457,9 @@ mbed-gcc 1.1.0
         the following priority relationship:
         targets.json > yotta blob > default
         """
-        with patch("mbed_greentea.mbed_target_info.get_platform_property_from_targets") as _targets,\
-             patch("mbed_greentea.mbed_target_info.get_platform_property_from_info_mapping") as _info_mapping,\
-             patch("mbed_greentea.mbed_target_info.get_platform_property_from_default") as _default:
+        with patch("mbed_greentea.mbed_target_info._get_platform_property_from_targets") as _targets,\
+             patch("mbed_greentea.mbed_target_info._get_platform_property_from_info_mapping") as _info_mapping,\
+             patch("mbed_greentea.mbed_target_info._get_platform_property_from_default") as _default:
             # 1
             _targets.return_value = "targets"
             _info_mapping.return_value = None
