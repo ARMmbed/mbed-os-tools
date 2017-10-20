@@ -21,6 +21,8 @@ import shutil
 import tempfile
 import unittest
 
+from six import StringIO
+
 from mock import patch
 from mbed_greentea import mbed_target_info
 
@@ -338,8 +340,168 @@ mbed-gcc 1.1.0
         result = mbed_target_info.add_target_info_mapping("null")
 
 
-    def test_get_platform_property_from_targets(self):
-        result = mbed_target_info.get_platform_property_from_targets({}, {})
+    def test_get_platform_property_from_targets_no_json(self):
+        with patch("mbed_greentea.mbed_target_info.find_targets_json") as _find:
+            _find.return_value = iter([])
+            result = mbed_target_info.get_platform_property_from_targets("not_a_platform", "not_a_property")
+            self.assertIsNone(result)
+
+    def test_get_platform_property_from_targets_no_file(self):
+        with patch("mbed_greentea.mbed_target_info.find_targets_json") as _find,\
+             patch("mbed_greentea.mbed_target_info.open") as _open:
+            _find.return_value = iter(["foo"])
+            _open.side_effect = IOError
+            result = mbed_target_info.get_platform_property_from_targets("not_a_platform", "not_a_property")
+            self.assertIsNone(result)
+
+    def test_get_platform_property_from_targets_invalid_json(self):
+        with patch("mbed_greentea.mbed_target_info.find_targets_json") as _find,\
+             patch("mbed_greentea.mbed_target_info.open") as _open:
+            _find.return_value = iter(["foo"])
+            _open.return_value = StringIO("{")
+            result = mbed_target_info.get_platform_property_from_targets("not_a_platform", "not_a_property")
+            self.assertIsNone(result)
+
+    def test_get_platform_property_from_targets_empty_json(self):
+        with patch("mbed_greentea.mbed_target_info.find_targets_json") as _find,\
+             patch("mbed_greentea.mbed_target_info.open") as _open:
+            _find.return_value = iter(["foo"])
+            _open.return_value = StringIO("{}")
+            result = mbed_target_info.get_platform_property_from_targets("not_a_platform", "not_a_property")
+            self.assertIsNone(result)
+
+    def test_get_platform_property_from_targets_no_value(self):
+        with patch("mbed_greentea.mbed_target_info.find_targets_json") as _find,\
+             patch("mbed_greentea.mbed_target_info.open") as _open:
+            _find.return_value = iter(["foo"])
+            _open.return_value = StringIO("{\"K64F\": {}}")
+            result = mbed_target_info.get_platform_property_from_targets("K64F", "not_a_property")
+            self.assertIsNone(result)
+
+    def test_get_platform_property_from_targets_in_json(self):
+        with patch("mbed_greentea.mbed_target_info.find_targets_json") as _find,\
+             patch("mbed_greentea.mbed_target_info.open") as _open:
+            _find.return_value = iter(["foo"])
+            _open.return_value = StringIO("{\"K64F\": {\"copy_method\": \"cp\"}}")
+            result = mbed_target_info.get_platform_property_from_targets("K64F", "copy_method")
+            self.assertEqual("cp", result)
+
+    def test_find_targets_json(self):
+        with patch("mbed_greentea.mbed_target_info.walk") as _walk:
+            _walk.return_value = iter([("", ["foo"], []), ("foo", [], ["targets.json"])])
+            result = list(mbed_target_info.find_targets_json("bogus_path"))
+            self.assertEqual(result, ["foo/targets.json"])
+
+    def test_find_targets_json_ignored(self):
+        with patch("mbed_greentea.mbed_target_info.walk") as _walk:
+            walk_result =[("", [".build"], [])]
+            _walk.return_value = iter(walk_result)
+            result = list(mbed_target_info.find_targets_json("bogus_path"))
+            self.assertEqual(result, [])
+            self.assertEqual(walk_result, [("", [], [])])
+
+    def test_platform_property_from_targets_json_empty(self):
+        result = mbed_target_info.platform_property_from_targets_json(
+            {}, "not_a_target", "not_a_property"
+        )
+        self.assertIsNone(result)
+
+    def test_platform_property_from_targets_json_base_target(self):
+        result = mbed_target_info.platform_property_from_targets_json(
+            {"K64F": {"copy_method": "cp"}}, "K64F", "copy_method"
+        )
+        self.assertEqual(result, "cp")
+
+    def test_platform_property_from_targets_json_inherits(self):
+        result = mbed_target_info.platform_property_from_targets_json(
+            {"K64F": {"inherits": ["Target"]}, "Target": {"copy_method": "cp"}},
+            "K64F", "copy_method"
+        )
+        self.assertEqual(result, "cp")
+
+    def test_platform_property_from_default_missing(self):
+        result = mbed_target_info.get_platform_property_from_default("not_a_property")
+        self.assertIsNone(result)
+
+    def test_platform_property_from_default(self):
+        result = mbed_target_info.get_platform_property_from_default("copy_method")
+        self.assertEqual(result, "default")
+
+    def test_platform_property_from_info_mapping_bad_platform(self):
+        result = mbed_target_info.get_platform_property_from_info_mapping("not_a_platform", "not_a_property")
+        self.assertIsNone(result)
+
+    def test_platform_property_from_info_mapping_missing(self):
+        result = mbed_target_info.get_platform_property_from_info_mapping("K64F", "not_a_property")
+        self.assertIsNone(result)
+
+    def test_platform_property_from_info_mapping(self):
+        result = mbed_target_info.get_platform_property_from_info_mapping("K64F", "copy_method")
+        self.assertEqual(result, "default")
+
+
+    # The following test cases are taken from this table:
+    #
+    # Num | In targets.json | In yotta blob | In Default | property used
+    # --- | --------------- | ------------- | ---------- | --------------
+    # 1   | Yes             | No            | Yes        |`targets.json`
+    # 2   | Yes             | Yes           | Yes        |`targets.json`
+    # 3   | No              | Yes           | Yes        | yotta blob
+    # 4   | No              | No            | Yes        | default
+    # 5   | No              | No            | No         | None
+    # 6   | Yes             | No            | No         |`targets.json`
+    # 7   | Yes             | Yes           | No         |`targets.json`
+    # 8   | No              | Yes           | No         | yotta blob
+    def test_platform_property(self):
+        """Test that platform_property picks the property value preserving
+        the following priority relationship:
+        targets.json > yotta blob > default
+        """
+        with patch("mbed_greentea.mbed_target_info.get_platform_property_from_targets") as _targets,\
+             patch("mbed_greentea.mbed_target_info.get_platform_property_from_info_mapping") as _info_mapping,\
+             patch("mbed_greentea.mbed_target_info.get_platform_property_from_default") as _default:
+            # 1
+            _targets.return_value = "targets"
+            _info_mapping.return_value = None
+            _default.return_value = "default"
+            self.assertEqual(
+                mbed_target_info.get_platform_property("K64F", "copy_method"),
+                "targets")
+            # 2
+            _info_mapping.return_value = "yotta"
+            self.assertEqual(
+                mbed_target_info.get_platform_property("K64F", "copy_method"),
+                "targets")
+            # 3
+            _targets.return_value = None
+            self.assertEqual(
+                mbed_target_info.get_platform_property("K64F", "copy_method"),
+                "yotta")
+            # 4
+            _info_mapping.return_value = None
+            self.assertEqual(
+                mbed_target_info.get_platform_property("K64F", "copy_method"),
+                "default")
+            # 5
+            _default.return_value = None
+            self.assertEqual(
+                mbed_target_info.get_platform_property("K64F", "copy_method"),
+                None)
+            # 6
+            _targets.return_value = "targets"
+            self.assertEqual(
+                mbed_target_info.get_platform_property("K64F", "copy_method"),
+                "targets")
+            # 7
+            _info_mapping.return_value = "yotta"
+            self.assertEqual(
+                mbed_target_info.get_platform_property("K64F", "copy_method"),
+                "targets")
+            # 8
+            _targets.return_value = None
+            self.assertEqual(
+                mbed_target_info.get_platform_property("K64F", "copy_method"),
+                "yotta")
 
 
     def test_parse_yotta_json_for_build_name(self):
