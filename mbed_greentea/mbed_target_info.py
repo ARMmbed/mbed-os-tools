@@ -383,17 +383,15 @@ def get_platform_property(platform, property):
     :return: property value, None if property not found
     """
 
-    from_targets_json = get_platform_property_from_targets(platform, property)
+    default = get_platform_property_from_default(property)
+    from_targets_json = get_platform_property_from_targets(
+        platform, property, default)
     if from_targets_json:
         return from_targets_json
     from_info_mapping = get_platform_property_from_info_mapping(platform, property)
     if from_info_mapping:
         return from_info_mapping
-    from_defualt = get_platform_property_from_default(property)
-    if from_defualt:
-        return from_defualt
-
-    return None
+    return default
 
 def get_platform_property_from_default(property):
     with suppress(KeyError):
@@ -403,12 +401,13 @@ def get_platform_property_from_info_mapping(platform, property):
     with suppress(KeyError):
         return TARGET_INFO_MAPPING[platform]['properties'][property]
 
-def platform_property_from_targets_json(targets, platform, property):
+def platform_property_from_targets_json(targets, platform, property, default):
     """! Get a platforms's property from the target data structure in
             targets.json. Takes into account target inheritance.
     @param targets Data structure parsed from targets.json
     @param platform Name of the platform
     @param property Name of the property
+    @param default the fallback value if none is found, but the target exists
     @return property value, None if property not found
 
     """
@@ -416,9 +415,11 @@ def platform_property_from_targets_json(targets, platform, property):
         return targets[platform][property]
     with suppress(KeyError):
         for inherited_target in targets[platform]['inherits']:
-            result = platform_property_from_targets_json(targets, inherited_target, property)
+            result = platform_property_from_targets_json(targets, inherited_target, property, None)
             if result:
                 return result
+    if platform in targets:
+        return default
 
 IGNORED_DIRS = ['.build', 'BUILD', 'tools']
 
@@ -430,7 +431,7 @@ def find_targets_json(path):
         if 'targets.json' in files:
             yield os.path.join(root, 'targets.json')
 
-def get_platform_property_from_targets(platform, property):
+def get_platform_property_from_targets(platform, property, default):
     """
     Load properties from targets.json file somewhere in the project structure
 
@@ -441,6 +442,6 @@ def get_platform_property_from_targets(platform, property):
         with suppress(IOError, ValueError):
             with open(targets_path, 'r') as f:
                 targets = json.load(f)
-                result = platform_property_from_targets_json(targets, platform, property)
+                result = platform_property_from_targets_json(targets, platform, property, default)
                 if result:
                     return result

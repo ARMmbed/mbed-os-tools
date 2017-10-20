@@ -343,7 +343,7 @@ mbed-gcc 1.1.0
     def test_get_platform_property_from_targets_no_json(self):
         with patch("mbed_greentea.mbed_target_info.find_targets_json") as _find:
             _find.return_value = iter([])
-            result = mbed_target_info.get_platform_property_from_targets("not_a_platform", "not_a_property")
+            result = mbed_target_info.get_platform_property_from_targets("not_a_platform", "not_a_property", "default")
             self.assertIsNone(result)
 
     def test_get_platform_property_from_targets_no_file(self):
@@ -351,7 +351,7 @@ mbed-gcc 1.1.0
              patch("mbed_greentea.mbed_target_info.open") as _open:
             _find.return_value = iter(["foo"])
             _open.side_effect = IOError
-            result = mbed_target_info.get_platform_property_from_targets("not_a_platform", "not_a_property")
+            result = mbed_target_info.get_platform_property_from_targets("not_a_platform", "not_a_property", "default")
             self.assertIsNone(result)
 
     def test_get_platform_property_from_targets_invalid_json(self):
@@ -359,7 +359,7 @@ mbed-gcc 1.1.0
              patch("mbed_greentea.mbed_target_info.open") as _open:
             _find.return_value = iter(["foo"])
             _open.return_value = StringIO("{")
-            result = mbed_target_info.get_platform_property_from_targets("not_a_platform", "not_a_property")
+            result = mbed_target_info.get_platform_property_from_targets("not_a_platform", "not_a_property", "default")
             self.assertIsNone(result)
 
     def test_get_platform_property_from_targets_empty_json(self):
@@ -367,7 +367,7 @@ mbed-gcc 1.1.0
              patch("mbed_greentea.mbed_target_info.open") as _open:
             _find.return_value = iter(["foo"])
             _open.return_value = StringIO("{}")
-            result = mbed_target_info.get_platform_property_from_targets("not_a_platform", "not_a_property")
+            result = mbed_target_info.get_platform_property_from_targets("not_a_platform", "not_a_property", "default")
             self.assertIsNone(result)
 
     def test_get_platform_property_from_targets_no_value(self):
@@ -375,15 +375,15 @@ mbed-gcc 1.1.0
              patch("mbed_greentea.mbed_target_info.open") as _open:
             _find.return_value = iter(["foo"])
             _open.return_value = StringIO("{\"K64F\": {}}")
-            result = mbed_target_info.get_platform_property_from_targets("K64F", "not_a_property")
-            self.assertIsNone(result)
+            result = mbed_target_info.get_platform_property_from_targets("K64F", "not_a_property", "default")
+            self.assertEqual(result, "default")
 
     def test_get_platform_property_from_targets_in_json(self):
         with patch("mbed_greentea.mbed_target_info.find_targets_json") as _find,\
              patch("mbed_greentea.mbed_target_info.open") as _open:
             _find.return_value = iter(["foo"])
             _open.return_value = StringIO("{\"K64F\": {\"copy_method\": \"cp\"}}")
-            result = mbed_target_info.get_platform_property_from_targets("K64F", "copy_method")
+            result = mbed_target_info.get_platform_property_from_targets("K64F", "copy_method", "default")
             self.assertEqual("cp", result)
 
     def test_find_targets_json(self):
@@ -402,20 +402,20 @@ mbed-gcc 1.1.0
 
     def test_platform_property_from_targets_json_empty(self):
         result = mbed_target_info.platform_property_from_targets_json(
-            {}, "not_a_target", "not_a_property"
+            {}, "not_a_target", "not_a_property", "default"
         )
         self.assertIsNone(result)
 
     def test_platform_property_from_targets_json_base_target(self):
         result = mbed_target_info.platform_property_from_targets_json(
-            {"K64F": {"copy_method": "cp"}}, "K64F", "copy_method"
+            {"K64F": {"copy_method": "cp"}}, "K64F", "copy_method", "default"
         )
         self.assertEqual(result, "cp")
 
     def test_platform_property_from_targets_json_inherits(self):
         result = mbed_target_info.platform_property_from_targets_json(
             {"K64F": {"inherits": ["Target"]}, "Target": {"copy_method": "cp"}},
-            "K64F", "copy_method"
+            "K64F", "copy_method", "default"
         )
         self.assertEqual(result, "cp")
 
