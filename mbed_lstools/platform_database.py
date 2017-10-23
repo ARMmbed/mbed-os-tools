@@ -17,13 +17,14 @@ limitations under the License.
 
 """Functions that manage a platform database"""
 
+import datetime
 import json
 import re
 from collections import OrderedDict
 from copy import copy
 from io import open
 from os import makedirs
-from os.path import join, dirname
+from os.path import join, dirname, getmtime
 from appdirs import user_data_dir
 from fasteners import InterProcessLock
 
@@ -31,6 +32,7 @@ try:
     unicode
 except NameError:
     unicode = str
+
 
 import logging
 logger = logging.getLogger("mbedls.platform_database")
@@ -251,6 +253,40 @@ DEFAULT_PLATFORM_DB = {
     u'RIOT': u'RIOT',
 }
 
+
+def _get_modified_time(path):
+    try:
+        mtime = getmtime(path)
+    except OSError:
+        mtime = 0
+    return datetime.date.fromtimestamp(mtime)
+
+
+def _older_than_me(path):
+    return _get_modified_time(path) < _get_modified_time(__file__)
+
+
+def _overwrite_or_open(db):
+    try:
+        if db is LOCAL_PLATFORM_DATABASE and _older_than_me(db):
+            raise ValueError("Platform Database is out of date")
+        with open(db, encoding="utf-8") as db_in:
+            return json.load(db_in)
+    except (IOError, ValueError) as exc:
+        if db is LOCAL_PLATFORM_DATABASE:
+            logger.warning(
+                "Error loading database %s: %s; Recreating", db, str(exc))
+            try:
+                makedirs(dirname(db))
+            except OSError:
+                pass
+            with open(db, "w", encoding="utf-8") as out:
+                out.write(unicode(json.dumps(DEFAULT_PLATFORM_DB)))
+            return copy(DEFAULT_PLATFORM_DB)
+        else:
+            return {}
+
+
 class PlatformDatabase(object):
     """Represents a union of multiple platform database files.
     Handles inter-process synchronization of database files.
@@ -266,42 +302,15 @@ class PlatformDatabase(object):
         self._dbs = OrderedDict()
         self._keys = set()
         for db in database_files:
-            try:
-                with open(db, encoding="utf-8") as db_json_file:
-                    new_db = json.load(db_json_file)
-                duplicates = set(self._keys).intersection(set(new_db.keys()))
-                if duplicates:
-                    logger.warning(
-                        "Duplicate platform ids found: %s,"
-                        " ignoring the definitions from %s",
-                        " ".join(duplicates), db)
-                self._dbs[db] = new_db
-                self._keys = self._keys.union(new_db.keys())
-            except IOError as exc:
-                if db is LOCAL_PLATFORM_DATABASE:
-                    logger.warning(
-                        "Could not open local platform database at %s; "
-                        "Recereating", db)
-                    try:
-                        makedirs(dirname(db))
-                    except OSError:
-                        pass
-                    with open(db, "w", encoding="utf-8") as out:
-                        out.write(unicode(json.dumps(DEFAULT_PLATFORM_DB)))
-                    new_db = copy(DEFAULT_PLATFORM_DB)
-                    self._dbs[db] = new_db
-                    self._keys = self._keys.union(new_db.keys())
-                else:
-                    if db is not self._prim_db:
-                        logger.error(
-                            "Could not open platform database %s: %s; skipping",
-                            db, str(exc))
-                    self._dbs[db] = {}
-            except ValueError as exc:
-                logger.error(
-                    "Could not parse platform database %s because %s; "
-                    "skipping", db, str(exc))
-                self._dbs[db] = {}
+            new_db = _overwrite_or_open(db)
+            duplicates = set(self._keys).intersection(set(new_db.keys()))
+            if duplicates:
+                logger.warning(
+                    "Duplicate platform ids found: %s,"
+                    " ignoring the definitions from %s",
+                    " ".join(duplicates), db)
+            self._dbs[db] = new_db
+            self._keys = self._keys.union(new_db.keys())
 
     def items(self):
         for db in self._dbs.values():

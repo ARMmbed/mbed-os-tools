@@ -79,6 +79,18 @@ class EmptyPlatformDatabaseTests(unittest.TestCase):
             self.pdb.add("1234", "MYTARGET")
             self.assertEqual(self.pdb.get("1234"), "MYTARGET")
 
+    def test_old_database(self):
+        """Verify that the platform database correctly updates's its database
+        """
+        with patch("mbed_lstools.platform_database.open") as _open,\
+             patch("mbed_lstools.platform_database.getmtime") as _getmtime:
+            stringio = MagicMock()
+            _open.return_value = stringio
+            _getmtime.side_effect = (0, 1000000)
+            self.pdb = PlatformDatabase([LOCAL_PLATFORM_DATABASE])
+            stringio.__enter__.return_value.write.assert_called_with(
+                unicode(json.dumps(DEFAULT_PLATFORM_DB)))
+
     def test_bogus_database(self):
         """Basic empty database test
         """
