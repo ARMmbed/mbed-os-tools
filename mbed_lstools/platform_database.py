@@ -254,7 +254,7 @@ DEFAULT_PLATFORM_DB = {
 }
 
 
-def get_modified_time(path):
+def _get_modified_time(path):
     try:
         mtime = getmtime(path)
     except OSError:
@@ -262,13 +262,13 @@ def get_modified_time(path):
     return datetime.date.fromtimestamp(mtime)
 
 
-def older_than_me(path):
-    return get_modified_time(path) < get_modified_time(__file__)
+def _older_than_me(path):
+    return _get_modified_time(path) < _get_modified_time(__file__)
 
 
-def overwrite_or_open(db):
+def _overwrite_or_open(db):
     try:
-        if db is LOCAL_PLATFORM_DATABASE and older_than_me(db):
+        if db is LOCAL_PLATFORM_DATABASE and _older_than_me(db):
             raise ValueError("Platform Database is out of date")
         with open(db, encoding="utf-8") as db_in:
             return json.load(db_in)
@@ -302,7 +302,7 @@ class PlatformDatabase(object):
         self._dbs = OrderedDict()
         self._keys = set()
         for db in database_files:
-            new_db = overwrite_or_open(db)
+            new_db = _overwrite_or_open(db)
             duplicates = set(self._keys).intersection(set(new_db.keys()))
             if duplicates:
                 logger.warning(
