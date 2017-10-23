@@ -20,6 +20,17 @@ Author: Przemyslaw Wirkus <Przemyslaw.Wirkus@arm.com>
 import os
 import re
 import json
+from os import walk
+try:
+    from contextlib import suppress
+except ImportError:
+    from contextlib import contextmanager
+    @contextmanager
+    def suppress(*excs):
+        try:
+            yield
+        except excs:
+            pass
 from mbed_greentea.mbed_common_api import run_cli_process
 from mbed_greentea.mbed_greentea_log import gt_logger
 
@@ -381,82 +392,65 @@ def get_platform_property(platform, property):
     :return: property value, None if property not found
     """
 
-    # First load from targets.json if available
-    value_from_targets_json = get_platform_property_from_targets(platform, property)
-    if value_from_targets_json:
-        return value_from_targets_json
+    default = _get_platform_property_from_default(property)
+    from_targets_json = _get_platform_property_from_targets(
+        platform, property, default)
+    if from_targets_json:
+        return from_targets_json
+    from_info_mapping = _get_platform_property_from_info_mapping(platform, property)
+    if from_info_mapping:
+        return from_info_mapping
+    return default
 
-    # Check if info is available for a specific platform
-    if platform in TARGET_INFO_MAPPING:
-        if property in TARGET_INFO_MAPPING[platform]['properties']:
-            return TARGET_INFO_MAPPING[platform]['properties'][property]
+def _get_platform_property_from_default(property):
+    with suppress(KeyError):
+        return TARGET_INFO_MAPPING['default'][property]
 
-    # Check if default data is available
-    if 'default' in TARGET_INFO_MAPPING:
-        if property in TARGET_INFO_MAPPING['default']:
-            return TARGET_INFO_MAPPING['default'][property]
+def _get_platform_property_from_info_mapping(platform, property):
+    with suppress(KeyError):
+        return TARGET_INFO_MAPPING[platform]['properties'][property]
 
-    return None
+def _platform_property_from_targets_json(targets, platform, property, default):
+    """! Get a platforms's property from the target data structure in
+            targets.json. Takes into account target inheritance.
+    @param targets Data structure parsed from targets.json
+    @param platform Name of the platform
+    @param property Name of the property
+    @param default the fallback value if none is found, but the target exists
+    @return property value, None if property not found
 
-def get_platform_property_from_targets(platform, property):
+    """
+    with suppress(KeyError):
+        return targets[platform][property]
+    with suppress(KeyError):
+        for inherited_target in targets[platform]['inherits']:
+            result = _platform_property_from_targets_json(targets, inherited_target, property, None)
+            if result:
+                return result
+    if platform in targets:
+        return default
+
+IGNORED_DIRS = ['.build', 'BUILD', 'tools']
+
+def _find_targets_json(path):
+    for root, dirs, files in walk(path, followlinks=True):
+        for ignored_dir in IGNORED_DIRS:
+            if ignored_dir in dirs:
+                dirs.remove(ignored_dir)
+        if 'targets.json' in files:
+            yield os.path.join(root, 'targets.json')
+
+def _get_platform_property_from_targets(platform, property, default):
     """
     Load properties from targets.json file somewhere in the project structure
 
     :param platform:
     :return: property value, None if property not found
     """
-
-    def get_platform_property_from_targets(targets, platform, property):
-        """! Get a platforms's property from the target data structure in
-             targets.json. Takes into account target inheritance.
-        @param targets Data structure parsed from targets.json
-        @param platform Name of the platform
-        @param property Name of the property
-        @return property value, None if property not found
-
-        """
-
-        result = None
-        if platform in targets:
-            if property in targets[platform]:
-                result = targets[platform][property]
-            elif 'inherits' in targets[platform]:
-                result = None
-                for inherited_target in targets[platform]['inherits']:
-                    result = get_platform_property_from_targets(targets, inherited_target, property)
-
-                    # Stop searching after finding the first value for the property
-                    if result:
-                        break
-
-        return result
-
-    result = None
-    targets_json_path = []
-    for root, dirs, files in os.walk(os.getcwd(), followlinks=True):
-        ignored_dirs = ['.build', 'BUILD', 'tools']
-
-        for ignored_dir in ignored_dirs:
-            if ignored_dir in dirs:
-                dirs.remove(ignored_dir)
-
-        if 'targets.json' in files:
-            targets_json_path.append(os.path.join(root, 'targets.json'))
-
-    if not targets_json_path:
-        gt_logger.gt_log_warn("No targets.json files found, using default target properties")
-
-    for targets_path in targets_json_path:
-        try:
+    for targets_path in _find_targets_json(os.getcwd()):
+        with suppress(IOError, ValueError):
             with open(targets_path, 'r') as f:
                 targets = json.load(f)
-
-                # Load property from targets.json
-                result = get_platform_property_from_targets(targets, platform, property)
-
-                # If a valid property was found, stop looking
+                result = _platform_property_from_targets_json(targets, platform, property, default)
                 if result:
-                    break
-        except Exception:
-            continue
-    return result
+                    return result

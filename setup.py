@@ -50,13 +50,15 @@ setup(name='mbed-greentea',
       license=LICENSE,
       test_suite = 'test',
       entry_points={
-        "console_scripts": ["mbedgt=mbed_greentea.mbed_greentea_cli:main",],
+          "console_scripts": ["mbedgt=mbed_greentea.mbed_greentea_cli:main",],
       },
       install_requires=["PrettyTable>=0.7.2",
-        "PySerial>=3.0",
-        "mbed-host-tests>=1.2.0",
-        "mbed-ls>=1.2.15",
-        "junit-xml",
-        "lockfile",
-        "mock",
-        "colorama>=0.3,<0.4"])
+                        "PySerial>=3.0",
+                        "mbed-host-tests>=1.2.0",
+                        "mbed-ls>=1.2.15",
+                        "junit-xml",
+                        "lockfile",
+                        "mock",
+                        "six",
+                        "colorama>=0.3,<0.4"])
+
