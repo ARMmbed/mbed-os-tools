@@ -185,17 +185,43 @@ additional results from https://yotta-private.herokuapp.com:
         self.assertIn("frdm-k64f-armcc", result)
         self.assertEqual(2, len(result))
 
+    def test_parse_mbed_target_from_target_json_no_keywords(self):
+        target_json_data = {
+            "name": "frdm-k64f-armcc",
+            "version": "0.1.4",
+        }
+
+        self.assertIsNone(mbed_target_info.parse_mbed_target_from_target_json('k64f', target_json_data))
+        self.assertIsNone(mbed_target_info.parse_mbed_target_from_target_json('K64F', target_json_data))
+
+    def test_parse_mbed_target_from_target_json_no_name(self):
+        target_json_data = {
+            "version": "0.1.4",
+            "keywords": [
+                "mbed-target:k64f",
+                "mbed-target::garbage",
+                "mbed-official",
+                "k64f",
+                "frdm-k64f",
+                "armcc"
+            ],
+        }
+
+        self.assertIsNone(mbed_target_info.parse_mbed_target_from_target_json('k64f', target_json_data))
+        self.assertIsNone(mbed_target_info.parse_mbed_target_from_target_json('K64F', target_json_data))
+
     def test_parse_mbed_target_from_target_json(self):
         target_json_data = {
-          "name": "frdm-k64f-armcc",
-          "version": "0.1.4",
-          "keywords": [
-            "mbed-target:k64f",
-            "mbed-official",
-            "k64f",
-            "frdm-k64f",
-            "armcc"
-          ],
+            "name": "frdm-k64f-armcc",
+            "version": "0.1.4",
+            "keywords": [
+                "mbed-target:k64f",
+                "mbed-target::garbage",
+                "mbed-official",
+                "k64f",
+                "frdm-k64f",
+                "armcc"
+            ],
         }
 
         # Positive tests
