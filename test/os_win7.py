@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# coding: utf-8
 """
 mbed SDK
 Copyright (c) 2011-2015 ARM Limited
@@ -150,6 +151,12 @@ class Win7TestCase(unittest.TestCase):
             self.assertNoRegMut()
 
             _cliproc.return_value = (b'\nDrives: C:\ F:\ Z:\ \n', None, 0)
+            devices = self.lstool.find_candidates()
+            self.assertNotIn(expected_info, devices)
+            self.assertNoRegMut()
+
+            # Test multilanguage support
+            _cliproc.return_value = (u'\nドライブ: C:\ F:\ Z:\ \n'.encode('shift_jis'), None, 0)
             devices = self.lstool.find_candidates()
             self.assertNotIn(expected_info, devices)
             self.assertNoRegMut()
