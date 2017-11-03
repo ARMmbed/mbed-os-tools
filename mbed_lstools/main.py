@@ -100,6 +100,7 @@ def print_mbeds(mbeds, args, simple):
         columns = ['platform_name', 'platform_name_unique', 'mount_point',
                     'serial_port', 'target_id', 'daplink_version']
         pt = PrettyTable(columns)
+        pt.align = 'l'
         for d in devices:
             pt.add_row([d.get(col, None) or 'unknown' for col in columns])
         print(pt.get_string(border=not simple, header=not simple,
