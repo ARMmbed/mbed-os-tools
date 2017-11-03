@@ -120,8 +120,11 @@ class MbedLsToolsWin7(MbedLsToolsBase):
         logger.debug('output: %s' % stdout)
 
         if not retval:
-            drive_list = re.match('\s*Drives: (.*)', stdout.decode('utf-8')).group(1)
-            return drive_list.strip().replace('\\', '').split(' ')
+            split_index = stdout.find(b':') + 1
+            drive_list = stdout[split_index:]
+            drive_list = drive_list.strip().replace(b'\\', b'').split(b' ')
+            drive_list = [d.decode('utf-8') for d in drive_list]
+            return drive_list
         return []
 
 
