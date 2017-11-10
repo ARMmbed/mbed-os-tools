@@ -109,23 +109,25 @@ class MbedLsToolsWin7(MbedLsToolsBase):
         # If everything fails, return None
         return None
 
-    def _drive_letters(self):
-        """! Function for finding all drive letters
-        @return Returns an array of all drive letters present
+
+    def _mount_point_exists(self, mountpoint):
+        """! Function returns if the mountpoint exists
+        @param mountpoint Path of mountpoint
+        @return Returns True if mountpoint exists, otherwise False
+        @details This uses a Windows subcommand to avoid throwing a Python
+        error box when the device is in an ejected state.
         """
-        cmd = ['fsutil', 'fsinfo', 'drives']
+        cmd = ['dir', mountpoint]
         logger.debug('running command: %s' % (' '.join(cmd)))
-        stdout, _, retval = self._run_cli_process(cmd)
-        logger.debug('return code: %d' % retval)
-        logger.debug('output: %s' % stdout)
+        stdout, stderr, retval = self._run_cli_process(cmd)
 
         if not retval:
-            split_index = stdout.find(b':') + 1
-            drive_list = stdout[split_index:]
-            drive_list = drive_list.strip().replace(b'\\', b'').split(b' ')
-            drive_list = [d.decode('utf-8') for d in drive_list]
-            return drive_list
-        return []
+            logger.debug("mountpoint %s ready" % mountpoint)
+        else:
+            logger.debug("mountpoint %s reported not ready with error '%s'" %
+                (mountpoint, stderr.strip()))
+
+        return not retval
 
 
     def get_mbeds(self):
@@ -134,11 +136,11 @@ class MbedLsToolsWin7(MbedLsToolsBase):
         @details TargetID should be a hex string with 10-48 chars
         """
         mbeds = []
-        drive_letters = set(self._drive_letters())
-        logger.debug('Found drive letters: %s' % ', '.join(drive_letters))
         for mbed in self.get_mbed_devices():
             mountpoint = re.match('.*\\\\(.:)$', mbed[0]).group(1)
-            if mountpoint in drive_letters:
+            logger.debug('Registry mountpoint %s', mountpoint)
+
+            if self._mount_point_exists(mountpoint):
                 # TargetID is a hex string with 10-48 chars
                 m = re.search('[&#]([0-9A-Za-z]{10,48})[&#]', mbed[1])
                 if not m:
