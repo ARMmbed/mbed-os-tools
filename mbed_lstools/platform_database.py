@@ -225,6 +225,7 @@ DEFAULT_PLATFORM_DB = {
     u'6660': u'NZ32_SC151',
     u'7010': u'BLUENINJA_CDP_TZ01B',
     u'7011': u'TMPM066',
+    u'7013': u'TMPM46B',
     u'7402': u'MBED_BR_HAT',
     u'7778': u'TEENSY3_1',
     u'8001': u'UNO_91H',
