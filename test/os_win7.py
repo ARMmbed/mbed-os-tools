@@ -19,6 +19,7 @@ limitations under the License.
 
 import unittest
 import sys
+import os
 from mock import MagicMock, patch
 
 # Mock the winreg and _winreg module for non-windows python
@@ -145,18 +146,40 @@ class Win7TestCase(unittest.TestCase):
                 'serial_port': 'COM7',
                 'target_id_usb_id': u'000440035522'
             }
-            _cliproc.return_value = (b'\nDrives: C:\ D:\ F:\ Z:\ \n', None, 0)
+
+
+            def _mounted_drives_check(drives):
+                """! Function to generate fake 'dir <drive letter>' responses
+                @param drives Array of paths that should be considered mounted
+                @return Returns Function that accepts an array that would be passed
+                to _run_cli_process (ex ['dir', '<drive letter>']). Result of
+                function mimics the result of _run_cli_process.
+                """
+                def cli(cmd):
+                    for drive in drives:
+                        try:
+                            _ = os.path.relpath(cmd[1], drive)
+                            break
+                        except ValueError:
+                            pass
+                    else:
+                        return (None,
+                                'The system cannot find the path specified.',
+                                1)
+
+                    return (('10/17/2017  12:27 PM    <DIR>          .\n'
+                            '10/17/2017  12:27 PM    <DIR>          ..'),
+                            None,
+                            0)
+
+                return cli
+
+            _cliproc.side_effect = _mounted_drives_check(['C:', 'D:', 'F:', 'Z:'])
             devices = self.lstool.find_candidates()
             self.assertIn(expected_info, devices)
             self.assertNoRegMut()
 
-            _cliproc.return_value = (b'\nDrives: C:\ F:\ Z:\ \n', None, 0)
-            devices = self.lstool.find_candidates()
-            self.assertNotIn(expected_info, devices)
-            self.assertNoRegMut()
-
-            # Test multilanguage support
-            _cliproc.return_value = (u'\nドライブ: C:\ F:\ Z:\ \n'.encode('shift_jis'), None, 0)
+            _cliproc.side_effect = _mounted_drives_check(['C:', 'F:', 'Z:'])
             devices = self.lstool.find_candidates()
             self.assertNotIn(expected_info, devices)
             self.assertNoRegMut()
