@@ -29,6 +29,30 @@ sys.modules['winreg'] = _winreg
 
 from mbed_lstools.windows import MbedLsToolsWin7
 
+def _mounted_drives_check(drives):
+    """! Function to generate fake 'dir <drive letter>' responses
+    @param drives Array of paths that should be considered mounted
+    @return Returns Function that accepts an array that would be passed
+    to _run_cli_process (ex ['dir', '<drive letter>']). Result of
+    function mimics the result of _run_cli_process.
+    """
+    def cli(cmd):
+        for drive in drives:
+            if drive.startswith(cmd[1]):
+                break
+        else:
+            return (None,
+                    'The system cannot find the path specified.',
+                    1)
+
+        return (('10/17/2017  12:27 PM    <DIR>          .\n'
+                '10/17/2017  12:27 PM    <DIR>          ..'),
+                None,
+                0)
+
+    return cli
+
+
 class Win7TestCase(unittest.TestCase):
     """ Basic test cases checking trivial asserts
     """
@@ -146,30 +170,6 @@ class Win7TestCase(unittest.TestCase):
                 'serial_port': 'COM7',
                 'target_id_usb_id': u'000440035522'
             }
-
-
-            def _mounted_drives_check(drives):
-                """! Function to generate fake 'dir <drive letter>' responses
-                @param drives Array of paths that should be considered mounted
-                @return Returns Function that accepts an array that would be passed
-                to _run_cli_process (ex ['dir', '<drive letter>']). Result of
-                function mimics the result of _run_cli_process.
-                """
-                def cli(cmd):
-                    for drive in drives:
-                        if drive.startswith(cmd[1]):
-                            break
-                    else:
-                        return (None,
-                                'The system cannot find the path specified.',
-                                1)
-
-                    return (('10/17/2017  12:27 PM    <DIR>          .\n'
-                            '10/17/2017  12:27 PM    <DIR>          ..'),
-                            None,
-                            0)
-
-                return cli
 
             _cliproc.side_effect = _mounted_drives_check(['C:', 'D:', 'F:', 'Z:'])
             devices = self.lstool.find_candidates()
