@@ -157,11 +157,8 @@ class Win7TestCase(unittest.TestCase):
                 """
                 def cli(cmd):
                     for drive in drives:
-                        try:
-                            _ = os.path.relpath(cmd[1], drive)
+                        if drive.startswith(cmd[1]):
                             break
-                        except ValueError:
-                            pass
                     else:
                         return (None,
                                 'The system cannot find the path specified.',
