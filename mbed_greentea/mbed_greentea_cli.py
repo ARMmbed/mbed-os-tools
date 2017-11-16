@@ -742,7 +742,7 @@ def main_cli(opts, args, gt_instance_uuid=None):
 
     # Detect devices connected to system
     mbeds = mbed_lstools.create()
-    mbeds_list = mbeds.list_mbeds_ext()
+    mbeds_list = mbeds.list_mbeds(unique_names=True.read_details_txt=True)
 
     if opts.global_resource_mgr:
         # Mocking available platform requested by --grm switch
