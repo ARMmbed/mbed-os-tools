@@ -366,6 +366,9 @@ class DefaultTestSelector(DefaultTestSelectorBase):
                         self.logger.prn_inf("%s(%s)" % (key, str(value)))
                         result = value
                         event_queue.put(('__exit_event_queue', 0, time()))
+                    elif key == '__reset':
+                        # This event only resets the dut, not the host test
+                        dut_event_queue.put(('__reset', True, time()))
                     elif key == '__reset_dut':
                         # Disconnect to avoid connection lost event
                         dut_event_queue.put(('__host_test_finished', True, time()))

@@ -231,10 +231,15 @@ def conn_process(event_queue, dut_event_queue, config):
         else:
             # Return if state machine in host_test_default has finished to end process
             if key == '__host_test_finished' and value == True:
-                logger.prn_inf("received special even '%s' value='%s', finishing"% (key, value))
+                logger.prn_inf("received special event '%s' value='%s', finishing"% (key, value))
                 connector.finish()
                 return 0
-            if not connector.write_kv(key, value):
+            elif key == '__reset':
+                logger.prn_inf("received special event '%s', resetting dut" % (key))
+                connector.reset()
+                event_queue.put(("reset_complete", 0, time()))
+            elif not connector.write_kv(key, value):
+                connector.write_kv(key, value)
                 __notify_conn_lost()
                 break
 
