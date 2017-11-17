@@ -158,8 +158,9 @@ class MbedLsToolsBase(object):
                                        for f, v in details_txt.items()})
                     try:
                         device.update(self.retarget_data[device['target_id']])
-                        logger.debug("retargeting %s to %s",
-                                     device['target_id'], mbeds[i])
+                        logger.debug("retargeting %s with %r",
+                                     device['target_id'],
+                                     self.retarget_data[device['target_id']])
                     except KeyError:
                         pass
                     result.append(maybe_device)
