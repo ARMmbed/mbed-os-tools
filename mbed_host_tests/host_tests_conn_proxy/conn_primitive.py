@@ -67,6 +67,11 @@ class ConnectorPrimitive(object):
         """! Flush read/write channels of DUT """
         raise NotImplementedError
 
+    def reset(self):
+        """! Reset the dut
+        """
+        raise NotImplementedError
+
     def connected(self):
         """! Check if there is a connection to DUT
         @return True if there is conenction to DUT (read/write/flush API works)
@@ -83,4 +88,3 @@ class ConnectorPrimitive(object):
         """! Handle DUT dtor like (close resource) operations here
         """
         raise NotImplementedError
-

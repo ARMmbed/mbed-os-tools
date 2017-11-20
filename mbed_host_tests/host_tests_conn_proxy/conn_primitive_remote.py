@@ -160,5 +160,8 @@ class RemoteConnectorPrimitive(ConnectorPrimitive):
             except self.remote_module.resources.ResourceError as e:
                 self.logger.prn_err("RemoteConnectorPrimitive.finish() failed, reason: " + str(e))
 
+    def reset(self):
+        self.__remote_reset()
+
     def __del__(self):
         self.finish()
