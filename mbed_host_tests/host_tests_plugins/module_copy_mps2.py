@@ -52,7 +52,7 @@ class HostTestPluginCopyMethod_MPS2(HostTestPluginBase):
             copy(image_path, destination_path)
             # sync command on mac ignores command line argumjents.
             if os.name == 'posix':
-                result = self.run_command('sync', '-f', destination_path, shell=True)
+                result = self.run_command('sync -f %s' % destination_path, shell=True)
         except Exception as e:
             self.print_plugin_error("shutil.copy('%s', '%s')"% (image_path, destination_path))
             self.print_plugin_error("Error: %s"% str(e))
