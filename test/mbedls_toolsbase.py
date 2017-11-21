@@ -21,7 +21,9 @@ import os
 import errno
 import logging
 import re
-from mock import patch
+import json
+from io import StringIO
+from mock import patch, mock_open
 from copy import deepcopy
 
 from mbed_lstools.lstools_base import MbedLsToolsBase, FSInteraction
@@ -187,6 +189,41 @@ class BasicTestCase(unittest.TestCase):
             ret = self.base._fs_before_id_check(device, filter_out)
             self.assertIsNone(ret)
             _read_htm.assert_called_with(device['mount_point'])
+
+class RetargetTestCase(unittest.TestCase):
+    """ Test cases that makes use of retargetting
+    """
+
+    def setUp(self):
+        retarget_data = {
+            '0240DEADBEEF': {
+                'serial_port' : 'valid'
+            }
+        }
+
+        _open = mock_open(read_data=json.dumps(retarget_data))
+
+        with patch('os.path.isfile') as _isfile,\
+             patch('mbed_lstools.lstools_base.open', _open):
+            self.base = DummyLsTools()
+            _open.assert_called()
+
+    def tearDown(self):
+        pass
+
+    def test_list_mbeds_valid_platform(self):
+        self.base.return_value = [{'mount_point': 'dummy_mount_point',
+                                   'target_id_usb_id': u'0240DEADBEEF',
+                                   'serial_port': None}]
+        with patch('mbed_lstools.lstools_base.MbedLsToolsBase._read_htm_ids') as _read_htm,\
+             patch('mbed_lstools.lstools_base.MbedLsToolsBase.mount_point_ready') as _mpr,\
+             patch('mbed_lstools.lstools_base.PlatformDatabase.get') as _get:
+            _mpr.return_value = True
+            _read_htm.return_value = (u'0240DEADBEEF', {})
+            _get.return_value = 'foo_target'
+            to_check = self.base.list_mbeds()
+        self.assertEqual(len(to_check), 1)
+        self.assertEqual(to_check[0]['serial_port'], 'valid')
 
 if __name__ == '__main__':
     unittest.main()
