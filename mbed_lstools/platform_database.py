@@ -283,8 +283,11 @@ def _overwrite_or_open(db):
                 makedirs(dirname(db))
             except OSError:
                 pass
-            with open(db, "w", encoding="utf-8") as out:
-                out.write(unicode(json.dumps(DEFAULT_PLATFORM_DB)))
+            try:
+                with open(db, "w", encoding="utf-8") as out:
+                    out.write(unicode(json.dumps(DEFAULT_PLATFORM_DB)))
+            except IOError:
+                pass
             return copy(DEFAULT_PLATFORM_DB)
         else:
             return {}
