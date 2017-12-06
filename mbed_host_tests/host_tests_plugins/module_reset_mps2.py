@@ -82,6 +82,9 @@ class HostTestPluginResetMethod_MPS2(HostTestPluginBase):
                 reboot_file_path = os.path.join(destination_disk, capability)
                 reboot_fh = open(reboot_file_path, "w")
                 reboot_fh.close()
+                # Make sure the file is written to the board before continuing
+                if os.name == 'posix':
+                    self.run_command('sync -f %s' % reboot_file_path, shell=True)
                 time.sleep(3)  # sufficient delay for device to boot up
                 result, destination_disk = self.check_mount_point_ready(destination_disk, target_id=target_id, timeout=pooling_timeout)
         return result
