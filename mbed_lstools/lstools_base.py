@@ -109,14 +109,14 @@ class MbedLsToolsBase(object):
 
     def list_mbeds(
             self, fs_interaction=FSInteraction.BeforeFilter,
-            platform_name_filters=[], unique_names=False,
+            filter_function=None, unique_names=False,
             read_details_txt=False):
         """ List details of connected devices
         @return Returns list of structures with detailed info about each mbed
         @param fs_interaction A member of the FSInteraction class that picks the
           trade of between quality of service and speed
-        @param platform_name_filters A series of regular expressions to filter
-          filter targets by
+        @param filter_function Function that is passed each mbed candidate,
+          should return True if it should be included in the result
         @param unique_names A boolean controlling the presence of the
           'platform_unique_name' member of the output dict
         @param read_details_text A boolean controlling the presense of the
@@ -128,8 +128,6 @@ class MbedLsToolsBase(object):
         candidates = list(self.find_candidates())
         logger.debug("Candidates for display %r", candidates)
         result = []
-        platform_name_matcher = re.compile("|".join("({})".format(pf) for pf
-                                                    in platform_name_filters))
         for device in candidates:
             if  ((not device['mount_point'] or
                   not self.mount_point_ready(device['mount_point'])) and
@@ -144,7 +142,7 @@ class MbedLsToolsBase(object):
                     FSInteraction.BeforeFilter: self._fs_before_id_check,
                     FSInteraction.AfterFilter: self._fs_after_id_check,
                     FSInteraction.Never: self._fs_never
-                }[fs_interaction](device, platform_name_matcher)
+                }[fs_interaction](device, filter_function)
                 if maybe_device:
                     if unique_names:
                         name = device['platform_name']
@@ -167,36 +165,38 @@ class MbedLsToolsBase(object):
 
         return result
 
-    def _fs_never(self, device, pn):
+    def _fs_never(self, device, filter_function):
         """Filter device without touching the file system of the device"""
         device['target_id'] = device['target_id_usb_id']
         device['target_id_mbed_htm'] = None
         device['platform_name'] = self.plat_db.get(device['target_id'][0:4])
-        if device['platform_name'] and not pn.match(device['platform_name']):
-            return None
-        else:
+        if not filter_function or filter_function(device):
             return device
+        else:
+            return None
 
-    def _fs_before_id_check(self, device, pn):
+    def _fs_before_id_check(self, device, filter_function):
         """Filter device after touching the file system of the device.
         Said another way: Touch the file system before filtering
         """
         self._update_device_from_htm(device)
-        if device['platform_name'] and not pn.match(device['platform_name']):
-            return None
-        else:
+        if not filter_function or filter_function(device):
             return device
+        else:
+            return None
 
-    def _fs_after_id_check(self, device, pn):
+    def _fs_after_id_check(self, device, filter_function):
         """Filter device before touching the file system of the device.
         Said another way: Touch the file system after filtering
         """
-        plat_name = self.plat_db.get(device['target_id_usb_id'][0:4])
-        if plat_name and not pn.match(plat_name):
-            return None
-        else:
+        device['target_id'] = device['target_id_usb_id']
+        device['target_id_mbed_htm'] = None
+        device['platform_name'] = self.plat_db.get(device['target_id'][0:4])
+        if not filter_function or filter_function(device):
             self._update_device_from_htm(device)
             return device
+        else:
+            return None
 
     def _update_device_from_htm(self, device):
         """Set the 'target_id', 'target_id_mbed_htm', 'platform_name' and
