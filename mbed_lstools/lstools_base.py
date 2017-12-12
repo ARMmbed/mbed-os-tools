@@ -117,6 +117,7 @@ class MbedLsToolsBase(object):
           trade of between quality of service and speed
         @param filter_function Function that is passed each mbed candidate,
           should return True if it should be included in the result
+          Ex. mbeds = list_mbeds(filter_function=lambda m: m['platform_name'] == 'K64F')
         @param unique_names A boolean controlling the presence of the
           'platform_unique_name' member of the output dict
         @param read_details_text A boolean controlling the presense of the
