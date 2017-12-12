@@ -275,10 +275,6 @@ class MbedLsToolsBase(object):
         self.retarget_data = self.retarget_read()
         return self.retarget_data
 
-    # Note: 'Ven_SEGGER' - This is used to detect devices from EFM family, they use Segger J-LInk to wrap MSD and CDC
-    usb_vendor_list = ['Ven_MBED', 'Ven_SEGGER', 'Ven_ARM_V2M']
-
-
     def get_dummy_platform(self, platform_name):
         """! Returns simple dummy platform """
         if not hasattr(self, "dummy_counter"):
