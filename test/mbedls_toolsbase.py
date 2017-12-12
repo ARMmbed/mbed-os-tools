@@ -69,6 +69,27 @@ class BasicTestCase(unittest.TestCase):
         self.assertEqual(to_check[0]['target_id'], "0241BEEFDEAD")
         self.assertEqual(to_check[0]['platform_name'], 'foo_target')
 
+    def test_list_mbeds_invalid_tid(self):
+        self.base.return_value = [{'mount_point': 'dummy_mount_point',
+                                   'target_id_usb_id': u'0240DEADBEEF',
+                                   'serial_port': "dummy_serial_port"},
+                                  {'mount_point': 'dummy_mount_point',
+                                   'target_id_usb_id': None,
+                                   'serial_port': 'not_valid'}]
+        with patch("mbed_lstools.lstools_base.MbedLsToolsBase._read_htm_ids") as _read_htm,\
+             patch("mbed_lstools.lstools_base.MbedLsToolsBase.mount_point_ready") as _mpr,\
+             patch("mbed_lstools.lstools_base.PlatformDatabase.get") as _get:
+            _mpr.return_value = True
+            _read_htm.side_effect = [(u'0241BEEFDEAD', {}), (None, {})]
+            _get.return_value = 'foo_target'
+            to_check = self.base.list_mbeds()
+            _get.assert_called_once_with('0241')
+        self.assertEqual(len(to_check), 2)
+        self.assertEqual(to_check[0]['target_id'], "0241BEEFDEAD")
+        self.assertEqual(to_check[0]['platform_name'], 'foo_target')
+        self.assertEqual(to_check[1]['target_id'], None)
+        self.assertEqual(to_check[1]['platform_name'], None)
+
     def test_list_mbeds_invalid_platform(self):
         self.base.return_value = [{'mount_point': 'dummy_mount_point',
                                    'target_id_usb_id': u'not_in_target_db',

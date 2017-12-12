@@ -216,7 +216,10 @@ class MbedLsToolsBase(object):
                             device['target_id_usb_id'])
             device['target_id'] = device['target_id_usb_id']
         device['target_id_mbed_htm'] = htm_target_id
-        device['platform_name'] = self.plat_db.get(device['target_id'][0:4])
+        if device['target_id']:
+            device['platform_name'] = self.plat_db.get(device['target_id'][0:4])
+        else:
+            device['platform_name'] = None
 
     def mock_manufacture_id(self, mid, platform_name, oper='+'):
         """! Replace (or add if manufacture id doesn't exist) entry in self.manufacture_ids
