@@ -92,7 +92,7 @@ class MbedLsToolsBase(object):
 
         Note: Should not open any files
 
-        @return A dict with the keys 'mount_point', 'serial_port' and 'usb_target_id'
+        @return A dict with the keys 'mount_point', 'serial_port' and 'target_id_usb_id'
         """
         raise NotImplemented
 
