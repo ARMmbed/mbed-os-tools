@@ -77,23 +77,31 @@ class MbedLsToolsWin7(MbedLsToolsBase):
             for v in self.iter_vals(mounted_devices_key):
                 # Valid entries have the following format: \DosDevices\D:
                 if 'DosDevices' in v[0]:
+                    entry_string = v[1].decode('utf-16le', 'ignore')
                     mount_point_match = re.match('.*\\\\(.:)$', v[0])
 
                     if not mount_point_match:
                         logger.debug('Invalid disk pattern for entry %s, skipping' % v[0])
                         continue
 
+                    mount_point = mount_point_match.group(1)
+                    logger.debug('Mount point %s found for volume %s' % (mount_point,
+                        entry_string))
+
                     # TargetID is a hex string with 10-48 chars
-                    entry_string = v[1].decode('utf-16le', 'ignore')
                     target_id_match = re.search('[&#]([0-9A-Za-z]{10,48})[&#]', entry_string)
                     if not target_id_match:
                         logger.debug('Entry %s has invalid target id pattern '
                             '%s, skipping' % (v[0], entry_string))
                         continue
 
+                    target_id = target_id_match.group(1)
+                    logger.debug('Target ID %s found for volume %s' % (target_id,
+                        entry_string))
+
                     result.append({
-                        'mount_point': mount_point_match.group(1),
-                        'target_id_usb_id': target_id_match.group(1)
+                        'mount_point': mount_point,
+                        'target_id_usb_id': target_id
                     })
         except OSError:
             logger.error('Failed to open "MountedDevices" in registry')
@@ -195,17 +203,16 @@ class MbedLsToolsWin7(MbedLsToolsBase):
                     ]
 
                     if len(candidates) == 0:
-                        logger.warning('No candidate found for parent_id_prefix'
+                        logger.debug('No candidate found for parent_id_prefix'
                             ' %s' % parent_id_prefix)
                         break
                     elif len(candidates) > 1:
-                        logger.warning('Unexpectedly found two candidates %s' % candidates)
-                        logger.warning('Picking %s and continuing' % candidates[0])
+                        logger.debug('Unexpectedly found two candidates %s' % candidates)
+                        logger.debug('Picking %s and continuing' % candidates[0])
 
                     endpoint_key_string = '%s\\%s' % (vid_pid_match, candidates[0])
                     logger.debug('Endpoint at key %s' % endpoint_key_string)
                     endpoint_key = winreg.OpenKey(vid_pid_key, endpoint_key_string)
-
                     # This verifies that a USB Storage device is associated with
                     # the composite device
                     if not 'mount_point' in mbed:
