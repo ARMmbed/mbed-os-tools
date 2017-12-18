@@ -156,14 +156,19 @@ class BasicTestCase(unittest.TestCase):
             'serial_port': 'invalid_serial_port'
         }
         with patch("mbed_lstools.lstools_base.MbedLsToolsBase._update_device_from_htm") as _up_htm:
-            filter = re.compile("")
-            ret = self.base._fs_never(device, filter)
+            filter = None
+            ret = self.base._fs_never(deepcopy(device), filter)
             self.assertIsNotNone(ret)
             self.assertEqual(ret['target_id'], ret['target_id_usb_id'])
             _up_htm.assert_not_called()
 
-            filter_out = re.compile("NOT-K64F")
-            ret = self.base._fs_never(device, filter_out)
+            filter_in = lambda m: m['platform_name'] == 'K64F'
+            ret = self.base._fs_never(deepcopy(device), filter_in)
+            self.assertIsNotNone(ret)
+            _up_htm.assert_not_called()
+
+            filter_out = lambda m: m['platform_name'] != 'K64F'
+            ret = self.base._fs_never(deepcopy(device), filter_out)
             self.assertIsNone(ret)
             _up_htm.assert_not_called()
 
@@ -176,16 +181,24 @@ class BasicTestCase(unittest.TestCase):
         with patch("mbed_lstools.lstools_base.MbedLsToolsBase._read_htm_ids") as _read_htm:
             new_device_id = "00017531642046"
             _read_htm.return_value = (new_device_id, {})
-            filter = re.compile("")
-            ret = self.base._fs_after_id_check(device, filter)
+            filter = None
+            ret = self.base._fs_after_id_check(deepcopy(device), filter)
             self.assertIsNotNone(ret)
             self.assertEqual(ret['target_id'], new_device_id)
             _read_htm.assert_called_with(device['mount_point'])
 
             _read_htm.reset_mock()
 
-            filter_out = re.compile("NOT-K64F")
-            ret = self.base._fs_after_id_check(device, filter_out)
+            filter_in = lambda m: m['target_id'] == device['target_id_usb_id']
+            ret = self.base._fs_after_id_check(deepcopy(device), filter_in)
+            self.assertIsNotNone(ret)
+            self.assertEqual(ret['target_id'], new_device_id)
+            _read_htm.assert_called_with(device['mount_point'])
+
+            _read_htm.reset_mock()
+
+            filter_out = lambda m: m['target_id'] == new_device_id
+            ret = self.base._fs_after_id_check(deepcopy(device), filter_out)
             self.assertIsNone(ret)
             _read_htm.assert_not_called()
 
@@ -198,16 +211,24 @@ class BasicTestCase(unittest.TestCase):
         with patch("mbed_lstools.lstools_base.MbedLsToolsBase._read_htm_ids") as _read_htm:
             new_device_id = u'00017575430420'
             _read_htm.return_value = (new_device_id, {})
-            filter = re.compile(u'')
-            ret = self.base._fs_before_id_check(device, filter)
+            filter = None
+            ret = self.base._fs_before_id_check(deepcopy(device), filter)
             self.assertIsNotNone(ret)
             self.assertEqual(ret['target_id'], new_device_id)
             _read_htm.assert_called_with(device['mount_point'])
 
             _read_htm.reset_mock()
 
-            filter_out = re.compile("NOT-LPC2368")
-            ret = self.base._fs_before_id_check(device, filter_out)
+            filter_in = lambda m: m['target_id'] == '00017575430420'
+            ret = self.base._fs_before_id_check(deepcopy(device), filter_in)
+            self.assertIsNotNone(ret)
+            self.assertEqual(ret['target_id'], new_device_id)
+            _read_htm.assert_called_with(device['mount_point'])
+
+            _read_htm.reset_mock()
+
+            filter_out = lambda m: m['target_id'] == '024075309420ABCE'
+            ret = self.base._fs_before_id_check(deepcopy(device), filter_out)
             self.assertIsNone(ret)
             _read_htm.assert_called_with(device['mount_point'])
 
