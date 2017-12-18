@@ -79,6 +79,16 @@ class EmptyPlatformDatabaseTests(unittest.TestCase):
             self.pdb.add("1234", "MYTARGET")
             self.assertEqual(self.pdb.get("1234"), "MYTARGET")
 
+    def test_extra_broken_database(self):
+        """Verify that the platform database falls back to the built in database
+        even when it can't write to disk
+        """
+        with patch("mbed_lstools.platform_database.open") as _open:
+            _open.side_effect = IOError("Bogus")
+            self.pdb = PlatformDatabase([LOCAL_PLATFORM_DATABASE])
+            self.pdb.add("1234", "MYTARGET")
+            self.assertEqual(self.pdb.get("1234"), "MYTARGET")
+
     def test_old_database(self):
         """Verify that the platform database correctly updates's its database
         """
