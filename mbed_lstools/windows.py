@@ -117,6 +117,22 @@ class MbedLsToolsWin7(MbedLsToolsBase):
             If a mass storage is present, a key of 'mount_point' should be returned
             with a value of None (to be completed later)
         """
+
+        def composite_device_key(device):
+            """! Given two composite devices, return a ranking on its specificity
+            @return if no mount_point, then always 0. If mount_point but no serial_port,
+            return 1. If mount_point and serial_port, add the prefix_index.
+            """
+            rank = 0
+
+            if 'mount_point' in device:
+                rank += 1
+                if device['serial_port'] is not None:
+                    rank += device['prefix_index']
+
+            return rank
+
+
         result = []
 
         # Open the root registry key
@@ -171,85 +187,105 @@ class MbedLsToolsWin7(MbedLsToolsBase):
             vid_pid_prefix = label_parts[1]
             target_id_usb_id = label_parts[2]
 
-            mbed = {
-                'target_id_usb_id': target_id_usb_id,
-                'serial_port': None
-            }
+            device = {}
 
             try:
                 composite_key_string = '%s\\%s' % (vid_pid_prefix, target_id_usb_id)
                 logger.debug('Composite device at key %s' % composite_key_string)
                 composite_key = winreg.OpenKey(vid_pid_key, composite_key_string)
+                # Order is important here. We should default to using the
+                # target_id_usb_id here but fallback to the ParentIdPrefix
+                parent_id_prefixes = [target_id_usb_id]
                 try:
-                    parent_id_prefix, _ = winreg.QueryValueEx(composite_key,
+                    composite_parent_id_prefix, _ = winreg.QueryValueEx(composite_key,
                         'ParentIdPrefix')
+                    parent_id_prefixes.append(composite_parent_id_prefix)
                 except OSError:
-                    logger.debug('No ParentIdPrefix found, '
-                        'falling back to target_id_usb_id')
-                    parent_id_prefix = target_id_usb_id
+                    logger.debug('No ParentIdPrefix found')
 
                 vid_pid_matches = [
                     m for m in vid_pid_keys
                     if m.startswith(vid_pid_prefix) and m != vid_pid_prefix
                 ]
 
-                for vid_pid_match in vid_pid_matches:
-                    logger.debug('Endpoint parent at key %s' % vid_pid_match)
-                    endpoint_parent_key = winreg.OpenKey(vid_pid_key, vid_pid_match)
+                options = []
 
-                    candidates = [
-                        c for c in list(self.iter_keys_as_str(endpoint_parent_key))
-                        if c.startswith(parent_id_prefix)
-                    ]
+                for prefix_index, parent_id_prefix in enumerate(parent_id_prefixes):
+                    device = {
+                        'target_id_usb_id': target_id_usb_id,
+                        'serial_port': None,
+                        'prefix_index': len(parent_id_prefixes) - prefix_index
+                    }
 
-                    if len(candidates) == 0:
-                        logger.debug('No candidate found for parent_id_prefix'
-                            ' %s' % parent_id_prefix)
-                        break
-                    elif len(candidates) > 1:
-                        logger.debug('Unexpectedly found two candidates %s' % candidates)
-                        logger.debug('Picking %s and continuing' % candidates[0])
+                    for vid_pid_match in vid_pid_matches:
+                        logger.debug('Endpoint parent at key %s' % vid_pid_match)
+                        endpoint_parent_key = winreg.OpenKey(vid_pid_key, vid_pid_match)
 
-                    endpoint_key_string = '%s\\%s' % (vid_pid_match, candidates[0])
-                    logger.debug('Endpoint at key %s' % endpoint_key_string)
-                    endpoint_key = winreg.OpenKey(vid_pid_key, endpoint_key_string)
-                    # This verifies that a USB Storage device is associated with
-                    # the composite device
-                    if not 'mount_point' in mbed:
-                        try:
-                            service, _ = winreg.QueryValueEx(endpoint_key, 'Service')
-                            if service.upper() == 'USBSTOR':
-                                mbed['mount_point'] = None
+                        candidates = [
+                            c for c in list(self.iter_keys_as_str(endpoint_parent_key))
+                            if any(c.startswith(parent_id_prefix) for p in parent_id_prefixes)
+                        ]
+
+                        if len(candidates) == 0:
+                            logger.debug('No candidate found for parent_id_prefix'
+                                ' %s' % parent_id_prefix)
+                            break
+                        elif len(candidates) > 1:
+                            logger.debug('Unexpectedly found two candidates %s' % candidates)
+                            logger.debug('Picking %s and continuing' % candidates[0])
+
+                        endpoint_key_string = '%s\\%s' % (vid_pid_match, candidates[0])
+                        logger.debug('Endpoint at key %s' % endpoint_key_string)
+                        endpoint_key = winreg.OpenKey(vid_pid_key, endpoint_key_string)
+                        # This verifies that a USB Storage device is associated with
+                        # the composite device
+                        if not 'mount_point' in device:
+                            try:
+                                service, _ = winreg.QueryValueEx(endpoint_key, 'Service')
+                                if service.upper() == 'USBSTOR':
+                                    device['mount_point'] = None
+                                    continue
+                            except OSError:
+                                pass
+
+                        # This adds the serial port information for the device if
+                        # it is availble
+                        if device['serial_port'] is None:
+                            try:
+                                device_parameters_key = winreg.OpenKey(endpoint_key,
+                                    'Device Parameters')
+                                device['serial_port'], _ = winreg.QueryValueEx(
+                                    device_parameters_key, 'PortName')
                                 continue
-                        except OSError:
-                            pass
+                            except OSError:
+                                pass
 
-                    # This adds the serial port information for the device if
-                    # it is availble
-                    if mbed['serial_port'] is None:
-                        try:
-                            device_parameters_key = winreg.OpenKey(endpoint_key,
-                                'Device Parameters')
-                            mbed['serial_port'], _ = winreg.QueryValueEx(
-                                device_parameters_key, 'PortName')
-                            continue
-                        except OSError:
-                            pass
+                    options.append(device)
 
             except OSError as e:
                 logger.debug('Skipping device entry %s, %s' % (label, e))
                 continue
 
+            options.sort(key=composite_device_key, reverse=True)
+
+            if len(options) == 0:
+                logger.debug('No options were found, skipping composite device')
+                continue
+
+
+            device = options[0]
+            del device['prefix_index']
+
             # A target_id_usb_id and mount point must be present to be included
             # in the candidates
             required_keys = set(['target_id_usb_id', 'mount_point'])
-            missing_keys = required_keys - set(mbed.keys())
+            missing_keys = required_keys - set(device.keys())
             if missing_keys:
                 logger.debug('Device %s missing keys %s, skipping' % (label,
                     list(missing_keys)))
             else:
                 logger.debug('Candidate found %s' % label)
-                result.append(mbed)
+                result.append(device)
 
         return result
 
