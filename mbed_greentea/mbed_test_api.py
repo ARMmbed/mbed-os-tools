@@ -451,7 +451,6 @@ def get_testcase_result(output):
     result_test_cases = {}  # Test cases results
     re_tc_start = re.compile(r"^\[(\d+\.\d+)\][^\{]+\{\{(__testcase_start);([^;]+)\}\}")
     re_tc_finish = re.compile(r"^\[(\d+\.\d+)\][^\{]+\{\{(__testcase_finish);([^;]+);(\d+);(\d+)\}\}")
-
     for line in output.splitlines():
         m = re_tc_start.search(line)
         if m:
@@ -502,6 +501,9 @@ def get_testcase_result(output):
                 result_test_cases[testcase_id]['duration'] = result_test_cases[testcase_id]['time_end'] - result_test_cases[testcase_id]['time_start']
             else:
                 result_test_cases[testcase_id]['duration'] = 0.0
+
+            if 'utest_log' not in result_test_cases[testcase_id]:
+                result_test_cases[testcase_id]['utest_log'] = "__testcase_start tag not found."
 
     ### Adding missing test cases which were defined with __testcase_name
     # Get test case names reported by utest + test case names
