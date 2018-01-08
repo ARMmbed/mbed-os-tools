@@ -47,7 +47,9 @@ class HostTestPluginCopyMethod_MPS2(HostTestPluginBase):
         @return Returns True if copy (flashing) was successful
         """
         result = True
-        destination_path = os.path.join(destination_disk, "mbed.bin")
+        # Keep the same extension in the test spec and on the MPS2
+        _, extension = os.path.splitext(image_path);
+        destination_path = os.path.join(destination_disk, "mbed" + extension)
         try:
             copy(image_path, destination_path)
             # sync command on mac ignores command line argumjents.
