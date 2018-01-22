@@ -58,6 +58,7 @@ DEFAULT_PLATFORM_DB = {
     u'0217': u'K82F',
     u'0218': u'KL82Z',
     u'0220': u'KL46Z',
+    u'0227': u'MIMXRT1050_EVK',
     u'0230': u'K20D50M',
     u'0231': u'K22F',
     u'0240': u'K64F',
