@@ -143,7 +143,7 @@ class MbedLsToolsBase(object):
                     FSInteraction.BeforeFilter: self._fs_before_id_check,
                     FSInteraction.AfterFilter: self._fs_after_id_check,
                     FSInteraction.Never: self._fs_never
-                }[fs_interaction](device, filter_function)
+                }[fs_interaction](device, filter_function, read_details_txt)
                 if maybe_device:
                     if unique_names:
                         name = device['platform_name']
@@ -151,10 +151,6 @@ class MbedLsToolsBase(object):
                         platform_count[name] += 1
                         device['platform_name_unique'] = (
                             "%s[%d]" % (name, platform_count[name]))
-                    if read_details_txt:
-                        details_txt = self._details_txt(device['mount_point']) or {}
-                        device.update({"daplink_%s" % f.lower().replace(' ', '_'): v
-                                       for f, v in details_txt.items()})
                     try:
                         device.update(self.retarget_data[device['target_id']])
                         logger.debug("retargeting %s with %r",
@@ -166,7 +162,7 @@ class MbedLsToolsBase(object):
 
         return result
 
-    def _fs_never(self, device, filter_function):
+    def _fs_never(self, device, filter_function, read_details_txt):
         """Filter device without touching the file system of the device"""
         device['target_id'] = device['target_id_usb_id']
         device['target_id_mbed_htm'] = None
@@ -176,17 +172,23 @@ class MbedLsToolsBase(object):
         else:
             return None
 
-    def _fs_before_id_check(self, device, filter_function):
+    def _fs_before_id_check(self, device, filter_function, read_details_txt):
         """Filter device after touching the file system of the device.
         Said another way: Touch the file system before filtering
         """
         self._update_device_from_htm(device)
+
+        if read_details_txt:
+            details_txt = self._details_txt(device['mount_point']) or {}
+            device.update({"daplink_%s" % f.lower().replace(' ', '_'): v
+                           for f, v in details_txt.items()})
+
         if not filter_function or filter_function(device):
             return device
         else:
             return None
 
-    def _fs_after_id_check(self, device, filter_function):
+    def _fs_after_id_check(self, device, filter_function, read_details_txt):
         """Filter device before touching the file system of the device.
         Said another way: Touch the file system after filtering
         """
@@ -195,6 +197,12 @@ class MbedLsToolsBase(object):
         device['platform_name'] = self.plat_db.get(device['target_id'][0:4])
         if not filter_function or filter_function(device):
             self._update_device_from_htm(device)
+
+            if read_details_txt:
+                details_txt = self._details_txt(device['mount_point']) or {}
+                device.update({"daplink_%s" % f.lower().replace(' ', '_'): v
+                               for f, v in details_txt.items()})
+
             return device
         else:
             return None
