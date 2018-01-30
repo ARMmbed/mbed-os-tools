@@ -157,18 +157,18 @@ class BasicTestCase(unittest.TestCase):
         }
         with patch("mbed_lstools.lstools_base.MbedLsToolsBase._update_device_from_htm") as _up_htm:
             filter = None
-            ret = self.base._fs_never(deepcopy(device), filter)
+            ret = self.base._fs_never(deepcopy(device), filter, False)
             self.assertIsNotNone(ret)
             self.assertEqual(ret['target_id'], ret['target_id_usb_id'])
             _up_htm.assert_not_called()
 
             filter_in = lambda m: m['platform_name'] == 'K64F'
-            ret = self.base._fs_never(deepcopy(device), filter_in)
+            ret = self.base._fs_never(deepcopy(device), filter_in, False)
             self.assertIsNotNone(ret)
             _up_htm.assert_not_called()
 
             filter_out = lambda m: m['platform_name'] != 'K64F'
-            ret = self.base._fs_never(deepcopy(device), filter_out)
+            ret = self.base._fs_never(deepcopy(device), filter_out, False)
             self.assertIsNone(ret)
             _up_htm.assert_not_called()
 
@@ -182,7 +182,7 @@ class BasicTestCase(unittest.TestCase):
             new_device_id = "00017531642046"
             _read_htm.return_value = (new_device_id, {})
             filter = None
-            ret = self.base._fs_after_id_check(deepcopy(device), filter)
+            ret = self.base._fs_after_id_check(deepcopy(device), filter, False)
             self.assertIsNotNone(ret)
             self.assertEqual(ret['target_id'], new_device_id)
             _read_htm.assert_called_with(device['mount_point'])
@@ -190,7 +190,7 @@ class BasicTestCase(unittest.TestCase):
             _read_htm.reset_mock()
 
             filter_in = lambda m: m['target_id'] == device['target_id_usb_id']
-            ret = self.base._fs_after_id_check(deepcopy(device), filter_in)
+            ret = self.base._fs_after_id_check(deepcopy(device), filter_in, False)
             self.assertIsNotNone(ret)
             self.assertEqual(ret['target_id'], new_device_id)
             _read_htm.assert_called_with(device['mount_point'])
@@ -198,7 +198,7 @@ class BasicTestCase(unittest.TestCase):
             _read_htm.reset_mock()
 
             filter_out = lambda m: m['target_id'] == new_device_id
-            ret = self.base._fs_after_id_check(deepcopy(device), filter_out)
+            ret = self.base._fs_after_id_check(deepcopy(device), filter_out, False)
             self.assertIsNone(ret)
             _read_htm.assert_not_called()
 
@@ -212,7 +212,7 @@ class BasicTestCase(unittest.TestCase):
             new_device_id = u'00017575430420'
             _read_htm.return_value = (new_device_id, {})
             filter = None
-            ret = self.base._fs_before_id_check(deepcopy(device), filter)
+            ret = self.base._fs_before_id_check(deepcopy(device), filter, False)
             self.assertIsNotNone(ret)
             self.assertEqual(ret['target_id'], new_device_id)
             _read_htm.assert_called_with(device['mount_point'])
@@ -220,7 +220,7 @@ class BasicTestCase(unittest.TestCase):
             _read_htm.reset_mock()
 
             filter_in = lambda m: m['target_id'] == '00017575430420'
-            ret = self.base._fs_before_id_check(deepcopy(device), filter_in)
+            ret = self.base._fs_before_id_check(deepcopy(device), filter_in, False)
             self.assertIsNotNone(ret)
             self.assertEqual(ret['target_id'], new_device_id)
             _read_htm.assert_called_with(device['mount_point'])
@@ -228,7 +228,7 @@ class BasicTestCase(unittest.TestCase):
             _read_htm.reset_mock()
 
             filter_out = lambda m: m['target_id'] == '024075309420ABCE'
-            ret = self.base._fs_before_id_check(deepcopy(device), filter_out)
+            ret = self.base._fs_before_id_check(deepcopy(device), filter_out, False)
             self.assertIsNone(ret)
             _read_htm.assert_called_with(device['mount_point'])
 
