@@ -177,6 +177,7 @@ class MbedLsToolsBase(object):
         """Filter device after touching the file system of the device.
         Said another way: Touch the file system before filtering
         """
+        device['target_id'] = device['target_id_usb_id']
         self._update_device_from_fs(device, include_extra_info)
         if not filter_function or filter_function(device):
             return device
@@ -204,17 +205,16 @@ class MbedLsToolsBase(object):
 
         device['device_type'] = self._detect_device_type(device['mount_point'])
 
-        # details.txt check happens in here now
+        device['target_id'] = device['target_id_usb_id']
         self._update_device_details(device, include_extra_info)
 
-        device['platform_name'] = self.plat_db.get(device['target_id'][0:4],
-                                                   device_type=device['device_type'])
-
-    def _detect_device_type(self, device):
+    def _detect_device_type(self, mount_point):
         """ Returns a string of the device type
             @return 'daplink' or 'jlink'
         """
-        raise NotImplementedError
+
+        files = [f.lower() for f in os.listdir(mount_point)]
+        return 'jlink' if 'segger.html' in files else 'daplink'
 
     def _update_device_details(self, device, include_extra_info):
         """ Updates device dict with information from the filesystem
@@ -235,8 +235,30 @@ class MbedLsToolsBase(object):
             device.update({"daplink_%s" % f.lower().replace(' ', '_'): v
                            for f, v in details_txt.items()})
 
+        device['platform_name'] = self.plat_db.get(device['target_id'][0:4],
+                                                   device_type='daplink')
+
     def _update_device_details_jlink(self, device, include_extra_info):
-        raise NotImplementedError
+        files = os.listdir(device['mount_point'])
+        lower_case_map = {f.lower(): f for f in files}
+
+        if 'board.html' in lower_case_map:
+            board_file_key = 'board.html'
+        elif 'user guide.html' in lower_case_map:
+            board_file_key = 'user guide.html'
+
+        board_file_path = os.path.join(device['mount_point'], lower_case_map[board_file_key])
+        with open(board_file_path, 'r') as board_file:
+            board_file_lines = board_file.readlines()
+
+        for line in board_file_lines:
+            m = re.search(r'url=([\w\d\:\-/\\\?\.=-_]+)', line)
+            if m:
+                device['url'] = m.group(1).strip()
+                identifier = device['url'].split('/')[-1]
+                device['platform_name'] = self.plat_db.get(identifier, device_type='jlink')
+                break
+
 
     def _update_device_from_htm(self, device):
         """Set the 'target_id', 'target_id_mbed_htm', 'platform_name' and
