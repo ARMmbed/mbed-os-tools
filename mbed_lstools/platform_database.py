@@ -47,7 +47,13 @@ DEFAULT_PLATFORM_DB = {
     u'0003': u'LPC2368',
     u'0004': u'LPC2368',
     u'0005': u'LPC2368',
-    u'0006': u'LPC2368',
+    u'0006': {
+        u'default': 'daplink',
+        u'devices': {
+            u'daplink': u'LPC2368',
+            u'jlink': u'NRF52_DK'
+        }
+    },
     u'0007': u'LPC2368',
     u'0100': u'LPC2368',
     u'0183': u'UBLOX_C027',
@@ -341,12 +347,18 @@ class PlatformDatabase(object):
     def all_ids(self):
         return iter(self._keys)
 
-    def get(self, index, default=None):
+    def get(self, index, default=None, device_type=None):
         """Standard lookup function. Works exactly like a dict"""
         for db in self._dbs.values():
             maybe_answer = db.get(index, None)
             if maybe_answer:
-                return maybe_answer
+                if isinstance(maybe_answer, dict):
+                    if device_type is None:
+                        device_type = maybe_answer['default']
+
+                    return maybe_answer['devices'][device_type]
+                else:
+                    return maybe_answer
 
         return default
 
