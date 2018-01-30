@@ -94,7 +94,7 @@ def print_version(mbeds, args):
     print(get_version())
 
 def print_mbeds(mbeds, args, simple):
-    devices = mbeds.list_mbeds(unique_names=True, read_details_txt=True)
+    devices = mbeds.list_mbeds(unique_names=True, include_extra_info=True)
     if devices:
         from prettytable import PrettyTable
         columns = ['platform_name', 'platform_name_unique', 'mount_point',
@@ -134,13 +134,13 @@ def list_platforms(mbeds, args):
 
 def mbeds_as_json(mbeds, args):
     print(json.dumps(mbeds.list_mbeds(unique_names=True,
-                                      read_details_txt=True),
+                                      include_extra_info=True),
                      indent=4, sort_keys=True))
 
 def json_by_target_id(mbeds, args):
     print(json.dumps({m['target_id']: m for m
                       in mbeds.list_mbeds(unique_names=True,
-                                          read_details_txt=True)},
+                                          include_extra_info=True)},
                      indent=4, sort_keys=True))
 
 def json_platforms(mbeds, args):
