@@ -204,9 +204,12 @@ class MbedLsToolsBase(object):
             return
 
         device['device_type'] = self._detect_device_type(device['mount_point'])
-
         device['target_id'] = device['target_id_usb_id']
-        self._update_device_details(device, include_extra_info)
+
+        {
+            'daplink': self._update_device_details_daplink,
+            'jlink': self._update_device_details_jlink
+        }[device['device_type']](device, include_extra_info)
 
     def _detect_device_type(self, mount_point):
         """ Returns a string of the device type
@@ -216,17 +219,6 @@ class MbedLsToolsBase(object):
         files = [f.lower() for f in os.listdir(mount_point)]
         return 'jlink' if 'segger.html' in files else 'daplink'
 
-    def _update_device_details(self, device, include_extra_info):
-        """ Updates device dict with information from the filesystem
-            @param device Device dictionary to update. Should contain a valid
-                'mount_point' value
-            @param include_extra_info Controls how much information (and by extension,
-                the performance) is returned from the filesystem
-        """
-        {
-            'daplink': self._update_device_details_daplink,
-            'jlink': self._update_device_details_jlink
-        }[device['device_type']](device, include_extra_info)
 
     def _update_device_details_daplink(self, device, include_extra_info):
         self._update_device_from_htm(device)
