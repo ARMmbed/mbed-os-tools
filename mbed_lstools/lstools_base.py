@@ -98,19 +98,19 @@ class MbedLsToolsBase(object):
 
     @deprecated("Functionality has been moved into 'list_mbeds'. "
                 "Please use list_mbeds with 'unique_names=True' and "
-                "'include_extra_info=True'")
+                "'read_details_txt=True'")
     def list_mbeds_ext(self):
         """! Function adds extra information for each mbed device
         @return Returns list of mbed devices plus extended data like 'platform_name_unique'
         @details Get information about mbeds with extended parameters/info included
         """
 
-        return self.list_mbeds(unique_names=True, include_extra_info=True)
+        return self.list_mbeds(unique_names=True, read_details_txt=True)
 
     def list_mbeds(
             self, fs_interaction=FSInteraction.BeforeFilter,
             filter_function=None, unique_names=False,
-            include_extra_info=False, read_details_txt=None):
+            read_details_txt=None):
         """ List details of connected devices
         @return Returns list of structures with detailed info about each mbed
         @param fs_interaction A member of the FSInteraction class that picks the
@@ -120,18 +120,11 @@ class MbedLsToolsBase(object):
           Ex. mbeds = list_mbeds(filter_function=lambda m: m['platform_name'] == 'K64F')
         @param unique_names A boolean controlling the presence of the
           'platform_unique_name' member of the output dict
-        @param include_extra_info A boolean controlling the presense of the
+        @param read_details_txt A boolean controlling the presense of the
           output dict attributes read from other files present on the 'mount_point'
-        @param read_details_txt Deprecated alias of the parameter 'include_extra_info'
         @details Function returns list of dictionaries with mbed attributes 'mount_point', TargetID name etc.
         Function returns mbed list with platform names if possible
         """
-
-        if read_details_txt is not None:
-            logger.warning("The 'read_details_txt' parameter is deprecated for function "
-                           "'list_mbeds'. Please use the equivalent 'include_extra_info' instead.")
-            include_extra_info = read_details_txt
-
         platform_count = {}
         candidates = list(self.find_candidates())
         logger.debug("Candidates for display %r", candidates)
@@ -150,7 +143,7 @@ class MbedLsToolsBase(object):
                     FSInteraction.BeforeFilter: self._fs_before_id_check,
                     FSInteraction.AfterFilter: self._fs_after_id_check,
                     FSInteraction.Never: self._fs_never
-                }[fs_interaction](device, filter_function, include_extra_info)
+                }[fs_interaction](device, filter_function, read_details_txt)
                 if maybe_device:
                     if unique_names:
                         name = device['platform_name']
@@ -170,7 +163,7 @@ class MbedLsToolsBase(object):
 
         return result
 
-    def _fs_never(self, device, filter_function, include_extra_info):
+    def _fs_never(self, device, filter_function, read_details_txt):
         """Filter device without touching the file system of the device"""
         device['target_id'] = device['target_id_usb_id']
         device['target_id_mbed_htm'] = None
@@ -180,19 +173,19 @@ class MbedLsToolsBase(object):
         else:
             return None
 
-    def _fs_before_id_check(self, device, filter_function, include_extra_info):
+    def _fs_before_id_check(self, device, filter_function, read_details_txt):
         """Filter device after touching the file system of the device.
         Said another way: Touch the file system before filtering
         """
 
         device['target_id'] = device['target_id_usb_id']
-        self._update_device_from_fs(device, include_extra_info)
+        self._update_device_from_fs(device, read_details_txt)
         if not filter_function or filter_function(device):
             return device
         else:
             return None
 
-    def _fs_after_id_check(self, device, filter_function, include_extra_info):
+    def _fs_after_id_check(self, device, filter_function, read_details_txt):
 
         """Filter device before touching the file system of the device.
         Said another way: Touch the file system after filtering
@@ -201,12 +194,12 @@ class MbedLsToolsBase(object):
         device['target_id_mbed_htm'] = None
         device['platform_name'] = self.plat_db.get(device['target_id'][0:4])
         if not filter_function or filter_function(device):
-            self._update_device_from_fs(device, include_extra_info)
+            self._update_device_from_fs(device, read_details_txt)
             return device
         else:
             return None
 
-    def _update_device_from_fs(self, device, include_extra_info):
+    def _update_device_from_fs(self, device, read_details_txt):
         if not device.get('mount_point', None):
             device['device_type'] = 'unknown'
             return
@@ -217,7 +210,7 @@ class MbedLsToolsBase(object):
         {
             'daplink': self._update_device_details_daplink,
             'jlink': self._update_device_details_jlink
-        }[device['device_type']](device, include_extra_info)
+        }[device['device_type']](device, read_details_txt)
 
     def _detect_device_type(self, mount_point):
         """ Returns a string of the device type
@@ -228,9 +221,9 @@ class MbedLsToolsBase(object):
         return 'jlink' if 'segger.html' in files else 'daplink'
 
 
-    def _update_device_details_daplink(self, device, include_extra_info):
+    def _update_device_details_daplink(self, device, read_details_txt):
         self._update_device_from_htm(device)
-        if include_extra_info:
+        if read_details_txt:
             details_txt = self._details_txt(device['mount_point']) or {}
             device.update({"daplink_%s" % f.lower().replace(' ', '_'): v
                            for f, v in details_txt.items()})
@@ -241,7 +234,7 @@ class MbedLsToolsBase(object):
         else:
             device['platform_name'] = None
 
-    def _update_device_details_jlink(self, device, include_extra_info):
+    def _update_device_details_jlink(self, device, read_details_txt):
         files = os.listdir(device['mount_point'])
         lower_case_map = {f.lower(): f for f in files}
 
@@ -423,7 +416,7 @@ class MbedLsToolsBase(object):
         """
         from prettytable import PrettyTable
         result = ''
-        mbeds = self.list_mbeds(unique_names=True, include_extra_info=True)
+        mbeds = self.list_mbeds(unique_names=True, read_details_txt=True)
         if mbeds:
             """ ['platform_name', 'mount_point', 'serial_port', 'target_id'] - columns generated from USB auto-detection
                 ['platform_name_unique', ...] - columns generated outside detection subsystem (OS dependent detection)
