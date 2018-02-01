@@ -110,7 +110,7 @@ class MbedLsToolsBase(object):
     def list_mbeds(
             self, fs_interaction=FSInteraction.BeforeFilter,
             filter_function=None, unique_names=False,
-            include_extra_info=False):
+            include_extra_info=False, read_details_txt=None):
         """ List details of connected devices
         @return Returns list of structures with detailed info about each mbed
         @param fs_interaction A member of the FSInteraction class that picks the
@@ -122,9 +122,16 @@ class MbedLsToolsBase(object):
           'platform_unique_name' member of the output dict
         @param include_extra_info A boolean controlling the presense of the
           output dict attributes read from other files present on the 'mount_point'
+        @param read_details_txt Deprecated alias of the parameter 'include_extra_info'
         @details Function returns list of dictionaries with mbed attributes 'mount_point', TargetID name etc.
         Function returns mbed list with platform names if possible
         """
+
+        if read_details_txt is not None:
+            logger.warning("The 'read_details_txt' parameter is deprecated for function "
+                           "'list_mbeds'. Please use the equivalent 'include_extra_info' instead.")
+            include_extra_info = read_details_txt
+
         platform_count = {}
         candidates = list(self.find_candidates())
         logger.debug("Candidates for display %r", candidates)
