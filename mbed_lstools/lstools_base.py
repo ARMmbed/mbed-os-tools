@@ -200,6 +200,11 @@ class MbedLsToolsBase(object):
             return None
 
     def _update_device_from_fs(self, device, read_details_txt):
+        """ Updates the device information based on files from its 'mount_point'
+            @param device Dictionary containing device information
+            @param read_details_txt A boolean controlling the presense of the
+              output dict attributes read from other files present on the 'mount_point'
+        """
         if not device.get('mount_point', None):
             device['device_type'] = 'unknown'
             return
@@ -222,6 +227,11 @@ class MbedLsToolsBase(object):
 
 
     def _update_device_details_daplink(self, device, read_details_txt):
+        """ Updates the daplink-specific device information based on files from its 'mount_point'
+            @param device Dictionary containing device information
+            @param read_details_txt A boolean controlling the presense of the
+              output dict attributes read from other files present on the 'mount_point'
+        """
         self._update_device_from_htm(device)
         if read_details_txt:
             details_txt = self._details_txt(device['mount_point']) or {}
@@ -235,6 +245,11 @@ class MbedLsToolsBase(object):
             device['platform_name'] = None
 
     def _update_device_details_jlink(self, device, read_details_txt):
+        """ Updates the jlink-specific device information based on files from its 'mount_point'
+            @param device Dictionary containing device information
+            @param read_details_txt A boolean controlling the presense of the
+              output dict attributes read from other files present on the 'mount_point'
+        """
         files = os.listdir(device['mount_point'])
         lower_case_map = {f.lower(): f for f in files}
 
