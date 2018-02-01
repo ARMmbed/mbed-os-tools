@@ -215,7 +215,7 @@ class OverriddenPlatformDatabaseTests(unittest.TestCase):
         self.assertEqual(self.pdb.get('0123'), 'Overriding_Platform')
         self.overriding_db.seek(0)
         self.assertEqual(self.overriding_db.read(),
-                         json.dumps(dict([('0123', 'Overriding_Platform')]))
+                         json.dumps(dict([('daplink', dict([('0123', 'Overriding_Platform')]))]))
                          .encode('utf-8'))
         self.assertBaseUnchanged()
 

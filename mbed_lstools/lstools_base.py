@@ -177,6 +177,7 @@ class MbedLsToolsBase(object):
         """Filter device after touching the file system of the device.
         Said another way: Touch the file system before filtering
         """
+
         device['target_id'] = device['target_id_usb_id']
         self._update_device_from_fs(device, include_extra_info)
         if not filter_function or filter_function(device):
@@ -227,8 +228,11 @@ class MbedLsToolsBase(object):
             device.update({"daplink_%s" % f.lower().replace(' ', '_'): v
                            for f, v in details_txt.items()})
 
-        device['platform_name'] = self.plat_db.get(device['target_id'][0:4],
-                                                   device_type='daplink')
+        if device['target_id']:
+            device['platform_name'] = self.plat_db.get(device['target_id'][0:4],
+                                                       device_type='daplink')
+        else:
+            device['platform_name'] = None
 
     def _update_device_details_jlink(self, device, include_extra_info):
         files = os.listdir(device['mount_point'])
@@ -270,10 +274,6 @@ class MbedLsToolsBase(object):
                             device['target_id_usb_id'])
             device['target_id'] = device['target_id_usb_id']
         device['target_id_mbed_htm'] = htm_target_id
-        if device['target_id']:
-            device['platform_name'] = self.plat_db.get(device['target_id'][0:4])
-        else:
-            device['platform_name'] = None
 
     def mock_manufacture_id(self, mid, platform_name, oper='+'):
         """! Replace (or add if manufacture id doesn't exist) entry in self.manufacture_ids

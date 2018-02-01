@@ -326,26 +326,32 @@ class PlatformDatabase(object):
         self._keys = defaultdict(set)
         for db in database_files:
             new_db = _overwrite_or_open(db)
-            first_value = next(iter(new_db.values()))
-            if not isinstance(first_value, dict):
-                new_db = {
-                    'daplink': new_db
-                }
+            first_value = None
+            if new_db.values():
+                first_value = next(iter(new_db.values()))
+                if not isinstance(first_value, dict):
+                    new_db = {
+                        'daplink': new_db
+                    }
 
-            for device_type in new_db:
-                duplicates = self._keys[device_type].intersection(set(new_db[device_type].keys()))
-                duplicates = set(["%s.%s" % (device_type, k) for k in duplicates])
-                if duplicates:
-                    logger.warning(
-                        "Duplicate platform ids found: %s,"
-                        " ignoring the definitions from %s",
-                        " ".join(duplicates), db)
+            if new_db:
+                for device_type in new_db:
+                    duplicates = self._keys[device_type].intersection(set(new_db[device_type].keys()))
+                    duplicates = set(["%s.%s" % (device_type, k) for k in duplicates])
+                    if duplicates:
+                        logger.warning(
+                            "Duplicate platform ids found: %s,"
+                            " ignoring the definitions from %s",
+                            " ".join(duplicates), db)
+                    self._dbs[db] = new_db
+                    self._keys[device_type] = self._keys[device_type].union(new_db[device_type].keys())
+            else:
                 self._dbs[db] = new_db
-                self._keys[device_type] = self._keys[device_type].union(new_db[device_type].keys())
 
-    def items(self):
+
+    def items(self, device_type='daplink'):
         for db in self._dbs.values():
-            for entry in db.items():
+            for entry in db.get(device_type, {}).items():
                 yield entry
 
     def all_ids(self, device_type='daplink'):
@@ -354,9 +360,10 @@ class PlatformDatabase(object):
     def get(self, index, default=None, device_type='daplink'):
         """Standard lookup function. Works exactly like a dict"""
         for db in self._dbs.values():
-            maybe_answer = db[device_type].get(index, None)
-            if maybe_answer:
-                return maybe_answer
+            if device_type in db:
+                maybe_answer = db[device_type].get(index, None)
+                if maybe_answer:
+                    return maybe_answer
 
         return default
 
@@ -390,9 +397,14 @@ class PlatformDatabase(object):
         """
         if self.target_id_pattern.match(id):
             if self._prim_db:
-                self._dbs[self._prim_db][id] = platform_name
+                if device_type not in self._dbs[self._prim_db]:
+                    self._dbs[self._prim_db][device_type] = {}
+                self._dbs[self._prim_db][device_type][id] = platform_name
             else:
-                next(iter(self._dbs.values()))[id] = platform_name
+                cur_db = next(iter(self._dbs.values()))
+                if device_type not in cur_db:
+                    cur_db[device_type] = {}
+                cur_db[device_type][id] = platform_name
             self._keys[device_type].add(id)
             if permanent:
                 self._update_db()
@@ -404,13 +416,13 @@ class PlatformDatabase(object):
         database
         """
         logger.debug("Trying remove of %s", id)
-        if id is '*':
-            self._dbs[self._prim_db] = {}
+        if id is '*' and device_type in self._dbs[self._prim_db]:
+            self._dbs[self._prim_db][device_type] = {}
         for db in self._dbs.values():
-            if id in db:
+            if device_type in db and id in db[device_type]:
                 logger.debug("Removing id...")
-                removed = db[id]
-                del db[id]
+                removed = db[device_type][id]
+                del db[device_type][id]
                 self._keys[device_type].remove(id)
                 if permanent:
                     self._update_db()
