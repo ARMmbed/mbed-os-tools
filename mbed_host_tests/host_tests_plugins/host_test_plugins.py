@@ -137,13 +137,15 @@ class HostTestPluginBase:
                 # mbed_lstools.create() should be done inside the loop.
                 # Otherwise it will loop on same data.
                 mbeds = mbed_lstools.create()
-                mbeds_by_tid = mbeds.list_mbeds_by_targetid()   # key: target_id, value mbedls_dict()
-                if target_id in mbeds_by_tid:
-                    if 'mount_point' in mbeds_by_tid[target_id]:
-                        if mbeds_by_tid[target_id]['mount_point']:
-                            # Only assign if mount point is known (not None)
-                            new_destination_disk = mbeds_by_tid[target_id]['mount_point']
-                            break
+                mbed_list = mbeds.list_mbeds() #list of mbeds present
+                # get first item in list with a matching target_id, if present
+                mbed_target = next((x for x in mbed_list if x['target_id']==target_id), None)
+
+                if mbed_target is not None:
+                    # Only assign if mount point is present and known (not None)
+                    if 'mount_point' in mbed_target and mbed_target['mount_point'] is not None:
+                        new_destination_disk = mbed_target['mount_point']
+                        break
                 sleep(timeout_step)
 
             if new_destination_disk != destination_disk:
@@ -188,16 +190,18 @@ class HostTestPluginBase:
             for i in range(timeout):
                 # mbed_lstools.create() should be done inside the loop. Otherwise it will loop on same data.
                 mbeds = mbed_lstools.create()
-                mbeds_by_tid = mbeds.list_mbeds_by_targetid()   # key: target_id, value mbedls_dict()
-                if target_id in mbeds_by_tid:
-                    if 'serial_port' in mbeds_by_tid[target_id]:
-                        if mbeds_by_tid[target_id]['serial_port']:
-                            # Only assign if serial port is known (not None)
-                            new_serial_port = mbeds_by_tid[target_id]['serial_port']
-                            if new_serial_port != serial_port:
-                                # Serial port changed, update to new serial port from mbed-ls
-                                self.print_plugin_info("Serial port for tid='%s' changed from '%s' to '%s'..." % (target_id, serial_port, new_serial_port))
-                            break
+                mbed_list = mbeds.list_mbeds() #list of mbeds present
+                # get first item in list with a matching target_id, if present
+                mbed_target = next((x for x in mbed_list if x['target_id']==target_id), None)
+
+                if mbed_target is not None:
+                    # Only assign if serial port is present and known (not None)
+                    if 'serial_port' in mbed_target and mbed_target['serial_port'] is not None:
+                        new_serial_port = mbed_target['serial_port']
+                        if new_serial_port != serial_port:
+                            # Serial port changed, update to new serial port from mbed-ls
+                            self.print_plugin_info("Serial port for tid='%s' changed from '%s' to '%s'..." % (target_id, serial_port, new_serial_port))
+                        break
                 sleep(timeout_step)
         else:
             new_serial_port = serial_port

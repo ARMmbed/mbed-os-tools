@@ -126,10 +126,12 @@ class Mbed:
             for i in range(5):
                 # mbed_lstools.create() should be done inside the loop. Otherwise it will loop on same data.
                 mbeds = mbed_lstools.create()
-                mbeds_by_tid = mbeds.list_mbeds_by_targetid()   # key: target_id, value mbedls_dict()
+                mbed_list = mbeds.list_mbeds() #list of mbeds present
+                # get first item in list with a matching target_id, if present
+                mbed_target = next((x for x in mbed_list if x['target_id']==target_id), None)
 
-                if target_id in mbeds_by_tid:
-                    if 'mount_point' in mbeds_by_tid[target_id] and mbeds_by_tid[target_id]['mount_point']:
+                if mbed_target is not None:
+                    if 'mount_point' in mbed_target and mbed_target['mount_point'] is not None:
                         if not initial_remount_count is None:
                             new_remount_count = get_remount_count(disk)
                             if not new_remount_count is None and new_remount_count == initial_remount_count:
@@ -138,14 +140,14 @@ class Mbed:
 
                         common_items = []
                         try:
-                            items = set([x.upper() for x in os.listdir(mbeds_by_tid[target_id]['mount_point'])])
+                            items = set([x.upper() for x in os.listdir(mbed_target['mount_point'])])
                             common_items = bad_files.intersection(items)
                         except OSError as e:
                             print("Failed to enumerate disk files, retrying")
                             continue
 
                         for common_item in common_items:
-                            full_path = os.path.join(mbeds_by_tid[target_id]['mount_point'], common_item)
+                            full_path = os.path.join(mbed_target['mount_point'], common_item)
                             self.logger.prn_err("Found %s"% (full_path))
                             bad_file_contents = "[failed to read bad file]"
                             try:
