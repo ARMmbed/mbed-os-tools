@@ -1,6 +1,6 @@
 """
 mbed SDK
-Copyright (c) 2011-2015 ARM Limited
+Copyright (c) 2011-2018 ARM Limited
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -36,10 +36,11 @@ class HostTestPluginCopyMethod_MPS2(HostTestPluginBase):
         """
         HostTestPluginBase.__init__(self)
 
-    def mps2_bin_copy(self, image_path, destination_disk):
+    def mps2_copy(self, image_path, destination_disk):
         """! mps2 copy method for "mbed enabled" devices.
-            this copies the binary always as mbed.bin
-        @param image_path Path to binary file to be flashed
+             This copies the file on the MPS2 keeping the same extension but
+             renaming it "mbed.extension"
+        @param image_path Path to file to be copied
         @param destination_disk Path to destination (mbed mount point)
 
         @details this uses shutil copy to copy the file.
@@ -52,7 +53,7 @@ class HostTestPluginCopyMethod_MPS2(HostTestPluginBase):
         destination_path = os.path.join(destination_disk, "mbed" + extension)
         try:
             copy(image_path, destination_path)
-            # sync command on mac ignores command line argumjents.
+            # sync command on mac ignores command line arguments.
             if os.name == 'posix':
                 result = self.run_command('sync -f %s' % destination_path, shell=True)
         except Exception as e:
@@ -98,7 +99,7 @@ class HostTestPluginCopyMethod_MPS2(HostTestPluginBase):
                     # available in result (_, destination_disk) of check_mount_point_ready
                     result, destination_disk = self.check_mount_point_ready(destination_disk, target_id=target_id, timeout=pooling_timeout)  # Blocking
                     if result:
-                        result = self.mps2_bin_copy(image_path, destination_disk)
+                        result = self.mps2_copy(image_path, destination_disk)
         return result
 
 
