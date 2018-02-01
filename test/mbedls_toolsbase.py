@@ -155,6 +155,57 @@ class BasicTestCase(unittest.TestCase):
         self.assertEqual(None, self.base.plat_db.get("0342"))
         self.assertEqual(None, self.base.plat_db.get("0343"))
 
+    def test_update_device_from_fs_unknown(self):
+        device = {}
+        self.base._update_device_from_fs(device, False)
+        self.assertEqual(device['device_type'], 'unknown')
+
+    def test_detect_device_test(self):
+        dummy_mount_point = 'dummy'
+        with patch('os.listdir') as _listdir:
+            _listdir.return_value = ['Segger.html']
+            device_type = self.base._detect_device_type(dummy_mount_point)
+            self.assertEqual(device_type, 'jlink')
+            _listdir.assert_called_once_with(dummy_mount_point)
+
+            _listdir.reset_mock()
+            _listdir.return_value = ['MBED.HTM', 'DETAILS.TXT']
+
+            device_type = self.base._detect_device_type(dummy_mount_point)
+            self.assertEqual(device_type, 'daplink')
+            _listdir.assert_called_once_with(dummy_mount_point)
+
+    def test_update_device_details_jlink(self):
+        jlink_html_contents = ('<html><head><meta http-equiv="refresh" '
+                               'content="0; url=http://www.nxp.com/FRDM-KL27Z"/>'
+                               '<title>NXP Product Page</title></head><body></body></html>')
+        _open = mock_open(read_data=jlink_html_contents)
+        dummy_mount_point = 'dummy'
+        base_device = {
+            'mount_point': dummy_mount_point
+        }
+
+        with patch('os.listdir') as _listdir,\
+             patch('mbed_lstools.lstools_base.open', _open):
+            _listdir.return_value = ['Board.html', 'User Guide.html']
+            device = deepcopy(base_device)
+            self.base._update_device_details_jlink(device, False)
+            self.assertEqual(device['url'], 'http://www.nxp.com/FRDM-KL27Z')
+            self.assertEqual(device['platform_name'], 'KL27Z')
+            _listdir.assert_called_once_with(dummy_mount_point)
+            _open.assert_called_once_with(os.path.join(dummy_mount_point, 'Board.html'), 'r')
+
+            _open.reset_mock()
+            _listdir.reset_mock()
+            _listdir.return_value = ['User Guide.html']
+
+            device = deepcopy(base_device)
+            self.base._update_device_details_jlink(device, False)
+            self.assertEqual(device['url'], 'http://www.nxp.com/FRDM-KL27Z')
+            self.assertEqual(device['platform_name'], 'KL27Z')
+            _listdir.assert_called_once_with(dummy_mount_point)
+            _open.assert_called_once_with(os.path.join(dummy_mount_point, 'User Guide.html'), 'r')
+
     def test_fs_never(self):
         device = {
             'target_id_usb_id': '024075309420ABCE',
