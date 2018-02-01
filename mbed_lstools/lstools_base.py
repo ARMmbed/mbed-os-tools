@@ -249,6 +249,9 @@ class MbedLsToolsBase(object):
             board_file_key = 'board.html'
         elif 'user guide.html' in lower_case_map:
             board_file_key = 'user guide.html'
+        else:
+            logger.warning('No valid file found to update JLink device details')
+            return
 
         board_file_path = os.path.join(device['mount_point'], lower_case_map[board_file_key])
         with open(board_file_path, 'r') as board_file:

@@ -206,6 +206,16 @@ class BasicTestCase(unittest.TestCase):
             _listdir.assert_called_once_with(dummy_mount_point)
             _open.assert_called_once_with(os.path.join(dummy_mount_point, 'User Guide.html'), 'r')
 
+            _open.reset_mock()
+            _listdir.reset_mock()
+            _listdir.return_value = ['unhelpful_file.html']
+
+            device = deepcopy(base_device)
+            self.base._update_device_details_jlink(device, False)
+            self.assertEqual(device, base_device)
+            _listdir.assert_called_once_with(dummy_mount_point)
+            _open.assert_not_called()
+
     def test_fs_never(self):
         device = {
             'target_id_usb_id': '024075309420ABCE',
