@@ -2,70 +2,24 @@
 [![Coverage Status](https://coveralls.io/repos/github/ARMmbed/mbed-ls/badge.svg?branch=master)](https://coveralls.io/github/ARMmbed/mbed-ls?branch=master)
 [![PyPI version](https://badge.fury.io/py/mbed-ls.svg)](https://badge.fury.io/py/mbed-ls)
 
-# Table of contents
+# mbed-ls
 
-* [Description](#description)
-* [Rationale](#rationale)
-* [Installation](#installation)
-  * [Installation from PyPI (Python Package Index)](#installation-from-pypi-python-package-index)
-  * [Installation from Python sources](#installation-from-python-sources)
-* [mbedls as command line tool](#mbedls-as-command-line-tool)
-  * [Exporting mbedls output to JSON](#exporting-mbedls-output-to-json)
-* [Porting instructions](#porting-instructions)
-  * [mbed-enabled technical specification overview](#mbed-enabled-technical-specification-overview)
-    * [TargetID as device unique identifier](#targetid-as-device-unique-identifier)
-  * [mbed-ls auto-detection approach for Ubuntu](#mbed-ls-auto-detection-approach-for-ubuntu)
-* [Retarget mbed-ls autodetection results](#retarget-mbed-ls-autodetection-results)
-  * [mbedls.json file properties](#mbedlsjson-file-properties)
-  * [Example of retargeting](#example-of-retargeting)
-* [Mocking new or existing target to custom platform name](#mocking-new-or-existing-target-to-custom-platform-name)
-  * [Mock command line examples](#mock-command-line-examples)
-  * [Mocking example with Freescale K64F platform](#mocking-example-with-freescale-k64f-platform)
-* [mbed-ls unit testing](#mbed-ls-unit-testing)
-  * [Code coverage](#code-coverage)
-* [Configure mbed-enabled device to work with your host](#configure-mbed-enabled-device-to-work-with-your-host)
-  * [Windows serial port configuration](#windows-serial-port-configuration)
-  * [Mounting with sync](#mounting-with-sync)
-    * [Ubuntu](#ubuntu)
-  * [Raspberry Pi - Raspbian Jessie Lite](#raspberry-pi---raspbian-jessie-lite)
-    * [Prerequisites](#prerequisites)
-    * [Install LDM](#install-ldm)
-    * [Enable LDM](#enable-ldm)
-    * [Making sure LDM is active (running)](#making-sure-ldm-is-active-running)
-* [Known issues](#known-issues)
+`mbed-ls` is a Python (2 and 3) module that detects and lists mbed-enabled devices connected to the host computer. It is delivered as a redistributable Python module (package) and command line tool. It works on all major operating systems (Windows, Linux, and Mac OS X).
 
-# Description
+It provides the following information for all connected boards in a simple console (terminal) output:
 
-```mbed-ls``` is a Python (2 and 3) module that detects and lists mbed-enabled devices connected to the host computer. It will be delivered as a redistributable Python module (package) and command line tool.
-
-Currently supported operating system:
-
-* Windows 7.
-* Linux.
-* Mac OS X (Darwin).
-* Raspbian Jessie Lite.
-
-# Rationale
-
-When connecting more than one mbed-enabled device to the host computer, it takes time to manually check the platforms' binds:
-
-* Mount point (MSD / disk).
-* Virtual serial port (CDC).
-* mbed's TargetID and generic platform name.
-
-```mbed-ls``` provides these points of information for all connected boards at once in a simple console (terminal) output.
+* Mbed OS platform name
+* Mount point (MSD / disk)
+* Serial port
 
 # Installation
 
 ## Installation from PyPI (Python Package Index)
 
-mbed-ls module is redistributed via PyPI. We recommend you use the [application pip](https://pip.pypa.io/en/latest/installing.html#install-pip).
+To install mbed-ls from [PyPI](https://pypi.python.org/pypi/mbed-ls) run the following command:
 
-**Note:** Python 2.7.9 onwards include ```pip``` by default, so you may have ```pip``` already.
-
-To install mbed-ls from [PyPI](https://pypi.python.org/pypi/mbed-ls) use command:
-```
-$ pip install mbed-ls --upgrade
+```bash
+pip install mbed-ls --upgrade
 ```
 
 ## Installation from Python sources
@@ -74,655 +28,338 @@ $ pip install mbed-ls --upgrade
 
 **Note:** if your OS is Windows, please follow the installation instructions [for the serial port driver](https://developer.mbed.org/handbook/Windows-serial-configuration).
 
-To install the mbed-ls module:
+To install the mbed-ls module, first clone the mbed-ls repository. The following example uses the GitHub command line tools, but you can do this directly from the website:
 
-Clone the mbed-ls repository. The following example uses the GitHub command line tools, but you can do this directly from the website:
-
-```
-$ git clone https://github.com/ARMmbed/mbed-ls.git
-```
-
-Change the directory to the mbed-ls repository directory:
-
-```
-$ cd mbed-ls
+```bash
+git clone https://github.com/ARMmbed/mbed-ls.git
+cd mbed-ls
+python setup.py install
 ```
 
-Now you are ready to install mbed-ls.
+# Usage
 
-```
-$ python setup.py install
-```
+## Command line
 
-On Linux, if you have a problem with permissions please try to use ```sudo```:
+The command line tool is available with the command `mbedls`:
 
-```
-$ sudo python setup.py install
-```
-
-The above command should install the ```mbed-ls``` Python package (import ```mbed_lstools```) and mbedls command.
-
-To test if your installation succeeded try the ```mbedls``` command:
-
-```
+```bash
 $ mbedls
++---------------+----------------------+-------------+-------------+--------------------------------------------------+-----------------+
+| platform_name | platform_name_unique | mount_point | serial_port | target_id                                        | daplink_version |
++---------------+----------------------+-------------+-------------+--------------------------------------------------+-----------------+
+| K64F          | K64F[0]              | D:          | COM18       | 0240000032044e4500257009997b00386781000097969900 | 0244            |
++---------------+----------------------+-------------+-------------+--------------------------------------------------+-----------------+
 ```
 
-Or use the Python interpreter and import ```mbed_lstools```:
+### Result formats
+
+The command line is able to list the results in a number of formats.
+
+#### Simple (no table formatting)
 
 ```
-$ python
-Python 2.7.8 (default, Jun 30 2014, 16:03:49) [MSC v.1500 32 bit (Intel)] on win32
-Type "help", "copyright", "credits" or "license" for more information.
+$ mbedls --simple
+ K64F  K64F[0]  D:  COM18  0240000032044e4500257009997b00386781000097969900  0244
 ```
 
-Generic mbedls API example:
+#### JSON
+
+```bash
+$ mbedls --json
+[
+    {
+        "daplink_auto_reset": "0",
+        "daplink_automation_allowed": "1",
+        "daplink_bootloader_crc": "0xa65218eb",
+        "daplink_bootloader_version": "0242",
+        "daplink_daplink_mode": "Interface",
+        "daplink_git_sha": "67f8727a030bcc585e982d899fb6382db56d673b",
+        "daplink_hic_id": "97969900",
+        "daplink_interface_crc": "0xe4422294",
+        "daplink_interface_version": "0244",
+        "daplink_local_mods": "0",
+        "daplink_overflow_detection": "1",
+        "daplink_remount_count": "0",
+        "daplink_unique_id": "0240000032044e4500257009997b00386781000097969900",
+        "daplink_usb_interfaces": "MSD, CDC, HID",
+        "daplink_version": "0244",
+        "mount_point": "D:",
+        "platform_name": "K64F",
+        "platform_name_unique": "K64F[0]",
+        "serial_port": "COM18",
+        "target_id": "0240000032044e4500257009997b00386781000097969900",
+        "target_id_mbed_htm": "0240000032044e4500257009997b00386781000097969900",
+        "target_id_usb_id": "0240000032044e4500257009997b00386781000097969900"
+    }
+]
+```
+
+### Mocking (renaming) platforms
+
+When developing new a platform, it is possible to override the default name mbed-ls assigns. This is done with the `--mock` parameter:
+
+```
+$ mbedls --mock 0240:MY_NEW_PLATFORM
+$ mbedls
++-----------------+----------------------+-------------+-------------+--------------------------------------------------+-----------------+
+| platform_name   | platform_name_unique | mount_point | serial_port | target_id                                        | daplink_version |
++-----------------+----------------------+-------------+-------------+--------------------------------------------------+-----------------+
+| MY_NEW_PLATFORM | MY_NEW_PLATFORM[0]   | D:          | COM18       | 0240000032044e4500257009997b00386781000097969900 | 0244            |
++-----------------+----------------------+-------------+-------------+--------------------------------------------------+-----------------+
+```
+
+Where `0204` is the leading 4 characters of the platform's `target_id`.
+
+To remove a mocked platform, use the `--mock` parameter again. For the value, use `-<4 leading characters of the target_id>`:
+
+```
+$ mbedls --mock -0240
+$ mbedls
++---------------+----------------------+-------------+-------------+--------------------------------------------------+-----------------+
+| platform_name | platform_name_unique | mount_point | serial_port | target_id                                        | daplink_version |
++---------------+----------------------+-------------+-------------+--------------------------------------------------+-----------------+
+| K64F          | K64F[0]              | D:          | COM18       | 0240000032044e4500257009997b00386781000097969900 | 0244            |
++---------------+----------------------+-------------+-------------+--------------------------------------------------+-----------------+
+```
+
+You can also remove all mocked platforms by supplying `*` as the `target_id`:
+
+```
+$ mbedls --mock="-*"
+```
+
+**NOTE:** Due to a querk in the parameter formatting, `-*` can be interpreted as another parameter instead of a value. It is necessary to use the complete `--mock="-*"` syntax so the command line interprets each part of the command correctly.
+
+### Retargeting platforms
+
+It is possible to change the returned results for certain platforms depending on the current directory. This is especially useful when developing new platforms.
+
+The command line tool and Python API will check the current directory for a file named `mbedls.json`. If it is present, it will override the returned values. The format of the `mbedls.json` file is as follows:
+
+```json
+{
+    "<target_id>": {
+        "<key>": "<value>"
+    }
+}
+```
+
+For example, to change the `serial_port` of the K64F with a `target_id` of `0240000032044e4500257009997b00386781000097969900`, the `mbedls.json` file should contain the following:
+
+```json
+{
+    "0240000032044e4500257009997b00386781000097969900": {
+        "serial_port": "COM99"
+    }
+}
+```
+
+This will result in the following output from the command line tool:
+
+```bash
+$ mbedls
++---------------+----------------------+-------------+-------------+--------------------------------------------------+-----------------+
+| platform_name | platform_name_unique | mount_point | serial_port | target_id                                        | daplink_version |
++---------------+----------------------+-------------+-------------+--------------------------------------------------+-----------------+
+| K64F          | K64F[0]              | D:          | COM99       | 0240000032044e4500257009997b00386781000097969900 | 0244            |
++---------------+----------------------+-------------+-------------+--------------------------------------------------+-----------------+
+```
+
+Note how the `serial_port` value changed from `COM18` to `COM99`. These changes will be removed if the `mbedls.json` is deleted OR if the `--skip-retarget` parameter is used.
+
+## Python API
+
+---
+
+### `mbeds.mbed_lstools.create(...)`
+
+The Python API is available through the `mbed_lstools` module.
 ```python
 >>> import mbed_lstools
 >>> mbeds = mbed_lstools.create()
 >>> mbeds
 <mbed_lstools.lstools_win7.MbedLsToolsWin7 instance at 0x02F542B0>
->>> mbeds.list_mbeds()
-[{'platform_name': 'K64F', 'mount_point': 'E:', 'target_id': '02400203D94B0E7724B7F3CF', 'serial_port': u'COM61'}]
->>> print mbeds
 ```
 
-Extended mbedls API example:
+This returns an instance that provides access to the rest of the API.
+
+#### Arguments
+
+##### `skip_retarget`
+
+**Default:** `False`
+
+If set to `True`, this will skip the retargetting step and the results will be unmodified.
+
+##### `list_unmounted`
+
+**Default:** `False`
+
+If set to `True`, this will include unmounted platforms in the results.
+
+---
+
+### `mbeds.list_mbeds(...)`
 ```python
 >>> import mbed_lstools
->>> m = mbed_lstools.create()
->>> dir(m)
-['DEBUG_FLAG',
- 'ERRORLEVEL_FLAG',
- '__doc__',
- '__init__',
- '__module__',
- '__str__',
- 'debug',
- 'discover_connected_mbeds',
- 'err',
- 'get_connected_mbeds',
- 'get_dos_devices',
- 'get_json_data_from_file',
- 'get_mbed_com_port',
- 'get_mbed_devices',
- 'get_mbed_htm_target_id',
- 'get_mbeds',
- 'get_mounted_devices',
- 'get_string',
- 'iter_keys',
- 'iter_keys_as_str',
- 'iter_vals', 'list_mbeds',
- 'list_mbeds_by_targetid',
- 'list_mbeds_ext',
- 'list_platforms',
- 'list_platforms_ext',
- 'load_mbed_description',
- 'manufacture_ids',
- 'os_supported',
- 'regbin2str',
- 'scan_html_line_for_target_id',
- 'usb_vendor_list',
- 'winreg']
->>> m.list_platforms()
-['LPC1768', 'K64F']
->>> m.list_platforms_ext()
-{'K64F': 1, 'LPC1768': 2}
+>>> mbeds = mbed_lstools.create()
+>>> mbeds.list_mbeds(fs_interaction=FSInteraction.BeforeFilter,
+                                    filter_function=None,
+                                    unique_names=False,
+                                    read_details_txt=False)
+[{'target_id_mbed_htm': u'0240000032044e4500257009997b00386781000097969900', 'mount_point': 'D:', 'target_id': u'0240000032044e4500257009997b00386781000097969900', 'serial_port': u'COM18', 'target_id_usb_id': u'0240000032044e4500257009997b00386781000097969900', 'platform_name': u'K64F'}]
 ```
 
-# mbedls as command line tool
+#### Arguments
 
-After installation of the mbed-ls package, you can use the mbedls command. It allows you to list all connected mbed-enabled devices and gives you the correct association between your board mount point (disk) and the serial port. TargetID information is also provided for your information.
+##### `fs_interaction`
 
-```
-$ mbedls
-+---------------------+-------------------+-------------------+--------------------------------+
-|platform_name        |mount_point        |serial_port        |target_id                       |
-+---------------------+-------------------+-------------------+--------------------------------+
-|KL25Z                |I:                 |COM89              |02000203240881BBD9F47C43        |
-|NUCLEO_F302R8        |E:                 |COM34              |07050200623B61125D5EF72A        |
-+---------------------+-------------------+-------------------+--------------------------------+
-```
+**Default:** `FSInteraction.BeforeFilter`
 
-If you want to use ```mbedls``` in your toolchain, continuous integration or automation script and do not necessarily want to use the Python module ```mbed_lstools``` - this solution is for you.
+This argument controls the accuracy and speed of this function. There are three choices (in ascending order of accuracy and decreasing order of speed):
 
-On some Linux systems, USB mass storage devices are not automatically mounted and do not show up when running `mbedls` by default. If you would like to include these not mounted devices in `mbedls` output, you can run mbed-ls with the `-u` option, such as `$ mbedls -u`.
+- `FSInteraction.NEVER` - This is the fastest option but also potentially the least accurate. It will never touch the filesystem of the devices and use only the information available through the OS. This is mainly appropriate for use in highly controlled environment (like an automated Continuous Integration setup). **This has the potential to provide incorrect names and data. It may also lead to devices not being detected at all.**
+- `FSInterfaction.AfterFilter` - This will access the filesystem, but only after the `filter_function` has been applied. This can lead to speed increases, but at the risk of filtering on inaccurate information.
+- `FSInteraction.BeforeFilter` - This will access the filesystem before doing any filtering. It is the most accurate option and is recommended for most uses. This is the default behavior of the command line tool and the API.
 
-## Exporting mbedls output to JSON
+##### `filter_function`
 
-You can export mbedls outputs to JSON format: just use the ```---json``` switch and dump your file on the screen or redirect to a file. It should help you further automate your processes.
+**Default:** `None`
 
-```json
-$ mbedls --json
-[
-    {
-        "mount_point": "E:",
-        "platform_name": "NUCLEO_L152RE",
-        "serial_port": "COM9",
-        "target_id": "07100200860579FAB960EFD7"
-    },
-    {
-        "mount_point": "F:",
-        "platform_name": null,
-        "serial_port": "COM5",
-        "target_id": "A000000001"
-    },
-    {
-        "mount_point": "G:",
-        "platform_name": "NUCLEO_F302R8",
-        "serial_port": "COM34",
-        "target_id": "07050200623B61125D5EF72A"
-    },
-    {
-        "mount_point": "H:",
-        "platform_name": "LPC1768",
-        "serial_port": "COM77",
-        "target_id": "101000000000000000000002F7F18695"
-    },
-    {
-        "mount_point": "I:",
-        "platform_name": "KL25Z",
-        "serial_port": "COM89",
-        "target_id": "02000203240881BBD9F47C43"
-    }
-]
+This function allows you to filter results based on platform data. This can help speed up the execution of the `list_mbeds` function.
+
+As a normal function definition:
+```python
+def filter_func(mbed):
+    return m['platform_name'] == 'K64F'
+
+mbeds.list_mbeds(filter_function=filter_func)
 ```
 
-# Porting instructions
-
-You can help us improve the mbed-ls tools by - for example - committing a new OS port. You can see the list of currently supported OSs in the [Description](#description) section; if your OS isn't there, you can port it.
-
-For further study please check how Mac OS X (Darwin) was ported in [this pull request](https://github.com/ARMmbed/mbed-ls/pull/1).
-
-## mbed-enabled technical specification overview
-
-[mbed-enabled](https://www.mbed.com/en/about-mbed/mbed-enabled/) program is designed for mbed developers and partners who want to clearly identify their products as interoperable mbed Enabled technologies.
-User facing [DAPLink](https://github.com/mbedmicro/DAPLink#daplink) interface connects mbed-enabled device with host computer using USB interface.
-
-Interface chip should in general follow few generic rules to allow proper host detection and compliance with for example mbed test tools. There are listed below:
-* Existance of CDC (virtual serial port)
-  * Must support at all standard baudrates 9600 thru 115200
-  * Must Support `SendBreak` resulting in target reset sequence
-  * MUst have TargetID embedded in USBID
-* Mass Storage Device Class
-  * Must support programming binary files (copy file on MSD results in target flashing)
-  * Target flashing should not result in automatic target reset
-  * Must have `DETAILS.TXT` with DAPlink specification
-  * Must have `mbed.htm` with DAPlink specification
-  * `mbed.htm` should contain link to platform with `TargetID` specified
-  * Must have TargetID embedded in `USBID`
-
-### TargetID as device unique identifier
-
-Each device must have an unique identifier which generic format is specified in below chapter.
-
-TargetID generic format:
-* ASCII string containing hexadecimal values only: `[a-fA-F0-9]{4, }`
-* Should be longer than four ASCII characters (two bytes of hex data)
-* First 2 bytes coded with four ASCII characters are `vendor code`
-    * Note: *There might be more than one vendor code value assigned to one vendor.*
-* Following 2 bytes coded with four ASCII characters are `platform code`*
-* Rest of ASCII characters are vendor / platform specific. Ignored by mbed-enabled tools
-* `Vendor code` + `platform code` should create globally unique value
-
-Example TargetID coding:
-* Freescale `K64F` TargetID: `0240000033514e450019500585d40008e981000097969900`
-
-```
-        02	40	000033514e450019500585d40008e981000097969900
-        |   |
-        |   v
-        v	K64F
-        Freescale
+As a lambda function:
+```python
+platforms = mbeds.list_mbeds(filter_function=lambda m: m['platform_name'] == 'K64F')
 ```
 
-## mbed-ls auto-detection approach for Ubuntu
+##### `unique_names`
 
-Let's connect a few mbed boards to our Ubuntu host. The devices should mount as MSC and CDC (virtual disk and serial port). We'll use regular Linux commands to see the boards, then see how ```mbed-ls``` displays them.
+**Default:** `False`.
 
-In this example, we've connected to our Ububtu machine's USB ports:
+This controls if a unique name should be assigned to each platform. The unique name takes the form of `K64F[0]` where the number between the brackets is an incrementing value. This name is accessible through the dictionary member `platform_unique_name` in the returned platform data. It defaults to `False`.
 
-* 2 x STMicro's Nucleo mbed boards.
-* 2 x NXP mbed boards.
-* 1 x Freescale Freedom board.
+##### `read_details_txt`
 
-We can see the mounting result in the usb-id directories in Ubuntu's file system under ```/dev/```. To list mbed boards mounted to serial ports (CDC) via USB, we use the general Linux command:
+**Default:** `False`
 
-```
-$ ll /dev/serial/by-id
-```
+This controls whether more data is pulled from the filesystem on each device. It can provide useful management data, but also takes more time to execute.
 
-We'll see:
+---
 
-```
-total 0
-drwxr-xr-x root 140 Feb 19 12:38 ./
-drwxr-xr-x root  80 Feb 19 12:35 ../
-lrwxrwxrwx root  13 Feb 19 12:38 usb-MBED_MBED_CMSIS-DAP_02000203240881BBD9F47C43-if01 -> ../../ttyACM0
-lrwxrwxrwx root  13 Feb 19 12:35 usb-MBED_MBED_CMSIS-DAP_A000000001-if01 -> ../../ttyACM4
-lrwxrwxrwx root  13 Feb 19 12:35 usb-mbed_Microcontroller_101000000000000000000002F7F18695-if01 -> ../../ttyACM3
-lrwxrwxrwx root  13 Feb 19 12:35 usb-STMicroelectronics_STM32_STLink_066EFF525257775087141721-if02 -> ../../ttyACM2
-lrwxrwxrwx root  13 Feb 19 12:35 usb-STMicroelectronics_STM32_STLink_066EFF534951775087215736-if02 -> ../../ttyACM1
+### `mock_manufacture_id(...)`
+
+```python
+>>> import mbed_lstools
+>>> mbeds = mbed_lstools.create()
+>>> mbeds.mock_manufacture_id('0240', 'CUSTOM_PLATFORM', oper='+')
+>>> mbeds.list_mbeds()
+[{'target_id': u'0240000032044e4500257009997b00386781000097969900', ... 'platform_name': u'CUSTOM_PLATFORM'}]
+>>> mbeds.mock_manufacture_id('0240', '', oper='-')
+>>> mbeds.list_mbeds()
+[{'target_id': u'0240000032044e4500257009997b00386781000097969900', ... 'platform_name': u'K64F'}]
 ```
 
-To list boards mounted to disks (MSC) via USB, we use the general Linux command:
-```
-$ ll /dev/disk/by-id
-```
+#### Arguments
 
-We'll see:
+##### `mid`
 
-```
-total 0
-drwxr-xr-x root 340 Feb 19 12:38 ./
-drwxr-xr-x root 120 Feb 19 12:35 ../
-lrwxrwxrwx root   9 Dec  3 09:10 ata-HDS728080PLA380_40Y9028LEN_PFDB32S7S44XLM -> ../../sda
-lrwxrwxrwx root  10 Dec  3 09:10 ata-HDS728080PLA380_40Y9028LEN_PFDB32S7S44XLM-part1 -> ../../sda1
-lrwxrwxrwx root  10 Dec  3 09:10 ata-HDS728080PLA380_40Y9028LEN_PFDB32S7S44XLM-part2 -> ../../sda2
-lrwxrwxrwx root  10 Dec  3 09:10 ata-HDS728080PLA380_40Y9028LEN_PFDB32S7S44XLM-part5 -> ../../sda5
-lrwxrwxrwx root   9 Dec  3 09:10 ata-TSSTcorpDVD-ROM_TS-H352C -> ../../sr0
-lrwxrwxrwx root   9 Feb 19 12:35 usb-MBED_MBED_CMSIS-DAP_A000000001-0:0 -> ../../sdf
-lrwxrwxrwx root   9 Feb 19 12:38 usb-MBED_microcontroller_02000203240881BBD9F47C43-0:0 -> ../../sdb
-lrwxrwxrwx root   9 Feb 19 12:35 usb-MBED_microcontroller_066EFF525257775087141721-0:0 -> ../../sdd
-lrwxrwxrwx root   9 Feb 19 12:35 usb-MBED_microcontroller_066EFF534951775087215736-0:0 -> ../../sdc
-lrwxrwxrwx root   9 Dec  3 16:10 usb-MBED_microcontroller_0670FF494956805087154420-0:0 -> ../../sdc
-lrwxrwxrwx root   9 Feb 19 12:35 usb-mbed_Microcontroller_101000000000000000000002F7F18695-0:0 -> ../../sde
-lrwxrwxrwx root   9 Dec  3 09:10 wwn-0x5000cca30ccffb77 -> ../../sda
-lrwxrwxrwx root  10 Dec  3 09:10 wwn-0x5000cca30ccffb77-part1 -> ../../sda1
-lrwxrwxrwx root  10 Dec  3 09:10 wwn-0x5000cca30ccffb77-part2 -> ../../sda2
-lrwxrwxrwx root  10 Dec  3 09:10 wwn-0x5000cca30ccffb77-part5 -> ../../sda5
-```
+**Required**
 
-***Note:*** ```mbed-ls``` tools pair only serial ports and mount points (not CMSIS-DAP - yet).
+The first four characters of the TargetID that you want to mock.
 
-We can see that on our host machine (running Ubuntu) there are many 'disk type' devices visible under ```/dev/disk```. The mbed boards can be distinguished and filtered by their unique ```USB-ID``` conventions. In our case, we can see pairs of ```usb-ids``` in both ```/dev/serial/usb-id``` and ```/dev/disk/usb-id``` with embedded ``` TargetID```.  ```TargetID``` can be filtered out, for example using this sudo-regexpr: ```(“MBED”|”mbed”|”STMicro”)_([a-zA-z_-]+)_([a-zA-Z0-9]){4,}```
+##### `platform_name`
 
-For example, we can match the board 066EFF525257775087141721 by connecting a few dots:
+**Required**
 
-* ```usb-MBED_microcontroller_066EFF525257775087141721-0:0 -> ../../sdd```
-* ```usb-STMicroelectronics_STM32_STLink_066EFF525257775087141721-if02 -> ../../ttyACM2``` Based on the TargetID hash.
+The name of the platform that should be returned for any platform that has a `target_id` that matches the first four characters specified in `mid`.
 
-From this we know that the target platform has these properties:
+##### `oper`
 
-* The unique target platform identifier is ```066E```.
-* The serial port is ```ttyACM2```.
-* The mount point is ```sdd```.
+**Default:** `'+'`
 
-Your ```mbed-ls``` implementation resolves those three and creates a “tuple” with those values (for each connected device). Using this tuple(s), ```mbed-ls``` will convert the platform number to a human-readable name etc.
+If set to `'+'`, the mocked platform will be enabled. If `'-'`, the mocked platform will be disabled.
 
-Note that for some boards the ```TargetID``` format is proprietary (see STMicro boards) and ```usb-id``` does not have a valid TargetID where the four first letters are the target platform's unique ID. In that case, ```mbed-ls``` tools inspects the ```mbed.htm``` file on the mbed mounted disk to get the proper TargetID from the URL in the ```meta``` part of the HTML header.
+---
 
-In the following example, the URL ```http://mbed.org/device/?code=07050200623B61125D5EF72A``` for the STMicro Nucleo F302R8 board contains the valid TargetID ```07050200623B61125D5EF72A```, which ```mbed-ls``` uses to detect the ```platform_name```. ```mbed-ls``` will then replace the invalid TargetID in ```usb-id``` with the value from ```mbed.htm```.
+# Testing
 
-```html
-<!-- mbed Microcontroller Website and Authentication Shortcut -->
-<!-- Version: 0200 Build: Aug 27 2014 13:29:28 -->
-<html>
-<head>
-<meta http-equiv="refresh" content="0; url=http://mbed.org/device/?code=07050200623B61125D5EF72A"/>
-<title>mbed Website Shortcut</title>
-</head>
-<body></body>
-</html>
-```
-
-This is the result of ```mbedls``` listing the connected devices that we saw above:
-```
-$ mbedls
-+---------------------+-------------------+-------------------+----------------------------------------+
-|platform_name        |mount_point        |serial_port        |target_id                               |
-+---------------------+-------------------+-------------------+----------------------------------------+
-|KL25Z                |I:                 |COM89              |02000203240881BBD9F47C43                |
-|LPC1768              |H:                 |COM77              |101000000000000000000002F7F18695        |
-|NUCLEO_F302R8        |G:                 |COM34              |07050200623B61125D5EF72A                |
-|NUCLEO_L152RE        |E:                 |COM9               |07100200860579FAB960EFD7                |
-|unknown              |F:                 |COM5               |A000000001                              |
-+---------------------+-------------------+-------------------+----------------------------------------+
-```
-
-# Retarget mbed-ls autodetection results
-
-User can create file ```mbedls.json``` in given directory. ```mbedls.json``` file should contain JSON formatted data which will redefine mbed's parameters returned by mbed-ls. ```mbed-ls``` will automatically read ```mbedls.json``` file and alter auto-detection result.
-File should be placed in directory where we want to alter mbed-ls behavior.
-
-* Note: This feature in implicitly ON.
-* Note: This feature can be turned off with command line switch ```--skip-retarget```.
-
-## mbedls.json file properties
-* If file ```mbedls.json``` exists will be implicitly used to retarget results.
-* If file ```mbedls.json``` exists and flag ```--skip-retarget``` is set, there will be no retarget.
-* If file ```mbedls.json``` doesn't exist flag ```--skip-retarget``` has no effect.
-
-## Example of retargeting
-In this example we will replace serial port name during Freescale's K64F auto-detection:
-```
-$ mbedls
-+--------------+---------------------+------------+------------+-------------------------------------------------+
-|platform_name |platform_name_unique |mount_point |serial_port |target_id                                        |
-+--------------+---------------------+------------+------------+-------------------------------------------------+
-|K64F          |K64F[0]              |F:          |COM9        |0240022648cb1e77000000000000000000000000b512e3cf |
-+--------------+---------------------+------------+------------+-------------------------------------------------+
-```
-
-Our device is detected on port ```COM9``` and MSD is mounted on ```F:```. We can check more details using ```--json``` switch:
-```
-$ mbedls --json
-[
-    {
-        "mount_point": "F:",
-        "platform_name": "K64F",
-        "platform_name_unique": "K64F[0]",
-        "serial_port": "COM9",
-        "target_id": "0240022648cb1e77000000000000000000000000b512e3cf",
-        "target_id_mbed_htm": "0240022648cb1e77000000000000000000000000b512e3cf",
-        "target_id_usb_id": "0240022648cb1e77000000000000000000000000b512e3cf"
-    }
-]
-```
-
-We must understand that ```mbed-ls``` stores information about mbed devices in dictionaries.
-The same information can be presented as dictionary where its keys are ```target_id``` and value is a mbed auto-detection data.
+All tests are contained within the `/test` directory. The tests are ran with the following command:
 
 ```
-$ mbedls --json-by-target-id
-{
-    "0240022648cb1e77000000000000000000000000b512e3cf": {
-        "mount_point": "F:",
-        "platform_name": "K64F",
-        "platform_name_unique": "K64F[0]",
-        "serial_port": "COM9",
-        "target_id": "0240022648cb1e77000000000000000000000000b512e3cf",
-        "target_id_mbed_htm": "0240022648cb1e77000000000000000000000000b512e3cf",
-        "target_id_usb_id": "0240022648cb1e77000000000000000000000000b512e3cf"
-    }
-}
-```
-
-Let's say we want change ```serial_port```'s value to other COM port. For example we are using other serial port (e.g. while debugging) on our device as standard output.
-To do so we would have to create a new file called ```mbedls.json``` in directory where want to use this modification. File content could look like this: a JSON file where keys are ```target_id```'s and values are dictionaries with new values:
-
-```
-$ cat mbedls.json
-{
-    "0240022648cb1e77000000000000000000000000b512e3cf" : {
-        "serial_port" : "MyComPort01"
-    }
-}
-```
-
-Now, when we issue ```mbedls``` command in this directory our auto-detection data will be replaced:
-```
-$ mbedls
-+--------------+---------------------+------------+------------+-------------------------------------------------+
-|platform_name |platform_name_unique |mount_point |serial_port |target_id                                        |
-+--------------+---------------------+------------+------------+-------------------------------------------------+
-|K64F          |K64F[0]              |F:          |MyComPort01 |0240022648cb1e77000000000000000000000000b512e3cf |
-+--------------+---------------------+------------+------------+-------------------------------------------------+
-```
-
-# Mocking new or existing target to custom platform name
-Command line switch ```--mock``` provide simple manufacturers ID masking with new platform name.
-Users should be able to add temporarily new ```MID``` -> ```platform_name``` mapping when e.g. prototyping.
-
-Mock configuration will be stored in `$HOME/.mbed-ls/` directory, in local file ```.mbedls-mock```.
-
-**Note***: ```MID``` stands for "manufacturers ID". `MID` is first four (4) characters of ```target_id``` string. Example: If ```target_id``` is ```02400221A0811E505D5FE3E8```, corresponding manufacturers ID is ```0240```.
-
-## Mock command line examples
-* Mock command line parameter: `--mock` or (switch `-m`)
-* Add new / mask existing mapping ```MID``` -> ```platform_name``` and assign `MID`:
-    * ```$ mbedls --mock MID:PLATFORM_NAME``` or
-    * ```$ mbedls --mock MID1:PLATFORM_NAME1,MID2:PLATFORM_NAME2```
-    * Example: `$ mbedls --mock 0818:NUCLEO_F767ZI`
-* Remove masking with '!' prefix: `$ mbedls --mock !MID`
-* Remove all maskings using !* notation: `$ mbedls --mock !*`
-* Combine above using comma (`,`) separator: `$ mbedls --mock MID1:PLATFORM_NAME1,!MID2`
-
-## Mocking example with Freescale K64F platform
-Initial setup with 1 x Freescale ```K64F``` board:
-```
-$ mbedls
-+--------------+---------------------+------------+------------+-------------------------+
-|platform_name |platform_name_unique |mount_point |serial_port |target_id                |
-+--------------+---------------------+------------+------------+-------------------------+
-|K64F          |K64F[0]              |F:          |COM146      |02400221A0811E505D5FE3E8 |
-+--------------+---------------------+------------+------------+-------------------------+
-```
-
-* We can mask current mapping ```0240``` -> ```K64F``` to something else. For example we can replace ```K64F``` name with maybe more suitable for us in current setup ```FRDM-K64F```:
-```
-$ mbedls --mock 0240:FRDM_K64F
-```
-Current mocking mapping is stored in local file ```.mbedls-mock```:
-```
-$ cat .mbedls-mock
-{
-    "1234": "NEW_PLATFORM_1",
-    "0240": "FRDM_K64F"
-}
-```
-We can observe changes immediately. Please note this change only works in the same directory because we save ```.mbedls-mock``` file locally:
-```
-$ mbedls
-+--------------+---------------------+------------+------------+-------------------------+
-|platform_name |platform_name_unique |mount_point |serial_port |target_id                |
-+--------------+---------------------+------------+------------+-------------------------+
-|FRDM_K64F     |FRDM_K64F[0]         |F:          |COM146      |02400221A0811E505D5FE3E8 |
-+--------------+---------------------+------------+------------+-------------------------+
-```
-
-* We can remove mapping ```1234``` -> Anythying using ```!``` wild-card.
-Note: We are using flag ```-json``` to get JSON format output of the ```--mock``` operation.
-```
-$ mbedls --mock !1234 --json
-{
-    "0240": "FRDM_K64F"
-}
-```
-
-* We can add multiple mappings at the same time:
-```
-$ mbedls --mock 0000:DUMMY,1111:DUMMY_2 --json
-{
-    "1111": "DUMMY_2",
-    "0240": "FRDM_K64F",
-    "0000": "DUMMY"
-}
-```
-
-* We can remove (```!```) all mappings using ```*``` wildcard:
-```
-$ mbedls --mock !*
-```
-
-We can verify our mapping is reset:
-```
-$ cat $HOME/.mbed-ls/.mbedls-mock
-{}
-```
-
-# mbed-ls unit testing
-* ```mbed-ls``` package contains basic unit tests.
-* Tests are stored under ```\mbed-ls\test ``` directory.
-* Tests cover basic function calls, object construction and check if minimal requirements for OS porting are fulfilled.
-* Standard Python’s ```unittest``` library was used so it is easy to contribute to test effort.
-To invoke test procedure from command line please change directory to current mbed-ls repo directory and call setup.py with 'test' option.
-```
-$ cd mbed-ls
 $ python setup.py test
-```
-```
-running test
-running egg_info
-writing requirements to mbed_ls.egg-info\requires.txt
-writing mbed_ls.egg-info\PKG-INFO
-writing top-level names to mbed_ls.egg-info\top_level.txt
-writing dependency_links to mbed_ls.egg-info\dependency_links.txt
-writing entry points to mbed_ls.egg-info\entry_points.txt
-reading manifest file 'mbed_ls.egg-info\SOURCES.txt'
-writing manifest file 'mbed_ls.egg-info\SOURCES.txt'
-running build_ext
-test_example (test.basic.BasicTestCase) ... ok
-test_detect_os_support_ext (test.detect_os.DetectOSTestCase) ... ok
-test_porting_create (test.detect_os.DetectOSTestCase) ... ok
-test_porting_mbed_lstools_os_info (test.detect_os.DetectOSTestCase) ... ok
-test_porting_mbed_os_support (test.detect_os.DetectOSTestCase) ... ok
-.
-.
-.
-----------------------------------------------------------------------
-Ran 18 tests in 0.302s
-
-OK
 ```
 
 ## Code coverage
 
-We can measure code coverage for unit tests deployed together with ```mbed-ls```. To do so we can use popular Python ```coverage``` tools.
-First install ```coverage``` tool on your system:
+Code coverage is measured using the `coverage` Python package. You can install it with following command:
+
 ```
 $ pip install coverage --upgrade
 ```
 
-Next go to ```mbed-ls``` local directory and execute coverage for unit tests:
+To run the tests while measuring code coverage, use the following command:
+
 ```
-$ cd mbed-ls
 $ coverage run setup.py test
 ```
 
-Above command will execute test cases and will grab code coverage numbers. Now we are ready to print code coverage for all tests we've run:
+A report can then be generated:
 
 ```
 $ coverage report
-Name                                    Stmts   Miss  Cover
------------------------------------------------------------
-mbed_lstools\__init__.py                    2      0   100%
-mbed_lstools\lstools_base.py              246    169    31%
-mbed_lstools\lstools_darwin.py             88     77    13%
-mbed_lstools\lstools_linux_generic.py     148     51    66%
-mbed_lstools\lstools_ubuntu.py              5      0   100%
-mbed_lstools\lstools_win7.py              112     60    46%
-mbed_lstools\main.py                       90     63    30%
------------------------------------------------------------
-TOTAL                                     691    420    39%
+Name                                Stmts   Miss  Cover
+-------------------------------------------------------
+mbed_lstools\__init__.py                2      0   100%
+mbed_lstools\darwin.py                 85      7    92%
+mbed_lstools\linux.py                  45      3    93%
+mbed_lstools\lstools_base.py          299    124    59%
+mbed_lstools\main.py                  134     44    67%
+mbed_lstools\platform_database.py     114      4    96%
+mbed_lstools\windows.py                98     21    79%
+-------------------------------------------------------
+TOTAL                                 777    203    74%
 ```
 
-# Configure mbed-enabled device to work with your host
+# OS specific behavior
 
-## Windows serial port configuration
+## Windows
 
 The mbed serial port works by default on Mac and Linux, but Windows needs a driver. Check [here](https://developer.mbed.org/handbook/Windows-serial-configuration) for more details.
 
-## Mounting with sync
-While working under Ubuntu/Linux/OSX OSs you will have to mount your mbed-enabled device. You can follow instructions how to do it [here](https://developer.mbed.org/handbook/Mounting-with-sync).
+## Linux
 
-### Ubuntu
-We recommend you use ```usbmount``` package to auto-mount mbed devices plugged to your host system:
+`mbed-ls` requires a platform to be mounted before it shows up in the results. Many Linux systems do not automatically mount USB devices. It is recommend to use an automounter to manage this for you.
 
-* Install ```usbmount```:
+There are many automounters available and it is ultimately up to the user to determine which is the best one for their use case. However, the `usbmount` package on Ubuntu makes it easy to get started. For people who need more control over their automounter, and open source project called [ldm](https://github.com/LemonBoy/ldm) is relatively easy to build and run.
 
-```
-$ sudo apt-get install usbmount
-```
+# Mbed Enabled technical requirements overview
 
-* Make copy of ```/etc/usbmount/usbmount.conf```:
+This tool relies on board interfaces conforming to certain standards so it can detect platforms properly. These standards are set by the [Mbed Enabled](https://www.mbed.com/en/about-mbed/mbed-enabled/) program. Please see the [Technical Requirements](https://www.mbed.com/en/about-mbed/mbed-enabled/mbed-enabled-program-requirements/) for more information.
 
-```
-$ sudo cp /etc/usbmount/usbmount.conf /etc/usbmount/usbmount.conf.bak
-```
+## Device unique identifier
+Each device must have a unique identifier. This identifier is made of two parts: a **TargetID** and a **platform unique string**.
 
-* Modify ```/etc/usbmount/usbmount.conf``` file as follows:
+The **TargetID** should contain four ASCII characters containing only hexadecimal values (A-F and 0-9). This TargetID should be the same for all platforms of the same type. For example, all `K64F` platforms have a TargetID of `0240`. This is used by `mbedls` to identify the paltform.
+
+The **platform unique string** can be any length of characters (a-z, A-Z, and 0-9) that can be used to uniquely identify platforms of the same type on the same machine. For example, two FRDM-K64F paltforms attached to the same machine could have the following attributes:
 
 ```
-ENABLED=1
-
-MOUNTPOINTS="/media/usb0 /media/usb1 /media/usb2 /media/usb3
-             /media/usb4 /media/usb5 /media/usb6 /media/usb7
-             /media/usb8 /media/usb9 /media/usb10 /media/usb11
-             /media/usb12 /media/usb13 /media/usb14 /media/usb15
-             /media/usb16 /media/usb17 /media/usb18 /media/usb19"
-
-FILESYSTEMS="vfat ext2 ext3 ext4 hfsplus"
-
-MOUNTOPTIONS="sync,noexec,nodev,noatime,nodiratime"
-
-FS_MOUNTOPTIONS="-fstype=vfat,gid=USERGROUP,uid=USERNAME,dmask=000,fmask=000"
-
-VERBOSE=no
+$ mbedls
++---------------+----------------------+-------------+-------------+--------------------------------------------------+-----------------+
+| platform_name | platform_name_unique | mount_point | serial_port | target_id                                        | daplink_version |
++---------------+----------------------+-------------+-------------+--------------------------------------------------+-----------------+
+| K64F          | K64F[0]              | D:          | COM18       | 0240000032044e4500257009997b00386781000097969900 | 0244            |
+| K64F          | K64F[1]              | E:          | COM19       | 0240000032044e4500257009997b00386781000097840023 | 0244            |
++---------------+----------------------+-------------+-------------+--------------------------------------------------+-----------------+
 ```
 
-*Note*: In line:
-```
-FS_MOUNTOPTIONS="-fstype=vfat,gid=USERGROUP,uid=USERNAME,dmask=000,fmask=000"
-```
-change ```USERGROUP``` and ```USERNAME``` to your user and group names.
-
-You can check user "USERNAME" group by typing:
-```
-$ groups USERNAME
-```
-
-This ```usbmount``` configuration will auto-mount your mbed devices without need to type ```mount``` commands each time you plug your mbeds!
-
-## Raspberry Pi - Raspbian Jessie Lite
-For Raspberry Pi you can use [LDM](https://github.com/LemonBoy/ldm): A lightweight device mounter. This should improve stability of your mounts when using mbed-ls on Raspberry Pi. Currently we are using it with _Raspbian Jessie Lite_.
-
-How to install and use LDM on your Raspberry Pi in three easy steps:
-
-### Prerequisites
-LDM requires additional packages installed (libudev, mount and glib-2.0). You can use below command to check if all requirements are fulfilled:
-```
-$ pkg-config --cflags libudev mount glib-2.0
-```
-
-You may need to install additional packages:
-
-```
-$ sudo apt-get install libudev1
-$ sudo apt-get install libudev-dev
-$ sudo apt-get install libmount-dev
-$ sudo apt-get install libglib2.0-dev
-```
-
-Note: You may want to issue ```$ sudo apt-get update``` to make sure that you have access to latest packages via apt-get.
-
-### Install LDM
-```
-$ git clone git@github.com:LemonBoy/ldm.git
-$ cd ldm
-$ sudo make install
-```
-
-Add LDM configuration file and configuration itself. Remember to change the ```your_own_user_name``` to valid username.
-```
-$ sudo touch /etc/ldm.conf
-$ echo 'MOUNT_OWNER=your_own_user_name' >> /etc/ldm.conf
-$ echo 'BASE_MOUNTPOINT=/mnt' >> /etc/ldm.conf
-```
-
-### Enable LDM
-```
-$ systemctl status ldm
-$ sudo systemctl enable ldm
-```
-
-Now you probably have to safely reboot to make sure changes will take place ```$sudo shutdown -r now (or sudo reboot)``` and enjoy more stable ```mbed-ls``` queries with your Raspberry Pi (Raspbian Jessie Lite).
-
-### Making sure LDM is active (running)
-
-```
-$ systemctl status ldm
-```
-```
-ldm.service - lightweight device mounter
-  Loaded: loaded (/usr/lib/systemd/system/ldm.service; enabled)
-  Active: active (running) since Fri 2016-04-29 12:54:23 UTC; 48min ago
-Main PID: 389 (ldm)
-  CGroup: /system.slice/ldm.service
-          └─389 /usr/bin/ldm -u jenkins -p /mnt
-```
-
-# Known issues
-* Users reported issues while using ```mbed-ls``` on VM (Virtual Machines).
-* **[FIXED in v1.2.0]** [mbedls fails to list devices on OS X El Capitan](https://github.com/ARMmbed/mbed-ls/issues/38).
-* **[FIXED in v0.2.5]**```mbed-ls``` doesn't list not mounted devices (Ubuntu/Linux).
+Note how both paltforms share the same TargetID (`0240`) but have a unique ending string.
