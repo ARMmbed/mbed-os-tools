@@ -111,7 +111,6 @@ def run_host_test(image_path,
                   duration=10,
                   micro=None,
                   reset=None,
-                  reset_tout=None,
                   verbose=False,
                   copy_method=None,
                   program_cycle_s=None,
@@ -131,7 +130,7 @@ def run_host_test(image_path,
     @param duration Test case timeout
     @param micro Mbed-enabled device name
     @param reset Reset type
-    @param reset_tout Reset timeout (sec)
+    @param forced_reset_timeout Reset timeout (sec)
     @param verbose Verbose mode flag
     @param copy_method Copy method type (name)
     @param program_cycle_s Wait after flashing delay (sec)
@@ -252,28 +251,27 @@ def run_host_test(image_path,
         # Example:
         # $ mbedhtrun -p :9600 -f "tests-mbed_drivers-generic_tests.bin" -m K64F --grm raas_client:10.2.203.31:8000
         cmd += ['--grm', global_resource_mgr]
+
     else:
         # Use local resources to execute tests
         # Add extra parameters to host_test
         if disk:
             cmd += ["-d", disk]
-        if program_cycle_s:
-            cmd += ["-C", str(program_cycle_s)]
-        if forced_reset_timeout:
-            cmd += ["-R", str(forced_reset_timeout)]
         if copy_method:
             cmd += ["-c", copy_method]
         if target_id:
             cmd += ["-t", target_id]
         if reset:
             cmd += ["-r", reset]
-        if reset_tout:
-            cmd += ["-R", str(reset_tout)]
-        if json_test_cfg:
-            cmd += ["--test-cfg", '"%s"' % str(json_test_cfg)]
         if run_app:
             cmd += ["--run"]    # -f stores binary name!
 
+    if program_cycle_s:
+        cmd += ["-C", str(program_cycle_s)]
+    if forced_reset_timeout:
+        cmd += ["-R", str(forced_reset_timeout)]
+    if json_test_cfg:
+        cmd += ["--test-cfg", '"%s"' % str(json_test_cfg)]
     if num_sync_packtes:
         cmd += ["--sync",str(num_sync_packtes)]
     if tags:
