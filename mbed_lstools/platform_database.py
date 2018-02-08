@@ -265,11 +265,23 @@ DEFAULT_PLATFORM_DB = {
         u'FFFF': u'K20 BOOTLOADER',
         u'RIOT': u'RIOT',
     },
-    'jlink': {
-        u'X349858SLYN': u'NRF52_DK',
-        u'FRDM-KL25Z': u'KL25Z',
-        u'FRDM-KL27Z': u'KL27Z',
-        u'FRDM-KL43Z': u'KL43Z'
+    u'jlink': {
+        u'X349858SLYN': {
+            u'platform_name': u'NRF52_DK',
+            u'jlink_device_name': u'nRF52832_xxaa'
+        },
+        u'FRDM-KL25Z': {
+            u'platform_name': u'KL25Z',
+            u'jlink_device_name': u'MKL25Z128xxx4'
+        },
+        u'FRDM-KL27Z': {
+            u'platform_name': u'KL27Z',
+            u'jlink_device_name': u'MKL27Z64xxx4'
+        },
+        u'FRDM-KL43Z': {
+            u'platform_name': u'KL43Z',
+            u'jlink_device_name': u'MKL43Z256xxx4'
+        }
     }
 }
 
@@ -284,6 +296,21 @@ def _get_modified_time(path):
 
 def _older_than_me(path):
     return _get_modified_time(path) < _get_modified_time(__file__)
+
+
+def _modify_data_format(data, verbose_data, simple_data_key='platform_name'):
+    if isinstance(data, dict):
+        if verbose_data:
+            return data
+
+        return data[simple_data_key]
+    else:
+        if verbose_data:
+            return {
+                simple_data_key: data
+            }
+
+        return data
 
 
 def _overwrite_or_open(db):
@@ -357,13 +384,14 @@ class PlatformDatabase(object):
     def all_ids(self, device_type='daplink'):
         return iter(self._keys[device_type])
 
-    def get(self, index, default=None, device_type='daplink'):
-        """Standard lookup function. Works exactly like a dict"""
+    def get(self, index, default=None, device_type='daplink', verbose_data=False):
+        """Standard lookup function. Works exactly like a dict. If 'verbose_data'
+        is True, all data for the platform is returned as a dict."""
         for db in self._dbs.values():
             if device_type in db:
                 maybe_answer = db[device_type].get(index, None)
                 if maybe_answer:
-                    return maybe_answer
+                    return _modify_data_format(maybe_answer, verbose_data)
 
         return default
 
@@ -411,9 +439,10 @@ class PlatformDatabase(object):
         else:
             raise ValueError("Invald target id: %s" % id)
 
-    def remove(self, id, permanent=False, device_type='daplink'):
+    def remove(self, id, permanent=False, device_type='daplink', verbose_data=False):
         """Remove a platform from this database, optionally updating an origin
-        database
+        database. If 'verbose_data' is True, all data for the platform is returned
+        as a dict.
         """
         logger.debug("Trying remove of %s", id)
         if id is '*' and device_type in self._dbs[self._prim_db]:
@@ -426,4 +455,5 @@ class PlatformDatabase(object):
                 self._keys[device_type].remove(id)
                 if permanent:
                     self._update_db()
-                return removed
+
+                return _modify_data_format(removed, verbose_data)
