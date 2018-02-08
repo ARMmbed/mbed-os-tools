@@ -62,11 +62,13 @@ class BasicTestCase(unittest.TestCase):
              patch("mbed_lstools.lstools_base.MbedLsToolsBase._detect_device_type") as _d_type:
             _mpr.return_value = True
             _read_htm.return_value = (u'0241BEEFDEAD', {})
-            _get.return_value = 'foo_target'
+            _get.return_value = {
+                'platform_name': 'foo_target'
+            }
             _d_type.return_value = 'daplink'
             to_check = self.base.list_mbeds()
             _read_htm.assert_called_once_with('dummy_mount_point')
-            _get.assert_called_once_with('0241', device_type='daplink')
+            _get.assert_called_once_with('0241', device_type='daplink', verbose_data=True)
         self.assertEqual(len(to_check), 1)
         self.assertEqual(to_check[0]['target_id'], "0241BEEFDEAD")
         self.assertEqual(to_check[0]['platform_name'], 'foo_target')
@@ -84,10 +86,12 @@ class BasicTestCase(unittest.TestCase):
              patch("mbed_lstools.lstools_base.MbedLsToolsBase._detect_device_type") as _d_type:
             _mpr.return_value = True
             _read_htm.side_effect = [(u'0241BEEFDEAD', {}), (None, {})]
-            _get.return_value = 'foo_target'
+            _get.return_value = {
+                'platform_name': 'foo_target'
+            }
             _d_type.return_value = 'daplink'
             to_check = self.base.list_mbeds()
-            _get.assert_called_once_with('0241', device_type='daplink')
+            _get.assert_called_once_with('0241', device_type='daplink', verbose_data=True)
         self.assertEqual(len(to_check), 2)
         self.assertEqual(to_check[0]['target_id'], "0241BEEFDEAD")
         self.assertEqual(to_check[0]['platform_name'], 'foo_target')
@@ -109,7 +113,7 @@ class BasicTestCase(unittest.TestCase):
                 _d_type.return_value = 'daplink'
                 to_check = self.base.list_mbeds()
                 _read_htm.assert_called_once_with('dummy_mount_point')
-                _get.assert_called_once_with('not_', device_type='daplink')
+                _get.assert_called_once_with('not_', device_type='daplink', verbose_data=True)
             self.assertEqual(len(to_check), 1)
             self.assertEqual(to_check[0]['target_id'], "not_in_target_db")
             self.assertEqual(to_check[0]['platform_name'], None)
@@ -401,7 +405,9 @@ class RetargetTestCase(unittest.TestCase):
              patch("mbed_lstools.lstools_base.MbedLsToolsBase._detect_device_type") as _d_type:
             _mpr.return_value = True
             _read_htm.return_value = (u'0240DEADBEEF', {})
-            _get.return_value = 'foo_target'
+            _get.return_value = {
+                'platform_name': 'foo_target'
+            }
             _d_type.return_value = 'daplink'
             to_check = self.base.list_mbeds()
         self.assertEqual(len(to_check), 1)
