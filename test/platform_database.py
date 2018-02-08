@@ -137,6 +137,18 @@ class EmptyPlatformDatabaseTests(unittest.TestCase):
         self.assertEqual(self.pdb.get('NOTVALID', None), None)
         self.assertEqual(self.pdb.remove('NOTVALID', permanent=False), None)
 
+    def test_simplify_verbose_data(self):
+        """Test that fetching a verbose entry without verbose data correctly
+        returns just the 'platform_name'
+        """
+        platform_data = {
+            'platform_name': 'VALID',
+            'other_data': 'data'
+        }
+        self.pdb.add('1337', platform_data, permanent=False)
+        self.assertEqual(self.pdb.get('1337', verbose_data=True), platform_data)
+        self.assertEqual(self.pdb.get('1337'), platform_data['platform_name'])
+
 class OverriddenPlatformDatabaseTests(unittest.TestCase):
     """ Test that for one database overriding another
     """
