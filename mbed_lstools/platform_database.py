@@ -43,6 +43,12 @@ LOCAL_MOCKS_DATABASE = join(user_data_dir("mbedls"), "mock.json")
 
 DEFAULT_PLATFORM_DB = {
     u'daplink': {
+        u'0001': u'LPC2368',
+        u'0002': u'LPC2368',
+        u'0003': u'LPC2368',
+        u'0004': u'LPC2368',
+        u'0005': u'LPC2368',
+        u'0006': u'LPC2368',
         u'0007': u'LPC2368',
         u'0100': u'LPC2368',
         u'0183': u'UBLOX_C027',
