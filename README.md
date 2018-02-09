@@ -16,7 +16,7 @@ It provides the following information for all connected boards in a simple conso
 
 ## Installation from PyPI (Python Package Index)
 
-To install `mbed-ls` from [PyPI](https://pypi.python.org/pypi/mbed-ls), run the following command:
+To install Mbed LS from [PyPI](https://pypi.python.org/pypi/mbed-ls), run the following command:
 
 ```bash
 $ pip install mbed-ls --upgrade
@@ -28,7 +28,7 @@ $ pip install mbed-ls --upgrade
 
 **Note:** If your OS is Windows, please follow the installation instructions [for the serial port driver](https://os.mbed.com/docs/latest/tutorials/windows-serial-driver.html).
 
-Install `mbed-ls` from sources with the following commands:
+Install Mbed LS from sources with the following commands:
 
 ```bash
 $ git clone https://github.com/ARMmbed/mbed-ls.git
@@ -339,7 +339,7 @@ The Mbed serial port works by default on Mac and Linux, but Windows needs a driv
 
 ## Linux
 
-`mbed-ls` requires you to mount a platform before it shows up in the results. Many Linux systems do not automatically mount USB devices. We recommend you use an automounter to manage this for you.
+Mbed LS requires you to mount a platform before it shows up in the results. Many Linux systems do not automatically mount USB devices. We recommend you use an automounter to manage this for you.
 
 There are many automounters available, and it is ultimately up to you to determine which is the best one for your use case. However, the `usbmount` package on Ubuntu makes it easy to start. If you need more control over your automounter, you can build and run an open source project called [ldm](https://github.com/LemonBoy/ldm).
 
