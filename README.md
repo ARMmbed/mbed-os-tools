@@ -2,9 +2,9 @@
 [![Coverage Status](https://coveralls.io/repos/github/ARMmbed/mbed-ls/badge.svg?branch=master)](https://coveralls.io/github/ARMmbed/mbed-ls?branch=master)
 [![PyPI version](https://badge.fury.io/py/mbed-ls.svg)](https://badge.fury.io/py/mbed-ls)
 
-# mbed-ls
+# Mbed LS
 
-`mbed-ls` is a Python (2 and 3) module that detects and lists Mbed Enabled devices connected to the host computer. It is delivered as a redistributable Python module (package) and command-line tool. It works on all major operating systems (Windows, Linux and Mac OS X).
+Mbed LS is a Python (2 and 3) module that detects and lists Mbed Enabled devices connected to the host computer. Mbed LS is published by the Mbed OS team on PyPI. It works on all major operating systems (Windows, Linux and Mac OS X).
 
 It provides the following information for all connected boards in a simple console (terminal) output:
 
@@ -19,7 +19,7 @@ It provides the following information for all connected boards in a simple conso
 To install `mbed-ls` from [PyPI](https://pypi.python.org/pypi/mbed-ls), run the following command:
 
 ```bash
-pip install mbed-ls --upgrade
+$ pip install mbed-ls --upgrade
 ```
 
 ## Installation from Python sources
@@ -28,19 +28,19 @@ pip install mbed-ls --upgrade
 
 **Note:** If your OS is Windows, please follow the installation instructions [for the serial port driver](https://os.mbed.com/docs/latest/tutorials/windows-serial-driver.html).
 
-To install the `mbed-ls` module, first clone the `mbed-ls` repository. The following example uses the GitHub command-line tools, but you can do this directly from the website:
+Install `mbed-ls` from sources with the following commands:
 
 ```bash
-git clone https://github.com/ARMmbed/mbed-ls.git
-cd mbed-ls
-python setup.py install
+$ git clone https://github.com/ARMmbed/mbed-ls.git
+$ cd mbed-ls
+$ python setup.py install
 ```
 
-# Use
+# Command-line
 
-## Command-line
+The command-line tool is available with the command `mbedls`.
 
-The command-line tool is available with the command `mbedls`:
+**Note:** [Mbed CLI](https://github.com/armmbed/mbed-cli) has a  similarly-named command `mbed ls`, however the commands are different. Be sure to omit the space when using the Mbed LS command-line tool.
 
 ```bash
 $ mbedls
@@ -51,18 +51,18 @@ $ mbedls
 +---------------+----------------------+-------------+-------------+--------------------------------------------------+-----------------+
 ```
 
-### Result formats
+## Result formats
 
-The command-line is able to list the results in a number of formats.
+The Mbed LS command-line accepts a few arguments to change the format of the results. The default format is a table. You may pass `--simple` to simplify this table format, and `--json` to print the table as a json list of the rows.
 
-#### Simple (no table formatting)
+### Simple (no table formatting)
 
 ```
 $ mbedls --simple
  K64F  K64F[0]  D:  COM18  0240000032044e4500257009997b00386781000097969900  0244
 ```
 
-#### JSON
+### JSON
 
 ```bash
 $ mbedls --json
@@ -94,9 +94,9 @@ $ mbedls --json
 ]
 ```
 
-### Mocking (renaming) platforms
+## Mocking (renaming) platforms
 
-When developing new a platform, it is possible to override the default name `mbed-ls` assigns. This is done with the `--mock` parameter:
+A platform's name is overridden using the `--mock` parameter:
 
 ```
 $ mbedls --mock 0240:MY_NEW_PLATFORM
@@ -108,9 +108,9 @@ $ mbedls
 +-----------------+----------------------+-------------+-------------+--------------------------------------------------+-----------------+
 ```
 
-Where `0204` is the leading 4 characters of the platform's `target_id`.
+The `--mock` parameter accepts a platform id and a platform name, separated by the `:` character. The platform id is the first 4 characters of the `target_id`. The platform name is the name you are temporarily assigning to this platform.
 
-To remove a mocked platform, use the `--mock` parameter again. For the value, use `-<4 leading characters of the target_id>`:
+To remove a mocked platform, use the `--mock` parameter again. Continuing from the previous example, use `-<platform id>` as the value:
 
 ```
 $ mbedls --mock -0240
@@ -130,7 +130,7 @@ $ mbedls --mock="-*"
 
 **NOTE:** Due to a quirk in the parameter formatting, the command-line can interpret `-*` as another parameter instead of a value. It is necessary to use the complete `--mock="-*"` syntax, so the command-line interprets each part of the command correctly.
 
-### Retargeting platforms
+## Retargeting platforms
 
 It is possible to change the returned results for certain platforms depending on the current directory. This is especially useful when developing new platforms.
 
@@ -167,13 +167,11 @@ $ mbedls
 
 Note how the `serial_port` value changed from `COM18` to `COM99`. Deleting the `mbedls.json` or using the `--skip-retarget` parameter removes these changes.
 
-## Python API
-
----
-
-### `mbeds.mbed_lstools.create(...)`
+# Python API
 
 The Python API is available through the `mbed_lstools` module.
+
+## `mbed_lstools.create(...)`
 
 ```python
 >>> import mbed_lstools
@@ -184,19 +182,19 @@ The Python API is available through the `mbed_lstools` module.
 
 This returns an instance that provides access to the rest of the API.
 
-#### Arguments
+### Arguments
 
-##### `skip_retarget`
-
-**Default:** `False`
-
-If set to `True`, this skips the retargetting step, and the results are unmodified.
-
-##### `list_unmounted`
+#### `skip_retarget`
 
 **Default:** `False`
 
-If set to `True`, this includes unmounted platforms in the results.
+If set to `True`, this skips the retargetting step, and the results are unmodified. This enables the same behavior as the `--skip-retarget` command-line flag.
+
+#### `list_unmounted`
+
+**Default:** `False`
+
+If set to `True`, this includes unmounted platforms in the results. This enables the same behavior as the `-u` command-line flag.
 
 ---
 
@@ -212,19 +210,9 @@ If set to `True`, this includes unmounted platforms in the results.
 [{'target_id_mbed_htm': u'0240000032044e4500257009997b00386781000097969900', 'mount_point': 'D:', 'target_id': u'0240000032044e4500257009997b00386781000097969900', 'serial_port': u'COM18', 'target_id_usb_id': u'0240000032044e4500257009997b00386781000097969900', 'platform_name': u'K64F'}]
 ```
 
-#### Arguments
+### Arguments
 
-##### `fs_interaction`
-
-**Default:** `FSInteraction.BeforeFilter`
-
-This argument controls the accuracy and speed of this function. There are three choices (in ascending order of accuracy and decreasing order of speed):
-
-- `FSInteraction.NEVER` - This is the fastest option but also potentially the least accurate. It never touches the file system of the devices and uses only the information available through the OS. This is appropriate for use in a highly controlled environment (such as an automated Continuous Integration setup). **This has the potential to provide incorrect names and data. It may also lead to devices not being detected at all.**
-- `FSInterfaction.AfterFilter` - This accesses the file system but only after you apply the `filter_function`. This can lead to speed increases but at the risk of filtering on inaccurate information.
-- `FSInteraction.BeforeFilter` - This accesses the file system before doing any filtering. It is the most accurate option and is recommended for most uses. This is the default behavior of the command-line tool and the API.
-
-##### `filter_function`
+#### `filter_function`
 
 **Default:** `None`
 
@@ -245,21 +233,31 @@ As a lambda function:
 platforms = mbeds.list_mbeds(filter_function=lambda m: m['platform_name'] == 'K64F')
 ```
 
-##### `unique_names`
+#### `fs_interaction`
+
+**Default:** `FSInteraction.BeforeFilter`
+
+This argument controls the accuracy and speed of this function. There are three choices (in ascending order of accuracy and decreasing order of speed):
+
+- `FSInteraction.NEVER` - This is the fastest option but also potentially the least accurate. It never touches the file system of the devices. It uses only the information available through the USB descriptors. This is appropriate for use in a highly controlled environment (such as an automated Continuous Integration setup). **This has the potential to provide incorrect names and data. It may also lead to devices not being detected at all.**
+- `FSInterfaction.AfterFilter` - This accesses the file system but only after application of the `filter_function`. This can lead to speed increases but at the risk of filtering on inaccurate information.
+- `FSInteraction.BeforeFilter` - This accesses the file system before doing any filtering. It is the most accurate option and is recommended for most uses. This is the default behavior of the command-line tool and the API.
+
+#### `unique_names`
 
 **Default:** `False`.
 
-This controls whether a unique name is assigned to each platform. The unique name takes the form of `K64F[0]`, where the number between the brackets is an incrementing value. This name is accessible through the dictionary member `platform_unique_name` in the returned platform data. It defaults to `False`.
+Mbed LS will assign a unique name to each platform if this is set to `True`. The unique name takes the form of `K64F[0]`, where the number between the brackets is an incrementing value. This name is accessible through the dictionary member `platform_unique_name` in the returned platform data.
 
-##### `read_details_txt`
+#### `read_details_txt`
 
 **Default:** `False`
 
-This controls whether more data is pulled from the file system on each device. It can provide useful management data but also takes more time to execute.
+Mbed LS will pull more data from the files ystem on each device if this is set to `True`. It can provide useful management data, but also takes more time to execute.
 
 ---
 
-### `mock_manufacture_id(...)`
+## `mbeds.mock_manufacture_id(...)`
 
 ```python
 >>> import mbed_lstools
@@ -272,21 +270,21 @@ This controls whether more data is pulled from the file system on each device. I
 [{'target_id': u'0240000032044e4500257009997b00386781000097969900', ... 'platform_name': u'K64F'}]
 ```
 
-#### Arguments
+### Arguments
 
-##### `mid`
-
-**Required**
-
-The first four characters of the TargetID that you want to mock.
-
-##### `platform_name`
+#### `mid`
 
 **Required**
 
-The name of the platform that is returned for any platform that has a `target_id` that matches the first four characters specified in `mid`.
+The first four characters of the `target_id` that you want to mock.
 
-##### `oper`
+#### `platform_name`
+
+**Required**
+
+Overrides the `platform_name` for any platform with a `target_id` that starts with `mid`.
+
+#### `oper`
 
 **Default:** `'+'`
 
@@ -296,7 +294,7 @@ If set to `'+'`, the mocked platform is enabled. If `'-'`, the mocked platform i
 
 # Testing
 
-All tests are contained within the `/test` directory. You can run the tests with the following command:
+The `/test` directory contains all tests. You can run the tests with the following command:
 
 ```
 $ python setup.py test
@@ -351,9 +349,9 @@ This tool relies on board interfaces conforming to certain standards, so it can 
 
 ## Device unique identifier
 
-Each device must have a unique identifier. This identifier has two parts: a **TargetID** and a **platform unique string**.
+Each device must have a unique identifier. This identifier has two parts: a **platform id** and a **platform unique string**.
 
-The **TargetID** contains four ASCII characters containing only hexadecimal values (A-F and 0-9). This TargetID is the same for all platforms of the same type. For example, all `K64F` platforms have a TargetID of `0240`. `mbedls` uses this to identify the platform.
+The **platform id** contains four ASCII characters containing only hexadecimal values (A-F and 0-9). This platform id is the same for all platforms of the same type. For example, all `K64F` platforms have a platform id of `0240`. `mbedls` uses this to identify the platform.
 
 The **platform unique string** can be any length of characters (a-z, A-Z and 0-9) that you can use to uniquely identify platforms of the same type on the same machine. For example, two FRDM-K64F platforms attached to the same machine could have the following attributes:
 
@@ -367,4 +365,4 @@ $ mbedls
 +---------------+----------------------+-------------+-------------+--------------------------------------------------+-----------------+
 ```
 
-Note how both platforms share the same TargetID (`0240`) but have a unique ending string.
+Note how both platforms share the same platform id (`0240`) but have a unique ending string.
