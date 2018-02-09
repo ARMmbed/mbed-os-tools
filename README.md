@@ -196,9 +196,7 @@ If set to `True`, this skips the retargetting step, and the results are unmodifi
 
 If set to `True`, this includes unmounted platforms in the results. This enables the same behavior as the `-u` command-line flag.
 
----
-
-### `mbeds.list_mbeds(...)`
+## `mbeds.list_mbeds(...)`
 
 ```python
 >>> import mbed_lstools
@@ -255,8 +253,6 @@ Mbed LS will assign a unique name to each platform if this is set to `True`. The
 
 Mbed LS will pull more data from the files ystem on each device if this is set to `True`. It can provide useful management data, but also takes more time to execute.
 
----
-
 ## `mbeds.mock_manufacture_id(...)`
 
 ```python
@@ -289,8 +285,6 @@ Overrides the `platform_name` for any platform with a `target_id` that starts wi
 **Default:** `'+'`
 
 If set to `'+'`, the mocked platform is enabled. If `'-'`, the mocked platform is disabled.
-
----
 
 # Testing
 
