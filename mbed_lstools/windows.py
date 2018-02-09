@@ -33,6 +33,20 @@ if sys.version_info[0] < 3:
 else:
     import winreg
 
+def _composite_device_key(device):
+    """! Given two composite devices, return a ranking on its specificity
+    @return if no mount_point, then always 0. If mount_point but no serial_port,
+    return 1. If mount_point and serial_port, add the prefix_index.
+    """
+    rank = 0
+
+    if 'mount_point' in device:
+        rank += 1
+        if device['serial_port'] is not None:
+            rank += device['prefix_index']
+
+    return rank
+
 
 class MbedLsToolsWin7(MbedLsToolsBase):
     """ mbed-enabled platform detection for Windows
@@ -117,21 +131,6 @@ class MbedLsToolsWin7(MbedLsToolsBase):
             If a mass storage is present, a key of 'mount_point' should be returned
             with a value of None (to be completed later)
         """
-
-        def composite_device_key(device):
-            """! Given two composite devices, return a ranking on its specificity
-            @return if no mount_point, then always 0. If mount_point but no serial_port,
-            return 1. If mount_point and serial_port, add the prefix_index.
-            """
-            rank = 0
-
-            if 'mount_point' in device:
-                rank += 1
-                if device['serial_port'] is not None:
-                    rank += device['prefix_index']
-
-            return rank
-
 
         result = []
 
@@ -266,7 +265,7 @@ class MbedLsToolsWin7(MbedLsToolsBase):
                 logger.debug('Skipping device entry %s, %s' % (label, e))
                 continue
 
-            options.sort(key=composite_device_key, reverse=True)
+            options.sort(key=_composite_device_key, reverse=True)
 
             if len(options) == 0:
                 logger.debug('No options were found, skipping composite device')
