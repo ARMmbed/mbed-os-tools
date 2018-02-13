@@ -239,7 +239,8 @@ def init_host_test_cli_params():
 
     parser.add_option("-C", "--program_cycle_s",
                       dest="program_cycle_s",
-                      help="Program cycle sleep. Define how many seconds you want wait after copying binary onto target",
+                      default=4,
+                      help="Program cycle sleep. Define how many seconds you want wait after copying binary onto target (Default is 4 second)",
                       type="float",
                       metavar="PROGRAM_CYCLE_S")
 
