@@ -23,6 +23,7 @@ import os
 import sys
 import random
 import optparse
+import fnmatch
 from time import time
 try:
     from Queue import Queue
@@ -119,18 +120,6 @@ def create_filtered_test_list(ctest_test_list, test_by_names, skip_test, test_sp
     @return
     """
 
-    def filter_names_by_prefix(test_case_name_list, prefix_name):
-        """!
-        @param test_case_name_list List of all test cases
-        @param prefix_name Prefix of test name we are looking for
-        @result Set with names of test names starting with 'prefix_name'
-        """
-        result = list()
-        for test_name in test_case_name_list:
-            if test_name.startswith(prefix_name):
-                result.append(test_name)
-        return sorted(result)
-
     filtered_ctest_test_list = ctest_test_list
     test_list = None
     invalid_test_names = []
@@ -142,18 +131,17 @@ def create_filtered_test_list(ctest_test_list, test_by_names, skip_test, test_sp
         test_list = test_by_names.split(',')
         gt_logger.gt_log("test case filter (specified with -n option)")
 
+
         for test_name in set(test_list):
-            if test_name.endswith('*'):
-                # This 'star-sufix' filter allows users to filter tests with fixed prefixes
-                # Example: -n 'TESTS-mbed_drivers* will filter all test cases with name starting with 'TESTS-mbed_drivers'
-                for test_name_filtered in filter_names_by_prefix(ctest_test_list.keys(), test_name[:-1]):
-                    gt_logger.gt_log_tab("test filtered in '%s'"% gt_logger.gt_bright(test_name_filtered))
-                    filtered_ctest_test_list[test_name_filtered] = ctest_test_list[test_name_filtered]
-            elif test_name not in ctest_test_list:
-                invalid_test_names.append(test_name)
+            gt_logger.gt_log_tab(test_name)
+            matches = [test for test in ctest_test_list.keys() if fnmatch.fnmatch(test, test_name)]
+            gt_logger.gt_log_tab(str(ctest_test_list))
+            if matches:
+                for match in matches:
+                    gt_logger.gt_log_tab("test filtered in '%s'"% gt_logger.gt_bright(match))
+                    filtered_ctest_test_list[match] = ctest_test_list[match]
             else:
-                gt_logger.gt_log_tab("test filtered in '%s'"% gt_logger.gt_bright(test_name))
-                filtered_ctest_test_list[test_name] = ctest_test_list[test_name]
+                invalid_test_names.append(test_name)
 
     if skip_test:
         test_list = skip_test.split(',')
