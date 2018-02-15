@@ -21,6 +21,36 @@ import sys
 import unittest
 
 from mbed_greentea import mbed_greentea_cli
+from mbed_greentea.tests_spec import TestSpec
+
+test_spec_def = {
+    "builds": {
+        "K64F-ARM": {
+            "platform": "K64F",
+            "toolchain": "ARM",
+            "base_path": "./.build/K64F/ARM",
+            "baud_rate": 115200,
+            "tests": {
+                "mbed-drivers-test-generic_tests":{
+                    "binaries":[
+                        {
+                            "binary_type": "bootable",
+                            "path": "./.build/K64F/ARM/mbed-drivers-test-generic_tests.bin"
+                        }
+                    ]
+                },
+                "mbed-drivers-test-c_strings":{
+                    "binaries":[
+                        {
+                            "binary_type": "bootable",
+                            "path": "./.build/K64F/ARM/mbed-drivers-test-c_strings.bin"
+                        }
+                    ]
+                }
+            }
+        }
+    }
+}
 
 class GreenteaCliFunctionality(unittest.TestCase):
 
@@ -85,6 +115,23 @@ class GreenteaCliFunctionality(unittest.TestCase):
 
         os.chdir(curr_dir)
         shutil.rmtree(test1_dir)
+
+    def test_create_filtered_test_list(self):
+        test_spec = TestSpec()
+        test_spec.parse(test_spec_def)
+        test_build = test_spec.get_test_builds()[0]
+
+        test_list = mbed_greentea_cli.create_filtered_test_list(test_build.get_tests(),
+                                                                'mbed-drivers-test-generic_*',
+                                                                None,
+                                                                test_spec=test_spec)
+        self.assertEqual(set(test_list.keys()), set(['mbed-drivers-test-generic_tests']))
+
+        test_list = mbed_greentea_cli.create_filtered_test_list(test_build.get_tests(),
+                                                                '*_strings',
+                                                                None,
+                                                                test_spec=test_spec)
+        self.assertEqual(set(test_list.keys()), set(['mbed-drivers-test-c_strings']))
 
 if __name__ == '__main__':
     unittest.main()
