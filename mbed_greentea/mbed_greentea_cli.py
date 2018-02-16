@@ -131,7 +131,6 @@ def create_filtered_test_list(ctest_test_list, test_by_names, skip_test, test_sp
         test_list = test_by_names.split(',')
         gt_logger.gt_log("test case filter (specified with -n option)")
 
-
         for test_name in set(test_list):
             gt_logger.gt_log_tab(test_name)
             matches = [test for test in ctest_test_list.keys() if fnmatch.fnmatch(test, test_name)]
