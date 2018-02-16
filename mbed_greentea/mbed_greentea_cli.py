@@ -331,6 +331,12 @@ def main():
                     action="store_true",
                     help='Prints console outputs for failed tests')
 
+    parser.add_option('', '--retry-count',
+                      dest='retry_count',
+                      default=1,
+                      type=int,
+                      help='retry count for individual test failure. By default, there is no retry')
+
     parser.add_option('', '--report-memory-metrics-csv',
                     dest='report_memory_metrics_csv_file_name',
                     help='You can log test suite memory metrics in the form of a CSV file')
@@ -469,6 +475,7 @@ def run_test_thread(test_result_queue, test_queue, opts, mut, build, build_path,
                                          global_resource_mgr=opts.global_resource_mgr,
                                          num_sync_packtes=opts.num_sync_packtes,
                                          tags=opts.tags,
+                                         retry_count=opts.retry_count,
                                          verbose=verbose)
 
         # Some error in htrun, abort test execution
