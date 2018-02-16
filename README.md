@@ -4,7 +4,7 @@
 
 # Mbed LS
 
-Mbed LS is a Python (2 and 3) module that detects and lists Mbed Enabled devices connected to the host computer. The Mbed OS team published Mbed LS on PyPI. It works on all major operating systems (Windows, Linux and Mac OS X).
+Mbed LS is a Python (2 and 3) module that detects and lists Mbed Enabled devices connected to the host computer. The Mbed OS team publishes Mbed LS on PyPI. It works on all major operating systems (Windows, Linux and Mac OS X).
 
 It provides the following information for all connected boards in a console (terminal) output:
 
@@ -134,7 +134,7 @@ $ mbedls --mock="-*"
 
 It is possible to change the returned results for certain platforms depending on the current directory. This is especially useful when developing new platforms.
 
-The command-line tool and Python API check the current directory for a file named `mbedls.json`. If it is present, it overrides the returned values. The format of the `mbedls.json` file is:
+The command-line tool and Python API check the current directory for a file named `mbedls.json`. When it is present, it overrides the returned values. The format of the `mbedls.json` file is:
 
 ```json
 {
@@ -188,13 +188,13 @@ This returns an instance that provides access to the rest of the API.
 
 **Default:** `False`
 
-If set to `True`, this skips the retargetting step, and the results are unmodified. This enables the same behavior as the `--skip-retarget` command-line flag.
+When set to `True`, this skips the retargetting step, and the results are unmodified. This enables the same behavior as the `--skip-retarget` command-line flag.
 
 #### `list_unmounted`
 
 **Default:** `False`
 
-If set to `True`, this includes unmounted platforms in the results. This enables the same behavior as the `-u` command-line flag.
+When set to `True`, this includes unmounted platforms in the results. This enables the same behavior as the `-u` command-line flag.
 
 ## `mbeds.list_mbeds(...)`
 
@@ -245,13 +245,13 @@ This argument controls the accuracy and speed of this function. There are three 
 
 **Default:** `False`.
 
-Mbed LS assigns a unique name to each platform if this is set to `True`. The unique name takes the form of `K64F[0]`, where the number between the brackets is an incrementing value. This name is accessible through the dictionary member `platform_unique_name` in the returned platform data.
+Mbed LS assigns a unique name to each platform when this is set to `True`. The unique name takes the form of `K64F[0]`, where the number between the brackets is an incrementing value. This name is accessible through the dictionary member `platform_unique_name` in the returned platform data.
 
 #### `read_details_txt`
 
 **Default:** `False`
 
-Mbed LS pulls more data from the file system on each device if this is set to `True`. It can provide useful management data but also takes more time to execute.
+Mbed LS reads more data from the file system on each device when this is set to `True`. It can provide useful management data but also takes more time to execute.
 
 ## `mbeds.mock_manufacture_id(...)`
 
