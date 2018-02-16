@@ -133,5 +133,19 @@ class GreenteaCliFunctionality(unittest.TestCase):
                                                                 test_spec=test_spec)
         self.assertEqual(set(test_list.keys()), set(['mbed-drivers-test-c_strings']))
 
+        test_list = mbed_greentea_cli.create_filtered_test_list(test_build.get_tests(),
+                                                                'mbed*s',
+                                                                None,
+                                                                test_spec=test_spec)
+        expected = set(['mbed-drivers-test-c_strings', 'mbed-drivers-test-generic_tests'])
+        self.assertEqual(set(test_list.keys()), expected)
+
+        test_list = mbed_greentea_cli.create_filtered_test_list(test_build.get_tests(),
+                                                                '*-drivers-*',
+                                                                None,
+                                                                test_spec=test_spec)
+        expected = set(['mbed-drivers-test-c_strings', 'mbed-drivers-test-generic_tests'])
+        self.assertEqual(set(test_list.keys()), expected)
+
 if __name__ == '__main__':
     unittest.main()
