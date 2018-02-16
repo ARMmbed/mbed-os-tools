@@ -416,7 +416,7 @@ mbed-gcc 1.1.0
         with patch("mbed_greentea.mbed_target_info.walk") as _walk:
             _walk.return_value = iter([("", ["foo"], []), ("foo", [], ["targets.json"])])
             result = list(mbed_target_info._find_targets_json("bogus_path"))
-            self.assertEqual(result, ["foo/targets.json"])
+            self.assertEqual(result, [os.path.join("foo", "targets.json")])
 
     def test_find_targets_json_ignored(self):
         with patch("mbed_greentea.mbed_target_info.walk") as _walk:
