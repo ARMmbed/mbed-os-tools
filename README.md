@@ -4,9 +4,9 @@
 
 # Mbed LS
 
-Mbed LS is a Python (2 and 3) module that detects and lists Mbed Enabled devices connected to the host computer. Mbed LS is published by the Mbed OS team on PyPI. It works on all major operating systems (Windows, Linux and Mac OS X).
+Mbed LS is a Python (2 and 3) module that detects and lists Mbed Enabled devices connected to the host computer. The Mbed OS team published Mbed LS on PyPI. It works on all major operating systems (Windows, Linux and Mac OS X).
 
-It provides the following information for all connected boards in a simple console (terminal) output:
+It provides the following information for all connected boards in a console (terminal) output:
 
 - Mbed OS platform name.
 - Mount point (MSD or disk).
@@ -40,7 +40,7 @@ $ python setup.py install
 
 The command-line tool is available with the command `mbedls`.
 
-**Note:** [Mbed CLI](https://github.com/armmbed/mbed-cli) has a  similarly-named command `mbed ls`, however the commands are different. Be sure to omit the space when using the Mbed LS command-line tool.
+**Note:** [Mbed CLI](https://github.com/armmbed/mbed-cli) has a similarly-named command `mbed ls`; however, the commands are different. Be sure to omit the space when using the Mbed LS command-line tool.
 
 ```bash
 $ mbedls
@@ -96,7 +96,7 @@ $ mbedls --json
 
 ## Mocking (renaming) platforms
 
-A platform's name is overridden using the `--mock` parameter:
+Override a platform's name using the `--mock` parameter:
 
 ```
 $ mbedls --mock 0240:MY_NEW_PLATFORM
@@ -108,7 +108,7 @@ $ mbedls
 +-----------------+----------------------+-------------+-------------+--------------------------------------------------+-----------------+
 ```
 
-The `--mock` parameter accepts a platform id and a platform name, separated by the `:` character. The platform id is the first 4 characters of the `target_id`. The platform name is the name you are temporarily assigning to this platform.
+The `--mock` parameter accepts a platform ID and a platform name, separated by the `:` character. The platform ID is the first 4 characters of the `target_id`. The platform name is the name you are temporarily assigning to this platform.
 
 To remove a mocked platform, use the `--mock` parameter again. Continuing from the previous example, use `-<platform id>` as the value:
 
@@ -245,13 +245,13 @@ This argument controls the accuracy and speed of this function. There are three 
 
 **Default:** `False`.
 
-Mbed LS will assign a unique name to each platform if this is set to `True`. The unique name takes the form of `K64F[0]`, where the number between the brackets is an incrementing value. This name is accessible through the dictionary member `platform_unique_name` in the returned platform data.
+Mbed LS assigns a unique name to each platform if this is set to `True`. The unique name takes the form of `K64F[0]`, where the number between the brackets is an incrementing value. This name is accessible through the dictionary member `platform_unique_name` in the returned platform data.
 
 #### `read_details_txt`
 
 **Default:** `False`
 
-Mbed LS will pull more data from the files ystem on each device if this is set to `True`. It can provide useful management data, but also takes more time to execute.
+Mbed LS pulls more data from the file system on each device if this is set to `True`. It can provide useful management data but also takes more time to execute.
 
 ## `mbeds.mock_manufacture_id(...)`
 
@@ -343,9 +343,9 @@ This tool relies on board interfaces conforming to certain standards, so it can 
 
 ## Device unique identifier
 
-Each device must have a unique identifier. This identifier has two parts: a **platform id** and a **platform unique string**.
+Each device must have a unique identifier. This identifier has two parts: a **platform ID** and a **platform unique string**.
 
-The **platform id** contains four ASCII characters containing only hexadecimal values (A-F and 0-9). This platform id is the same for all platforms of the same type. For example, all `K64F` platforms have a platform id of `0240`. `mbedls` uses this to identify the platform.
+The **platform ID** contains four ASCII characters containing only hexadecimal values (A-F and 0-9). This platform ID is the same for all platforms of the same type. For example, all `K64F` platforms have a platform ID of `0240`. `mbedls` uses this to identify the platform.
 
 The **platform unique string** can be any length of characters (a-z, A-Z and 0-9) that you can use to uniquely identify platforms of the same type on the same machine. For example, two FRDM-K64F platforms attached to the same machine could have the following attributes:
 
@@ -359,4 +359,4 @@ $ mbedls
 +---------------+----------------------+-------------+-------------+--------------------------------------------------+-----------------+
 ```
 
-Note how both platforms share the same platform id (`0240`) but have a unique ending string.
+Note how both platforms share the same platform ID (`0240`) but have a unique ending string.
