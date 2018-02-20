@@ -110,7 +110,7 @@ class MbedLsToolsBase(object):
     def list_mbeds(
             self, fs_interaction=FSInteraction.BeforeFilter,
             filter_function=None, unique_names=False,
-            read_details_txt=None):
+            read_details_txt=False):
         """ List details of connected devices
         @return Returns list of structures with detailed info about each mbed
         @param fs_interaction A member of the FSInteraction class that picks the
@@ -151,7 +151,6 @@ class MbedLsToolsBase(object):
                         platform_count[name] += 1
                         device['platform_name_unique'] = (
                             "%s[%d]" % (name, platform_count[name]))
-
                     try:
                         device.update(self.retarget_data[device['target_id']])
                         logger.debug("retargeting %s with %r",
@@ -188,7 +187,6 @@ class MbedLsToolsBase(object):
             return None
 
     def _fs_after_id_check(self, device, filter_function, read_details_txt):
-
         """Filter device before touching the file system of the device.
         Said another way: Touch the file system after filtering
         """
@@ -249,11 +247,9 @@ class MbedLsToolsBase(object):
         else:
             device['platform_name'] = None
 
-    def _update_device_details_jlink(self, device, read_details_txt):
+    def _update_device_details_jlink(self, device, _):
         """ Updates the jlink-specific device information based on files from its 'mount_point'
             @param device Dictionary containing device information
-            @param read_details_txt A boolean controlling the presense of the
-              output dict attributes read from other files present on the 'mount_point'
         """
         files = os.listdir(device['mount_point'])
         lower_case_map = {f.lower(): f for f in files}
