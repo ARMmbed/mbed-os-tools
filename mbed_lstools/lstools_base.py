@@ -210,28 +210,31 @@ class MbedLsToolsBase(object):
             device['device_type'] = 'unknown'
             return
 
-        device['device_type'] = self._detect_device_type(device['mount_point'])
+        directory_entries = os.listdir(device['mount_point'])
+        device['device_type'] = self._detect_device_type(directory_entries)
         device['target_id'] = device['target_id_usb_id']
 
         {
             'daplink': self._update_device_details_daplink,
             'jlink': self._update_device_details_jlink
-        }[device['device_type']](device, read_details_txt)
+        }[device['device_type']](device, read_details_txt, directory_entries)
 
-    def _detect_device_type(self, mount_point):
+
+    def _detect_device_type(self, directory_entries):
         """ Returns a string of the device type
+            @param directory_entries List of directories and files on the device
             @return 'daplink' or 'jlink'
         """
 
-        files = [f.lower() for f in os.listdir(mount_point)]
-        return 'jlink' if 'segger.html' in files else 'daplink'
+        return 'jlink' if 'segger.html' in [e.lower() for e in directory_entries] else 'daplink'
 
 
-    def _update_device_details_daplink(self, device, read_details_txt):
+    def _update_device_details_daplink(self, device, read_details_txt, _):
         """ Updates the daplink-specific device information based on files from its 'mount_point'
             @param device Dictionary containing device information
             @param read_details_txt A boolean controlling the presense of the
               output dict attributes read from other files present on the 'mount_point'
+            @param directory_entries List of directories and files on the device
         """
         self._update_device_from_htm(device)
         if read_details_txt:
@@ -247,12 +250,12 @@ class MbedLsToolsBase(object):
         else:
             device['platform_name'] = None
 
-    def _update_device_details_jlink(self, device, _):
+    def _update_device_details_jlink(self, device, _, directory_entries):
         """ Updates the jlink-specific device information based on files from its 'mount_point'
             @param device Dictionary containing device information
+            @param directory_entries List of directories and files on the device
         """
-        files = os.listdir(device['mount_point'])
-        lower_case_map = {f.lower(): f for f in files}
+        lower_case_map = {e.lower(): e for e in directory_entries}
 
         if 'board.html' in lower_case_map:
             board_file_key = 'board.html'
