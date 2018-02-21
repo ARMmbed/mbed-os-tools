@@ -197,6 +197,7 @@ class Win7TestCase(unittest.TestCase):
         self.setUpRegistry(value_dict, key_dict)
 
         with patch('mbed_lstools.windows.MbedLsToolsWin7._run_cli_process') as _cliproc:
+            _cliproc.return_value = ("", "", 0)
             expected_info = {
                 'mount_point': u'F:',
                 'serial_port': 'COM7',
@@ -206,6 +207,17 @@ class Win7TestCase(unittest.TestCase):
             devices = self.lstool.find_candidates()
             self.assertIn(expected_info, devices)
             self.assertNoRegMut()
+
+    def test_mount_point_ready(self):
+        with patch('mbed_lstools.windows.MbedLsToolsWin7._run_cli_process') as _cliproc:
+            _cliproc.return_value = ("dummy", "", 0)
+            self.assertTrue(self.lstool.mount_point_ready("dummy"))
+
+            _cliproc.reset_mock()
+
+            _cliproc.return_value = ("", "dummy", 1)
+            self.assertFalse(self.lstool.mount_point_ready("dummy"))
+
 
 if __name__ == '__main__':
     unittest.main()
