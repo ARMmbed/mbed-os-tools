@@ -92,7 +92,7 @@ class MbedLsToolsBase(object):
 
         Note: Should not open any files
 
-        @return A dict with the keys 'mount_point', 'serial_port' and 'usb_target_id'
+        @return A dict with the keys 'mount_point', 'serial_port' and 'target_id_usb_id'
         """
         raise NotImplemented
 
@@ -283,10 +283,6 @@ class MbedLsToolsBase(object):
         """
         self.retarget_data = self.retarget_read()
         return self.retarget_data
-
-    # Note: 'Ven_SEGGER' - This is used to detect devices from EFM family, they use Segger J-LInk to wrap MSD and CDC
-    usb_vendor_list = ['Ven_MBED', 'Ven_SEGGER', 'Ven_ARM_V2M']
-
 
     def get_dummy_platform(self, platform_name):
         """! Returns simple dummy platform """
