@@ -58,13 +58,17 @@ class BasicTestCase(unittest.TestCase):
                                    'serial_port': 'not_valid'}]
         with patch("mbed_lstools.lstools_base.MbedLsToolsBase._read_htm_ids") as _read_htm,\
              patch("mbed_lstools.lstools_base.MbedLsToolsBase.mount_point_ready") as _mpr,\
-             patch("mbed_lstools.lstools_base.PlatformDatabase.get") as _get:
+             patch("mbed_lstools.lstools_base.PlatformDatabase.get") as _get,\
+             patch('os.listdir') as _listdir:
             _mpr.return_value = True
             _read_htm.return_value = (u'0241BEEFDEAD', {})
-            _get.return_value = 'foo_target'
+            _get.return_value = {
+                'platform_name': 'foo_target'
+            }
+            _listdir.return_value = []
             to_check = self.base.list_mbeds()
             _read_htm.assert_called_once_with('dummy_mount_point')
-            _get.assert_called_once_with('0241')
+            _get.assert_called_once_with('0241', device_type='daplink', verbose_data=True)
         self.assertEqual(len(to_check), 1)
         self.assertEqual(to_check[0]['target_id'], "0241BEEFDEAD")
         self.assertEqual(to_check[0]['platform_name'], 'foo_target')
@@ -78,12 +82,16 @@ class BasicTestCase(unittest.TestCase):
                                    'serial_port': 'not_valid'}]
         with patch("mbed_lstools.lstools_base.MbedLsToolsBase._read_htm_ids") as _read_htm,\
              patch("mbed_lstools.lstools_base.MbedLsToolsBase.mount_point_ready") as _mpr,\
-             patch("mbed_lstools.lstools_base.PlatformDatabase.get") as _get:
+             patch("mbed_lstools.lstools_base.PlatformDatabase.get") as _get,\
+             patch('os.listdir') as _listdir:
             _mpr.return_value = True
             _read_htm.side_effect = [(u'0241BEEFDEAD', {}), (None, {})]
-            _get.return_value = 'foo_target'
+            _get.return_value = {
+                'platform_name': 'foo_target'
+            }
+            _listdir.return_value = []
             to_check = self.base.list_mbeds()
-            _get.assert_called_once_with('0241')
+            _get.assert_called_once_with('0241', device_type='daplink', verbose_data=True)
         self.assertEqual(len(to_check), 2)
         self.assertEqual(to_check[0]['target_id'], "0241BEEFDEAD")
         self.assertEqual(to_check[0]['platform_name'], 'foo_target')
@@ -97,13 +105,15 @@ class BasicTestCase(unittest.TestCase):
         for qos in [FSInteraction.BeforeFilter, FSInteraction.AfterFilter]:
             with patch("mbed_lstools.lstools_base.MbedLsToolsBase._read_htm_ids") as _read_htm,\
                 patch("mbed_lstools.lstools_base.MbedLsToolsBase.mount_point_ready") as _mpr,\
-                patch("mbed_lstools.lstools_base.PlatformDatabase.get") as _get:
+                patch("mbed_lstools.lstools_base.PlatformDatabase.get") as _get,\
+                patch('os.listdir') as _listdir:
                 _mpr.return_value = True
                 _read_htm.return_value = (u'not_in_target_db', {})
                 _get.return_value = None
+                _listdir.return_value = []
                 to_check = self.base.list_mbeds()
                 _read_htm.assert_called_once_with('dummy_mount_point')
-                _get.assert_called_once_with('not_')
+                _get.assert_called_once_with('not_', device_type='daplink', verbose_data=True)
             self.assertEqual(len(to_check), 1)
             self.assertEqual(to_check[0]['target_id'], "not_in_target_db")
             self.assertEqual(to_check[0]['platform_name'], None)
@@ -149,14 +159,57 @@ class BasicTestCase(unittest.TestCase):
         self.assertEqual(None, self.base.plat_db.get("0342"))
         self.assertEqual(None, self.base.plat_db.get("0343"))
 
+    def test_update_device_from_fs_unknown(self):
+        device = {}
+        self.base._update_device_from_fs(device, False)
+        self.assertEqual(device['device_type'], 'unknown')
+
+    def test_detect_device_test(self):
+        device_type = self.base._detect_device_type(['Segger.html'])
+        self.assertEqual(device_type, 'jlink')
+
+        device_type = self.base._detect_device_type(['MBED.HTM', 'DETAILS.TXT'])
+        self.assertEqual(device_type, 'daplink')
+
+    def test_update_device_details_jlink(self):
+        jlink_html_contents = ('<html><head><meta http-equiv="refresh" '
+                               'content="0; url=http://www.nxp.com/FRDM-KL27Z"/>'
+                               '<title>NXP Product Page</title></head><body></body></html>')
+        _open = mock_open(read_data=jlink_html_contents)
+        dummy_mount_point = 'dummy'
+        base_device = {
+            'mount_point': dummy_mount_point
+        }
+
+        with patch('mbed_lstools.lstools_base.open', _open):
+            device = deepcopy(base_device)
+            self.base._update_device_details_jlink(device, False, ['Board.html', 'User Guide.html'])
+            self.assertEqual(device['url'], 'http://www.nxp.com/FRDM-KL27Z')
+            self.assertEqual(device['platform_name'], 'KL27Z')
+            _open.assert_called_once_with(os.path.join(dummy_mount_point, 'Board.html'), 'r')
+
+            _open.reset_mock()
+
+            device = deepcopy(base_device)
+            self.base._update_device_details_jlink(device, False, ['User Guide.html'])
+            self.assertEqual(device['url'], 'http://www.nxp.com/FRDM-KL27Z')
+            self.assertEqual(device['platform_name'], 'KL27Z')
+            _open.assert_called_once_with(os.path.join(dummy_mount_point, 'User Guide.html'), 'r')
+
+            _open.reset_mock()
+
+            device = deepcopy(base_device)
+            self.base._update_device_details_jlink(device, False, ['unhelpful_file.html'])
+            self.assertEqual(device, base_device)
+            _open.assert_not_called()
+
     def test_fs_never(self):
         device = {
             'target_id_usb_id': '024075309420ABCE',
             'mount_point': 'invalid_mount_point',
             'serial_port': 'invalid_serial_port'
         }
-        with patch("mbed_lstools.lstools_base.MbedLsToolsBase._update_device_from_htm") as _up_htm,\
-             patch("mbed_lstools.lstools_base.MbedLsToolsBase._details_txt") as _up_details:
+        with patch("mbed_lstools.lstools_base.MbedLsToolsBase._update_device_from_fs") as _up_fs:
             filter = None
             ret = self.base._fs_never(deepcopy(device), filter, False)
             ret_with_details = self.base._fs_never(deepcopy(device), filter, True)
@@ -164,8 +217,7 @@ class BasicTestCase(unittest.TestCase):
             self.assertIsNotNone(ret_with_details)
             self.assertEqual(ret['target_id'], ret['target_id_usb_id'])
             self.assertEqual(ret, ret_with_details)
-            _up_htm.assert_not_called()
-            _up_details.assert_not_called()
+            _up_fs.assert_not_called()
 
             filter_in = lambda m: m['platform_name'] == 'K64F'
             ret = self.base._fs_never(deepcopy(device), filter_in, False)
@@ -173,16 +225,14 @@ class BasicTestCase(unittest.TestCase):
             self.assertIsNotNone(ret)
             self.assertIsNotNone(ret_with_details)
             self.assertEqual(ret, ret_with_details)
-            _up_htm.assert_not_called()
-            _up_details.assert_not_called()
+            _up_fs.assert_not_called()
 
             filter_out = lambda m: m['platform_name'] != 'K64F'
             ret = self.base._fs_never(deepcopy(device), filter_out, False)
             ret_with_details = self.base._fs_never(deepcopy(device), filter_out, True)
             self.assertIsNone(ret)
             self.assertEqual(ret, ret_with_details)
-            _up_htm.assert_not_called()
-            _up_details.assert_not_called()
+            _up_fs.assert_not_called()
 
     def test_fs_after(self):
         device = {
@@ -191,9 +241,11 @@ class BasicTestCase(unittest.TestCase):
             'serial_port': 'invalid_serial_port'
         }
         with patch("mbed_lstools.lstools_base.MbedLsToolsBase._read_htm_ids") as _read_htm,\
-             patch("mbed_lstools.lstools_base.MbedLsToolsBase._details_txt") as _up_details:
+             patch("mbed_lstools.lstools_base.MbedLsToolsBase._details_txt") as _up_details,\
+             patch('os.listdir') as _listdir:
             new_device_id = "00017531642046"
             _read_htm.return_value = (new_device_id, {})
+            _listdir.return_value = []
             _up_details.return_value = {
                 'automation_allowed': '0'
             }
@@ -249,9 +301,11 @@ class BasicTestCase(unittest.TestCase):
             'serial_port': 'invalid_serial_port'
         }
         with patch("mbed_lstools.lstools_base.MbedLsToolsBase._read_htm_ids") as _read_htm,\
-             patch("mbed_lstools.lstools_base.MbedLsToolsBase._details_txt") as _up_details:
+             patch("mbed_lstools.lstools_base.MbedLsToolsBase._details_txt") as _up_details,\
+             patch('os.listdir') as _listdir:
             new_device_id = u'00017575430420'
             _read_htm.return_value = (new_device_id, {})
+            _listdir.return_value = []
             _up_details.return_value = {
                 'automation_allowed': '0'
             }
@@ -330,10 +384,14 @@ class RetargetTestCase(unittest.TestCase):
                                    'serial_port': None}]
         with patch('mbed_lstools.lstools_base.MbedLsToolsBase._read_htm_ids') as _read_htm,\
              patch('mbed_lstools.lstools_base.MbedLsToolsBase.mount_point_ready') as _mpr,\
-             patch('mbed_lstools.lstools_base.PlatformDatabase.get') as _get:
+             patch('mbed_lstools.lstools_base.PlatformDatabase.get') as _get,\
+             patch('os.listdir') as _listdir:
             _mpr.return_value = True
             _read_htm.return_value = (u'0240DEADBEEF', {})
-            _get.return_value = 'foo_target'
+            _get.return_value = {
+                'platform_name': 'foo_target'
+            }
+            _listdir.return_value = []
             to_check = self.base.list_mbeds()
         self.assertEqual(len(to_check), 1)
         self.assertEqual(to_check[0]['serial_port'], 'valid')

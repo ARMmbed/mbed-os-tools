@@ -120,8 +120,8 @@ class MbedLsToolsBase(object):
           Ex. mbeds = list_mbeds(filter_function=lambda m: m['platform_name'] == 'K64F')
         @param unique_names A boolean controlling the presence of the
           'platform_unique_name' member of the output dict
-        @param read_details_text A boolean controlling the presense of the
-          output dict attributes read from "DETAILS.TXT"
+        @param read_details_txt A boolean controlling the presense of the
+          output dict attributes read from other files present on the 'mount_point'
         @details Function returns list of dictionaries with mbed attributes 'mount_point', TargetID name etc.
         Function returns mbed list with platform names if possible
         """
@@ -166,7 +166,9 @@ class MbedLsToolsBase(object):
         """Filter device without touching the file system of the device"""
         device['target_id'] = device['target_id_usb_id']
         device['target_id_mbed_htm'] = None
-        device['platform_name'] = self.plat_db.get(device['target_id'][0:4])
+        platform_data = self.plat_db.get(device['target_id'][0:4],
+                                         verbose_data=True)
+        device.update(platform_data or {'platform_name': None})
         if not filter_function or filter_function(device):
             return device
         else:
@@ -176,13 +178,9 @@ class MbedLsToolsBase(object):
         """Filter device after touching the file system of the device.
         Said another way: Touch the file system before filtering
         """
-        self._update_device_from_htm(device)
 
-        if read_details_txt:
-            details_txt = self._details_txt(device['mount_point']) or {}
-            device.update({"daplink_%s" % f.lower().replace(' ', '_'): v
-                           for f, v in details_txt.items()})
-
+        device['target_id'] = device['target_id_usb_id']
+        self._update_device_from_fs(device, read_details_txt)
         if not filter_function or filter_function(device):
             return device
         else:
@@ -194,18 +192,94 @@ class MbedLsToolsBase(object):
         """
         device['target_id'] = device['target_id_usb_id']
         device['target_id_mbed_htm'] = None
-        device['platform_name'] = self.plat_db.get(device['target_id'][0:4])
+        platform_data = self.plat_db.get(device['target_id'][0:4], verbose_data=True)
+        device.update(platform_data or {'platform_name': None})
         if not filter_function or filter_function(device):
-            self._update_device_from_htm(device)
-
-            if read_details_txt:
-                details_txt = self._details_txt(device['mount_point']) or {}
-                device.update({"daplink_%s" % f.lower().replace(' ', '_'): v
-                               for f, v in details_txt.items()})
-
+            self._update_device_from_fs(device, read_details_txt)
             return device
         else:
             return None
+
+    def _update_device_from_fs(self, device, read_details_txt):
+        """ Updates the device information based on files from its 'mount_point'
+            @param device Dictionary containing device information
+            @param read_details_txt A boolean controlling the presense of the
+              output dict attributes read from other files present on the 'mount_point'
+        """
+        if not device.get('mount_point', None):
+            device['device_type'] = 'unknown'
+            return
+
+        directory_entries = os.listdir(device['mount_point'])
+        device['device_type'] = self._detect_device_type(directory_entries)
+        device['target_id'] = device['target_id_usb_id']
+
+        {
+            'daplink': self._update_device_details_daplink,
+            'jlink': self._update_device_details_jlink
+        }[device['device_type']](device, read_details_txt, directory_entries)
+
+
+    def _detect_device_type(self, directory_entries):
+        """ Returns a string of the device type
+            @param directory_entries List of directories and files on the device
+            @return 'daplink' or 'jlink'
+        """
+
+        return 'jlink' if 'segger.html' in [e.lower() for e in directory_entries] else 'daplink'
+
+
+    def _update_device_details_daplink(self, device, read_details_txt, _):
+        """ Updates the daplink-specific device information based on files from its 'mount_point'
+            @param device Dictionary containing device information
+            @param read_details_txt A boolean controlling the presense of the
+              output dict attributes read from other files present on the 'mount_point'
+            @param directory_entries List of directories and files on the device
+        """
+        self._update_device_from_htm(device)
+        if read_details_txt:
+            details_txt = self._details_txt(device['mount_point']) or {}
+            device.update({"daplink_%s" % f.lower().replace(' ', '_'): v
+                           for f, v in details_txt.items()})
+
+        if device['target_id']:
+            platform_data = self.plat_db.get(device['target_id'][0:4],
+                                             device_type='daplink',
+                                             verbose_data=True)
+            device.update(platform_data or {'platform_name': None})
+        else:
+            device['platform_name'] = None
+
+    def _update_device_details_jlink(self, device, _, directory_entries):
+        """ Updates the jlink-specific device information based on files from its 'mount_point'
+            @param device Dictionary containing device information
+            @param directory_entries List of directories and files on the device
+        """
+        lower_case_map = {e.lower(): e for e in directory_entries}
+
+        if 'board.html' in lower_case_map:
+            board_file_key = 'board.html'
+        elif 'user guide.html' in lower_case_map:
+            board_file_key = 'user guide.html'
+        else:
+            logger.warning('No valid file found to update JLink device details')
+            return
+
+        board_file_path = os.path.join(device['mount_point'], lower_case_map[board_file_key])
+        with open(board_file_path, 'r') as board_file:
+            board_file_lines = board_file.readlines()
+
+        for line in board_file_lines:
+            m = re.search(r'url=([\w\d\:\-/\\\?\.=-_]+)', line)
+            if m:
+                device['url'] = m.group(1).strip()
+                identifier = device['url'].split('/')[-1]
+                platform_data = self.plat_db.get(identifier,
+                                                 device_type='jlink',
+                                                 verbose_data=True)
+                device.update(platform_data or {'platform_name': None})
+                break
+
 
     def _update_device_from_htm(self, device):
         """Set the 'target_id', 'target_id_mbed_htm', 'platform_name' and
@@ -225,10 +299,6 @@ class MbedLsToolsBase(object):
                             device['target_id_usb_id'])
             device['target_id'] = device['target_id_usb_id']
         device['target_id_mbed_htm'] = htm_target_id
-        if device['target_id']:
-            device['platform_name'] = self.plat_db.get(device['target_id'][0:4])
-        else:
-            device['platform_name'] = None
 
     def mock_manufacture_id(self, mid, platform_name, oper='+'):
         """! Replace (or add if manufacture id doesn't exist) entry in self.manufacture_ids
