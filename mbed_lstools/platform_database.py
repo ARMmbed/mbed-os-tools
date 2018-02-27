@@ -90,6 +90,7 @@ DEFAULT_PLATFORM_DB = {
         u'0458': u'MTB_ADV_WISE_1510',
         u'0459': u'MTB_ADV_WISE_1530',
         u'0460': u'MTB_ADV_WISE_1570',
+        u'0461': u'MTB_LAIRD_BL652',
         u'0500': u'SPANSION_PLACEHOLDER',
         u'0505': u'SPANSION_PLACEHOLDER',
         u'0510': u'SPANSION_PLACEHOLDER',
