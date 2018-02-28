@@ -29,6 +29,7 @@ from . import lstools_base
 
 import logging
 logger = logging.getLogger("mbedls.main")
+logger.addHandler(logging.NullHandler())
 del logging
 
 

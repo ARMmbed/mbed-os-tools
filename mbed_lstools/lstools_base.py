@@ -33,6 +33,7 @@ mbedls_root_logger = logging.getLogger("mbedls")
 mbedls_root_logger.setLevel(logging.WARNING)
 
 logger = logging.getLogger("mbedls.lstools_base")
+logger.addHandler(logging.NullHandler())
 
 def deprecated(reason):
     """Deprecate a function/method with a decorator"""

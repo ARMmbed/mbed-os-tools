@@ -23,6 +23,7 @@ from .lstools_base import MbedLsToolsBase
 
 import logging
 logger = logging.getLogger("mbedls.lstools_linux")
+logger.addHandler(logging.NullHandler())
 del logging
 
 def _readlink(link):
