@@ -36,6 +36,7 @@ except NameError:
 
 import logging
 logger = logging.getLogger("mbedls.platform_database")
+logger.addHandler(logging.NullHandler())
 del logging
 
 LOCAL_PLATFORM_DATABASE = join(user_data_dir("mbedls"), "platforms.json")

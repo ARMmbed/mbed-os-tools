@@ -25,6 +25,7 @@ from .lstools_base import MbedLsToolsBase
 
 import logging
 logger = logging.getLogger("mbedls.lstools_win7")
+logger.addHandler(logging.NullHandler())
 DEBUG = logging.DEBUG
 del logging
 
