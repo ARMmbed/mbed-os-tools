@@ -288,7 +288,7 @@ If set to `'+'`, the mocked platform is enabled. If `'-'`, the mocked platform i
 
 ## Logging
 
-Mbed LS uses the python `logging` module for all of its logging needs. Mbed LS uses the logger `"mbedls"` as its root, and all other loggers start with `"mbedls."`. Configuring the python root logger automatically redirects all of the logging done by Mbed LS to the configured endpoint. When using the python API, configure logging, such as by calling `logging.basicConfig()`. 
+Mbed LS uses the Python `logging` module for all of its logging needs. Mbed LS uses the logger `"mbedls"` as its root, and all other loggers start with `"mbedls."`. Configuring the Python root logger automatically redirects all of the Mbed LS logs to the configured endpoint. When using the Python API, configure logging, such as by calling `logging.basicConfig()`. 
 
 # Testing
 
