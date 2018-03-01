@@ -286,6 +286,10 @@ Overrides the `platform_name` for any platform with a `target_id` that starts wi
 
 If set to `'+'`, the mocked platform is enabled. If `'-'`, the mocked platform is disabled.
 
+## Logging
+
+Mbed LS uses the Python `logging` module for all of its logging needs. Mbed LS uses the logger `"mbedls"` as its root, and all other loggers start with `"mbedls."`. Configuring the Python root logger automatically redirects all of the Mbed LS logs to the configured endpoint. When using the Python API, configure logging, such as by calling `logging.basicConfig()`. 
+
 # Testing
 
 The `/test` directory contains all tests. You can run the tests with the following command:
