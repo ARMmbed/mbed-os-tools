@@ -143,7 +143,7 @@ DEFAULT_PLATFORM_DB = {
         u'0819': u'NUCLEO_F756ZG',
         u'0820': u'DISCO_L476VG',
         u'0821': u'NUCLEO_L452RE',
-        u'0822': u'DISCO_L496G',
+        u'0822': u'DISCO_L496AG',
         u'0823': u'NUCLEO_L496ZG',
         u'0824': u'LPC824',
         u'0826': u'NUCLEO_F412ZG',
