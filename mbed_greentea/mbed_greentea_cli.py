@@ -134,7 +134,6 @@ def create_filtered_test_list(ctest_test_list, test_by_names, skip_test, test_sp
         for test_name in set(test_list):
             gt_logger.gt_log_tab(test_name)
             matches = [test for test in ctest_test_list.keys() if fnmatch.fnmatch(test, test_name)]
-            gt_logger.gt_log_tab(str(ctest_test_list))
             if matches:
                 for match in matches:
                     gt_logger.gt_log_tab("test filtered in '%s'"% gt_logger.gt_bright(match))
@@ -147,11 +146,14 @@ def create_filtered_test_list(ctest_test_list, test_by_names, skip_test, test_sp
         gt_logger.gt_log("test case filter (specified with -i option)")
 
         for test_name in set(test_list):
-            if test_name not in ctest_test_list:
-                invalid_test_names.append(test_name)
+            gt_logger.gt_log_tab(test_name)
+            matches = [test for test in filtered_ctest_test_list.keys() if fnmatch.fnmatch(test, test_name)]
+            if matches:
+                for match in matches:
+                    gt_logger.gt_log_tab("test filtered out '%s'"% gt_logger.gt_bright(match))
+                    del filtered_ctest_test_list[match]
             else:
-                gt_logger.gt_log_tab("test filtered out '%s'"% gt_logger.gt_bright(test_name))
-                del filtered_ctest_test_list[test_name]
+                invalid_test_names.append(test_name)
 
     if invalid_test_names:
         opt_to_print = '-n' if test_by_names else 'skip-test'
