@@ -280,6 +280,13 @@ def main():
                     default=5,
                     help='Define how many times __sync packet will be sent to device: 0: none; -1: forever; 1,2,3... - number of  times (the default is 5 packets)')
 
+    parser.add_option('-P', '--polling-timeout',
+                      dest='polling_timeout',
+                      default=60,
+                      metavar="NUMBER",
+                      type="int",
+                      help='Timeout in sec for readiness of mount point and serial port of local or remote device. Default 60 sec')
+
     parser.add_option('', '--tag-filters',
                     dest='tags',
                     default=None,
@@ -478,6 +485,7 @@ def run_test_thread(test_result_queue, test_queue, opts, mut, build, build_path,
                                          num_sync_packtes=opts.num_sync_packtes,
                                          tags=opts.tags,
                                          retry_count=opts.retry_count,
+                                         polling_timeout=opts.polling_timeout,
                                          verbose=verbose)
 
         # Some error in htrun, abort test execution

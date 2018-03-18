@@ -157,6 +157,7 @@ def run_host_test(image_path,
                   enum_host_tests_path=None,
                   global_resource_mgr=None,
                   num_sync_packtes=None,
+                  polling_timeout=None,
                   retry_count=1,
                   tags=None,
                   run_app=None):
@@ -175,6 +176,7 @@ def run_host_test(image_path,
     @param max_failed_properties After how many unknown properties we will assume test is not ported
     @param enum_host_tests_path Directory where locally defined host tests may reside
     @param num_sync_packtes sync packets to send for host <---> device communication
+    @param polling_timeout Timeout in sec for readiness of mount point and serial port of local or remote device
     @param tags Filter list of available devices under test to only run on devices with the provided list
            of tags  [tag-filters tag1,tag]
     @param run_app Run application mode flag (we run application and grab serial port data)
@@ -273,7 +275,6 @@ def run_host_test(image_path,
         # Example:
         # $ mbedhtrun -p :9600 -f "tests-mbed_drivers-generic_tests.bin" -m K64F --grm raas_client:10.2.203.31:8000
         cmd += ['--grm', global_resource_mgr]
-
     else:
         # Use local resources to execute tests
         # Add extra parameters to host_test
@@ -298,6 +299,8 @@ def run_host_test(image_path,
         cmd += ["--sync",str(num_sync_packtes)]
     if tags:
         cmd += ["--tag-filters", tags]
+    if polling_timeout:
+        cmd += ["-P", str(polling_timeout)]
 
     gt_logger.gt_log_tab("calling mbedhtrun: %s" % " ".join(cmd), print_text=verbose)
     gt_logger.gt_log("mbed-host-test-runner: started")
