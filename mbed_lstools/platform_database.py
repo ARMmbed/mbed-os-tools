@@ -88,6 +88,7 @@ DEFAULT_PLATFORM_DB = {
         u'0454': u'MTB_MTS_DRAGONFLY',
         u'0455': u'MTB_UBLOX_NINA_B1',
         u'0456': u'MTB_MURATA_ABZ',
+        u'0457': u'MTB_RAK811',
         u'0458': u'MTB_ADV_WISE_1510',
         u'0459': u'MTB_ADV_WISE_1530',
         u'0460': u'MTB_ADV_WISE_1570',
