@@ -159,6 +159,18 @@ class BasicTestCase(unittest.TestCase):
         self.assertEqual(None, self.base.plat_db.get("0342"))
         self.assertEqual(None, self.base.plat_db.get("0343"))
 
+    def test_update_device_from_fs_mid_unmount(self):
+        dummy_mount = 'dummy_mount'
+        device = {
+            'mount_point': dummy_mount
+        }
+
+        with patch('os.listdir') as _listdir:
+            _listdir.side_effect = OSError
+            self.base._update_device_from_fs(device, False)
+            self.assertEqual(device['device_type'], 'unknown')
+            self.assertEqual(device['mount_point'], None)
+
     def test_update_device_from_fs_unknown(self):
         device = {}
         self.base._update_device_from_fs(device, False)
