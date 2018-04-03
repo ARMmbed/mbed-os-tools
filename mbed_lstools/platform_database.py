@@ -250,6 +250,8 @@ DEFAULT_PLATFORM_DB = {
         u'7402': u'MBED_BR_HAT',
         u'7778': u'TEENSY3_1',
         u'8001': u'UNO_91H',
+        u'8080': u'FF1705_L151CC',
+        u'8081': u'FF_LPC546XX',
         u'9001': u'LPC1347',
         u'9002': u'LPC11U24',
         u'9003': u'LPC1347',
