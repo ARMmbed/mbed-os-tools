@@ -211,14 +211,21 @@ class MbedLsToolsBase(object):
             device['device_type'] = 'unknown'
             return
 
-        directory_entries = os.listdir(device['mount_point'])
-        device['device_type'] = self._detect_device_type(directory_entries)
-        device['target_id'] = device['target_id_usb_id']
+        try:
+            directory_entries = os.listdir(device['mount_point'])
+            device['device_type'] = self._detect_device_type(directory_entries)
+            device['target_id'] = device['target_id_usb_id']
 
-        {
-            'daplink': self._update_device_details_daplink,
-            'jlink': self._update_device_details_jlink
-        }[device['device_type']](device, read_details_txt, directory_entries)
+            {
+                'daplink': self._update_device_details_daplink,
+                'jlink': self._update_device_details_jlink
+            }[device['device_type']](device, read_details_txt, directory_entries)
+        except OSError as e:
+            logger.warning(
+                'Marking device with mount point "%s" as unmounted due to the '
+                'following error: %s', device['mount_point'], e)
+            device['mount_point'] = None
+            device['device_type'] = 'unknown'
 
 
     def _detect_device_type(self, directory_entries):
