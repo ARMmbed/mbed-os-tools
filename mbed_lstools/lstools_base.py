@@ -145,7 +145,7 @@ class MbedLsToolsBase(object):
                     FSInteraction.AfterFilter: self._fs_after_id_check,
                     FSInteraction.Never: self._fs_never
                 }[fs_interaction](device, filter_function, read_details_txt)
-                if maybe_device:
+                if maybe_device and (maybe_device['mount_point'] or self.list_unmounted):
                     if unique_names:
                         name = device['platform_name']
                         platform_count.setdefault(name, -1)

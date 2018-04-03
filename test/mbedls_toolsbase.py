@@ -118,6 +118,31 @@ class BasicTestCase(unittest.TestCase):
             self.assertEqual(to_check[0]['target_id'], "not_in_target_db")
             self.assertEqual(to_check[0]['platform_name'], None)
 
+    def test_list_mbeds_unmount_mid_read(self):
+        self.base.return_value = [{'mount_point': 'dummy_mount_point',
+                                   'target_id_usb_id': u'0240DEADBEEF',
+                                   'serial_port': "dummy_serial_port"}]
+        with patch("mbed_lstools.lstools_base.MbedLsToolsBase.mount_point_ready") as _mpr,\
+             patch('os.listdir') as _listdir:
+            _mpr.return_value = True
+            _listdir.side_effect = OSError
+            to_check = self.base.list_mbeds()
+        self.assertEqual(len(to_check), 0)
+
+    def test_list_mbeds_unmount_mid_read_list_unmounted(self):
+        self.base.list_unmounted = True
+        self.base.return_value = [{'mount_point': 'dummy_mount_point',
+                                   'target_id_usb_id': u'0240DEADBEEF',
+                                   'serial_port': "dummy_serial_port"}]
+        with patch("mbed_lstools.lstools_base.MbedLsToolsBase.mount_point_ready") as _mpr,\
+             patch('os.listdir') as _listdir:
+            _mpr.return_value = True
+            _listdir.side_effect = OSError
+            to_check = self.base.list_mbeds()
+        self.assertEqual(len(to_check), 1)
+        self.assertEqual(to_check[0]['mount_point'], None)
+        self.assertEqual(to_check[0]['device_type'], 'unknown')
+
     def test_list_manufacture_ids(self):
         table_str = self.base.list_manufacture_ids()
         self.assertTrue(isinstance(table_str, basestring))
