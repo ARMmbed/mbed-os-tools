@@ -145,7 +145,7 @@ class MbedLsToolsBase(object):
                     FSInteraction.AfterFilter: self._fs_after_id_check,
                     FSInteraction.Never: self._fs_never
                 }[fs_interaction](device, filter_function, read_details_txt)
-                if maybe_device:
+                if maybe_device and (maybe_device['mount_point'] or self.list_unmounted):
                     if unique_names:
                         name = device['platform_name']
                         platform_count.setdefault(name, -1)
@@ -211,14 +211,21 @@ class MbedLsToolsBase(object):
             device['device_type'] = 'unknown'
             return
 
-        directory_entries = os.listdir(device['mount_point'])
-        device['device_type'] = self._detect_device_type(directory_entries)
-        device['target_id'] = device['target_id_usb_id']
+        try:
+            directory_entries = os.listdir(device['mount_point'])
+            device['device_type'] = self._detect_device_type(directory_entries)
+            device['target_id'] = device['target_id_usb_id']
 
-        {
-            'daplink': self._update_device_details_daplink,
-            'jlink': self._update_device_details_jlink
-        }[device['device_type']](device, read_details_txt, directory_entries)
+            {
+                'daplink': self._update_device_details_daplink,
+                'jlink': self._update_device_details_jlink
+            }[device['device_type']](device, read_details_txt, directory_entries)
+        except OSError as e:
+            logger.warning(
+                'Marking device with mount point "%s" as unmounted due to the '
+                'following error: %s', device['mount_point'], e)
+            device['mount_point'] = None
+            device['device_type'] = 'unknown'
 
 
     def _detect_device_type(self, directory_entries):
