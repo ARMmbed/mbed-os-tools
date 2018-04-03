@@ -155,6 +155,7 @@ DEFAULT_PLATFORM_DB = {
         u'0830': u'DISCO_F407VG',
         u'0833': u'DISCO_L072CZ_LRWAN1',
         u'0835': u'NUCLEO_F207ZG',
+        u'0839': u'NUCLEO_WB55RG',
         u'0840': u'B96B_F446VE',
         u'0900': u'XPRO_SAMR21',
         u'0905': u'XPRO_SAMW25',
