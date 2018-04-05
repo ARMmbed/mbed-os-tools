@@ -162,8 +162,16 @@ class MbedLsToolsWin7(MbedLsToolsBase):
                 logger.debug('Composite USB service "%s" not found' % usb_service)
 
         # Find all enumerated composite USB devices
-        composite_iter_vals = [self.iter_vals(k) for k in found_composite_keys]
-        for point, label, _ in itertools.chain.from_iterable(composite_iter_vals):
+        composite_iter_vals = []
+
+        for k in found_composite_keys:
+            try:
+                for v in self.iter_vals(k):
+                    composite_iter_vals.append(v)
+            except OSError:
+                logger.debug('Iterating composite USB keys ended earlier than expected')
+
+        for point, label, _ in composite_iter_vals:
             try:
                 # These keys in the registry enumerate all composite DosDevices
                 # as a value with an integer. This check ensures we ignore a few
