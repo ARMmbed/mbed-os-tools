@@ -57,28 +57,26 @@ class Win7TestCase(unittest.TestCase):
         value_dict = {
             (None, 'SYSTEM\\MountedDevices'): [
                 ('\\DosDevices\\F:',
-                 u'_??_USBSTOR#Disk&Ven_MBED&Prod_VFS&Rev_0.1#0240000032044e4500367009997b00086781000097969900&0#{53f56307-b6bf-11d0-94f2-00a0c91efb8b}'.encode('utf-16le')),
+                u'_??_USBSTOR#Disk&Ven_SEGGER&Prod_MSD_Volume&Rev_1.00#8&1b8e102b&0&000440035522&0#{53f56307-b6bf-11d0-94f2-00a0c91efb8b}'.encode('utf-16le')),
                 ('\\DosDevices\\D:',
-                 u'_??_USBSTOR#Disk&Ven_SEGGER&Prod_MSD_Volume&Rev_1.00#8&1b8e102b&0&000440035522&0#{53f56307-b6bf-11d0-94f2-00a0c91efb8b}'.encode('utf-16le'))],
-            ((None, 'SYSTEM\\CurrentControlSet'), 'Services\\usbccgp\\Enum'): [
-                ('Count', 0),
-                ('NextInstance', 0)
-            ]
+                u'_??_USBSTOR#Disk&Ven_MBED&Prod_VFS&Rev_0.1#0240000032044e4500367009997b00086781000097969900&0#{53f56307-b6bf-11d0-94f2-00a0c91efb8b}'.encode('utf-16le')),
+            ],
+            (None, 'SYSTEM\\CurrentControlSet\\Services\\volume\\Enum'): [],
+            (None, 'SYSTEM\\CurrentControlSet\\Services\\USBSTOR\\Enum'): []
         }
         key_dict = {
             (None, 'SYSTEM\\CurrentControlSet'): ['Services\\usbccgp\\Enum'],
             (None, 'SYSTEM\\CurrentControlSet'): ['Enum\\USB'],
             ((None, 'SYSTEM\\CurrentControlSet'), 'Enum\\USB'):
             ['ROOT_HUB30', 'VID_0416&PID_511E', 'VID_0416&PID_511E&MI_00',
-             'VID_8087&PID_0A2B', 'Vid_80EE&Pid_CAFE']
+             'VID_0D28&PID_0204', 'VID_0D28&PID_0204&MI_00', 'VID_0D28&PID_0204&MI_04']
         }
         self.setUpRegistry(value_dict, key_dict)
         candidates = self.lstool.find_candidates()
         self.assertEqual(_winreg.OpenKey.mock_calls, [
-            call(_winreg.HKEY_LOCAL_MACHINE, 'SYSTEM\\CurrentControlSet'),
-            call((_winreg.HKEY_LOCAL_MACHINE, 'SYSTEM\\CurrentControlSet'), 'Enum\\USB'),
-            call((_winreg.HKEY_LOCAL_MACHINE, 'SYSTEM\\CurrentControlSet'), 'Services\\usbccgp\\Enum'),
-            call((_winreg.HKEY_LOCAL_MACHINE, 'SYSTEM\\CurrentControlSet'), 'Services\\mbedComposite\\Enum')
+            call(_winreg.HKEY_LOCAL_MACHINE, 'SYSTEM\\MountedDevices'),
+            call(_winreg.HKEY_LOCAL_MACHINE, 'SYSTEM\\CurrentControlSet\\Services\\volume\\Enum'),
+            call(_winreg.HKEY_LOCAL_MACHINE, 'SYSTEM\\CurrentControlSet\\Services\\USBSTOR\\Enum')
         ])
         self.assertEqual(candidates, [])
 
@@ -130,78 +128,47 @@ class Win7TestCase(unittest.TestCase):
             (None, 'SYSTEM\\MountedDevices'): [
                 ('\\DosDevices\\C:', u'NOT A VALID MBED DRIVE'.encode('utf-16le')),
                 ('\\DosDevices\\F:',
-                 u'_??_USBSTOR#Disk&Ven_MBED&Prod_VFS&Rev_0.1#11010000442031204c364141303031313431303397969903&0#{53f56307-b6bf-11d0-94f2-00a0c91efb8b}'.encode('utf-16le'))
+                 u'_??_USBSTOR#Disk&Ven_MBED&Prod_VFS&Rev_0.1#0240000032044e4500367009997b00086781000097969900&0#{53f56307-b6bf-11d0-94f2-00a0c91efb8b}'.encode('utf-16le'))
             ],
-            ((None, 'SYSTEM\\CurrentControlSet'), 'Services\\usbccgp\\Enum'): [
-                ('0', 'USB\\VID_5986&PID_0706\\5&31ac2c0b&0&8'),
-                ('Count', 2),
-                ('NextInstance', 2)
+            (None, 'SYSTEM\\CurrentControlSet\\Services\\volume\\Enum'): [
+                ('0', 'STORAGE\\Volume\\_??_USBSTOR#Disk&Ven_MBED&Prod_VFS&Rev_0.1#0240000032044e4500367009997b00086781000097969900&0#{53f56307-b6bf-11d0-94f2-00a0c91efb8b}')
             ],
-            ((None, 'SYSTEM\\CurrentControlSet'), 'Services\\mbedComposite\\Enum'): [
-                ('0', 'USB\\VID_0D28&PID_0204\\11010000442031204c364141303031313431303397969903'),
-                ('Count', 1),
-                ('NextInstance', 1)
+            (None, 'SYSTEM\\CurrentControlSet\\Services\\USBSTOR\\Enum'): [
+                ('0', 'USB\\VID_0D28&PID_0204&MI_00\\8&26b12a60&0&0000')
             ],
-            ((((None, 'SYSTEM\\CurrentControlSet'), 'Enum\\USB'), 'VID_5986&PID_0706\\5&31ac2c0b&0&8'), 'ParentIdPrefix'): ('6&3beba67&0', None),
-            ((((None, 'SYSTEM\\CurrentControlSet'), 'Enum\\USB'), 'VID_5986&PID_0706&MI_00\\6&3beba67&0&0000'),
-                'Service'): ('SPUVCbv', None),
-            (((None, 'SYSTEM\\CurrentControlSet'), 'Enum\\USB'),
-                'VID_0D28&PID_0204\\11010000442031204c364141303031313431303397969903'): [],
-            ((((None, 'SYSTEM\\CurrentControlSet'), 'Enum\\USB'),
-                'VID_0D28&PID_0204&MI_00\\11010000442031204c364141303031313431303397969903'),
-                'Service'): ('USBSTOR', None),
-            ((((None, 'SYSTEM\\CurrentControlSet'), 'Enum\\USB'),
-                'VID_0D28&PID_0204&MI_01\\11010000442031204c364141303031313431303397969903'),
-                'Device Parameters'): [('PortName', 'COM7')],
-            (((((None, 'SYSTEM\\CurrentControlSet'), 'Enum\\USB'),
-                'VID_0D28&PID_0204&MI_01\\11010000442031204c364141303031313431303397969903'),
-                'Device Parameters'), 'PortName'): ('COM7', None),
-            ((((None, 'SYSTEM\\CurrentControlSet'), 'Enum\\USB'),
-                'VID_0D28&PID_0204&MI_03\\11010000442031204c364141303031313431303397969903'),
-                'Service'): ('HidUsb', None)
+            (None, 'SYSTEM\\CurrentControlSet\\Enum\\USB\\VID_0D28&PID_0204'): [],
+            (((None, 'SYSTEM\\CurrentControlSet\\Enum\\USB\\VID_0D28&PID_0204'),
+                '0240000032044e4500367009997b00086781000097969900'),
+                'ParentIdPrefix'): ('8&26b12a60&0&0000', None),
+            (((None, 'SYSTEM\\CurrentControlSet\\Enum\\USB\\VID_0D28&PID_0204'),
+                '0240000032044e4500367009997b00086781000097969900'),
+                'CompatibleIDs'): ([u'USB\\DevClass_00&SubClass_00&Prot_00', u'USB\\DevClass_00&SubClass_00', u'USB\\DevClass_00', u'USB\\COMPOSITE'], 7),
+            (((None, 'SYSTEM\\CurrentControlSet\\Enum\\USB\\VID_0D28&PID_0204&MI_00'), '8&26b12a60&0&0000'), 'CompatibleIDs'): ([u'USB\\Class_08&SubClass_06&Prot_50', u'USB\\Class_08&SubClass_06', u'USB\\Class_08'], 7),
+            (((None, 'SYSTEM\\CurrentControlSet\\Enum\\USB\\VID_0D28&PID_0204&MI_01'),
+                '8&26b12a60&0&0000'),
+                'CompatibleIDs'): ([u'USB\\CLASS_02&SUBCLASS_02&PROT_01', u'USB\\CLASS_02&SUBCLASS_02', u'USB\\CLASS_02'], 7),
+            ((((None, 'SYSTEM\\CurrentControlSet\\Enum\\USB\\VID_0D28&PID_0204&MI_01'),
+                '8&26b12a60&0&0000'),
+                'Device Parameters'),
+                'PortName'): ('COM7', None)
         }
         key_dict = {
-            (None, 'SYSTEM\\CurrentControlSet'): ['Services\\usbccgp\\Enum', 'Services\\mbedComposite\\Enum'],
-            (None, 'SYSTEM\\CurrentControlSet'): ['Enum\\USB'],
-            ((None, 'SYSTEM\\CurrentControlSet'), 'Enum\\USB'):
-            ['ROOT_HUB30', 'VID_0416&PID_511E', 'VID_0416&PID_511E&MI_00',
-             'VID_0416&PID_511E&MI_01', 'VID_046D&PID_C03D',
-             'VID_046D&PID_C313', 'VID_046D&PID_C313&MI_00',
-             'VID_046D&PID_C313&MI_01', 'VID_046D&PID_C52B',
-             'VID_046D&PID_C52B&MI_00', 'VID_046D&PID_C52B&MI_01',
-             'VID_046D&PID_C52B&MI_02', 'VID_0483&PID_374B',
-             'VID_0483&PID_374B&MI_00', 'VID_0483&PID_374B&MI_01',
-             'VID_0483&PID_374B&MI_02', 'VID_0930&PID_6545',
-             'VID_0D28&PID_0204', 'VID_0D28&PID_0204&MI_00',
-             'VID_0D28&PID_0204&MI_01', 'VID_0D28&PID_0204&MI_03',
-             'VID_1366&PID_1015', 'VID_1366&PID_1015&MI_00',
-             'VID_1366&PID_1015&MI_02', 'VID_1366&PID_1015&MI_03',
-             'VID_138A&PID_0090', 'VID_17EF&PID_100F', 'VID_17EF&PID_1010',
-             'VID_17EF&PID_6019', 'VID_18D1&PID_4EE1', 'VID_195D&PID_2047',
-             'VID_195D&PID_2047&MI_00', 'VID_195D&PID_2047&MI_01',
-             'VID_195D&PID_2047&MI_02', 'VID_1A40&PID_0101', 'VID_1FD2&PID_5003',
-             'VID_1FD2&PID_5003&MI_00', 'VID_1FD2&PID_5003&MI_01',
-             'VID_413C&PID_2107', 'VID_5986&PID_0706', 'VID_5986&PID_0706&MI_00',
-             'VID_8087&PID_0A2B', 'Vid_80EE&Pid_CAFE'],
-            (((None, 'SYSTEM\\CurrentControlSet'), 'Enum\\USB'),
-                'VID_5986&PID_0706&MI_00'): ['6&3beba67&0&0000'],
-            (((None, 'SYSTEM\\CurrentControlSet'), 'Enum\\USB'),
-                'VID_0D28&PID_0204&MI_00'): ['11010000442031204c364141303031313431303397969903'],
-            (((None, 'SYSTEM\\CurrentControlSet'), 'Enum\\USB'),
-                'VID_0D28&PID_0204&MI_01'): ['11010000442031204c364141303031313431303397969903'],
-            ((((None, 'SYSTEM\\CurrentControlSet'), 'Enum\\USB'),
-                'VID_0D28&PID_0204&MI_01'), '11010000442031204c364141303031313431303397969903'): ['Device Parameters'],
-            (((None, 'SYSTEM\\CurrentControlSet'), 'Enum\\USB'),
-                'VID_0D28&PID_0204&MI_03'): ['11010000442031204c364141303031313431303397969903']
+            (None, 'SYSTEM\\CurrentControlSet\\Enum\\USB\\VID_0D28&PID_0204'):
+            ['0240000032044e4500367009997b00086781000097969900'],
+            (None, 'SYSTEM\\CurrentControlSet\\Enum\\USB\\VID_0D28&PID_0204&MI_00'): [],
+            (None, 'SYSTEM\\CurrentControlSet\\Enum\\USB\\VID_0D28&PID_0204&MI_01'): [],
+            (((None, 'SYSTEM\\CurrentControlSet\\Enum\\USB\\VID_0D28&PID_0204&MI_01'),
+                '8&26b12a60&0&0000'),
+                'Device Parameters'): []
         }
         self.setUpRegistry(value_dict, key_dict)
 
         with patch('mbed_lstools.windows.MbedLsToolsWin7._run_cli_process') as _cliproc:
             _cliproc.return_value = ("", "", 0)
             expected_info = {
-                'mount_point': u'F:',
+                'mount_point': 'F:',
                 'serial_port': 'COM7',
-                'target_id_usb_id': u'11010000442031204c364141303031313431303397969903'
+                'target_id_usb_id': u'0240000032044e4500367009997b00086781000097969900'
             }
 
             devices = self.lstool.find_candidates()
