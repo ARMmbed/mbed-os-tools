@@ -137,6 +137,7 @@ def _determine_valid_non_composite_devices(devices, target_id_usb_id_mount_point
         try:
             device_key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, device_key_string)
         except OSError:
+            logger.debug('Key "%s" not found', device_key_string)
             continue
 
         try:
@@ -146,8 +147,9 @@ def _determine_valid_non_composite_devices(devices, target_id_usb_id_mount_point
                          device_key_string)
             continue
 
-        if capability != 'MSD':
-            logger.debug('Expected MSD device, skipping %s', device['full_path'])
+        if capability != 'msd':
+            logger.debug('Expected msd device but got %s, skipping %s', capability,
+                         device['full_path'])
             continue
 
         target_id_usb_id = device['entry_key_string']
@@ -277,7 +279,6 @@ class MbedLsToolsWin7(MbedLsToolsBase):
         candidates = defaultdict(dict)
         candidates.update(_determine_valid_non_composite_devices(non_composite_devices,
                                                                  target_id_usb_id_mount_point_map))
-
         # Now we'll find all valid VID/PID and target ID combinations
         target_id_usb_ids = set(target_id_usb_id_mount_point_map.keys()) - set(candidates.keys())
         vid_pid_entry_key_string_map = defaultdict(set)

@@ -123,7 +123,7 @@ class Win7TestCase(unittest.TestCase):
                     len(value_dict.get(key, [])))
         _winreg.QueryInfoKey.side_effect = query_info_key
 
-    def test_one_dev(self):
+    def test_one_composite_dev(self):
         value_dict = {
             (None, 'SYSTEM\\MountedDevices'): [
                 ('\\DosDevices\\C:', u'NOT A VALID MBED DRIVE'.encode('utf-16le')),
@@ -174,6 +174,44 @@ class Win7TestCase(unittest.TestCase):
             devices = self.lstool.find_candidates()
             self.assertIn(expected_info, devices)
             self.assertNoRegMut()
+
+
+    def test_one_non_composite_dev(self):
+        value_dict = {
+            (None, 'SYSTEM\\MountedDevices'): [
+                ('\\DosDevices\\C:', u'NOT A VALID MBED DRIVE'.encode('utf-16le')),
+                ('\\DosDevices\\F:',
+                 u'_??_USBSTOR#Disk&Ven_MBED&Prod_VFS&Rev_0.1#0000000032044e4500367009997b00086781000097969900&0#{53f56307-b6bf-11d0-94f2-00a0c91efb8b}'.encode('utf-16le'))
+            ],
+            (None, 'SYSTEM\\CurrentControlSet\\Services\\volume\\Enum'): [
+                ('0', 'STORAGE\\Volume\\_??_USBSTOR#Disk&Ven_MBED&Prod_VFS&Rev_0.1#0000000032044e4500367009997b00086781000097969900&0#{53f56307-b6bf-11d0-94f2-00a0c91efb8b}')
+            ],
+            (None, 'SYSTEM\\CurrentControlSet\\Services\\USBSTOR\\Enum'): [
+                ('0', 'USB\\VID_0D28&PID_0204\\0000000032044e4500367009997b00086781000097969900')
+            ],
+            (None, 'SYSTEM\\CurrentControlSet\\Enum\\USB\\VID_0D28&PID_0204'): [],
+            ((None, 'SYSTEM\\CurrentControlSet\\Enum\\USB\\VID_0D28&PID_0204\\0000000032044e4500367009997b00086781000097969900'),
+                'CompatibleIDs'): ([u'USB\\Class_08&SubClass_06&Prot_50', u'USB\\Class_08&SubClass_06', u'USB\\Class_08'], 7)
+        }
+        key_dict = {
+            (None, 'SYSTEM\\CurrentControlSet\\Enum\\USB\\VID_0D28&PID_0204'):
+            ['0000000032044e4500367009997b00086781000097969900'],
+            (None, 'SYSTEM\\CurrentControlSet\\Enum\\USB\\VID_0D28&PID_0204\\0000000032044e4500367009997b00086781000097969900'): []
+        }
+        self.setUpRegistry(value_dict, key_dict)
+
+        with patch('mbed_lstools.windows.MbedLsToolsWin7._run_cli_process') as _cliproc:
+            _cliproc.return_value = ("", "", 0)
+            expected_info = {
+                'mount_point': 'F:',
+                'serial_port': None,
+                'target_id_usb_id': u'0000000032044e4500367009997b00086781000097969900'
+            }
+
+            devices = self.lstool.find_candidates()
+            self.assertIn(expected_info, devices)
+            self.assertNoRegMut()
+
 
     def test_mount_point_ready(self):
         with patch('mbed_lstools.windows.MbedLsToolsWin7._run_cli_process') as _cliproc:
