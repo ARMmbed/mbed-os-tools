@@ -35,6 +35,11 @@ class Win7TestCase(unittest.TestCase):
 
     def setUp(self):
         self.lstool = MbedLsToolsWin7()
+        import logging
+        logging.basicConfig()
+        root_logger = logging.getLogger("mbedls")
+        root_logger.setLevel(logging.DEBUG)
+        del logging
         _winreg.HKEY_LOCAL_MACHINE = None
         _winreg.OpenKey.side_effect = None
         _winreg.EnumValue.side_effect = None
