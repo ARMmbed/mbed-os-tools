@@ -301,17 +301,6 @@ class MbedLsToolsWin7(MbedLsToolsBase):
             for target_id_usb_id in overlapping_target_id_usb_ids:
                 composite_device_key_string = '%s\\%s' % (vid_pid_key_string, target_id_usb_id)
                 composite_device_key = winreg.OpenKey(vid_pid_key, target_id_usb_id)
-                try:
-                    capability = _determine_subdevice_capability(composite_device_key)
-                except CompatibleIDsNotFoundException:
-                    logger.debug('Expected %s to have subkey "CompatibleIDs". Skipping.',
-                                 composite_device_key_string)
-                    continue
-
-                if capability != 'composite':
-                    logger.debug('Expected %s to be a composite device instead of "%s". Skipping.',
-                                 composite_device_key_string, capability)
-                    continue
 
                 entry_key_string = target_id_usb_id
                 is_prefix = False
@@ -323,7 +312,9 @@ class MbedLsToolsWin7(MbedLsToolsBase):
                                   entry_key_string, target_id_usb_id)
                     is_prefix = True
                 except OSError:
-                    logger.debug('Device %s did not have a "ParentIdPrefix" key, sticking with %s as entry key string')
+                    logger.debug('Device %s did not have a "ParentIdPrefix" key, '
+                                 'sticking with %s as entry key string',
+                                 composite_device_key_string, target_id_usb_id)
 
                 if not any(e.startswith(entry_key_string) for e in entry_key_strings):
                     logger.debug('Expected ParentIdPrefix "%s" from device with '
@@ -369,8 +360,8 @@ class MbedLsToolsWin7(MbedLsToolsBase):
                         continue
 
                     if capability == 'msd':
-                        candidates[target_id_usb_id]['mount_point'] = \
-                            target_id_usb_id_mount_point_map[target_id_usb_id]
+                        candidates[entry_data['target_id_usb_id']]['mount_point'] = \
+                            target_id_usb_id_mount_point_map[entry_data['target_id_usb_id']]
                     elif capability == 'serial':
                         try:
                             device_parameters_key = winreg.OpenKey(subdevice_key,
@@ -380,7 +371,7 @@ class MbedLsToolsWin7(MbedLsToolsBase):
                             continue
 
                         try:
-                            candidates[target_id_usb_id]['serial_port'], _ = winreg.QueryValueEx(
+                            candidates[entry_data['target_id_usb_id']]['serial_port'], _ = winreg.QueryValueEx(
                                 device_parameters_key, 'PortName')
                         except OSError:
                             logger.debug('"PortName" value not found under serial device entry')
