@@ -144,16 +144,16 @@ class Win7TestCase(unittest.TestCase):
             (None, 'SYSTEM\\CurrentControlSet\\Enum\\USB\\VID_0D28&PID_0204'): [],
             (((None, 'SYSTEM\\CurrentControlSet\\Enum\\USB\\VID_0D28&PID_0204'),
                 '0240000032044e4500367009997b00086781000097969900'),
-                'ParentIdPrefix'): ('8&26b12a60&0&0000', None),
+                'ParentIdPrefix'): ('8&26b12a60&0', None),
             (((None, 'SYSTEM\\CurrentControlSet\\Enum\\USB\\VID_0D28&PID_0204'),
                 '0240000032044e4500367009997b00086781000097969900'),
                 'CompatibleIDs'): ([u'USB\\DevClass_00&SubClass_00&Prot_00', u'USB\\DevClass_00&SubClass_00', u'USB\\DevClass_00', u'USB\\COMPOSITE'], 7),
             (((None, 'SYSTEM\\CurrentControlSet\\Enum\\USB\\VID_0D28&PID_0204&MI_00'), '8&26b12a60&0&0000'), 'CompatibleIDs'): ([u'USB\\Class_08&SubClass_06&Prot_50', u'USB\\Class_08&SubClass_06', u'USB\\Class_08'], 7),
             (((None, 'SYSTEM\\CurrentControlSet\\Enum\\USB\\VID_0D28&PID_0204&MI_01'),
-                '8&26b12a60&0&0000'),
+                '8&26b12a60&0&0001'),
                 'CompatibleIDs'): ([u'USB\\CLASS_02&SUBCLASS_02&PROT_01', u'USB\\CLASS_02&SUBCLASS_02', u'USB\\CLASS_02'], 7),
             ((((None, 'SYSTEM\\CurrentControlSet\\Enum\\USB\\VID_0D28&PID_0204&MI_01'),
-                '8&26b12a60&0&0000'),
+                '8&26b12a60&0&0001'),
                 'Device Parameters'),
                 'PortName'): ('COM7', None)
         }
@@ -163,7 +163,7 @@ class Win7TestCase(unittest.TestCase):
             (None, 'SYSTEM\\CurrentControlSet\\Enum\\USB\\VID_0D28&PID_0204&MI_00'): [],
             (None, 'SYSTEM\\CurrentControlSet\\Enum\\USB\\VID_0D28&PID_0204&MI_01'): [],
             (((None, 'SYSTEM\\CurrentControlSet\\Enum\\USB\\VID_0D28&PID_0204&MI_01'),
-                '8&26b12a60&0&0000'),
+                '8&26b12a60&0&0001'),
                 'Device Parameters'): []
         }
         self.setUpRegistry(value_dict, key_dict)

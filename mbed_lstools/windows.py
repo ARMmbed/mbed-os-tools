@@ -314,22 +314,28 @@ class MbedLsToolsWin7(MbedLsToolsBase):
                     continue
 
                 entry_key_string = target_id_usb_id
+                is_prefix = False
+
                 try:
                     entry_key_string, _ = winreg.QueryValueEx(composite_device_key, 'ParentIdPrefix')
                     logger.debug('Assigning new entry key string of %s to device %s, '
                                  'as found in ParentIdPrefix',
                                   entry_key_string, target_id_usb_id)
+                    is_prefix = True
                 except OSError:
                     logger.debug('Device %s did not have a "ParentIdPrefix" key, sticking with %s as entry key string')
 
-                if entry_key_string not in entry_key_strings:
-                    logger.debug('Expected entry key string "%s" from device with '
-                                  'target_id_usb_id "%s" to be present in VID/PID path "%s". '
+                if not any(e.startswith(entry_key_string) for e in entry_key_strings):
+                    logger.debug('Expected ParentIdPrefix "%s" from device with '
+                                  'target_id_usb_id "%s" to match an entry in the VID/PID path "%s". '
                                   'Skipping.',
                                   entry_key_string, target_id_usb_id, vid_pid_path)
                     continue
 
-                vid_pid_target_id_usb_id_map[vid_pid_path][entry_key_string] = target_id_usb_id
+                vid_pid_target_id_usb_id_map[vid_pid_path][entry_key_string] = {
+                    'target_id_usb_id': target_id_usb_id,
+                    'is_prefix': is_prefix
+                }
 
         for vid_pid_path, entry_key_string_target_id_usb_id_map in vid_pid_target_id_usb_id_map.items():
             for composite_device_subdevice_number in range(MAX_COMPOSITE_DEVICE_SUBDEVICES):
@@ -342,10 +348,15 @@ class MbedLsToolsWin7(MbedLsToolsBase):
                                  subdevice_type_key_string)
                     continue
 
-                for entry_key_string, target_id_usb_id in entry_key_string_target_id_usb_id_map.items():
-                    subdevice_key_string = '%s\\%s' % (subdevice_type_key_string, entry_key_string)
+                for entry_key_string, entry_data in entry_key_string_target_id_usb_id_map.items():
+                    if entry_data['is_prefix']:
+                        prepared_entry_key_string = '%s&000%d' % (entry_key_string,
+                                                                  composite_device_subdevice_number)
+                    else:
+                        prepared_entry_key_string = entry_key_string
+                    subdevice_key_string = '%s\\%s' % (subdevice_type_key_string, prepared_entry_key_string)
                     try:
-                        subdevice_key = winreg.OpenKey(subdevice_type_key, entry_key_string)
+                        subdevice_key = winreg.OpenKey(subdevice_type_key, prepared_entry_key_string)
                     except OSError:
                         logger.debug('Sub-device %s not found, skipping', subdevice_key_string)
                         continue
