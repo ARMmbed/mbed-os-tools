@@ -68,7 +68,7 @@ class BasicTestCase(unittest.TestCase):
             _listdir.return_value = []
             to_check = self.base.list_mbeds()
             _read_htm.assert_called_once_with('dummy_mount_point')
-            _get.assert_called_once_with('0241', device_type='daplink', verbose_data=True)
+            _get.assert_any_call('0241', device_type='daplink', verbose_data=True)
         self.assertEqual(len(to_check), 1)
         self.assertEqual(to_check[0]['target_id'], "0241BEEFDEAD")
         self.assertEqual(to_check[0]['platform_name'], 'foo_target')
@@ -91,7 +91,7 @@ class BasicTestCase(unittest.TestCase):
             }
             _listdir.return_value = []
             to_check = self.base.list_mbeds()
-            _get.assert_called_once_with('0241', device_type='daplink', verbose_data=True)
+            _get.assert_any_call('0241', device_type='daplink', verbose_data=True)
         self.assertEqual(len(to_check), 2)
         self.assertEqual(to_check[0]['target_id'], "0241BEEFDEAD")
         self.assertEqual(to_check[0]['platform_name'], 'foo_target')
@@ -113,7 +113,7 @@ class BasicTestCase(unittest.TestCase):
                 _listdir.return_value = []
                 to_check = self.base.list_mbeds()
                 _read_htm.assert_called_once_with('dummy_mount_point')
-                _get.assert_called_once_with('not_', device_type='daplink', verbose_data=True)
+                _get.assert_any_call('not_', device_type='daplink', verbose_data=True)
             self.assertEqual(len(to_check), 1)
             self.assertEqual(to_check[0]['target_id'], "not_in_target_db")
             self.assertEqual(to_check[0]['platform_name'], None)
