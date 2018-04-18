@@ -38,7 +38,7 @@ else:
 
 
 MAX_COMPOSITE_DEVICE_SUBDEVICES = 5
-MBED_STORAGE_DEVICE_VENDOR_STRINGS = ['ven_mbed', 'ven_segger', 'ven_arm_v2m']
+MBED_STORAGE_DEVICE_VENDOR_STRINGS = ['ven_mbed', 'ven_segger', 'ven_arm_v2m', 'ven_nxp']
 
 
 def _get_values_with_numeric_keys(reg_key):
@@ -54,7 +54,6 @@ def _get_values_with_numeric_keys(reg_key):
                 continue
     except OSError:
         logger.debug('Failed to iterate over all keys')
-        pass
 
     return result
 
@@ -89,7 +88,7 @@ def _get_cached_mounted_points():
             mount_point_match = re.match('.*\\\\(.:)$', v[0])
 
             if not mount_point_match:
-                logger.debug('Invalid disk pattern for entry %s, skipping' % v[0])
+                logger.debug('Invalid disk pattern for entry %s, skipping', v[0])
                 continue
 
             mount_point = mount_point_match.group(1)
@@ -163,7 +162,6 @@ def _determine_valid_non_composite_devices(devices, target_id_usb_id_mount_point
 
     return candidates
 
-
 def _determine_subdevice_capability(key):
     try:
         type = None
@@ -178,13 +176,9 @@ def _determine_subdevice_capability(key):
         return 'msd'
     elif 'usb\\class_02' in compatible_ids:
         return 'serial'
-    elif 'usb\\class_03' in compatible_ids or 'usb\\class_ff' in compatible_ids:
-        return 'debug'
     else:
         logger.debug('Unknown capabilities from the following ids: %s', compatible_ids)
         return None
-
-
 
 # =============================== Start Registry Functions ====================================
 
@@ -194,13 +188,11 @@ def _iter_keys_as_str(key):
     for i in range(winreg.QueryInfoKey(key)[0]):
         yield winreg.EnumKey(key, i)
 
-
 def _iter_keys(key):
     """! Iterate over subkeys of a key
     """
     for i in range(winreg.QueryInfoKey(key)[0]):
         yield winreg.OpenKey(key, winreg.EnumKey(key, i))
-
 
 def _iter_vals(key):
     """! Iterate over values of a key
@@ -219,8 +211,6 @@ class CompatibleIDsNotFoundException(Exception):
 class MbedLsToolsWin7(MbedLsToolsBase):
     """ mbed-enabled platform detection for Windows
     """
-
-    _COMPOSITE_USB_SERVICES = ['usbccgp', 'mbedComposite']
 
     def __init__(self, **kwargs):
         MbedLsToolsBase.__init__(self, **kwargs)
