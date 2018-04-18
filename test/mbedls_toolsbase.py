@@ -78,7 +78,7 @@ class BasicTestCase(unittest.TestCase):
                                    'target_id_usb_id': u'0240DEADBEEF',
                                    'serial_port': "dummy_serial_port"},
                                   {'mount_point': 'dummy_mount_point',
-                                   'target_id_usb_id': None,
+                                   'target_id_usb_id': "",
                                    'serial_port': 'not_valid'}]
         with patch("mbed_lstools.lstools_base.MbedLsToolsBase._read_htm_ids") as _read_htm,\
              patch("mbed_lstools.lstools_base.MbedLsToolsBase.mount_point_ready") as _mpr,\
@@ -95,7 +95,7 @@ class BasicTestCase(unittest.TestCase):
         self.assertEqual(len(to_check), 2)
         self.assertEqual(to_check[0]['target_id'], "0241BEEFDEAD")
         self.assertEqual(to_check[0]['platform_name'], 'foo_target')
-        self.assertEqual(to_check[1]['target_id'], None)
+        self.assertEqual(to_check[1]['target_id'], "")
         self.assertEqual(to_check[1]['platform_name'], None)
 
     def test_list_mbeds_invalid_platform(self):
