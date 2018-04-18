@@ -170,7 +170,8 @@ class MbedLsToolsBase(object):
         device['target_id_mbed_htm'] = None
         platform_data = self.plat_db.get(device['target_id'][0:4],
                                          verbose_data=True)
-        device.update(platform_data)
+        if platform_data:
+            device.update(platform_data)
         if not filter_function or filter_function(device):
             return device
         else:
@@ -195,7 +196,8 @@ class MbedLsToolsBase(object):
         device['target_id'] = device['target_id_usb_id']
         device['target_id_mbed_htm'] = None
         platform_data = self.plat_db.get(device['target_id'][0:4], verbose_data=True)
-        device.update(platform_data)
+        if platform_data:
+            device.update(platform_data)
         if not filter_function or filter_function(device):
             self._update_device_from_fs(device, read_details_txt)
             return device
@@ -255,7 +257,8 @@ class MbedLsToolsBase(object):
             platform_data = self.plat_db.get(device['target_id'][0:4],
                                              device_type='daplink',
                                              verbose_data=True)
-            device.update(platform_data)
+            if platform_data:
+                device.update(platform_data)
         else:
             device['platform_name'] = None
 
@@ -286,7 +289,8 @@ class MbedLsToolsBase(object):
                 platform_data = self.plat_db.get(identifier,
                                                  device_type='jlink',
                                                  verbose_data=True)
-                device.update(platform_data)
+                if platform_data:
+                    device.update(platform_data)
                 break
 
 
