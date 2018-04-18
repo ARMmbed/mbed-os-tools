@@ -142,6 +142,7 @@ class BasicTestCase(unittest.TestCase):
         self.assertEqual(len(to_check), 1)
         self.assertEqual(to_check[0]['mount_point'], None)
         self.assertEqual(to_check[0]['device_type'], 'unknown')
+        self.assertEqual(to_check[0]['platform_name'], 'K64F')
 
     def test_list_manufacture_ids(self):
         table_str = self.base.list_manufacture_ids()
@@ -255,6 +256,7 @@ class BasicTestCase(unittest.TestCase):
             self.assertIsNotNone(ret[0])
             self.assertIsNotNone(ret_with_details[0])
             self.assertEqual(ret[0]['target_id'], ret[0]['target_id_usb_id'])
+            self.assertEqual(ret[0]['platform_name'], "K64F")
             self.assertEqual(ret[0], ret_with_details[0])
             _up_fs.assert_not_called()
 
@@ -264,6 +266,7 @@ class BasicTestCase(unittest.TestCase):
             self.assertIsNotNone(ret[0])
             self.assertIsNotNone(ret_with_details[0])
             self.assertEqual(ret[0]['target_id'], ret[0]['target_id_usb_id'])
+            self.assertEqual(ret[0]['platform_name'], "K64F")
             self.assertEqual(ret[0], ret_with_details[0])
             _up_fs.assert_not_called()
 
