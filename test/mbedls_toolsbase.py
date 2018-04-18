@@ -246,28 +246,32 @@ class BasicTestCase(unittest.TestCase):
             'mount_point': 'invalid_mount_point',
             'serial_port': 'invalid_serial_port'
         }
+        self.base.return_value = [device]
+        self.base.list_unmounted = True
         with patch("mbed_lstools.lstools_base.MbedLsToolsBase._update_device_from_fs") as _up_fs:
             filter = None
-            ret = self.base._fs_never(deepcopy(device), filter, False)
-            ret_with_details = self.base._fs_never(deepcopy(device), filter, True)
-            self.assertIsNotNone(ret)
-            self.assertIsNotNone(ret_with_details)
-            self.assertEqual(ret['target_id'], ret['target_id_usb_id'])
-            self.assertEqual(ret, ret_with_details)
+            ret = self.base.list_mbeds(FSInteraction.Never, filter, read_details_txt=False)
+            ret_with_details = self.base.list_mbeds(FSInteraction.Never, filter, read_details_txt=True)
+            self.assertIsNotNone(ret[0])
+            self.assertIsNotNone(ret_with_details[0])
+            self.assertEqual(ret[0]['target_id'], ret[0]['target_id_usb_id'])
+            self.assertEqual(ret[0], ret_with_details[0])
             _up_fs.assert_not_called()
 
             filter_in = lambda m: m['platform_name'] == 'K64F'
-            ret = self.base._fs_never(deepcopy(device), filter_in, False)
-            ret_with_details = self.base._fs_never(deepcopy(device), filter_in, True)
-            self.assertIsNotNone(ret)
-            self.assertIsNotNone(ret_with_details)
-            self.assertEqual(ret, ret_with_details)
+            ret = self.base.list_mbeds(FSInteraction.Never, filter_in, read_details_txt=False)
+            ret_with_details = self.base.list_mbeds(FSInteraction.Never, filter_in, read_details_txt=True)
+            self.assertIsNotNone(ret[0])
+            self.assertIsNotNone(ret_with_details[0])
+            self.assertEqual(ret[0]['target_id'], ret[0]['target_id_usb_id'])
+            self.assertEqual(ret[0], ret_with_details[0])
             _up_fs.assert_not_called()
 
             filter_out = lambda m: m['platform_name'] != 'K64F'
-            ret = self.base._fs_never(deepcopy(device), filter_out, False)
-            ret_with_details = self.base._fs_never(deepcopy(device), filter_out, True)
-            self.assertIsNone(ret)
+            ret = self.base.list_mbeds(FSInteraction.Never, filter_out, read_details_txt=False)
+            ret_with_details = self.base.list_mbeds(FSInteraction.Never, filter_out, read_details_txt=True)
+            _up_fs.assert_not_called()
+            self.assertEqual(ret, [])
             self.assertEqual(ret, ret_with_details)
             _up_fs.assert_not_called()
 
