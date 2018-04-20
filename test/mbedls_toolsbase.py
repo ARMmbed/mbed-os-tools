@@ -351,6 +351,7 @@ class BasicTestCase(unittest.TestCase):
             'mount_point': 'invalid_mount_point',
             'serial_port': 'invalid_serial_port'
         }
+        self.base.list_unmounted = True
         with patch("mbed_lstools.lstools_base.MbedLsToolsBase._read_htm_ids") as _read_htm,\
              patch("mbed_lstools.lstools_base.MbedLsToolsBase._details_txt") as _up_details,\
              patch('os.listdir') as _listdir:
@@ -362,15 +363,19 @@ class BasicTestCase(unittest.TestCase):
             }
 
             filter = None
-            ret = self.base._fs_before_id_check(deepcopy(device), filter, False)
+            self.base.return_value = [deepcopy(device)]
+            ret = self.base.list_mbeds(
+                FSInteraction.BeforeFilter, filter, False, False)
             _up_details.assert_not_called()
 
-            ret_with_details = self.base._fs_before_id_check(deepcopy(device), filter, True)
-            self.assertIsNotNone(ret)
-            self.assertIsNotNone(ret_with_details)
-            self.assertEqual(ret['target_id'], new_device_id)
-            self.assertEqual(ret_with_details['daplink_automation_allowed'], '0')
-            self.assertDictContainsSubset(ret, ret_with_details)
+            self.base.return_value = [deepcopy(device)]
+            ret_with_details = self.base.list_mbeds(
+                FSInteraction.BeforeFilter, filter, False, True)
+            self.assertIsNotNone(ret[0])
+            self.assertIsNotNone(ret_with_details[0])
+            self.assertEqual(ret[0]['target_id'], new_device_id)
+            self.assertEqual(ret_with_details[0]['daplink_automation_allowed'], '0')
+            self.assertDictContainsSubset(ret[0], ret_with_details[0])
             _read_htm.assert_called_with(device['mount_point'])
             _up_details.assert_called_with(device['mount_point'])
 
@@ -379,17 +384,20 @@ class BasicTestCase(unittest.TestCase):
 
             filter_in = lambda m: m['target_id'] == '00017575430420'
             filter_in_details = lambda m: m['daplink_automation_allowed'] == '0'
-            ret = self.base._fs_before_id_check(deepcopy(device), filter_in, False)
+            self.base.return_value = [deepcopy(device)]
+            ret = self.base.list_mbeds(
+                FSInteraction.BeforeFilter, filter_in, False, False)
             _up_details.assert_not_called()
 
-            ret_with_details = self.base._fs_before_id_check(deepcopy(device),
-                                                             filter_in_details,
-                                                             True)
-            self.assertIsNotNone(ret)
-            self.assertIsNotNone(ret_with_details)
-            self.assertEqual(ret['target_id'], new_device_id)
-            self.assertEqual(ret_with_details['daplink_automation_allowed'], '0')
-            self.assertDictContainsSubset(ret, ret_with_details)
+            self.base.return_value = [deepcopy(device)]
+            ret_with_details = self.base.list_mbeds(
+                FSInteraction.BeforeFilter, filter_in_details, False, True)
+
+            self.assertIsNotNone(ret[0])
+            self.assertIsNotNone(ret_with_details[0])
+            self.assertEqual(ret[0]['target_id'], new_device_id)
+            self.assertEqual(ret_with_details[0]['daplink_automation_allowed'], '0')
+            self.assertDictContainsSubset(ret[0], ret_with_details[0])
             _read_htm.assert_called_with(device['mount_point'])
             _up_details.assert_called_with(device['mount_point'])
 
@@ -398,14 +406,16 @@ class BasicTestCase(unittest.TestCase):
 
             filter_out = lambda m: m['target_id'] == '024075309420ABCE'
             filter_out_details = lambda m: m['daplink_automation_allowed'] == '1'
-            ret = self.base._fs_before_id_check(deepcopy(device), filter_out, False)
+            ret = self.base.list_mbeds(
+                FSInteraction.BeforeFilter, filter_out, False, False)
             _up_details.assert_not_called()
 
-            ret_with_details = self.base._fs_before_id_check(deepcopy(device),
-                                                             filter_out_details,
-                                                             True)
-            self.assertIsNone(ret)
-            self.assertIsNone(ret_with_details)
+            self.base.return_value = [deepcopy(device)]
+            ret_with_details = self.base.list_mbeds(
+                FSInteraction.BeforeFilter, filter_out_details, False, True)
+
+            self.assertEqual(ret, [])
+            self.assertEqual(ret_with_details, [])
             _read_htm.assert_called_with(device['mount_point'])
 
 class RetargetTestCase(unittest.TestCase):
