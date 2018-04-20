@@ -284,6 +284,7 @@ class BasicTestCase(unittest.TestCase):
             'mount_point': 'invalid_mount_point',
             'serial_port': 'invalid_serial_port'
         }
+        self.base.list_unmounted = True
         with patch("mbed_lstools.lstools_base.MbedLsToolsBase._read_htm_ids") as _read_htm,\
              patch("mbed_lstools.lstools_base.MbedLsToolsBase._details_txt") as _up_details,\
              patch('os.listdir') as _listdir:
@@ -294,15 +295,17 @@ class BasicTestCase(unittest.TestCase):
                 'automation_allowed': '0'
             }
             filter = None
-            ret = self.base._fs_after_id_check(deepcopy(device), filter, False)
+            self.base.return_value = [deepcopy(device)]
+            ret = self.base.list_mbeds(FSInteraction.AfterFilter, filter, False, False)
             _up_details.assert_not_called()
-            ret_with_details = self.base._fs_after_id_check(deepcopy(device), filter, True)
+            self.base.return_value = [deepcopy(device)]
+            ret_with_details = self.base.list_mbeds(FSInteraction.AfterFilter, filter, False, True)
 
-            self.assertIsNotNone(ret)
-            self.assertIsNotNone(ret_with_details)
-            self.assertEqual(ret['target_id'], new_device_id)
-            self.assertEqual(ret_with_details['daplink_automation_allowed'], '0')
-            self.assertDictContainsSubset(ret, ret_with_details)
+            self.assertIsNotNone(ret[0])
+            self.assertIsNotNone(ret_with_details[0])
+            self.assertEqual(ret[0]['target_id'], new_device_id)
+            self.assertEqual(ret_with_details[0]['daplink_automation_allowed'], '0')
+            self.assertDictContainsSubset(ret[0], ret_with_details[0])
             _read_htm.assert_called_with(device['mount_point'])
             _up_details.assert_called_with(device['mount_point'])
 
@@ -312,14 +315,16 @@ class BasicTestCase(unittest.TestCase):
             filter_in = lambda m: m['target_id'] == device['target_id_usb_id']
             filter_details = lambda m: m.get('daplink_automation_allowed', None) == '0'
 
-            ret = self.base._fs_after_id_check(deepcopy(device), filter_in, False)
-            ret_with_details = self.base._fs_after_id_check(deepcopy(device),
-                                                            filter_details,
-                                                            True)
+            self.base.return_value = [deepcopy(device)]
+            ret = self.base.list_mbeds(
+                FSInteraction.AfterFilter, filter_in, False, False)
+            self.base.return_value = [deepcopy(device)]
+            ret_with_details = self.base.list_mbeds(
+                FSInteraction.AfterFilter, filter_details, False, True)
 
-            self.assertIsNotNone(ret)
-            self.assertIsNone(ret_with_details)
-            self.assertEqual(ret['target_id'], new_device_id)
+            self.assertIsNotNone(ret[0])
+            self.assertEqual(ret_with_details, [])
+            self.assertEqual(ret[0]['target_id'], new_device_id)
             _read_htm.assert_called_with(device['mount_point'])
             _up_details.assert_not_called()
 
@@ -328,13 +333,15 @@ class BasicTestCase(unittest.TestCase):
 
             filter_out = lambda m: m['target_id'] == new_device_id
 
-            ret = self.base._fs_after_id_check(deepcopy(device), filter_out, False)
-            ret_with_details = self.base._fs_after_id_check(deepcopy(device),
-                                                            filter_details,
-                                                            True)
+            self.base.return_value = [deepcopy(device)]
+            ret = self.base.list_mbeds(
+                FSInteraction.AfterFilter, filter_out, False, False)
+            self.base.return_value = [deepcopy(device)]
+            ret_with_details = self.base.list_mbeds(
+                FSInteraction.AfterFilter, filter_out, False, True)
 
-            self.assertIsNone(ret)
-            self.assertIsNone(ret_with_details)
+            self.assertEqual(ret, [])
+            self.assertEqual(ret_with_details, [])
             _read_htm.assert_not_called()
             _up_details.assert_not_called()
 
