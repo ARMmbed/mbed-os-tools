@@ -248,8 +248,10 @@ class BasicTestCase(unittest.TestCase):
             'serial_port': 'invalid_serial_port'
         }
         self.base.return_value = [device]
-        self.base.list_unmounted = True
-        with patch("mbed_lstools.lstools_base.MbedLsToolsBase._update_device_from_fs") as _up_fs:
+        with patch("mbed_lstools.lstools_base.MbedLsToolsBase._update_device_from_fs") as _up_fs,\
+             patch("mbed_lstools.lstools_base.MbedLsToolsBase.mount_point_ready") as mount_point_ready:
+            mount_point_ready.return_value = True
+
             filter = None
             ret = self.base.list_mbeds(FSInteraction.Never, filter, read_details_txt=False)
             ret_with_details = self.base.list_mbeds(FSInteraction.Never, filter, read_details_txt=True)
@@ -284,9 +286,9 @@ class BasicTestCase(unittest.TestCase):
             'mount_point': 'invalid_mount_point',
             'serial_port': 'invalid_serial_port'
         }
-        self.base.list_unmounted = True
         with patch("mbed_lstools.lstools_base.MbedLsToolsBase._read_htm_ids") as _read_htm,\
              patch("mbed_lstools.lstools_base.MbedLsToolsBase._details_txt") as _up_details,\
+             patch("mbed_lstools.lstools_base.MbedLsToolsBase.mount_point_ready") as mount_point_ready,\
              patch('os.listdir') as _listdir:
             new_device_id = "00017531642046"
             _read_htm.return_value = (new_device_id, {})
@@ -294,6 +296,8 @@ class BasicTestCase(unittest.TestCase):
             _up_details.return_value = {
                 'automation_allowed': '0'
             }
+            mount_point_ready.return_value = True
+
             filter = None
             self.base.return_value = [deepcopy(device)]
             ret = self.base.list_mbeds(FSInteraction.AfterFilter, filter, False, False)
@@ -351,9 +355,9 @@ class BasicTestCase(unittest.TestCase):
             'mount_point': 'invalid_mount_point',
             'serial_port': 'invalid_serial_port'
         }
-        self.base.list_unmounted = True
         with patch("mbed_lstools.lstools_base.MbedLsToolsBase._read_htm_ids") as _read_htm,\
              patch("mbed_lstools.lstools_base.MbedLsToolsBase._details_txt") as _up_details,\
+             patch("mbed_lstools.lstools_base.MbedLsToolsBase.mount_point_ready") as mount_point_ready,\
              patch('os.listdir') as _listdir:
             new_device_id = u'00017575430420'
             _read_htm.return_value = (new_device_id, {})
@@ -361,6 +365,7 @@ class BasicTestCase(unittest.TestCase):
             _up_details.return_value = {
                 'automation_allowed': '0'
             }
+            mount_point_ready.return_value = True
 
             filter = None
             self.base.return_value = [deepcopy(device)]
