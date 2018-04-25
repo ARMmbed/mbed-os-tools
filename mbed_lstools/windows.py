@@ -104,15 +104,15 @@ def _get_cached_mounted_points():
     return result
 
 
-def _get_volumes():
-    logger.debug('Fetching mounted devices from volume service registry entry')
+def _get_disks():
+    logger.debug('Fetching mounted devices from disk service registry entry')
     try:
-        volumes_key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE,
-                                     'SYSTEM\\CurrentControlSet\\Services\\volume\\Enum')
-        volume_strings = _get_values_with_numeric_keys(volumes_key)
-        return [v for v in volume_strings if _is_mbed_volume(v)]
+        disks_key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE,
+                                     'SYSTEM\\CurrentControlSet\\Services\\Disk\\Enum')
+        disk_strings = _get_values_with_numeric_keys(disks_key)
+        return [v for v in disk_strings if _is_mbed_volume(v)]
     except OSError:
-        logger.debug('No volumes service found, no device can be detected')
+        logger.debug('No disk service found, no device can be detected')
         return []
 
 
@@ -219,13 +219,14 @@ class MbedLsToolsWin7(MbedLsToolsBase):
 
     def find_candidates(self):
         cached_mount_points = _get_cached_mounted_points()
-        volumes = _get_volumes()
+        disks = _get_disks()
         usb_storage_devices = _get_usb_storage_devices()
 
         target_id_usb_id_mount_point_map = {}
         for cached_mount_point_info in cached_mount_points:
-            for index, volume in enumerate(copy(volumes)):
-                if volume.endswith(cached_mount_point_info['volume_string']):
+            for index, disk in enumerate(copy(disks)):
+                match_string = disk.split('\\')[-1]
+                if match_string in cached_mount_point_info['volume_string']:
                     # TargetID is a hex string with 10-48 chars
                     target_id_usb_id_match = re.search('[&#]([0-9A-Za-z]{10,48})[&#]',
                                                 cached_mount_point_info['volume_string'])
@@ -236,7 +237,7 @@ class MbedLsToolsWin7(MbedLsToolsBase):
                         continue
 
                     target_id_usb_id_mount_point_map[target_id_usb_id_match.group(1)] = cached_mount_point_info['mount_point']
-                    volumes.pop(index)
+                    disks.pop(index)
                     break
 
 
@@ -296,22 +297,19 @@ class MbedLsToolsWin7(MbedLsToolsBase):
                 is_prefix = False
 
                 try:
-                    entry_key_string, _ = winreg.QueryValueEx(composite_device_key, 'ParentIdPrefix')
-                    logger.debug('Assigning new entry key string of %s to device %s, '
-                                 'as found in ParentIdPrefix',
-                                  entry_key_string, target_id_usb_id)
-                    is_prefix = True
+                    new_entry_key_string, _ = winreg.QueryValueEx(composite_device_key, 'ParentIdPrefix')
+
+                    if any(e.startswith(new_entry_key_string) for e in entry_key_strings):
+                        logger.debug('Assigning new entry key string of %s to device %s, '
+                                     'as found in ParentIdPrefix',
+                                      new_entry_key_string, target_id_usb_id)
+                        entry_key_string = new_entry_key_string
+                        is_prefix = True
                 except OSError:
                     logger.debug('Device %s did not have a "ParentIdPrefix" key, '
                                  'sticking with %s as entry key string',
                                  composite_device_key_string, target_id_usb_id)
 
-                if not any(e.startswith(entry_key_string) for e in entry_key_strings):
-                    logger.debug('Expected ParentIdPrefix "%s" from device with '
-                                  'target_id_usb_id "%s" to match an entry in the VID/PID path "%s". '
-                                  'Skipping.',
-                                  entry_key_string, target_id_usb_id, vid_pid_path)
-                    continue
 
                 vid_pid_target_id_usb_id_map[vid_pid_path][entry_key_string] = {
                     'target_id_usb_id': target_id_usb_id,
