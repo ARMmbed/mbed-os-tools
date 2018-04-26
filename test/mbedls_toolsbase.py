@@ -129,6 +129,50 @@ class BasicTestCase(unittest.TestCase):
             to_check = self.base.list_mbeds()
         self.assertEqual(len(to_check), 0)
 
+    def test_list_mbeds_read_mbed_htm_failure(self):
+        self.base.return_value = [{'mount_point': 'dummy_mount_point',
+                                   'target_id_usb_id': u'0240DEADBEEF',
+                                   'serial_port': "dummy_serial_port"}]
+        def _test(mock):
+            with patch("mbed_lstools.lstools_base.MbedLsToolsBase.mount_point_ready") as _mpr,\
+                 patch('os.listdir') as _listdir,\
+                 patch('__main__.open', mock):
+                _mpr.return_value = True
+                _listdir.return_value = ['MBED.HTM', 'DETAILS.TXT']
+                to_check = self.base.list_mbeds()
+                self.assertEqual(len(to_check), 0)
+
+        m = mock_open()
+        m.side_effect = OSError
+        _test(m)
+
+        m.reset_mock()
+        m.side_effect = IOError
+        _test(m)
+
+    def test_list_mbeds_read_details_txt_failure(self):
+        self.base.return_value = [{'mount_point': 'dummy_mount_point',
+                                   'target_id_usb_id': u'0240DEADBEEF',
+                                   'serial_port': "dummy_serial_port"}]
+        def _test(mock):
+            with patch("mbed_lstools.lstools_base.MbedLsToolsBase.mount_point_ready") as _mpr,\
+                 patch('os.listdir') as _listdir,\
+                 patch("mbed_lstools.lstools_base.MbedLsToolsBase._update_device_from_htm") as _htm,\
+                 patch('__main__.open', mock):
+                _mpr.return_value = True
+                _htm.side_effect = None
+                _listdir.return_value = ['MBED.HTM', 'DETAILS.TXT']
+                to_check = self.base.list_mbeds(read_details_txt=True)
+                self.assertEqual(len(to_check), 0)
+
+        m = mock_open()
+        m.side_effect = OSError
+        _test(m)
+
+        m.reset_mock()
+        m.side_effect = IOError
+        _test(m)
+
     def test_list_mbeds_unmount_mid_read_list_unmounted(self):
         self.base.list_unmounted = True
         self.base.return_value = [{'mount_point': 'dummy_mount_point',
