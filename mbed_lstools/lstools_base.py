@@ -217,7 +217,7 @@ class MbedLsToolsBase(object):
                 'daplink': self._update_device_details_daplink,
                 'jlink': self._update_device_details_jlink
             }[device['device_type']](device, read_details_txt, directory_entries)
-        except OSError as e:
+        except (OSError, IOError) as e:
             logger.warning(
                 'Marking device with mount point "%s" as unmounted due to the '
                 'following error: %s', device['mount_point'], e)
@@ -549,12 +549,8 @@ class MbedLsToolsBase(object):
     def _htm_lines(self, mount_point):
         if mount_point:
             mbed_htm_path = join(mount_point, self.MBED_HTM_NAME)
-            try:
-                with open(mbed_htm_path, 'r') as f:
-                    return f.readlines()
-            except IOError:
-                logger.debug('Failed to open file %s', mbed_htm_path)
-        return []
+            with open(mbed_htm_path, 'r') as f:
+                return f.readlines()
 
     @deprecated("This method will be removed from the public API. "
                 "Please use 'list_mbeds' instead")
@@ -583,13 +579,11 @@ class MbedLsToolsBase(object):
             USB Interfaces: MSD, CDC, HID
             Interface CRC: 0x26764ebf
         """
+
         if mount_point:
             path_to_details_txt = os.path.join(mount_point, self.DETAILS_TXT_NAME)
-            try:
-                with open(path_to_details_txt, 'r') as f:
-                    return self._parse_details(f.readlines())
-            except IOError as e:
-                logger.debug('Failed to open file %s: %s', path_to_details_txt, str(e))
+            with open(path_to_details_txt, 'r') as f:
+                return self._parse_details(f.readlines())
         return None
 
     @deprecated("This method will be removed from the public API. "
