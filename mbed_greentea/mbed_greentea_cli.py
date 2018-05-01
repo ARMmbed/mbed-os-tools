@@ -42,6 +42,7 @@ from mbed_greentea.mbed_test_api import log_mbed_devices_in_table
 from mbed_greentea.mbed_test_api import TEST_RESULTS
 from mbed_greentea.mbed_test_api import TEST_RESULT_OK, TEST_RESULT_FAIL
 from mbed_greentea.mbed_test_api import parse_global_resource_mgr
+from mbed_greentea.mbed_test_api import parse_simulator_resource_mgr
 from mbed_greentea.mbed_report_api import exporter_text
 from mbed_greentea.mbed_report_api import exporter_testcase_text
 from mbed_greentea.mbed_report_api import exporter_json
@@ -255,6 +256,10 @@ def main():
     parser.add_option('-g', '--grm',
                     dest='global_resource_mgr',
                     help='Global resource manager service query: platrform name, remote mgr module name, IP address and port, example K64F:module_name:10.2.123.43:3334')
+
+    parser.add_option('-s', '--srm',
+                    dest='simulator_resource_mgr',
+                    help='Simulator resource manager service query: platrform name, simulator module, and config name, example FVP_MPS2_M3:fastmodel_agent:DEFAULT')
 
     parser.add_option('-m', '--map-target',
                     dest='map_platform_to_yt_target',
@@ -475,6 +480,7 @@ def run_test_thread(test_result_queue, test_queue, opts, mut, build, build_path,
                                          json_test_cfg=opts.json_test_configuration,
                                          enum_host_tests_path=enum_host_tests_path,
                                          global_resource_mgr=opts.global_resource_mgr,
+                                         simulator_resource_mgr=opts.simulator_resource_mgr,
                                          num_sync_packtes=opts.num_sync_packtes,
                                          tags=opts.tags,
                                          retry_count=opts.retry_count,
@@ -753,6 +759,21 @@ def main_cli(opts, args, gt_instance_uuid=None):
             gt_logger.gt_log_tab("adding dummy platform '%s'"% grm_platform_name)
         else:
             gt_logger.gt_log("global resource manager switch '--grm %s' in wrong format!"% opts.global_resource_mgr)
+            return (-1)
+
+    if opts.simulator_resource_mgr:
+        # Mocking available platform requested by --srm switch
+        srm_values = parse_simulator_resource_mgr(opts.simulator_resource_mgr)
+        if srm_values:
+            gt_logger.gt_log_warn("entering simulator resource manager mbed-ls dummy simulator mode!")
+            srm_platform_name, srm_module_name, srm_config_name = srm_values
+            mbeds_list = []
+            for _ in range(parallel_test_exec):
+                mbeds_list.append(mbeds.get_dummy_platform(srm_platform_name))
+            opts.simulator_resource_mgr = ':'.join(srm_values[1:])
+            gt_logger.gt_log_tab("adding dummy simulator platform '%s'"% srm_platform_name)
+        else:
+            gt_logger.gt_log("simulator resource manager switch '--srm %s' in wrong format!"% opts.simulator_resource_mgr)
             return (-1)
 
     ready_mbed_devices = [] # Devices which can be used (are fully detected)

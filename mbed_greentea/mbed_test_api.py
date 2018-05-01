@@ -163,6 +163,7 @@ def run_host_test(image_path,
                   max_failed_properties=5,
                   enum_host_tests_path=None,
                   global_resource_mgr=None,
+                  simulator_resource_mgr=None,
                   num_sync_packtes=None,
                   retry_count=1,
                   tags=None,
@@ -294,6 +295,12 @@ def run_host_test(image_path,
             cmd += ["-r", reset]
         if run_app:
             cmd += ["--run"]    # -f stores binary name!
+
+    if simulator_resource_mgr:
+        # Use simulator resource manager to execute test
+        # Example:
+        # $ mbedhtrun -f "tests-mbed_drivers-generic_tests.elf" -m FVP_MPS2_M3 --srm fastmodel_agent:DEFAULT
+        cmd += ['--srm', simulator_resource_mgr]
 
     if program_cycle_s:
         cmd += ["-C", str(program_cycle_s)]
@@ -764,3 +771,14 @@ def parse_global_resource_mgr(global_resource_mgr):
     except ValueError as e:
         return False
     return platform_name, module_name, ip_name, port_name
+
+def parse_simulator_resource_mgr(simulator_resource_mgr):
+    """! Parses --srm switch with simulator resource manager info
+    @details FVP_MPS2_M3:fastmodel_agent:DEFAULT
+    @return tuple wity four elements from SRM or None if error
+    """
+    try:
+        platform_name, module_name, config_name = simulator_resource_mgr.split(':')
+    except ValueError as e:
+        return False
+    return platform_name, module_name, config_name
