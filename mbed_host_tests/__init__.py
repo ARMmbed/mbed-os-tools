@@ -282,6 +282,10 @@ def init_host_test_cli_params():
                       dest='global_resource_mgr',
                       help='[Experimental] Global resource manager service module name, IP and port, example remote_client:10.2.123.43:3334')
 
+    parser.add_option('-s', '--srm',
+                      dest='simulator_resource_mgr',
+                      help='[Experimental] Simulator resource manager service module name, and a config file, example fastmodel_agent:DEFAULT')
+
     parser.add_option('', '--run',
                       dest='run_binary',
                       default=False,
