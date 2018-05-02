@@ -23,6 +23,7 @@ from time import time
 from mbed_host_tests.host_tests_logger import HtrunLogger
 from .conn_primitive_serial import SerialConnectorPrimitive
 from .conn_primitive_remote import RemoteConnectorPrimitive
+from .conn_primitive_simulator import SimulatorConnectorPrimitive
 
 if (sys.version_info > (3, 0)):
     from queue import Empty as QueueEmpty # Queue here refers to the module, not a class
@@ -106,9 +107,11 @@ def conn_primitive_factory(conn_resource, config, event_queue, logger):
     elif conn_resource == 'grm':
         # Start GRM (Gloabal Resource Mgr) collection
         logger.prn_inf("initializing global resource mgr listener... ")
-        connector = RemoteConnectorPrimitive(
-            'GLRM',
-            config=config)
+        connector = RemoteConnectorPrimitive('GLRM', config=config)
+    elif conn_resource == 'srm':
+        # Start SRM (Simulator Resource Mgr) collection
+        logger.prn_inf("initializing simulator resource manager")
+        connector = SimulatorConnectorPrimitive('SIMU', config=config)
     else:
         logger.pn_err("unknown connection resource!")
         raise NotImplementedError("ConnectorPrimitive factory: unknown connection resource '%s'!"% conn_resource)
