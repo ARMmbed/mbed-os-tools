@@ -127,10 +127,17 @@ def run_htrun(cmd, verbose):
         # int value > 0 notifies caller that starting of host test process failed
         return RUN_HOST_TEST_POPEN_ERROR
 
+    htrun_failure_line = re.compile('\[RXD\] (:\d+::FAIL: .*)')
+
     for line in iter(p.stdout.readline, b''):
         htrun_output += line
         # When dumping output to file both \r and \n will be a new line
         # To avoid this "extra new-line" we only use \n at the end
+
+        test_error = htrun_failure_line.search(line)
+        if test_error:
+            gt_logger.gt_log_err(test_error.group(1))
+
         if verbose:
             sys.stdout.write(line.rstrip() + '\n')
             sys.stdout.flush()
