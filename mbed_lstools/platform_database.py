@@ -287,6 +287,10 @@ DEFAULT_PLATFORM_DB = {
         u'RIOT': u'RIOT',
     },
     u'jlink': {
+        u'X729475D28G': {
+            u'platform_name': u'NRF51_DK',
+            u'jlink_device_name': u'nRF51422_xxAC'
+        },
         u'X349858SLYN': {
             u'platform_name': u'NRF52_DK',
             u'jlink_device_name': u'nRF52832_xxaa'
