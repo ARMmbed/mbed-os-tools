@@ -248,10 +248,13 @@ class MbedLsToolsBase(object):
                            for f, v in details_txt.items()})
 
         if device['target_id']:
-            platform_data = self.plat_db.get(device['target_id'][0:4],
+            identifier = device['target_id'][0:4]
+            platform_data = self.plat_db.get(identifier,
                                              device_type='daplink',
                                              verbose_data=True)
-            if platform_data:
+            if not platform_data:
+                logger.warning('daplink entry: "%s" not found in platform database', identifier)
+            else:
                 device.update(platform_data)
         else:
             device['platform_name'] = None
@@ -283,10 +286,11 @@ class MbedLsToolsBase(object):
                 platform_data = self.plat_db.get(identifier,
                                                  device_type='jlink',
                                                  verbose_data=True)
-                if platform_data:
+                if not platform_data:
+                    logger.warning('jlink entry: "%s", not found in platform database', identifier)
+                else:
                     device.update(platform_data)
                 break
-
 
     def _update_device_from_htm(self, device):
         """Set the 'target_id', 'target_id_mbed_htm', 'platform_name' and
