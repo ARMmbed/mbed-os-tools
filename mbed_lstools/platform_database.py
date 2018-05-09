@@ -20,6 +20,7 @@ limitations under the License.
 import datetime
 import json
 import re
+import requests
 from collections import OrderedDict, defaultdict
 from copy import copy
 from io import open
@@ -478,3 +479,16 @@ class PlatformDatabase(object):
                     self._update_db()
 
                 return _modify_data_format(removed, verbose_data)
+
+    def update_from_web(self, url='https://os.mbed.com/api/v3/platforms/?format=json'):
+        r = requests.get(url)
+        platform_data = r.json()
+
+        web_platforms = {
+            v['productcode']: v['logicalboard']['name'].upper() for v in platform_data
+        }
+
+        for id, platform_name in web_platforms.items():
+            self.add(id, platform_name)
+
+        self._update_db()

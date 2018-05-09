@@ -130,6 +130,9 @@ def mock_platform(mbeds, args):
         else:
             logger.error("Could not parse mock from token: '%s'", token)
 
+def update_from_web(mbeds, args):
+    mbeds.plat_db.update_from_web()
+
 def list_platforms(mbeds, args):
     print(mbeds.list_manufacture_ids())
 
@@ -204,6 +207,9 @@ def parse_cli(to_parse):
         '-m', '--mock', metavar='ID:NAME',
         help='substitute or create a target ID to platform name mapping used'
         'when invoking mbedls in the current directory')
+    commands.add_argument(
+        '-U', '--update', action='store_true',
+        help='update the platform database from os.mbed.com')
 
     parser.add_argument(
         '--skip-retarget', dest='skip_retarget', default=False,
@@ -221,6 +227,8 @@ def parse_cli(to_parse):
     args = parser.parse_args(to_parse)
     if args.mock:
         args.command = mock_platform
+    elif args.update:
+        args.command = update_from_web
     return args
 
 def start_logging():

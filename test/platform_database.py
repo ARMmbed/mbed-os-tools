@@ -149,6 +149,26 @@ class EmptyPlatformDatabaseTests(unittest.TestCase):
         self.assertEqual(self.pdb.get('1337', verbose_data=True), platform_data)
         self.assertEqual(self.pdb.get('1337'), platform_data['platform_name'])
 
+    def test_update_from_web(self):
+        with patch("requests.get") as _get:
+            self.assertEqual(self.pdb.get('1337'), None)
+            _result = MagicMock()
+            _result.configure_mock(**{
+                'json.return_value': [
+                    {
+                        'productcode': '1337',
+                        'logicalboard': {
+                            'name': 'dummy_board'
+                        }
+                    }
+                ]
+            })
+            _get.return_value = _result
+
+            self.pdb.update_from_web()
+            _result.json.assert_called_once()
+            self.assertEqual(self.pdb.get('1337'), 'DUMMY_BOARD')
+
 class OverriddenPlatformDatabaseTests(unittest.TestCase):
     """ Test that for one database overriding another
     """
