@@ -481,14 +481,37 @@ class PlatformDatabase(object):
                 return _modify_data_format(removed, verbose_data)
 
     def update_from_web(self, url='https://os.mbed.com/api/v3/platforms/?format=json'):
+        """Update entries in the platform database from the API on the Mbed website.
+        Returns False if an error occurs while updating. Otherwise True is returned.
+        """
         r = requests.get(url)
-        platform_data = r.json()
+        try:
+            platform_data = r.json()
+        except ValueError:
+            logger.error("Failed to retrieve platform data from os.mbed.com")
+            return False
 
-        web_platforms = {
-            v['productcode']: v['logicalboard']['name'].upper() for v in platform_data
-        }
+        try:
+            """Expected JSON format is as follows:
+            [
+                {
+                    "productcode": "1234",
+                    "logicalboard": {
+                        "name": "boardname"
+                    }
+                },
+                ...
+            ]
+            """
+            web_platforms = {
+                v['productcode']: v['logicalboard']['name'].upper() for v in platform_data
+            }
+        except KeyError as e:
+            logger.error("Platform data had unexpected format.")
+            logger.error(e)
+            return False
 
         for id, platform_name in web_platforms.items():
             self.add(id, platform_name)
 
-        self._update_db()
+        return self._update_db()
