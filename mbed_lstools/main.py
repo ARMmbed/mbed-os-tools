@@ -26,6 +26,7 @@ from collections import defaultdict
 
 # Make sure that any global generic setup is run
 from . import lstools_base
+from .platform_database import DEFAULT_UPDATE_URL
 
 import logging
 logger = logging.getLogger("mbedls.main")
@@ -131,7 +132,7 @@ def mock_platform(mbeds, args):
             logger.error("Could not parse mock from token: '%s'", token)
 
 def update_from_web(mbeds, args):
-    mbeds.plat_db.update_from_web()
+    return 0 if mbeds.plat_db.update_from_web(args.update_url) else 1
 
 def list_platforms(mbeds, args):
     print(mbeds.list_manufacture_ids())
@@ -208,8 +209,9 @@ def parse_cli(to_parse):
         help='substitute or create a target ID to platform name mapping used'
         'when invoking mbedls in the current directory')
     commands.add_argument(
-        '-U', '--update', action='store_true',
-        help='update the platform database from os.mbed.com')
+        '-U', '--update', nargs='?', default=False,
+        const=DEFAULT_UPDATE_URL, dest='update_url',
+        help='update the platform database from a URL (default: %s)' % (DEFAULT_UPDATE_URL))
 
     parser.add_argument(
         '--skip-retarget', dest='skip_retarget', default=False,
@@ -227,7 +229,7 @@ def parse_cli(to_parse):
     args = parser.parse_args(to_parse)
     if args.mock:
         args.command = mock_platform
-    elif args.update:
+    elif args.update_url:
         args.command = update_from_web
     return args
 

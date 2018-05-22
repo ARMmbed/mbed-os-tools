@@ -42,6 +42,7 @@ del logging
 
 LOCAL_PLATFORM_DATABASE = join(user_data_dir("mbedls"), "platforms.json")
 LOCAL_MOCKS_DATABASE = join(user_data_dir("mbedls"), "mock.json")
+DEFAULT_UPDATE_URL = "https://os.mbed.com/api/v3/platforms/?format=json"
 
 DEFAULT_PLATFORM_DB = {
     u'daplink': {
@@ -480,7 +481,7 @@ class PlatformDatabase(object):
 
                 return _modify_data_format(removed, verbose_data)
 
-    def update_from_web(self, url='https://os.mbed.com/api/v3/platforms/?format=json'):
+    def update_from_web(self, url=DEFAULT_UPDATE_URL):
         """Update entries in the platform database from the API on the Mbed website.
         Returns False if an error occurs while updating. Otherwise True is returned.
         """
