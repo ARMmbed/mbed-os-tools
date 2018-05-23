@@ -492,9 +492,11 @@ class PlatformDatabase(object):
     def update_from_web(self, url=DEFAULT_UPDATE_URL):
         """Update entries in the platform database from the API on the Mbed website.
 
-        If the update fails during the web request or JSON parsing, a
-        `RemotePlatformDataException` is raised. If the update fails during the
-        write to the filesystem, a `DatabaseUpdateException` is raised.
+        If the update fails to contact the provided url, a `ConnectionError` will
+        be raised (part of the `requests` library). If it fails during the web
+        request or JSON parsing, a `RemotePlatformDataException` is raised.
+        If it fails during the write to the filesystem, a `DatabaseUpdateException`
+        is raised.
 
         Returns dictionary of all updates that occurred in the following format:
             {
