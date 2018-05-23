@@ -26,7 +26,8 @@ from collections import defaultdict
 
 # Make sure that any global generic setup is run
 from . import lstools_base
-from .platform_database import DEFAULT_UPDATE_URL
+from .platform_database import DEFAULT_UPDATE_URL, RemotePlatformDataException,\
+                               DatabaseUpdateException
 
 import logging
 logger = logging.getLogger("mbedls.main")
@@ -132,7 +133,42 @@ def mock_platform(mbeds, args):
             logger.error("Could not parse mock from token: '%s'", token)
 
 def update_from_web(mbeds, args):
-    return 0 if mbeds.plat_db.update_from_web(args.update_url) else 1
+    try:
+        print("Fetching platform data from %s..." % args.update_url)
+        update_info = mbeds.plat_db.update_from_web(args.update_url)
+    except (RemotePlatformDataException, DatabaseUpdateException):
+        logger.error(
+            "Failed to update the platform database. For more information, "
+            "run with \"--debug\"."
+        )
+        return 1
+
+    rows = []
+
+    if update_info["new"]:
+        for target_id, platform_name in update_info["new"].items():
+            rows.append([target_id, platform_name])
+
+    if update_info["updated"]:
+        for target_id, info in update_info["updated"].items():
+            rows.append([target_id, "%s -> %s" % (info["old"], info["new"])])
+
+    if rows:
+        from prettytable import PrettyTable
+        columns = ["target_id", "platform_name"]
+        pt = PrettyTable(columns)
+        pt.align = 'l'
+
+        for row in rows:
+            pt.add_row(row)
+
+        print(pt.get_string(
+            border=True, header=True, padding_width=1,
+            sortby='target_id'
+        ))
+        print("The platform database was updated.")
+    else:
+        print("Platform database up-to-date.")
 
 def list_platforms(mbeds, args):
     print(mbeds.list_manufacture_ids())
