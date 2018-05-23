@@ -360,6 +360,14 @@ def _overwrite_or_open(db):
             return {}
 
 
+class RemotePlatformDataException(Exception):
+    pass
+
+
+class DatabaseUpdateException(Exception):
+    pass
+
+
 class PlatformDatabase(object):
     """Represents a union of multiple platform database files.
     Handles inter-process synchronization of database files.
@@ -483,14 +491,35 @@ class PlatformDatabase(object):
 
     def update_from_web(self, url=DEFAULT_UPDATE_URL):
         """Update entries in the platform database from the API on the Mbed website.
-        Returns False if an error occurs while updating. Otherwise True is returned.
+
+        If the update fails during the web request or JSON parsing, a
+        `RemotePlatformDataException` is raised. If the update fails during the
+        write to the filesystem, a `DatabaseUpdateException` is raised.
+
+        Returns dictionary of all updates that occurred in the following format:
+            {
+                "new": {
+                    "<target id>": "<platform name>",
+                    ...
+                },
+                "updated": {
+                    "<target id>": {
+                        "old": "<previous platform name>",
+                        "new": "<new platform name>"
+                    }
+                }
+            }
         """
         r = requests.get(url)
         try:
             platform_data = r.json()
-        except ValueError:
-            logger.error("Failed to retrieve platform data from os.mbed.com")
-            return False
+        except ValueError as e:
+            logger.debug("Failed to retrieve platform data from os.mbed.com.")
+            logger.debug(e)
+            logger.debug("Received the following response:")
+            logger.debug("Status code: %d", r.status_code)
+            logger.debug(r.text)
+            raise RemotePlatformDataException()
 
         try:
             """Expected JSON format is as follows:
@@ -508,11 +537,51 @@ class PlatformDatabase(object):
                 v['productcode']: v['logicalboard']['name'].upper() for v in platform_data
             }
         except KeyError as e:
-            logger.error("Platform data had unexpected format.")
-            logger.error(e)
-            return False
+            logger.debug("Platform data had unexpected format.")
+            logger.debug(e)
+            logger.debug("Received platform data:")
+            logger.debug(platform_data)
+            raise RemotePlatformDataException()
 
-        for id, platform_name in web_platforms.items():
+        current_platforms = {
+            k: v
+            for (k, v) in self.items()
+        }
+
+        web_platform_keys = set(web_platforms.keys())
+        current_platform_keys = set(current_platforms.keys())
+
+        new_platform_ids = web_platform_keys - current_platform_keys
+        new_platforms = {
+            id: web_platforms[id]
+            for id in new_platform_ids
+        }
+
+        shared_platform_ids = web_platform_keys.intersection(current_platform_keys)
+
+        updated_platforms_history = {
+            id: {
+                "old": current_platforms[id],
+                "new": web_platforms[id]
+            }
+            for id in shared_platform_ids if web_platforms[id] != current_platforms[id]
+        }
+
+        updated_platforms = {
+            id: platform["new"]
+            for id, platform in updated_platforms_history.items()
+        }
+
+        all_updates = new_platforms.copy()
+        all_updates.update(updated_platforms)
+
+        for id, platform_name in all_updates.items():
             self.add(id, platform_name)
 
-        return self._update_db()
+        if not self._update_db():
+            raise DatabaseUpdateException()
+
+        return {
+            "new": new_platforms,
+            "updated": updated_platforms_history
+        }
