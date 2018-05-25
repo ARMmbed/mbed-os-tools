@@ -578,6 +578,21 @@ $ mbedls
 ```
 In this case, you won't test one target, the LPC1768.
 
+### Testing on Fast Model FVPs
+
+Fast Models FVPs are software models for Arm reference design platfrom
+
+Greentea supports running test on Fast Models. And [mbed-fastmodel-agent](https://github.com/ARMmbed/mbed-fastmodel-agent) module is required for this purpose. 
+
+You can run tests for FVP_MPS2_Cortex-M3 models, by '--fm' option:
+```
+$ mbedgt --fm FVP_MPS2_M3:DEFAULT
+```
+
+Where ```FVP_MPS2_M3``` is the platfrom name for the ```FVP_MPS2_Cortex-M3``` models in mbed OS.
+
+And ```DEFAULT``` is the config to the Fast Model, you can find out using ```mbedfm``` command
+
 ### Creating reports
 Greentea supports a number of report formats.
 
