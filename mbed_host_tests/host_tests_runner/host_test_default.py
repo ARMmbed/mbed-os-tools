@@ -80,7 +80,7 @@ class DefaultTestSelector(DefaultTestSelectorBase):
                     verbose=options.verbose)
                 sys.exit(0)
 
-            if options.global_resource_mgr or options.simulator_resource_mgr:
+            if options.global_resource_mgr or options.fast_model_connection:
                 # If Global/Simulator Resource Mgr is working it will handle reset/flashing workflow
                 # So local plugins are offline
                 self.options.skip_reset = True
@@ -187,13 +187,11 @@ class DefaultTestSelector(DefaultTestSelectorBase):
                 "grm_port" : grm_port,
             })
 
-        if self.options.simulator_resource_mgr:
-            srm_module, srm_config = self.options.simulator_resource_mgr.split(':')
+        if self.options.fast_model_connection:
 
             config.update({
-                "conn_resource" : 'srm',
-                "srm_module" : srm_module,
-                "srm_config" : srm_config
+                "conn_resource" : 'fmc',
+                "fm_config" : self.options.fast_model_connection
             })
 
         def start_conn_process():
