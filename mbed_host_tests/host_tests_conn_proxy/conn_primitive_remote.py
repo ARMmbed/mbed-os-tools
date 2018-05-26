@@ -21,7 +21,7 @@ from mbed_host_tests.host_tests_conn_proxy.conn_primitive import ConnectorPrimit
 
 
 class RemoteConnectorPrimitive(ConnectorPrimitive):
-    def __init__(self, name, config):
+    def __init__(self, name, config, importer = __import__):
         ConnectorPrimitive.__init__(self, name)
         self.config = config
         self.target_id = self.config.get('target_id', None)
@@ -44,14 +44,14 @@ class RemoteConnectorPrimitive(ConnectorPrimitive):
         self.client = None
 
         # Initialize remote resource manager
-        self.__remote_init()
+        self.__remote_init(importer)
 
-    def __remote_init(self):
+    def __remote_init(self, importer):
         """! Initialize DUT using GRM APIs """
 
         # We want to load global resource manager module by name from command line (switch --grm)
         try:
-            self.remote_module = __import__(self.grm_module)
+            self.remote_module = importer(self.grm_module)
         except ImportError as error:
             self.logger.prn_err("unable to load global resource manager '%s' module!" % self.grm_module)
             self.logger.prn_err(str(error))
@@ -95,7 +95,7 @@ class RemoteConnectorPrimitive(ConnectorPrimitive):
         try:
             serial_parameters = self.remote_module.SerialParameters(baudrate=baudrate)
             self.selected_resource.open_connection(parameters=serial_parameters)
-        except self.remote_module.resources.ResourceError as error:
+        except Exception as error:
             self.logger.prn_inf("open_connection() failed")
             raise error
 
@@ -105,7 +105,7 @@ class RemoteConnectorPrimitive(ConnectorPrimitive):
         try:
             if self.connected():
                 self.selected_resource.close_connection()
-        except self.remote_module.resources.ResourceError as error:
+        except Exception as error:
             self.logger.prn_err("RemoteConnectorPrimitive.disconnect() failed, reason: " + str(error))
 
     def __remote_reset(self):
@@ -131,7 +131,7 @@ class RemoteConnectorPrimitive(ConnectorPrimitive):
         data = str()
         try:
             data = self.selected_resource.read(count)
-        except self.remote_module.resources.ResourceError as error:
+        except Exception as error:
             self.logger.prn_err("RemoteConnectorPrimitive.read(%d): %s" % (count, str(error)))
         return data
 
@@ -143,7 +143,7 @@ class RemoteConnectorPrimitive(ConnectorPrimitive):
                 if log:
                     self.logger.prn_txd(payload)
                 return True
-            except self.remote_module.resources.ResourceError as error:
+            except Exception as error:
                 self.LAST_ERROR = "remote write error: %s" % str(error)
                 self.logger.prn_err(str(error))
         return False
@@ -152,20 +152,17 @@ class RemoteConnectorPrimitive(ConnectorPrimitive):
         pass
 
     def allocated(self):
-        return all([self.remote_module,
-                    self.selected_resource,
-                    self.selected_resource.is_allocated])
+        return self.remote_module and self.selected_resource and self.selected_resource.is_allocated
 
     def connected(self):
-        return all([self.allocated(),
-                    self.selected_resource.is_connected])
+        return self.allocated() and self.selected_resource.is_connected
 
     def __remote_release(self):
         try:
             if self.allocated():
                 self.selected_resource.release()
                 self.selected_resource = None
-        except self.remote_module.resources.ResourceError as error:
+        except Exception as error:
             self.logger.prn_err("RemoteConnectorPrimitive.release failed, reason: " + str(error))
 
     def finish(self):
