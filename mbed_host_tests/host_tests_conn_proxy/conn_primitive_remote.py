@@ -72,8 +72,7 @@ class RemoteConnectorPrimitive(ConnectorPrimitive):
         # Automatic selection and allocation of a resource
         try:
             self.selected_resource = self.client.allocate(self.allocate_requirements)
-
-        except self.remote_module.resources.ResourceError as error:
+        except Exception as error:
             self.logger.prn_err("can't allocate resource: '%s', reason: %s" % (self.platform_name, str(error)))
             return False
 
@@ -84,6 +83,7 @@ class RemoteConnectorPrimitive(ConnectorPrimitive):
             self.__remote_reset()
         except Exception as error:
             self.logger.prn_err(str(error))
+            self.__remote_release()
             return False
         return True
 
@@ -98,6 +98,15 @@ class RemoteConnectorPrimitive(ConnectorPrimitive):
         except self.remote_module.resources.ResourceError as error:
             self.logger.prn_inf("open_connection() failed")
             raise error
+
+    def __remote_disconnect(self):
+        if not self.selected_resource:
+            raise Exception("remote resource not exists!")
+        try:
+            if self.connected():
+                self.selected_resource.close_connection()
+        except self.remote_module.resources.ResourceError as error:
+            self.logger.prn_err("RemoteConnectorPrimitive.disconnect() failed, reason: " + str(error))
 
     def __remote_reset(self):
         """! Use GRM remote API to reset DUT """
@@ -117,7 +126,7 @@ class RemoteConnectorPrimitive(ConnectorPrimitive):
 
     def read(self, count):
         """! Read 'count' bytes of data from DUT """
-        if not self.selected_resource:
+        if not self.connected():
             raise Exception("remote resource not exists!")
         data = str()
         try:
@@ -128,7 +137,7 @@ class RemoteConnectorPrimitive(ConnectorPrimitive):
 
     def write(self, payload, log=False):
         """! Write 'payload' to DUT """
-        if self.selected_resource:
+        if self.connected():
             try:
                 self.selected_resource.write(payload)
                 if log:
@@ -142,27 +151,29 @@ class RemoteConnectorPrimitive(ConnectorPrimitive):
     def flush(self):
         pass
 
-    def connected(self):
+    def allocated(self):
         return all([self.remote_module,
                     self.selected_resource,
-                    self.selected_resource.is_allocated,
+                    self.selected_resource.is_allocated])
+
+    def connected(self):
+        return all([self.allocated(),
                     self.selected_resource.is_connected])
+
+    def __remote_release(self):
+        try:
+            if self.allocated():
+                self.selected_resource.release()
+                self.selected_resource = None
+        except self.remote_module.resources.ResourceError as error:
+            self.logger.prn_err("RemoteConnectorPrimitive.release failed, reason: " + str(error))
 
     def finish(self):
         # Finally once we're done with the resource
         # we disconnect and release the allocation
-        if self.selected_resource:
-            try:
-                if self.selected_resource.is_connected:
-                    self.selected_resource.close_connection()
-            except self.remote_module.resources.ResourceError as error:
-                self.logger.prn_err("RemoteConnectorPrimitive.finish():close_connection failed, reason: " + str(error))
-            try:
-                if self.selected_resource.is_allocated:
-                    self.selected_resource.release()
-                    self.selected_resource = None
-            except self.remote_module.resources.ResourceError as error:
-                self.logger.prn_err("RemoteConnectorPrimitive.finish():release failed, reason: " + str(error))
+        if self.allocated():
+            self.__remote_disconnect()
+            self.__remote_release()
 
     def reset(self):
         self.__remote_reset()
