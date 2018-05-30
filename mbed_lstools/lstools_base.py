@@ -301,7 +301,7 @@ class MbedLsToolsBase(object):
                             htm_target_id, device['target_id_usb_id'])
             device['target_id'] = htm_target_id
         else:
-            logger.warning("Could not read htm on from usb id %s. "
+            logger.debug("Could not read htm on from usb id %s. "
                             "Falling back to usb id",
                             device['target_id_usb_id'])
             device['target_id'] = device['target_id_usb_id']
