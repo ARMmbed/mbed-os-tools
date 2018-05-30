@@ -24,9 +24,10 @@ import tempfile
 import json
 from mock import patch, MagicMock, DEFAULT
 from io import StringIO
+from requests.exceptions import ConnectionError
 
 from mbed_lstools.platform_database import PlatformDatabase, DEFAULT_PLATFORM_DB,\
-    LOCAL_PLATFORM_DATABASE
+    LOCAL_PLATFORM_DATABASE, RemotePlatformDataException, DatabaseUpdateException
 
 try:
     unicode
@@ -148,6 +149,79 @@ class EmptyPlatformDatabaseTests(unittest.TestCase):
         self.pdb.add('1337', platform_data, permanent=False)
         self.assertEqual(self.pdb.get('1337', verbose_data=True), platform_data)
         self.assertEqual(self.pdb.get('1337'), platform_data['platform_name'])
+
+    def test_update_from_web(self):
+        with patch("requests.get") as _get:
+            _result = MagicMock()
+            _result.configure_mock(**{
+                'json.return_value': [
+                    {
+                        'productcode': '1337',
+                        'logicalboard': {
+                            'name': 'dummy_board'
+                        }
+                    }
+                ]
+            })
+            _get.return_value = _result
+
+            self.pdb.update_from_web()
+            _result.json.assert_called_once()
+            self.assertEqual(self.pdb.get('1337'), 'DUMMY_BOARD')
+
+    def test_update_from_web_json_error(self):
+        with patch("requests.get") as _get:
+            _result = MagicMock()
+            _result.configure_mock(**{
+                'json.side_effect': ValueError
+            })
+            _get.return_value = _result
+
+            exception_raised = False
+            try:
+                self.pdb.update_from_web()
+            except RemotePlatformDataException:
+                exception_raised = True
+
+            self.assertTrue(exception_raised)
+
+    def test_update_from_web_request_error(self):
+        with patch("requests.get") as _get:
+            _get.side_effect = ConnectionError
+
+            exception_raised = False
+            try:
+                self.pdb.update_from_web()
+            except ConnectionError:
+                exception_raised = True
+
+            self.assertTrue(exception_raised)
+
+    def test_update_from_web_update_error(self):
+        with patch("requests.get") as _get,\
+             patch.object(PlatformDatabase, "_update_db") as _update_db:
+            _result = MagicMock()
+            _result.configure_mock(**{
+                'json.return_value': [
+                    {
+                        'productcode': '1337',
+                        'logicalboard': {
+                            'name': 'dummy_board'
+                        }
+                    }
+                ]
+            })
+            _get.return_value = _result
+            _update_db.return_value = False
+
+            exception_raised = False
+            try:
+                self.pdb.update_from_web()
+            except DatabaseUpdateException:
+                exception_raised = True
+
+            _update_db.assert_called_once()
+            self.assertTrue(exception_raised)
 
 class OverriddenPlatformDatabaseTests(unittest.TestCase):
     """ Test that for one database overriding another

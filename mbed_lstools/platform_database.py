@@ -20,6 +20,7 @@ limitations under the License.
 import datetime
 import json
 import re
+import requests
 from collections import OrderedDict, defaultdict
 from copy import copy
 from io import open
@@ -41,6 +42,7 @@ del logging
 
 LOCAL_PLATFORM_DATABASE = join(user_data_dir("mbedls"), "platforms.json")
 LOCAL_MOCKS_DATABASE = join(user_data_dir("mbedls"), "mock.json")
+DEFAULT_UPDATE_URL = "https://os.mbed.com/api/v3/platforms/?format=json"
 
 DEFAULT_PLATFORM_DB = {
     u'daplink': {
@@ -358,6 +360,14 @@ def _overwrite_or_open(db):
             return {}
 
 
+class RemotePlatformDataException(Exception):
+    pass
+
+
+class DatabaseUpdateException(Exception):
+    pass
+
+
 class PlatformDatabase(object):
     """Represents a union of multiple platform database files.
     Handles inter-process synchronization of database files.
@@ -478,3 +488,102 @@ class PlatformDatabase(object):
                     self._update_db()
 
                 return _modify_data_format(removed, verbose_data)
+
+    def update_from_web(self, url=DEFAULT_UPDATE_URL):
+        """Update entries in the platform database from the API on the Mbed website.
+
+        If the update fails to contact the provided url, a `ConnectionError` will
+        be raised (part of the `requests` library). If it fails during the web
+        request or JSON parsing, a `RemotePlatformDataException` is raised.
+        If it fails during the write to the filesystem, a `DatabaseUpdateException`
+        is raised.
+
+        Returns dictionary of all updates that occurred in the following format:
+            {
+                "new": {
+                    "<target id>": "<platform name>",
+                    ...
+                },
+                "updated": {
+                    "<target id>": {
+                        "old": "<previous platform name>",
+                        "new": "<new platform name>"
+                    }
+                }
+            }
+        """
+        r = requests.get(url)
+        try:
+            platform_data = r.json()
+        except ValueError as e:
+            logger.debug("Failed to retrieve platform data from os.mbed.com.")
+            logger.debug(e)
+            logger.debug("Received the following response:")
+            logger.debug("Status code: %d", r.status_code)
+            logger.debug(r.text)
+            raise RemotePlatformDataException()
+
+        try:
+            """Expected JSON format is as follows:
+            [
+                {
+                    "productcode": "1234",
+                    "logicalboard": {
+                        "name": "boardname"
+                    }
+                },
+                ...
+            ]
+            """
+            web_platforms = {
+                v['productcode']: v['logicalboard']['name'].upper() for v in platform_data
+            }
+        except KeyError as e:
+            logger.debug("Platform data had unexpected format.")
+            logger.debug(e)
+            logger.debug("Received platform data:")
+            logger.debug(platform_data)
+            raise RemotePlatformDataException()
+
+        current_platforms = {
+            k: v
+            for (k, v) in self.items()
+        }
+
+        web_platform_keys = set(web_platforms.keys())
+        current_platform_keys = set(current_platforms.keys())
+
+        new_platform_ids = web_platform_keys - current_platform_keys
+        new_platforms = {
+            id: web_platforms[id]
+            for id in new_platform_ids
+        }
+
+        shared_platform_ids = web_platform_keys.intersection(current_platform_keys)
+
+        updated_platforms_history = {
+            id: {
+                "old": current_platforms[id],
+                "new": web_platforms[id]
+            }
+            for id in shared_platform_ids if web_platforms[id] != current_platforms[id]
+        }
+
+        updated_platforms = {
+            id: platform["new"]
+            for id, platform in updated_platforms_history.items()
+        }
+
+        all_updates = new_platforms.copy()
+        all_updates.update(updated_platforms)
+
+        for id, platform_name in all_updates.items():
+            self.add(id, platform_name)
+
+        if not self._update_db():
+            raise DatabaseUpdateException()
+
+        return {
+            "new": new_platforms,
+            "updated": updated_platforms_history
+        }
