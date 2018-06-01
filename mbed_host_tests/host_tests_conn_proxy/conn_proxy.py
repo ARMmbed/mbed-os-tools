@@ -16,6 +16,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+from past.builtins import basestring
+
 import re
 import sys
 import uuid
@@ -39,7 +41,7 @@ class KiViBufferWalker():
 
     def append(self, payload):
         """! Append stream buffer with payload and process. Returns non-KV strings"""
-        self.buff += payload
+        self.buff += payload.decode('utf-8')
         lines = self.buff.split('\n')
         self.buff = lines[-1]   # remaining
         lines.pop(-1)
