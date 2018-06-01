@@ -17,6 +17,8 @@ limitations under the License.
 Author: Przemyslaw Wirkus <Przemyslaw.wirkus@arm.com>
 """
 
+from past.builtins import basestring
+
 import re
 import os
 import sys
@@ -85,7 +87,6 @@ TEST_RESULT_MAPPING = {"success" : TEST_RESULT_OK,
 # Just a value greater than zero
 RUN_HOST_TEST_POPEN_ERROR = 1729
 
-
 def get_test_result(output):
     """! Parse test 'output' data
     @details If test result not found returns by default TEST_RESULT_TIMEOUT value
@@ -128,11 +129,11 @@ def run_htrun(cmd, verbose):
         return RUN_HOST_TEST_POPEN_ERROR
 
     for line in iter(p.stdout.readline, b''):
-        htrun_output += line
+        htrun_output += line.decode('utf-8')
         # When dumping output to file both \r and \n will be a new line
         # To avoid this "extra new-line" we only use \n at the end
         if verbose:
-            sys.stdout.write(line.rstrip() + '\n')
+            sys.stdout.write(line.decode('utf-8').rstrip() + '\n')
             sys.stdout.flush()
 
     # Check if process was terminated by signal
@@ -437,7 +438,7 @@ def get_coverage_data(build_path, output):
             gt_logger.gt_log_tab("storing %d bytes in '%s'"% (len(bin_gcov_payload), gcov_path))
 
 def get_printable_string(unprintable_string):
-    return filter(lambda x: x in string.printable, unprintable_string)
+    return "".join(filter(lambda x: x in string.printable, unprintable_string))
 
 def get_testcase_summary(output):
     """! Searches for test case summary
