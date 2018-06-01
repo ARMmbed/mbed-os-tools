@@ -58,4 +58,5 @@ setup(name='mbed-host-tests',
                         "requests",
                         "mbed-ls>=1.0.0",
                         "pyOCD>=0.8.1a1",
-                        "intelhex"])
+                        "intelhex",
+                        "future"])

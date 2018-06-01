@@ -116,7 +116,7 @@ class SerialConnectorPrimitive(ConnectorPrimitive):
         """! Write data to serial port TX buffer """
         try:
             if self.serial:
-                self.serial.write(payload)
+                self.serial.write(payload.encode('utf-8'))
                 if log:
                     self.logger.prn_txd(payload)
                 return True
