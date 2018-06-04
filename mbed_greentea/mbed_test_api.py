@@ -164,6 +164,7 @@ def run_host_test(image_path,
                   max_failed_properties=5,
                   enum_host_tests_path=None,
                   global_resource_mgr=None,
+                  fast_model_connection=None,
                   num_sync_packtes=None,
                   polling_timeout=None,
                   retry_count=1,
@@ -296,6 +297,12 @@ def run_host_test(image_path,
             cmd += ["-r", reset]
         if run_app:
             cmd += ["--run"]    # -f stores binary name!
+
+    if fast_model_connection:
+        # Use simulator resource manager to execute test
+        # Example:
+        # $ mbedhtrun -f "tests-mbed_drivers-generic_tests.elf" -m FVP_MPS2_M3 --fm DEFAULT
+        cmd += ['--fm', fast_model_connection]
 
     if program_cycle_s:
         cmd += ["-C", str(program_cycle_s)]
@@ -768,3 +775,13 @@ def parse_global_resource_mgr(global_resource_mgr):
     except ValueError as e:
         return False
     return platform_name, module_name, ip_name, port_name
+
+def parse_fast_model_connection(fast_model_connection):
+    """! Parses --fm switch with simulator resource manager info
+    @details FVP_MPS2_M3:DEFAULT
+    """
+    try:
+        platform_name, config_name = fast_model_connection.split(':')
+    except ValueError as e:
+        return False
+    return platform_name, config_name

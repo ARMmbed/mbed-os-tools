@@ -24,6 +24,7 @@ import sys
 import random
 import optparse
 import fnmatch
+import imp
 from time import time
 try:
     from Queue import Queue
@@ -42,6 +43,7 @@ from mbed_greentea.mbed_test_api import log_mbed_devices_in_table
 from mbed_greentea.mbed_test_api import TEST_RESULTS
 from mbed_greentea.mbed_test_api import TEST_RESULT_OK, TEST_RESULT_FAIL
 from mbed_greentea.mbed_test_api import parse_global_resource_mgr
+from mbed_greentea.mbed_test_api import parse_fast_model_connection
 from mbed_greentea.mbed_report_api import exporter_text
 from mbed_greentea.mbed_report_api import exporter_testcase_text
 from mbed_greentea.mbed_report_api import exporter_json
@@ -255,6 +257,17 @@ def main():
     parser.add_option('-g', '--grm',
                     dest='global_resource_mgr',
                     help='Global resource manager service query: platrform name, remote mgr module name, IP address and port, example K64F:module_name:10.2.123.43:3334')
+
+    # Show --fm option only if "fm_agent" module installed
+    try:
+        imp.find_module('fm_agent')
+    except ImportError:
+        fm_help=optparse.SUPPRESS_HELP
+    else:
+        fm_help='Fast Model Connection: fastmodel name, config name, example FVP_MPS2_M3:DEFAULT'
+    parser.add_option('', '--fm',
+                    dest='fast_model_connection',
+                    help=fm_help)
 
     parser.add_option('-m', '--map-target',
                     dest='map_platform_to_yt_target',
@@ -482,6 +495,7 @@ def run_test_thread(test_result_queue, test_queue, opts, mut, build, build_path,
                                          json_test_cfg=opts.json_test_configuration,
                                          enum_host_tests_path=enum_host_tests_path,
                                          global_resource_mgr=opts.global_resource_mgr,
+                                         fast_model_connection=opts.fast_model_connection,
                                          num_sync_packtes=opts.num_sync_packtes,
                                          tags=opts.tags,
                                          retry_count=opts.retry_count,
@@ -761,6 +775,21 @@ def main_cli(opts, args, gt_instance_uuid=None):
             gt_logger.gt_log_tab("adding dummy platform '%s'"% grm_platform_name)
         else:
             gt_logger.gt_log("global resource manager switch '--grm %s' in wrong format!"% opts.global_resource_mgr)
+            return (-1)
+
+    if opts.fast_model_connection:
+        # Mocking available platform requested by --fm switch
+        fm_values = parse_fast_model_connection(opts.fast_model_connection)
+        if fm_values:
+            gt_logger.gt_log_warn("entering fastmodel connection, mbed-ls dummy simulator mode!")
+            fm_platform_name, fm_config_name = fm_values
+            mbeds_list = []
+            for _ in range(parallel_test_exec):
+                mbeds_list.append(mbeds.get_dummy_platform(fm_platform_name))
+            opts.fast_model_connection = fm_config_name
+            gt_logger.gt_log_tab("adding dummy fastmodel platform '%s'"% fm_platform_name)
+        else:
+            gt_logger.gt_log("fast model connection switch '--fm %s' in wrong format!"% opts.fast_model_connection)
             return (-1)
 
     ready_mbed_devices = [] # Devices which can be used (are fully detected)
