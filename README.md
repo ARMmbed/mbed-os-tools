@@ -137,7 +137,7 @@ Command line switch `--grm` has format: `<module_name>:<IP_address>:<port_number
 
 This option is designed for htrun to use Arm Fast Models.
 
-This option require a separate module to be installed :  [mbed-fastmodel-agent](https://github.com/ARMmbed/mbed-fastmodel-agent)
+The "--fm" option only available when [mbed-fastmodel-agent](https://github.com/ARMmbed/mbed-fastmodel-agent) module is installed :  
 
 Load local file `/path/to/file/binary.elf` to onto fastmodel FVP_MPS2_m3 simulators:
 ```
