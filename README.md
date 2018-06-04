@@ -582,7 +582,9 @@ In this case, you won't test one target, the LPC1768.
 
 Fast Models FVPs are software models for Arm reference design platfrom
 
-Greentea supports running test on Fast Models. And [mbed-fastmodel-agent](https://github.com/ARMmbed/mbed-fastmodel-agent) module is required for this purpose. 
+Greentea supports running test on Fast Models. And [mbed-fastmodel-agent](https://github.com/ARMmbed/mbed-fastmodel-agent) module is required for this purpose.
+
+The "--fm" option only available when the `mbed-fastmodel-agent` module is installed :  
 
 You can run tests for FVP_MPS2_Cortex-M3 models, by '--fm' option:
 ```

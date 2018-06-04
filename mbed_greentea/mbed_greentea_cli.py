@@ -24,6 +24,7 @@ import sys
 import random
 import optparse
 import fnmatch
+import imp
 from time import time
 try:
     from Queue import Queue
@@ -257,9 +258,16 @@ def main():
                     dest='global_resource_mgr',
                     help='Global resource manager service query: platrform name, remote mgr module name, IP address and port, example K64F:module_name:10.2.123.43:3334')
 
+    # Show --fm option only if "fm_agent" module installed
+    try:
+        imp.find_module('fm_agent')
+    except ImportError:
+        fm_help=optparse.SUPPRESS_HELP
+    else:
+        fm_help='Fast Model Connection: fastmodel name, config name, example FVP_MPS2_M3:DEFAULT'
     parser.add_option('', '--fm',
                     dest='fast_model_connection',
-                    help='Fast Model Connection: fastmodel name, config name, example FVP_MPS2_M3:DEFAULT')
+                    help=fm_help)
 
     parser.add_option('-m', '--map-target',
                     dest='map_platform_to_yt_target',
