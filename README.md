@@ -11,6 +11,7 @@
     * [Flashing phase operations](#flashing-phase-operations)
     * [DUT-host communication and reset phase](#dut-host-communication-and-reset-phase)
     * [Global Resource Manager connection](#global-resource-manager-connection)
+    * [Fast Model connection](#fast-model-connection)
     * [Miscellaneous](#miscellaneous)
 * [Installation](#installation)
   * [Installation from PyPI (Python Package Index)](#installation-from-pypi-python-package-index)
@@ -131,6 +132,23 @@ Command line switch `--grm` has format: `<module_name>:<IP_address>:<port_number
 
 **Note**: Switch -m <platform_name> is required to tell Global Resource Management which platform to request.
 **Note**: Command line switch `--grm` implicitly forces `--skip-flashing` and `--skip-reset` because both flags are used for locally available DUTs.
+
+### Fast Model connection
+
+This option is designed for htrun to use Arm Fast Models.
+
+The "--fm" option only available when [mbed-fastmodel-agent](https://github.com/ARMmbed/mbed-fastmodel-agent) module is installed :  
+
+Load local file `/path/to/file/binary.elf` to onto fastmodel FVP_MPS2_m3 simulators:
+```
+$ mbedhtrun -f /path/to/file/binary.elf -m FVP_MPS2_M3 --fm DEFAULT
+```
+Command line switch format `--fm <config_name>`.
+  * `<config_name>` - ether pre-defined CONFIG_NAME from mbedfm or a local config file for the Fast Models.
+
+**Note**: Switch -m <platform_name> is required to tell this fastmodel connection which Fastmodel to request.
+**Note**: Command line switch `--fm` implicitly forces `--skip-flashing` and `--skip-reset` because both flags are used for locally available DUTs.
+
 
 ### Miscellaneous
 
