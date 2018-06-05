@@ -23,7 +23,7 @@ import logging
 import re
 import json
 from io import StringIO
-from mock import patch, mock_open
+from mock import patch, mock_open, DEFAULT
 from copy import deepcopy
 
 from mbed_lstools.lstools_base import MbedLsToolsBase, FSInteraction
@@ -65,7 +65,7 @@ class BasicTestCase(unittest.TestCase):
             _get.return_value = {
                 'platform_name': 'foo_target'
             }
-            _listdir.return_value = []
+            _listdir.return_value = ['mbed.htm']
             to_check = self.base.list_mbeds()
             _read_htm.assert_called_once_with('dummy_mount_point')
             _get.assert_any_call('0241', device_type='daplink', verbose_data=True)
@@ -89,7 +89,7 @@ class BasicTestCase(unittest.TestCase):
             _get.return_value = {
                 'platform_name': 'foo_target'
             }
-            _listdir.return_value = []
+            _listdir.return_value = ['mbed.htm']
             to_check = self.base.list_mbeds()
             _get.assert_any_call('0241', device_type='daplink', verbose_data=True)
         self.assertEqual(len(to_check), 2)
@@ -110,7 +110,7 @@ class BasicTestCase(unittest.TestCase):
                 _mpr.return_value = True
                 _read_htm.return_value = (u'not_in_target_db', {})
                 _get.return_value = None
-                _listdir.return_value = []
+                _listdir.return_value = ['MBED.HTM']
                 to_check = self.base.list_mbeds()
                 _read_htm.assert_called_once_with('dummy_mount_point')
                 _get.assert_any_call('not_', device_type='daplink', verbose_data=True)
@@ -130,16 +130,17 @@ class BasicTestCase(unittest.TestCase):
         self.assertEqual(len(to_check), 0)
 
     def test_list_mbeds_read_mbed_htm_failure(self):
-        self.base.return_value = [{'mount_point': 'dummy_mount_point',
-                                   'target_id_usb_id': u'0240DEADBEEF',
-                                   'serial_port': "dummy_serial_port"}]
         def _test(mock):
+            self.base.return_value = [{'mount_point': 'dummy_mount_point',
+                                       'target_id_usb_id': u'0240DEADBEEF',
+                                       'serial_port': "dummy_serial_port"}]
             with patch("mbed_lstools.lstools_base.MbedLsToolsBase.mount_point_ready") as _mpr,\
                  patch('os.listdir') as _listdir,\
-                 patch('__main__.open', mock):
+                 patch('mbed_lstools.lstools_base.open', mock, create=True):
                 _mpr.return_value = True
                 _listdir.return_value = ['MBED.HTM', 'DETAILS.TXT']
                 to_check = self.base.list_mbeds()
+                mock.assert_called_once_with(os.path.join('dummy_mount_point', 'mbed.htm'), 'r')
                 self.assertEqual(len(to_check), 0)
 
         m = mock_open()
@@ -150,19 +151,60 @@ class BasicTestCase(unittest.TestCase):
         m.side_effect = IOError
         _test(m)
 
-    def test_list_mbeds_read_details_txt_failure(self):
+    def test_list_mbeds_read_no_mbed_htm(self):
         self.base.return_value = [{'mount_point': 'dummy_mount_point',
                                    'target_id_usb_id': u'0240DEADBEEF',
                                    'serial_port': "dummy_serial_port"}]
+
+        details_txt_contents = '''\
+# DAPLink Firmware - see https://mbed.com/daplink
+Unique ID: 0240000032044e4500257009997b00386781000097969900
+HIC ID: 97969900
+Auto Reset: 0
+Automation allowed: 1
+Overflow detection: 1
+Daplink Mode: Interface
+Interface Version: 0246
+Bootloader Version: 0244
+Git SHA: 0beabef8aa4b382809d79e98321ecf6a28936812
+Local Mods: 0
+USB Interfaces: MSD, CDC, HID
+Bootloader CRC: 0xb92403e6
+Interface CRC: 0x434eddd1
+Remount count: 0
+'''
+        def _handle_open(*args, **kwargs):
+            if args[0].lower() == os.path.join('dummy_mount_point', 'mbed.htm'):
+                raise OSError("(mocked open) No such file or directory: 'mbed.htm'")
+            else:
+                return DEFAULT
+
+        m = mock_open(read_data=details_txt_contents)
+        with patch("mbed_lstools.lstools_base.MbedLsToolsBase.mount_point_ready") as _mpr,\
+             patch('os.listdir') as _listdir,\
+             patch('mbed_lstools.lstools_base.open', m, create=True) as mocked_open:
+            mocked_open.side_effect = _handle_open
+            _mpr.return_value = True
+            _listdir.return_value = ['PRODINFO.HTM', 'DETAILS.TXT']
+            to_check = self.base.list_mbeds()
+            self.assertEqual(len(to_check), 1)
+            m.assert_called_once_with(os.path.join('dummy_mount_point', 'DETAILS.TXT'), 'r')
+            self.assertEqual(to_check[0]['target_id'], '0240000032044e4500257009997b00386781000097969900')
+
+    def test_list_mbeds_read_details_txt_failure(self):
         def _test(mock):
+            self.base.return_value = [{'mount_point': 'dummy_mount_point',
+                                       'target_id_usb_id': u'0240DEADBEEF',
+                                       'serial_port': "dummy_serial_port"}]
             with patch("mbed_lstools.lstools_base.MbedLsToolsBase.mount_point_ready") as _mpr,\
                  patch('os.listdir') as _listdir,\
                  patch("mbed_lstools.lstools_base.MbedLsToolsBase._update_device_from_htm") as _htm,\
-                 patch('__main__.open', mock):
+                 patch('mbed_lstools.lstools_base.open', mock, create=True):
                 _mpr.return_value = True
                 _htm.side_effect = None
                 _listdir.return_value = ['MBED.HTM', 'DETAILS.TXT']
                 to_check = self.base.list_mbeds(read_details_txt=True)
+                mock.assert_called_once_with(os.path.join('dummy_mount_point', 'DETAILS.TXT'), 'r')
                 self.assertEqual(len(to_check), 0)
 
         m = mock_open()
@@ -263,7 +305,7 @@ class BasicTestCase(unittest.TestCase):
             'mount_point': dummy_mount_point
         }
 
-        with patch('mbed_lstools.lstools_base.open', _open):
+        with patch('mbed_lstools.lstools_base.open', _open, create=True):
             device = deepcopy(base_device)
             self.base._update_device_details_jlink(device, False, ['Board.html', 'User Guide.html'])
             self.assertEqual(device['url'], 'http://www.nxp.com/FRDM-KL27Z')
@@ -336,7 +378,7 @@ class BasicTestCase(unittest.TestCase):
              patch('os.listdir') as _listdir:
             new_device_id = "00017531642046"
             _read_htm.return_value = (new_device_id, {})
-            _listdir.return_value = []
+            _listdir.return_value = ['mbed.htm', 'details.txt']
             _up_details.return_value = {
                 'automation_allowed': '0'
             }
@@ -405,7 +447,7 @@ class BasicTestCase(unittest.TestCase):
              patch('os.listdir') as _listdir:
             new_device_id = u'00017575430420'
             _read_htm.return_value = (new_device_id, {})
-            _listdir.return_value = []
+            _listdir.return_value = ['mbed.htm', 'details.txt']
             _up_details.return_value = {
                 'automation_allowed': '0'
             }
@@ -481,7 +523,7 @@ class RetargetTestCase(unittest.TestCase):
         _open = mock_open(read_data=json.dumps(retarget_data))
 
         with patch('os.path.isfile') as _isfile,\
-             patch('mbed_lstools.lstools_base.open', _open):
+             patch('mbed_lstools.lstools_base.open', _open, create=True):
             self.base = DummyLsTools()
             _open.assert_called()
 
@@ -501,7 +543,7 @@ class RetargetTestCase(unittest.TestCase):
             _get.return_value = {
                 'platform_name': 'foo_target'
             }
-            _listdir.return_value = []
+            _listdir.return_value = ['mbed.htm']
             to_check = self.base.list_mbeds()
         self.assertEqual(len(to_check), 1)
         self.assertEqual(to_check[0]['serial_port'], 'valid')
