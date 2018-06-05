@@ -234,18 +234,29 @@ class MbedLsToolsBase(object):
         return 'jlink' if 'segger.html' in [e.lower() for e in directory_entries] else 'daplink'
 
 
-    def _update_device_details_daplink(self, device, read_details_txt, _):
+    def _update_device_details_daplink(self, device, read_details_txt, directory_entries):
         """ Updates the daplink-specific device information based on files from its 'mount_point'
             @param device Dictionary containing device information
             @param read_details_txt A boolean controlling the presense of the
               output dict attributes read from other files present on the 'mount_point'
             @param directory_entries List of directories and files on the device
         """
-        self._update_device_from_htm(device)
-        if read_details_txt:
+        lowercase_directory_entries = [e.lower() for e in directory_entries]
+        if self.MBED_HTM_NAME.lower() in lowercase_directory_entries:
+            self._update_device_from_htm(device)
+        elif not read_details_txt:
+            logger.debug('Since mbed.htm is not present, attempting to use '
+                         'details.txt for the target id')
+            read_details_txt = True
+
+        if read_details_txt and self.DETAILS_TXT_NAME.lower() in lowercase_directory_entries:
             details_txt = self._details_txt(device['mount_point']) or {}
             device.update({"daplink_%s" % f.lower().replace(' ', '_'): v
                            for f, v in details_txt.items()})
+
+            # If details.txt contains the target id, this is the most trusted source
+            if device.get('daplink_unique_id', None):
+                device['target_id'] = device['daplink_unique_id']
 
         if device['target_id']:
             identifier = device['target_id'][0:4]
