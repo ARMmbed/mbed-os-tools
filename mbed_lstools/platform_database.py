@@ -272,6 +272,8 @@ DEFAULT_PLATFORM_DB = {
         u'9010': u'ARCH_GPRS',
         u'9011': u'ARCH_MAX',
         u'9012': u'SEEED_TINY_BLE',
+        u'9014': u'WIO_3G',
+        u'9015': u'WIO_LTE_M',
         u'9900': u'NRF51_MICROBIT',
         u'C002': u'VK_RZ_A1H',
         u'C005': u'MTM_MTCONNECT04S',
