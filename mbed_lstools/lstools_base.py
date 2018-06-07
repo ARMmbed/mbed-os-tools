@@ -210,6 +210,7 @@ class MbedLsToolsBase(object):
 
         try:
             directory_entries = os.listdir(device['mount_point'])
+            device['directory_entries'] = directory_entries
             device['device_type'] = self._detect_device_type(directory_entries)
             device['target_id'] = device['target_id_usb_id']
 
