@@ -292,7 +292,7 @@ def init_host_test_cli_params():
     parser.add_option('', '--fm',
                       dest='fast_model_connection',
                       metavar="CONFIG",
-                      default='DEFAULT',
+                      default=None,
                       help=fm_help)
 
     parser.add_option('', '--run',
