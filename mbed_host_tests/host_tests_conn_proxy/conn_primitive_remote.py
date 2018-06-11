@@ -113,14 +113,23 @@ class RemoteConnectorPrimitive(ConnectorPrimitive):
         self.logger.prn_inf("remote resources reset...")
         if not self.selected_resource:
             raise Exception("remote resource not exists!")
-        self.selected_resource.reset()
+        try:
+            self.selected_resource.reset()
+        except Exception as error:
+            self.logger.prn_inf("reset() failed")
+            raise error
 
     def __remote_flashing(self, filename, forceflash=False):
         """! Use GRM remote API to flash DUT """
         self.logger.prn_inf("remote resources flashing with '%s'..." % filename)
         if not self.selected_resource:
             raise Exception("remote resource not exists!")
-        self.selected_resource.flash(filename, forceflash=forceflash)
+        try:
+            self.selected_resource.flash(filename, forceflash=forceflash)
+        except Exception as error:
+            self.logger.prn_inf("flash() failed")
+            raise error
+
 
     def read(self, count):
         """! Read 'count' bytes of data from DUT """
