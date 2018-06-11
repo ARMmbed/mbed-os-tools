@@ -19,7 +19,6 @@ limitations under the License.
 import unittest
 import mock
 
-
 from mbed_host_tests.host_tests_conn_proxy.conn_primitive_remote import RemoteConnectorPrimitive
 
 
@@ -41,13 +40,13 @@ class RemoteResourceMock(object):
     @property
     def is_connected(self):
         return self._is_connected
+
     @property
     def is_allocated(self):
         return self._is_allocated
 
 
 class RemoteModuleMock(object):
-
     class SerialParameters(object):
         def __init__(self, baudrate):
             self.baudrate = baudrate
@@ -65,96 +64,64 @@ class RemoteModuleMock(object):
     def create(host, port):
         return RemoteModuleMock(host, port)
 
+
 class BasicHostTestsTestCase(unittest.TestCase):
 
-    def test_constructor(self):
-        config = {
+    def setUp(self):
+        self.config = {
             "grm_module": "RemoteModuleMock",
             "tags": "a,b",
             "image_path": "test.bin",
             "platform_name": "my_platform",
         }
-        importer = mock.MagicMock()
-        importer.side_effect = lambda x: RemoteModuleMock
-        remote = RemoteConnectorPrimitive("remote", config, importer)
-        importer.assert_called_once_with("RemoteModuleMock")
+        self.importer = mock.MagicMock()
+        self.importer.side_effect = lambda x: RemoteModuleMock
+        self.remote = RemoteConnectorPrimitive("remote", self.config, self.importer)
 
-        remote.client.get_resources.called_once()
-        self.assertEqual(remote.remote_module, RemoteModuleMock)
-        self.assertIsInstance(remote.client, RemoteModuleMock)
-        self.assertIsInstance(remote.selected_resource, RemoteResourceMock)
+    def test_constructor(self):
+        self.importer.assert_called_once_with("RemoteModuleMock")
+
+        self.remote.client.get_resources.called_once()
+        self.assertEqual(self.remote.remote_module, RemoteModuleMock)
+        self.assertIsInstance(self.remote.client, RemoteModuleMock)
+        self.assertIsInstance(self.remote.selected_resource, RemoteResourceMock)
 
         # allocate is called
-        remote.client.allocate.assert_called_once_with({
-            'platform_name': config.get('platform_name'),
+        self.remote.client.allocate.assert_called_once_with({
+            'platform_name': self.config.get('platform_name'),
             'tags': {"a": True, "b": True}})
 
         # flash is called
-        remote.selected_resource.open_connection.called_once_with("test.bin")
+        self.remote.selected_resource.open_connection.called_once_with("test.bin")
 
         # open_connection is called
-        remote.selected_resource.open_connection.called_once()
-        connect = remote.selected_resource.open_connection.call_args[1]
+        self.remote.selected_resource.open_connection.called_once()
+        connect = self.remote.selected_resource.open_connection.call_args[1]
         self.assertEqual(connect["parameters"].baudrate, 9600)
 
         # reset once
-        remote.selected_resource.reset.assert_called_once_with()
+        self.remote.selected_resource.reset.assert_called_once_with()
 
     def test_write(self):
-        config = {
-            "grm_module": "RemoteModuleMock",
-            "tags": "a,b",
-            "image_path": "test.bin",
-            "platform_name": "my_platform",
-        }
-        importer = mock.MagicMock()
-        importer.side_effect = lambda x: RemoteModuleMock
-        remote = RemoteConnectorPrimitive("remote", config, importer)
-        remote.write("abc")
-        remote.selected_resource.write.assert_called_once_with("abc")
+        self.remote.write("abc")
+        self.remote.selected_resource.write.assert_called_once_with("abc")
 
     def test_read(self):
-        config = {
-            "grm_module": "RemoteModuleMock",
-            "tags": "a,b",
-            "image_path": "test.bin",
-            "platform_name": "my_platform",
-        }
-        importer = mock.MagicMock()
-        importer.side_effect = lambda x: RemoteModuleMock
-        remote = RemoteConnectorPrimitive("remote", config, importer)
-        data = remote.read(6)
-        remote.selected_resource.read.assert_called_once_with(6)
+        data = self.remote.read(6)
+        self.remote.selected_resource.read.assert_called_once_with(6)
         self.assertEqual(data, "abc")
 
     def test_reset(self):
-        config = {
-            "grm_module": "RemoteModuleMock",
-            "tags": "a,b",
-            "image_path": "test.bin",
-            "platform_name": "my_platform",
-        }
-        importer = mock.MagicMock()
-        importer.side_effect = lambda x: RemoteModuleMock
-        remote = RemoteConnectorPrimitive("remote", config, importer)
-        data = remote.reset()
-        self.assertEqual(remote.selected_resource.reset.call_count, 2)
+        self.remote.reset()
+        self.assertEqual(self.remote.selected_resource.reset.call_count, 2)
 
     def test_finish(self):
-        config = {
-            "grm_module": "RemoteModuleMock",
-            "tags": "a,b",
-            "image_path": "test.bin",
-            "platform_name": "my_platform",
-        }
-        importer = mock.MagicMock()
-        importer.side_effect = lambda x: RemoteModuleMock
-        remote = RemoteConnectorPrimitive("remote", config, importer)
-        resource = remote.selected_resource
-        remote.finish()
-        self.assertEqual(remote.selected_resource, None)
+        resource = self.remote.selected_resource
+        self.remote.finish()
+        self.assertEqual(self.remote.selected_resource, None)
         resource.close_connection.assert_called_once()
         resource.release.assert_called_once()
+
 
 if __name__ == '__main__':
     unittest.main()
