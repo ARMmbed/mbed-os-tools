@@ -19,8 +19,9 @@ limitations under the License.
 from mbed_host_tests import DEFAULT_BAUD_RATE
 from mbed_host_tests.host_tests_conn_proxy.conn_primitive import ConnectorPrimitive
 
+
 class RemoteConnectorPrimitive(ConnectorPrimitive):
-    def __init__(self, name, config, importer = __import__):
+    def __init__(self, name, config, importer=__import__):
         ConnectorPrimitive.__init__(self, name)
         self.config = config
         self.target_id = self.config.get('target_id', None)
@@ -128,7 +129,6 @@ class RemoteConnectorPrimitive(ConnectorPrimitive):
         except Exception as error:
             self.logger.prn_inf("flash() failed")
             raise error
-
 
     def read(self, count):
         """! Read 'count' bytes of data from DUT """
