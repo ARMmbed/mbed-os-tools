@@ -19,7 +19,6 @@ limitations under the License.
 from mbed_host_tests import DEFAULT_BAUD_RATE
 from mbed_host_tests.host_tests_conn_proxy.conn_primitive import ConnectorPrimitive
 
-
 class RemoteConnectorPrimitive(ConnectorPrimitive):
     def __init__(self, name, config, importer = __import__):
         ConnectorPrimitive.__init__(self, name)
@@ -33,7 +32,7 @@ class RemoteConnectorPrimitive(ConnectorPrimitive):
         self.image_path = config.get('image_path', None)
         self.allocate_requirements = {"platform_name": self.platform_name}
 
-        if self.config["tags"]:
+        if self.config.get("tags"):
             self.allocate_requirements["tags"] = {}
             for tag in config["tags"].split(','):
                 self.allocate_requirements["tags"][tag] = True
