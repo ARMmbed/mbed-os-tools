@@ -114,7 +114,8 @@ class RemoteConnectorPrimitive(ConnectorPrimitive):
         if not self.selected_resource:
             raise Exception("remote resource not exists!")
         try:
-            self.selected_resource.reset()
+            if self.selected_resource.reset() is False:
+                raise Exception("remote resources reset failed!")
         except Exception as error:
             self.logger.prn_inf("reset() failed")
             raise error
@@ -125,7 +126,8 @@ class RemoteConnectorPrimitive(ConnectorPrimitive):
         if not self.selected_resource:
             raise Exception("remote resource not exists!")
         try:
-            self.selected_resource.flash(filename, forceflash=forceflash)
+            if self.selected_resource.flash(filename, forceflash=forceflash) is False:
+                raise Exception("remote resource flashing failed!")
         except Exception as error:
             self.logger.prn_inf("flash() failed")
             raise error
