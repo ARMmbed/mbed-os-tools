@@ -65,7 +65,7 @@ class RemoteModuleMock(object):
         return RemoteModuleMock(host, port)
 
 
-class BasicHostTestsTestCase(unittest.TestCase):
+class ConnPrimitiveRemoteTestCase(unittest.TestCase):
 
     def setUp(self):
         self.config = {
