@@ -95,9 +95,9 @@ class RemoteConnectorPrimitive(ConnectorPrimitive):
         try:
             serial_parameters = self.remote_module.SerialParameters(baudrate=baudrate)
             self.selected_resource.open_connection(parameters=serial_parameters)
-        except Exception as error:
+        except Exception:
             self.logger.prn_inf("open_connection() failed")
-            raise error
+            raise
 
     def __remote_disconnect(self):
         if not self.selected_resource:
@@ -116,9 +116,9 @@ class RemoteConnectorPrimitive(ConnectorPrimitive):
         try:
             if self.selected_resource.reset() is False:
                 raise Exception("remote resources reset failed!")
-        except Exception as error:
+        except Exception:
             self.logger.prn_inf("reset() failed")
-            raise error
+            raise
 
     def __remote_flashing(self, filename, forceflash=False):
         """! Use GRM remote API to flash DUT """
@@ -128,9 +128,9 @@ class RemoteConnectorPrimitive(ConnectorPrimitive):
         try:
             if self.selected_resource.flash(filename, forceflash=forceflash) is False:
                 raise Exception("remote resource flashing failed!")
-        except Exception as error:
+        except Exception:
             self.logger.prn_inf("flash() failed")
-            raise error
+            raise
 
     def read(self, count):
         """! Read 'count' bytes of data from DUT """
