@@ -31,6 +31,7 @@ import imp
 import inspect
 from os import listdir
 from os.path import isfile, join, abspath
+import sys
 from optparse import OptionParser
 from optparse import SUPPRESS_HELP
 from mbed_host_tests import host_tests_plugins
@@ -357,4 +358,9 @@ def init_host_test_cli_params():
     parser.epilog = """Example: mbedhtrun -d E: -p COM5 -f "test.bin" -C 4 -c shell -m K64F"""
 
     (options, _) = parser.parse_args()
+
+    if len(sys.argv) == 1:
+        parser.print_help()
+        sys.exit()
+
     return options
