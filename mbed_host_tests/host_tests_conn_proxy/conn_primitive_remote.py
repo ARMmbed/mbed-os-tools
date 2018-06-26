@@ -21,7 +21,7 @@ from mbed_host_tests.host_tests_conn_proxy.conn_primitive import ConnectorPrimit
 
 
 class RemoteConnectorPrimitive(ConnectorPrimitive):
-    def __init__(self, name, config, importer = __import__):
+    def __init__(self, name, config, importer=__import__):
         ConnectorPrimitive.__init__(self, name)
         self.config = config
         self.target_id = self.config.get('target_id', None)
@@ -33,7 +33,7 @@ class RemoteConnectorPrimitive(ConnectorPrimitive):
         self.image_path = config.get('image_path', None)
         self.allocate_requirements = {"platform_name": self.platform_name}
 
-        if self.config["tags"]:
+        if self.config.get("tags"):
             self.allocate_requirements["tags"] = {}
             for tag in config["tags"].split(','):
                 self.allocate_requirements["tags"][tag] = True
@@ -95,9 +95,9 @@ class RemoteConnectorPrimitive(ConnectorPrimitive):
         try:
             serial_parameters = self.remote_module.SerialParameters(baudrate=baudrate)
             self.selected_resource.open_connection(parameters=serial_parameters)
-        except Exception as error:
+        except Exception:
             self.logger.prn_inf("open_connection() failed")
-            raise error
+            raise
 
     def __remote_disconnect(self):
         if not self.selected_resource:
@@ -113,16 +113,24 @@ class RemoteConnectorPrimitive(ConnectorPrimitive):
         self.logger.prn_inf("remote resources reset...")
         if not self.selected_resource:
             raise Exception("remote resource not exists!")
-        if not self.selected_resource.reset():
-            raise Exception("remote resources reset failed!")
+        try:
+            if self.selected_resource.reset() is False:
+                raise Exception("remote resources reset failed!")
+        except Exception:
+            self.logger.prn_inf("reset() failed")
+            raise
 
     def __remote_flashing(self, filename, forceflash=False):
         """! Use GRM remote API to flash DUT """
         self.logger.prn_inf("remote resources flashing with '%s'..." % filename)
         if not self.selected_resource:
             raise Exception("remote resource not exists!")
-        if not self.selected_resource.flash(filename, forceflash=forceflash):
-            raise Exception("remote resources flashing failed!")
+        try:
+            if self.selected_resource.flash(filename, forceflash=forceflash) is False:
+                raise Exception("remote resource flashing failed!")
+        except Exception:
+            self.logger.prn_inf("flash() failed")
+            raise
 
     def read(self, count):
         """! Read 'count' bytes of data from DUT """
