@@ -135,6 +135,7 @@ def conn_process(event_queue, dut_event_queue, config):
 
     logger = HtrunLogger('CONN')
     logger.prn_inf("starting connection process...")
+    
 
     # Send connection process start event to host process
     # NOTE: Do not send any other Key-Value pairs before this!
@@ -168,6 +169,8 @@ def conn_process(event_queue, dut_event_queue, config):
         sync_uuid = str(uuid.uuid4())
         # Handshake, we will send {{sync;UUID}} preamble and wait for mirrored reply
         if timeout:
+            logger.prn_inf("Reset the part and send in new preamble...")
+            connector.reset()
             logger.prn_inf("resending new preamble '%s' after %0.2f sec"% (sync_uuid, timeout))
         else:
             logger.prn_inf("sending preamble '%s'"% sync_uuid)
@@ -271,6 +274,8 @@ def conn_process(event_queue, dut_event_queue, config):
                             logger.prn_inf("found SYNC in stream: {{%s;%s}} it is #%d sent, queued..."% (key, value, idx))
                         else:
                             logger.prn_err("found faulty SYNC in stream: {{%s;%s}}, ignored..."% (key, value))
+                            logger.prn_inf("Resetting the part to clear out the buffer...")
+                            connector.reset()
                     else:
                         logger.prn_wrn("found KV pair in stream: {{%s;%s}}, ignoring..."% (key, value))
 
