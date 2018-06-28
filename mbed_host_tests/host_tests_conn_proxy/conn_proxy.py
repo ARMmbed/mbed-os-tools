@@ -135,7 +135,6 @@ def conn_process(event_queue, dut_event_queue, config):
 
     logger = HtrunLogger('CONN')
     logger.prn_inf("starting connection process...")
-    
 
     # Send connection process start event to host process
     # NOTE: Do not send any other Key-Value pairs before this!
