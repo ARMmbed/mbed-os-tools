@@ -273,8 +273,9 @@ def conn_process(event_queue, dut_event_queue, config):
                             logger.prn_inf("found SYNC in stream: {{%s;%s}} it is #%d sent, queued..."% (key, value, idx))
                         else:
                             logger.prn_err("found faulty SYNC in stream: {{%s;%s}}, ignored..."% (key, value))
-                            logger.prn_inf("Resetting the part to clear out the buffer...")
+                            logger.prn_inf("Resetting the part and sync timeout to clear out the buffer...")
                             connector.reset()
+                            loop_timer = time()
                     else:
                         logger.prn_wrn("found KV pair in stream: {{%s;%s}}, ignoring..."% (key, value))
 
