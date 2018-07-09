@@ -175,6 +175,14 @@ class Mbed:
             retry_copy = self.retry_copy
         target_id = self.target_id
 
+        if not image_path:
+            self.logger.prn_err("Error: image path not specified")
+            return False
+
+        if not os.path.isfile(image_path):
+            self.logger.prn_err("Error: image file (%s) not found" % image_path)
+            return False
+
         for count in range(0, retry_copy):
             initial_remount_count = get_remount_count(disk)
             # Call proper copy method
