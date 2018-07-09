@@ -80,6 +80,7 @@ DEFAULT_PLATFORM_DB = {
         u'0407': u'MAX32620HSP',
         u'0408': u'MAX32625NEXPAQ',
         u'0409': u'MAX32630FTHR',
+        u'0410': u'ETTEPLAN_LORA',
         u'0415': u'MAX32625MBED',
         u'0416': u'MAX32625PICO',
         u'0417': u'MAX32630MBED',
