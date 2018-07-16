@@ -86,10 +86,12 @@ $ mbedls --json
         "mount_point": "D:",
         "platform_name": "K64F",
         "platform_name_unique": "K64F[0]",
+        "product_id": "0204",
         "serial_port": "COM18",
         "target_id": "0240000032044e4500257009997b00386781000097969900",
         "target_id_mbed_htm": "0240000032044e4500257009997b00386781000097969900",
-        "target_id_usb_id": "0240000032044e4500257009997b00386781000097969900"
+        "target_id_usb_id": "0240000032044e4500257009997b00386781000097969900",
+        "vendor_id": "0d28"
     }
 ]
 ```
@@ -288,7 +290,7 @@ If set to `'+'`, the mocked platform is enabled. If `'-'`, the mocked platform i
 
 ## Logging
 
-Mbed LS uses the Python `logging` module for all of its logging needs. Mbed LS uses the logger `"mbedls"` as its root, and all other loggers start with `"mbedls."`. Configuring the Python root logger automatically redirects all of the Mbed LS logs to the configured endpoint. When using the Python API, configure logging, such as by calling `logging.basicConfig()`. 
+Mbed LS uses the Python `logging` module for all of its logging needs. Mbed LS uses the logger `"mbedls"` as its root, and all other loggers start with `"mbedls."`. Configuring the Python root logger automatically redirects all of the Mbed LS logs to the configured endpoint. When using the Python API, configure logging, such as by calling `logging.basicConfig()`.
 
 # Testing
 
