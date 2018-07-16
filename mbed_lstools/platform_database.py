@@ -209,6 +209,7 @@ DEFAULT_PLATFORM_DB = {
         u'1305': u'NUMAKER_PFM_M2351',
         u'1306': u'NUMAKER_PFM_NANO130',
         u'1307': u'NUMAKER_PFM_NUC240',
+        u'1308': u'NUMAKER_IOT_M487',
         u'1549': u'LPC1549',
         u'1600': u'LPC4330_M4',
         u'1605': u'LPC4330_M4',
