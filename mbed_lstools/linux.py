@@ -120,12 +120,12 @@ class MbedLsToolsLinuxGeneric(MbedLsToolsBase):
         for common_device_name in common_device_names:
             sysfs_path = os.path.join(SYSFS_BLOCK_DEVICE_PATH, common_device_name)
             full_sysfs_path = os.readlink(sysfs_path)
-            path_parts = full_sysfs_path.split(os.sep)
+            path_parts = full_sysfs_path.split('/')
 
             end_index = -1
             for index, part in enumerate(path_parts):
                 if self.udp.search(part):
-                    end_index =index
+                    end_index = index
                     break
 
             if end_index == -1:
