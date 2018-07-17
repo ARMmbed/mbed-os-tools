@@ -187,11 +187,11 @@ def _vid_pid_path_to_usb_info(vid_pid_path):
     """! Provide the vendor ID and product ID of a device based on its entry in the registry
     @return Returns {'vendor_id': '<vendor ID>', 'product': '<product ID>'}
     @details If the vendor ID or product ID can't be determined, they will be returned
-    as 'unknown'.
+    as None.
     """
     result = {
-        'vendor_id': 'unknown',
-        'product_id': 'unknown'
+        'vendor_id': None,
+        'product_id': None
     }
 
     for component in vid_pid_path.split('&'):

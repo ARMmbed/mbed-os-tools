@@ -122,21 +122,21 @@ class MbedLsToolsLinuxGeneric(MbedLsToolsBase):
             full_sysfs_path = os.readlink(sysfs_path)
             path_parts = full_sysfs_path.split('/')
 
-            end_index = -1
+            end_index = None
             for index, part in enumerate(path_parts):
                 if self.udp.search(part):
                     end_index = index
                     break
 
-            if end_index == -1:
+            if end_index == None:
                 logger.debug('Did not find suitable usb folder for usb info: %s', full_sysfs_path)
                 continue
 
             usb_info_rel_path = path_parts[:end_index + 1]
             usb_info_path = os.path.join(SYSFS_BLOCK_DEVICE_PATH, os.sep.join(usb_info_rel_path))
 
-            vendor_id = 'unknown'
-            product_id = 'unknown'
+            vendor_id = None
+            product_id = None
 
             vendor_id_file_paths = os.path.join(usb_info_path, 'idVendor')
             product_id_file_paths = os.path.join(usb_info_path, 'idProduct')
