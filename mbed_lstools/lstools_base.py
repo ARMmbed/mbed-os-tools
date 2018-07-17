@@ -223,7 +223,7 @@ class MbedLsToolsBase(object):
             {
                 'daplink': self._update_device_details_daplink,
                 'jlink': self._update_device_details_jlink
-            }[device['device_type'] or 'daplink'](device, read_details_txt, directory_entries)
+            }[device['device_type'] or 'daplink'](device, read_details_txt)
         except (OSError, IOError) as e:
             logger.warning(
                 'Marking device with mount point "%s" as unmounted due to the '
@@ -241,14 +241,13 @@ class MbedLsToolsBase(object):
         return self.VENDOR_ID_DEVICE_TYPE_MAP.get(device.get('vendor_id'))
 
 
-    def _update_device_details_daplink(self, device, read_details_txt, directory_entries):
+    def _update_device_details_daplink(self, device, read_details_txt):
         """ Updates the daplink-specific device information based on files from its 'mount_point'
             @param device Dictionary containing device information
             @param read_details_txt A boolean controlling the presense of the
               output dict attributes read from other files present on the 'mount_point'
-            @param directory_entries List of directories and files on the device
         """
-        lowercase_directory_entries = [e.lower() for e in directory_entries]
+        lowercase_directory_entries = [e.lower() for e in device['directory_entries']]
         if self.MBED_HTM_NAME.lower() in lowercase_directory_entries:
             self._update_device_from_htm(device)
         elif not read_details_txt:
@@ -277,12 +276,11 @@ class MbedLsToolsBase(object):
         else:
             device['platform_name'] = None
 
-    def _update_device_details_jlink(self, device, _, directory_entries):
+    def _update_device_details_jlink(self, device, _):
         """ Updates the jlink-specific device information based on files from its 'mount_point'
             @param device Dictionary containing device information
-            @param directory_entries List of directories and files on the device
         """
-        lower_case_map = {e.lower(): e for e in directory_entries}
+        lower_case_map = {e.lower(): e for e in device['directory_entries']}
 
         if 'board.html' in lower_case_map:
             board_file_key = 'board.html'
