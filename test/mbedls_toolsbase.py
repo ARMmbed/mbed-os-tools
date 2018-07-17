@@ -289,11 +289,20 @@ Remount count: 0
         self.assertEqual(device['device_type'], 'unknown')
 
     def test_detect_device_test(self):
-        device_type = self.base._detect_device_type(['Segger.html'])
-        self.assertEqual(device_type, 'jlink')
+        device_type = self.base._detect_device_type({
+            'vendor_id': '0483'
+        })
+        self.assertEqual(device_type, 'stlink')
 
-        device_type = self.base._detect_device_type(['MBED.HTM', 'DETAILS.TXT'])
+        device_type = self.base._detect_device_type({
+            'vendor_id': '0d28'
+        })
         self.assertEqual(device_type, 'daplink')
+
+        device_type = self.base._detect_device_type({
+            'vendor_id': '1366'
+        })
+        self.assertEqual(device_type, 'jlink')
 
     def test_update_device_details_jlink(self):
         jlink_html_contents = ('<html><head><meta http-equiv="refresh" '
@@ -307,7 +316,8 @@ Remount count: 0
 
         with patch('mbed_lstools.lstools_base.open', _open, create=True):
             device = deepcopy(base_device)
-            self.base._update_device_details_jlink(device, False, ['Board.html', 'User Guide.html'])
+            device['directory_entries'] = ['Board.html', 'User Guide.html']
+            self.base._update_device_details_jlink(device, False)
             self.assertEqual(device['url'], 'http://www.nxp.com/FRDM-KL27Z')
             self.assertEqual(device['platform_name'], 'KL27Z')
             _open.assert_called_once_with(os.path.join(dummy_mount_point, 'Board.html'), 'r')
@@ -315,7 +325,8 @@ Remount count: 0
             _open.reset_mock()
 
             device = deepcopy(base_device)
-            self.base._update_device_details_jlink(device, False, ['User Guide.html'])
+            device['directory_entries'] = ['User Guide.html']
+            self.base._update_device_details_jlink(device, False)
             self.assertEqual(device['url'], 'http://www.nxp.com/FRDM-KL27Z')
             self.assertEqual(device['platform_name'], 'KL27Z')
             _open.assert_called_once_with(os.path.join(dummy_mount_point, 'User Guide.html'), 'r')
@@ -323,8 +334,8 @@ Remount count: 0
             _open.reset_mock()
 
             device = deepcopy(base_device)
-            self.base._update_device_details_jlink(device, False, ['unhelpful_file.html'])
-            self.assertEqual(device, base_device)
+            device['directory_entries'] = ['unhelpful_file.html']
+            self.base._update_device_details_jlink(device, False)
             _open.assert_not_called()
 
     def test_fs_never(self):
