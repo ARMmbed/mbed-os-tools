@@ -221,7 +221,8 @@ class MbedLsToolsBase(object):
             device['target_id'] = device['target_id_usb_id']
 
             {
-                'daplink': self._update_device_details_daplink,
+                'daplink': self._update_device_details_daplink_compatible,
+                'stlink': self._update_device_details_daplink_compatible,
                 'jlink': self._update_device_details_jlink
             }[device['device_type'] or 'daplink'](device, read_details_txt)
         except (OSError, IOError) as e:
@@ -241,7 +242,7 @@ class MbedLsToolsBase(object):
         return self.VENDOR_ID_DEVICE_TYPE_MAP.get(device.get('vendor_id'))
 
 
-    def _update_device_details_daplink(self, device, read_details_txt):
+    def _update_device_details_daplink_compatible(self, device, read_details_txt):
         """ Updates the daplink-specific device information based on files from its 'mount_point'
             @param device Dictionary containing device information
             @param read_details_txt A boolean controlling the presense of the
