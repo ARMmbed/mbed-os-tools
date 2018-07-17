@@ -69,6 +69,12 @@ class MbedLsToolsBase(object):
     DETAILS_TXT_NAME = 'DETAILS.TXT'
     MBED_HTM_NAME = 'mbed.htm'
 
+    VENDOR_ID_DEVICE_TYPE_MAP = {
+        '0483': 'stlink',
+        '0d28': 'daplink',
+        '1366': 'jlink'
+    }
+
     def __init__(self, list_unmounted=False, **kwargs):
         """ ctor
         """
@@ -211,13 +217,13 @@ class MbedLsToolsBase(object):
         try:
             directory_entries = os.listdir(device['mount_point'])
             device['directory_entries'] = directory_entries
-            device['device_type'] = self._detect_device_type(directory_entries)
+            device['device_type'] = self._detect_device_type(device)
             device['target_id'] = device['target_id_usb_id']
 
             {
                 'daplink': self._update_device_details_daplink,
                 'jlink': self._update_device_details_jlink
-            }[device['device_type']](device, read_details_txt, directory_entries)
+            }[device['device_type'] or 'daplink'](device, read_details_txt, directory_entries)
         except (OSError, IOError) as e:
             logger.warning(
                 'Marking device with mount point "%s" as unmounted due to the '
@@ -226,13 +232,13 @@ class MbedLsToolsBase(object):
             device['device_type'] = 'unknown'
 
 
-    def _detect_device_type(self, directory_entries):
+    def _detect_device_type(self, device):
         """ Returns a string of the device type
-            @param directory_entries List of directories and files on the device
-            @return 'daplink' or 'jlink'
+            @param device Dictionary containing device information
+            @return Device type located in VENDOR_ID_DEVICE_TYPE_MAP or None if unknown
         """
 
-        return 'jlink' if 'segger.html' in [e.lower() for e in directory_entries] else 'daplink'
+        return self.VENDOR_ID_DEVICE_TYPE_MAP.get(device.get('vendor_id'))
 
 
     def _update_device_details_daplink(self, device, read_details_txt, directory_entries):
