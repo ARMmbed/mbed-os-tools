@@ -165,5 +165,7 @@ class DarwinTestCase(unittest.TestCase):
             candidates = self.darwin.find_candidates()
         self.assertIn({'mount_point': '/Volumes/DAPLINK',
                        'serial_port': '/dev/tty.usbmodem1422',
-                       'target_id_usb_id': '0240000034544e45003a00048e3800525a91000097969900'},
+                       'target_id_usb_id': '0240000034544e45003a00048e3800525a91000097969900',
+                       'vendor_id': '0d28',
+                       'product_id': '0204'},
                       candidates)
