@@ -229,7 +229,6 @@ DEFAULT_PLATFORM_DB = {
         u'2203': u'WIZWIKI_W7500P',
         u'2500': u'ADV_WISE_1570',
         u'3001': u'LPC11U24',
-        u'3300': u'CC3220SF',
         u'4000': u'LPC11U35_Y5_MBUG',
         u'4005': u'NRF51822_Y5_MBUG',
         u'4100': u'MOTE_L152RC',
