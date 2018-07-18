@@ -26,6 +26,8 @@ logger = logging.getLogger("mbedls.lstools_linux")
 logger.addHandler(logging.NullHandler())
 del logging
 
+SYSFS_BLOCK_DEVICE_PATH = '/sys/class/block'
+
 def _readlink(link):
     content = os.readlink(link)
     if content.startswith(".."):
@@ -45,18 +47,22 @@ class MbedLsToolsLinuxGeneric(MbedLsToolsBase):
             r'(pci|usb)-[0-9a-zA-Z_-]*_(?P<usbid>[0-9a-zA-Z]*)-.*$')
         self.mmp = re.compile(
             r'(?P<dev>(/[^/ ]*)+) on (?P<dir>(/[^/ ]*)+) ')
+        self.udp = re.compile(r'[0-9]+-[0-9]+')
 
     def find_candidates(self):
         disk_ids = self._dev_by_id('disk')
         serial_ids = self._dev_by_id('serial')
         mount_ids = dict(self._fat_mounts())
+        usb_info = self._sysfs_block_devices(disk_ids.values())
         logger.debug("Mount mapping %r", mount_ids)
 
         return [
             {
                 'mount_point' : mount_ids.get(disk_dev),
                 'serial_port' : serial_ids.get(disk_uuid),
-                'target_id_usb_id' : disk_uuid
+                'target_id_usb_id' : disk_uuid,
+                'vendor_id': usb_info[disk_dev]['vendor_id'],
+                'product_id': usb_info[disk_dev]['product_id']
             } for disk_uuid, disk_dev in disk_ids.items()
         ]
 
@@ -104,3 +110,52 @@ class MbedLsToolsLinuxGeneric(MbedLsToolsBase):
             match = self.nlp.search(dl)
             if match:
                 yield match.group("usbid"), _readlink(dl)
+
+    def _sysfs_block_devices(self, block_devices):
+        device_names = { os.path.basename(d): d  for d in block_devices }
+        sysfs_block_devices = set(os.listdir(SYSFS_BLOCK_DEVICE_PATH))
+        common_device_names = sysfs_block_devices.intersection(set(device_names.keys()))
+        result = {}
+
+        for common_device_name in common_device_names:
+            sysfs_path = os.path.join(SYSFS_BLOCK_DEVICE_PATH, common_device_name)
+            full_sysfs_path = os.readlink(sysfs_path)
+            path_parts = full_sysfs_path.split('/')
+
+            end_index = None
+            for index, part in enumerate(path_parts):
+                if self.udp.search(part):
+                    end_index = index
+                    break
+
+            if end_index == None:
+                logger.debug('Did not find suitable usb folder for usb info: %s', full_sysfs_path)
+                continue
+
+            usb_info_rel_path = path_parts[:end_index + 1]
+            usb_info_path = os.path.join(SYSFS_BLOCK_DEVICE_PATH, os.sep.join(usb_info_rel_path))
+
+            vendor_id = None
+            product_id = None
+
+            vendor_id_file_paths = os.path.join(usb_info_path, 'idVendor')
+            product_id_file_paths = os.path.join(usb_info_path, 'idProduct')
+
+            try:
+                with open(vendor_id_file_paths, 'r') as vendor_file:
+                    vendor_id = vendor_file.read().strip()
+            except OSError as e:
+                logger.debug('Failed to read vendor id file %s weith error:', vendor_id_file_paths, e)
+
+            try:
+                with open(product_id_file_paths, 'r') as product_file:
+                    product_id = product_file.read().strip()
+            except OSError as e:
+                logger.debug('Failed to read product id file %s weith error:', product_id_file_paths, e)
+
+            result[device_names[common_device_name]] = {
+                'vendor_id': vendor_id,
+                'product_id': product_id
+            }
+
+        return result

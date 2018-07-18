@@ -381,7 +381,9 @@ class Win7TestCase(unittest.TestCase):
             expected_info = {
                 'mount_point': 'F:',
                 'serial_port': 'COM7',
-                'target_id_usb_id': u'0240000032044e4500257009997b00386781000097969900'
+                'target_id_usb_id': u'0240000032044e4500257009997b00386781000097969900',
+                'vendor_id': '0d28',
+                'product_id': '0204'
             }
 
             devices = self.lstool.find_candidates()
@@ -417,7 +419,9 @@ class Win7TestCase(unittest.TestCase):
             expected_info = {
                 'mount_point': 'F:',
                 'serial_port': None,
-                'target_id_usb_id': u'0000000032044e4500257009997b00386781000097969900'
+                'target_id_usb_id': u'0000000032044e4500257009997b00386781000097969900',
+                'vendor_id': '0d28',
+                'product_id': '0204'
             }
 
             devices = self.lstool.find_candidates()

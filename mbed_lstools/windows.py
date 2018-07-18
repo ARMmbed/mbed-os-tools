@@ -157,6 +157,8 @@ def _determine_valid_non_composite_devices(devices, target_id_usb_id_mount_point
                 'target_id_usb_id': target_id_usb_id,
                 'mount_point': target_id_usb_id_mount_point_map[target_id_usb_id]
             }
+
+            candidates[target_id_usb_id].update(_vid_pid_path_to_usb_info(device['vid_pid_path']))
         except KeyError:
             pass
 
@@ -179,6 +181,32 @@ def _determine_subdevice_capability(key):
     else:
         logger.debug('Unknown capabilities from the following ids: %s', compatible_ids)
         return None
+
+
+def _vid_pid_path_to_usb_info(vid_pid_path):
+    """! Provide the vendor ID and product ID of a device based on its entry in the registry
+    @return Returns {'vendor_id': '<vendor ID>', 'product': '<product ID>'}
+    @details If the vendor ID or product ID can't be determined, they will be returned
+    as None.
+    """
+    result = {
+        'vendor_id': None,
+        'product_id': None
+    }
+
+    for component in vid_pid_path.split('&'):
+        component_part = component.lower().split('_')
+
+        if len(component_part) != 2:
+            logger.debug('Unexpected VID/PID string structure %s', component)
+            break
+
+        if component_part[0] == 'vid':
+            result['vendor_id'] = component_part[1]
+        elif component_part[0] == 'pid':
+            result['product_id'] = component_part[1]
+
+    return result
 
 # =============================== Start Registry Functions ====================================
 
@@ -350,6 +378,7 @@ class MbedLsToolsWin7(MbedLsToolsBase):
                     if capability == 'msd':
                         candidates[entry_data['target_id_usb_id']]['mount_point'] = \
                             target_id_usb_id_mount_point_map[entry_data['target_id_usb_id']]
+                        candidates[entry_data['target_id_usb_id']].update(_vid_pid_path_to_usb_info(vid_pid_path))
                     elif capability == 'serial':
                         try:
                             device_parameters_key = winreg.OpenKey(subdevice_key,
@@ -361,6 +390,7 @@ class MbedLsToolsWin7(MbedLsToolsBase):
                         try:
                             candidates[entry_data['target_id_usb_id']]['serial_port'], _ = winreg.QueryValueEx(
                                 device_parameters_key, 'PortName')
+                            candidates[entry_data['target_id_usb_id']].update(_vid_pid_path_to_usb_info(vid_pid_path))
                         except OSError:
                             logger.debug('"PortName" value not found under serial device entry')
                             continue

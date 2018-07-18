@@ -45,13 +45,13 @@ def _find_TTY(obj):
 
 
 def _prune(current, keys):
-    """ Reduce the amount of data we have to sift through to only 
+    """ Reduce the amount of data we have to sift through to only
         include the specified keys, and children that contain the
         specified keys
     """
     pruned_current = {k: current[k] for k in keys if k in current}
     pruned_children = list(
-      filter(None, [_prune(c, keys) for c in 
+      filter(None, [_prune(c, keys) for c in
                     current.get('IORegistryEntryChildren', [])]))
     keep_current = any(k in current for k in keys) or pruned_children
     if keep_current:
@@ -63,7 +63,7 @@ def _prune(current, keys):
 
 
 def _dfs_usb_info(obj, parents):
-    """ Find all of the usb info that we can from this particular IORegistry 
+    """ Find all of the usb info that we can from this particular IORegistry
         tree with depth first search (and searching the parent stack....)
     """
     output = {}
@@ -80,10 +80,10 @@ def _dfs_usb_info(obj, parents):
             if 'USB Serial Number' in parent:
                 usb_info['serial'] = parent['USB Serial Number']
             if 'idVendor' in parent and 'idProduct' in parent:
-                usb_info['vendor_id'] = parent['idVendor']
-                usb_info['product_id'] = parent['idProduct']
+                usb_info['vendor_id'] = format(parent['idVendor'], '04x')
+                usb_info['product_id'] = format(parent['idProduct'], '04x')
             if usb_info['serial']:
-            	usb_info['tty'] = _find_TTY(parent)
+                usb_info['tty'] = _find_TTY(parent)
             if all(usb_info.values()):
                 break
         logger.debug("found usb info %r", usb_info)
@@ -111,7 +111,9 @@ class MbedLsToolsDarwin(MbedLsToolsBase):
             {
                 'mount_point': mounts[v],
                 'serial_port': volumes[v]['tty'],
-                'target_id_usb_id': volumes[v].get('serial')
+                'target_id_usb_id': volumes[v].get('serial'),
+                'vendor_id': volumes[v].get('vendor_id'),
+                'product_id': volumes[v].get('product_id')
             } for v in set(volumes.keys()) and set(mounts.keys())
             if v in mounts and v in volumes
         ]
