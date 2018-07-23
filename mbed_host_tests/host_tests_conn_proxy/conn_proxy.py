@@ -42,10 +42,11 @@ class KiViBufferWalker():
 
     def append(self, payload):
         """! Append stream buffer with payload and process. Returns non-KV strings"""
+        logger = HtrunLogger('CONN')
         try:
             self.buff += payload.decode('utf-8')
         except UnicodeDecodeError:
-            pass
+            logger.prn_err("UnicodeDecodeError encountered!")
         lines = self.buff.split('\n')
         self.buff = lines[-1]   # remaining
         lines.pop(-1)
