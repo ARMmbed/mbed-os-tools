@@ -47,6 +47,7 @@ class KiViBufferWalker():
             self.buff += payload.decode('utf-8')
         except UnicodeDecodeError:
             logger.prn_wrn("UnicodeDecodeError encountered!")
+            self.buff += payload.decode('utf-8','ignore')
         lines = self.buff.split('\n')
         self.buff = lines[-1]   # remaining
         lines.pop(-1)
