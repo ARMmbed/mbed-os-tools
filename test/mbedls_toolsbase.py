@@ -446,6 +446,11 @@ Remount count: 0
             _read_htm.assert_not_called()
             _up_details.assert_not_called()
 
+    def test_get_supported_platforms(self):
+        supported_platforms = self.base.get_supported_platforms()
+        self.assertTrue(isinstance(supported_platforms, dict))
+        self.assertEqual(supported_platforms['0240'], 'K64F')
+
     def test_fs_before(self):
         device = {
             'target_id_usb_id': '024075309420ABCE',
