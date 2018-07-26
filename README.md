@@ -288,6 +288,24 @@ Overrides the `platform_name` for any platform with a `target_id` that starts wi
 
 If set to `'+'`, the mocked platform is enabled. If `'-'`, the mocked platform is disabled.
 
+
+## `mbeds.get_supported_platforms(...)`
+
+```python
+>>> import mbed_lstools
+>>> mbeds = mbed_lstools.create()
+>>> mbeds.get_supported_platforms(device_type='daplink')
+{'0240': 'K64F', '0311': 'K66F'}
+```
+
+### Arguments
+
+#### `device_type`
+
+**Default:** `'daplink'`
+
+Chooses which device type entries are retrieved from the platform database.
+
 ## Logging
 
 Mbed LS uses the Python `logging` module for all of its logging needs. Mbed LS uses the logger `"mbedls"` as its root, and all other loggers start with `"mbedls."`. Configuring the Python root logger automatically redirects all of the Mbed LS logs to the configured endpoint. When using the Python API, configure logging, such as by calling `logging.basicConfig()`.
