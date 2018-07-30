@@ -47,7 +47,7 @@ class MbedLsToolsLinuxGeneric(MbedLsToolsBase):
             r'(pci|usb)-[0-9a-zA-Z_-]*_(?P<usbid>[0-9a-zA-Z]*)-.*$')
         self.mmp = re.compile(
             r'(?P<dev>(/[^/ ]*)+) on (?P<dir>(/[^/ ]*)+) ')
-        self.udp = re.compile(r'[0-9]+-[0-9]+')
+        self.udp = re.compile(r'^[0-9]+-[0-9]+[^:\s]*$')
 
     def find_candidates(self):
         disk_ids = self._dev_by_id('disk')
@@ -126,7 +126,6 @@ class MbedLsToolsLinuxGeneric(MbedLsToolsBase):
             for index, part in enumerate(path_parts):
                 if self.udp.search(part):
                     end_index = index
-                    break
 
             if end_index == None:
                 logger.debug('Did not find suitable usb folder for usb info: %s', full_sysfs_path)
