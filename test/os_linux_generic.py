@@ -142,7 +142,7 @@ class LinuxPortTestCase(unittest.TestCase):
             'sdf',
             'sdg'
         ],
-        '/sys/class/block/../../devices/pci0000:00/0000:00:06.0/usb1/1-2': [
+        '/sys/class/block/../../devices/pci0000:00/0000:00:06.0/usb1/1-1/1-1.2/1-1.2.6': [
             'idVendor',
             'idProduct'
         ],
@@ -169,8 +169,8 @@ class LinuxPortTestCase(unittest.TestCase):
     }
 
     open_dict_rpi = {
-        '/sys/class/block/../../devices/pci0000:00/0000:00:06.0/usb1/1-2/idVendor': '0d28\n',
-        '/sys/class/block/../../devices/pci0000:00/0000:00:06.0/usb1/1-2/idProduct': '0204\n',
+        '/sys/class/block/../../devices/pci0000:00/0000:00:06.0/usb1/1-1/1-1.2/1-1.2.6/idVendor': '0d28\n',
+        '/sys/class/block/../../devices/pci0000:00/0000:00:06.0/usb1/1-1/1-1.2/1-1.2.6/idProduct': '0204\n',
         '/sys/class/block/../../devices/pci0000:00/0000:00:06.0/usb1/1-3/idVendor': '0d28\n',
         '/sys/class/block/../../devices/pci0000:00/0000:00:06.0/usb1/1-3/idProduct': '0204\n',
         '/sys/class/block/../../devices/pci0000:00/0000:00:06.0/usb1/1-4/idVendor': '0d28\n',
@@ -194,7 +194,7 @@ class LinuxPortTestCase(unittest.TestCase):
         '/dev/serial/by-id/usb-ARM_DAPLink_CMSIS-DAP_0240000028884e450018700f6bf000338021000097969900-if01': '../../ttyACM1',
         '/dev/serial/by-id/usb-ARM_DAPLink_CMSIS-DAP_0240000028884e450036700f6bf000118021000097969900-if01': '../../ttyACM3',
         '/dev/serial/by-id/usb-ARM_DAPLink_CMSIS-DAP_0240000029164e45001b0012706e000df301000097969900-if01': '../../ttyACM2',
-        '/sys/class/block/sdb': '../../devices/pci0000:00/0000:00:06.0/usb1/1-2/1-2:1.0/host3/target3:0:0/3:0:0:0/block/sdb',
+        '/sys/class/block/sdb': '../../devices/pci0000:00/0000:00:06.0/usb1/1-1/1-1.2/1-1.2.6/1-1.2.6:1.0/host8568/target8568:0:0/8568:0:0:0/block/sdb',
         '/sys/class/block/sdc': '../../devices/pci0000:00/0000:00:06.0/usb1/1-3/1-3:1.0/host4/target4:0:0/4:0:0:0/block/sdc',
         '/sys/class/block/sdd': '../../devices/pci0000:00/0000:00:06.0/usb1/1-4/1-4:1.0/host5/target5:0:0/5:0:0:0/block/sdd',
         '/sys/class/block/sde': '../../devices/pci0000:00/0000:00:06.0/usb1/1-5/1-5:1.0/host6/target6:0:0/6:0:0:0/block/sde',
