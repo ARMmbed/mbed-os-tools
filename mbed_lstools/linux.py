@@ -61,8 +61,8 @@ class MbedLsToolsLinuxGeneric(MbedLsToolsBase):
                 'mount_point' : mount_ids.get(disk_dev),
                 'serial_port' : serial_ids.get(disk_uuid),
                 'target_id_usb_id' : disk_uuid,
-                'vendor_id': usb_info[disk_dev]['vendor_id'],
-                'product_id': usb_info[disk_dev]['product_id']
+                'vendor_id': usb_info.get(disk_dev, {}).get('vendor_id'),
+                'product_id': usb_info.get(disk_dev, {}).get('product_id')
             } for disk_uuid, disk_dev in disk_ids.items()
         ]
 
