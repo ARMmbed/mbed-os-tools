@@ -280,13 +280,7 @@ Remount count: 0
         with patch('os.listdir') as _listdir:
             _listdir.side_effect = OSError
             self.base._update_device_from_fs(device, False)
-            self.assertEqual(device['device_type'], 'unknown')
             self.assertEqual(device['mount_point'], None)
-
-    def test_update_device_from_fs_unknown(self):
-        device = {}
-        self.base._update_device_from_fs(device, False)
-        self.assertEqual(device['device_type'], 'unknown')
 
     def test_detect_device_test(self):
         device_type = self.base._detect_device_type({
@@ -303,6 +297,25 @@ Remount count: 0
             'vendor_id': '1366'
         })
         self.assertEqual(device_type, 'jlink')
+
+    def test_device_type_unmounted(self):
+        self.base.list_unmounted = True
+        self.base.return_value = [{'mount_point': None,
+                                   'target_id_usb_id': u'0240DEADBEEF',
+                                   'serial_port': "dummy_serial_port",
+                                   'vendor_id': '0d28',
+                                   'product_id': '0204'}]
+        with patch("mbed_lstools.lstools_base.PlatformDatabase.get") as _get,\
+             patch('os.listdir') as _listdir:
+            _get.return_value = {
+                'platform_name': 'foo_target'
+            }
+            to_check = self.base.list_mbeds()
+            #_get.assert_any_call('0240', device_type='daplink', verbose_data=True)
+        self.assertEqual(len(to_check), 1)
+        self.assertEqual(to_check[0]['target_id'], "0240DEADBEEF")
+        self.assertEqual(to_check[0]['platform_name'], 'foo_target')
+        self.assertEqual(to_check[0]['device_type'], 'daplink')
 
     def test_update_device_details_jlink(self):
         jlink_html_contents = ('<html><head><meta http-equiv="refresh" '
