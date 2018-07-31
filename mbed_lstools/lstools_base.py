@@ -137,6 +137,7 @@ class MbedLsToolsBase(object):
         logger.debug("Candidates for display %r", candidates)
         result = []
         for device in candidates:
+            device['device_type'] = self._detect_device_type(device)
             if  ((not device['mount_point'] or
                   not self.mount_point_ready(device['mount_point'])) and
                  not self.list_unmounted):
@@ -146,7 +147,8 @@ class MbedLsToolsBase(object):
                         "Use the '-u' flag to include it in the list.",
                         device['target_id_usb_id'])
             else:
-                platform_data = self.plat_db.get(device['target_id_usb_id'][0:4], verbose_data=True)
+                platform_data = self.plat_db.get(device['target_id_usb_id'][0:4],
+                    device_type=device['device_type'] or 'daplink', verbose_data=True)
                 device.update(platform_data or {"platform_name": None})
                 maybe_device = {
                     FSInteraction.BeforeFilter: self._fs_before_id_check,
@@ -167,6 +169,9 @@ class MbedLsToolsBase(object):
                                      self.retarget_data[device['target_id']])
                     except KeyError:
                         pass
+
+                    # This is done for API compatibility, would prefer for this to just be None
+                    device['device_type'] = device['device_type'] if device['device_type'] else 'unknown'
                     result.append(maybe_device)
 
         return result
@@ -211,13 +216,11 @@ class MbedLsToolsBase(object):
               output dict attributes read from other files present on the 'mount_point'
         """
         if not device.get('mount_point', None):
-            device['device_type'] = 'unknown'
             return
 
         try:
             directory_entries = os.listdir(device['mount_point'])
             device['directory_entries'] = directory_entries
-            device['device_type'] = self._detect_device_type(device)
             device['target_id'] = device['target_id_usb_id']
 
             {
@@ -230,7 +233,6 @@ class MbedLsToolsBase(object):
                 'Marking device with mount point "%s" as unmounted due to the '
                 'following error: %s', device['mount_point'], e)
             device['mount_point'] = None
-            device['device_type'] = 'unknown'
 
 
     def _detect_device_type(self, device):
