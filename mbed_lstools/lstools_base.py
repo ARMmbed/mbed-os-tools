@@ -349,10 +349,10 @@ class MbedLsToolsBase(object):
         """! Creates list of all available mappings for target_id -> Platform
         @return String with table formatted output
         """
-        from prettytable import PrettyTable
+        from prettytable import PrettyTable, HEADER
 
         columns = ['target_id_prefix', 'platform_name']
-        pt = PrettyTable(columns)
+        pt = PrettyTable(columns, junction_char="|", hrules=HEADER)
         for col in columns:
             pt.align[col] = 'l'
 
@@ -466,7 +466,7 @@ class MbedLsToolsBase(object):
         @param sortby Column used to sort results
         @return Returns string which can be printed on console
         """
-        from prettytable import PrettyTable
+        from prettytable import PrettyTable, HEADER
         result = ''
         mbeds = self.list_mbeds(unique_names=True, read_details_txt=True)
         if mbeds:
@@ -474,7 +474,7 @@ class MbedLsToolsBase(object):
                 ['platform_name_unique', ...] - columns generated outside detection subsystem (OS dependent detection)
             """
             columns = ['platform_name', 'platform_name_unique', 'mount_point', 'serial_port', 'target_id', 'daplink_version']
-            pt = PrettyTable(columns)
+            pt = PrettyTable(columns, junction_char="|", hrules=HEADER)
             for col in columns:
                 pt.align[col] = 'l'
 
