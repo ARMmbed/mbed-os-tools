@@ -102,9 +102,9 @@ def print_ht_list(verbose=False):
     """! Prints list of registered host test classes (by name)
         @Detail For devel & debug purposes
     """
-    from prettytable import PrettyTable
+    from prettytable import PrettyTable, HEADER
     column_names = ['name', 'class', 'origin']
-    pt = PrettyTable(column_names)
+    pt = PrettyTable(column_names, junction_char="|", hrules=HEADER)
     for column in column_names:
         pt.align[column] = 'l'
 
