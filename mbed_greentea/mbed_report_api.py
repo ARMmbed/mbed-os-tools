@@ -53,10 +53,10 @@ def exporter_text(test_result_ext, test_suite_properties=None):
     @details This is a human friendly format
     @return Tuple with table of results and result quantity summary string
     """
-    from prettytable import PrettyTable
+    from prettytable import PrettyTable, HEADER
     #TODO: export to text, preferably to PrettyTable (SQL like) format
     cols = ['target', 'platform_name', 'test suite', 'result', 'elapsed_time (sec)', 'copy_method']
-    pt = PrettyTable(cols)
+    pt = PrettyTable(cols, junction_char="|", hrules=HEADER)
     for col in cols:
         pt.align[col] = "l"
     pt.padding_width = 1 # One space between column edges and contents (default)
@@ -95,10 +95,10 @@ def exporter_testcase_text(test_result_ext, test_suite_properties=None):
     @details This is a human friendly format
     @return Tuple with table of results and result quantity summary string
     """
-    from prettytable import PrettyTable
+    from prettytable import PrettyTable, HEADER
     #TODO: export to text, preferably to PrettyTable (SQL like) format
     cols = ['target', 'platform_name', 'test suite', 'test case', 'passed', 'failed', 'result', 'elapsed_time (sec)']
-    pt = PrettyTable(cols)
+    pt = PrettyTable(cols, junction_char="|", hrules=HEADER)
     for col in cols:
         pt.align[col] = "l"
     pt.padding_width = 1 # One space between column edges and contents (default)

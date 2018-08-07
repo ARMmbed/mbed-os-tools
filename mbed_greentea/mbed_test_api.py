@@ -632,8 +632,8 @@ def log_mbed_devices_in_table(muts, cols = ['platform_name', 'platform_name_uniq
     @param cols Columns used to for a table, required for each mut
     @return string with formatted prettytable
     """
-    from prettytable import PrettyTable
-    pt = PrettyTable(cols)
+    from prettytable import PrettyTable, HEADER
+    pt = PrettyTable(cols, junction_char="|", hrules=HEADER)
     for col in cols:
         pt.align[col] = "l"
     pt.padding_width = 1 # One space between column edges and contents (default)

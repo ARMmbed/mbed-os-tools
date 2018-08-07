@@ -130,26 +130,26 @@ class GreenteaReportApiFunctionality(unittest.TestCase):
         result, result_ = mbed_report_api.exporter_text(self.test_suite_data)
 
         lines = result.splitlines()
-        self.assertIn("target", lines[1])
-        self.assertIn("platform_name", lines[1])
-        self.assertIn("test suite", lines[1])
-        self.assertIn("result", lines[1])
-        self.assertIn("K64F", lines[3])
-        self.assertIn("test-1", lines[3])
-        self.assertIn("test-2", lines[4])
-        self.assertIn("test-3", lines[5])
-        self.assertIn("OK", lines[3])
+        self.assertIn("target", lines[0])
+        self.assertIn("platform_name", lines[0])
+        self.assertIn("test suite", lines[0])
+        self.assertIn("result", lines[0])
+        self.assertIn("K64F", lines[2])
+        self.assertIn("test-1", lines[2])
+        self.assertIn("test-2", lines[3])
+        self.assertIn("test-3", lines[4])
+        self.assertIn("OK", lines[2])
 
     def test_exporter_testcase_test(self):
         result, result_ = mbed_report_api.exporter_testcase_text(self.test_case_data)
 
         lines = result.splitlines()
-        self.assertIn("target", lines[1])
-        self.assertIn("platform_name", lines[1])
-        self.assertIn("test suite", lines[1])
-        self.assertIn("result", lines[1])
+        self.assertIn("target", lines[0])
+        self.assertIn("platform_name", lines[0])
+        self.assertIn("test suite", lines[0])
+        self.assertIn("result", lines[0])
 
-        line = lines[3]
+        line = lines[2]
         self.assertIn("K64F-ARM", line)
         self.assertIn("suite", line)
         self.assertIn("case-1", line)
