@@ -366,3 +366,67 @@ $ mbedls
 ```
 
 Note how both platforms share the same platform ID (`0240`) but have a unique ending string.
+
+# Adding platform support
+
+If a platform meets the Mbed Enabled technical requirements (stated above), it can be added to Mbed LS.
+
+## Adding a new platform with a supported debugger
+
+Mbed LS currently supports the following types of debuggers:
+
+- [DAPLink](https://github.com/ARMmbed/DAPLink)
+   - As well as the related but legacy [CMSIS-DAP](https://github.com/mbedmicro/CMSIS-DAP) firmware
+- ST-LINK
+- J-Link
+
+### Adding support for DAPLink-compatible platforms (DAPLink, ST-LINK, and CMSIS-DAP)
+
+Add an entry to the `daplink` section of the [`DEFAULT_PLATFORM_DB`](https://github.com/ARMmbed/mbed-ls/blob/master/mbed_lstools/platform_database.py#L45).
+
+If your platform's name is `NEW_PLATFORM` and it has platform ID of `9999`, the new entry should be:
+
+```
+DEFAULT_PLATFORM_DB = {
+    u'daplink': {
+        ...
+        u'9999': u'NEW_PLATFORM',
+        ...
+    }
+}
+```
+
+Please order the entries by the platform ID when adding new platforms.
+
+### Adding support for J-Link platforms
+
+J-Link detection works differently due to the information present on the platform's filesystem. All new entries should be added to the `jlink` section of the [`DEFAULT_PLATFORM_DB`](https://github.com/ARMmbed/mbed-ls/blob/master/mbed_lstools/platform_database.py#L45).
+
+The following is an example `jlink` platform entry:
+
+```
+DEFAULT_PLATFORM_DB = {
+    ...
+    u'jlink': {
+        u'X729475D28G': {
+            u'platform_name': u'NRF51_DK',
+            u'jlink_device_name': u'nRF51422_xxAC'
+        },
+        ...
+    }
+}
+```
+
+Instead of a platform ID, there is a target-unique string (`X729475D28G` in this case). This should correspond with the unique part of the link present in the `Board.html` or `User Guide.html`. This seems to vary among the platforms. In general, try following the links in each file. You want to use the url that links to a product page that references the platform. The J-Link logic in Mbed LS assumes that the url has the target-unique string on the end (after the last `/` character). In the above example, the expected url structure would be `http://www.nordicsemi.com/X729475D28G`.
+
+If your J-Link platform does not follow this convention, please raise an issue with the following information:
+
+- The name of the platform
+- The file **names and contents** present on the platform's filesystem
+- A link to the J-Link firmware binary if possible
+
+## Adding a new type of debugger
+
+The type of debugger present on the platform affects how it is detected. The USB Vendor ID is used to detect which type of debugger is present on the platform.
+
+If a new type of debugger is being introduced to Mbed LS with the platform, you will need to add the Vendor ID to the [identification map](https://github.com/ARMmbed/mbed-ls/blob/master/mbed_lstools/lstools_base.py#L72-L76). You will also need to assign the correct "update from the filesystem" logic [here](https://github.com/ARMmbed/mbed-ls/blob/master/mbed_lstools/lstools_base.py#L226-L230). If the debugger is compatible with the files presented by DAPLink, you may reuse that implementation when updating the device information from the filesystem. If it is not, you may need to write your own update logic. If you need guidance on this, please ask for it when you submit an issue or a pull request.
