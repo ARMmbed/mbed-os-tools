@@ -223,11 +223,13 @@ class MbedLsToolsBase(object):
             device['directory_entries'] = directory_entries
             device['target_id'] = device['target_id_usb_id']
 
-            {
-                'daplink': self._update_device_details_daplink_compatible,
-                'stlink': self._update_device_details_daplink_compatible,
-                'jlink': self._update_device_details_jlink
-            }[device['device_type'] or 'daplink'](device, read_details_txt)
+            # Always try to update using daplink compatible boards processself.
+            # This is done for backwards compatibility.
+            self._update_device_details_daplink_compatible(device, read_details_txt)
+
+            if device.get('device_type') == 'jlink':
+                self._update_device_details_jlink(device, read_details_txt)
+
         except (OSError, IOError) as e:
             logger.warning(
                 'Marking device with mount point "%s" as unmounted due to the '
