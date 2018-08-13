@@ -114,7 +114,7 @@ class PlatformDetectionTestCase(unittest.TestCase):
 
 
 
-    def test_EFM32PG_STK3401_jlink(self):
+    def test_efm32pg_stk3401_jlink(self):
         self.run_test('efm32pg_stk3401_jlink', {
             'target_id_usb_id': u'000440074453',
             'vendor_id': '1366',
@@ -126,6 +126,83 @@ class PlatformDetectionTestCase(unittest.TestCase):
             'target_id_usb_id': '000440074453',
             'target_id_mbed_htm': '2035022D000122D5D475113A'
         })
+
+    def test_lpc1768(self):
+        self.run_test('lpc1768', {
+            'target_id_usb_id': u'101000000000000000000002F7F20DF3',
+            'vendor_id': '0d28',
+            'product_id': '0204'
+        }, {
+            'platform_name': 'LPC1768',
+            'device_type': 'daplink',
+            'target_id': '101000000000000000000002F7F20DF3d51e6be5ac41795761dc44148e3b7000',
+            'target_id_usb_id': '101000000000000000000002F7F20DF3',
+            'target_id_mbed_htm': '101000000000000000000002F7F20DF3d51e6be5ac41795761dc44148e3b7000'
+        })
+
+    def test_nucleo_f411re_stlink(self):
+        self.run_test('nucleo_f411re_stlink', {
+            'target_id_usb_id': u'0671FF554856805087112815',
+            'vendor_id': '0483',
+            'product_id': '374b'
+        }, {
+            'platform_name': 'NUCLEO_F411RE',
+            'device_type': 'stlink',
+            'target_id': '07400221076061193824F764',
+            'target_id_usb_id': '0671FF554856805087112815',
+            'target_id_mbed_htm': '07400221076061193824F764'
+        })
+
+    def test_nrf51_microbit(self):
+        self.run_test('nrf51_microbit', {
+            'target_id_usb_id': u'9900007031324e45000f9019000000340000000097969901',
+            'vendor_id': '0d28',
+            'product_id': '0204'
+        }, {
+            'platform_name': 'NRF51_MICROBIT',
+            'device_type': 'daplink',
+            'target_id': '9900007031324e45000f9019000000340000000097969901',
+            'target_id_usb_id': '9900007031324e45000f9019000000340000000097969901'
+        })
+
+    def test_k64f_daplink(self):
+        self.run_test('k64f_daplink', {
+            'target_id_usb_id': u'0240000032044e45000a700a997b00356781000097969900',
+            'vendor_id': '0d28',
+            'product_id': '0204'
+        }, {
+            'platform_name': 'K64F',
+            'device_type': 'daplink',
+            'target_id': '0240000032044e45000a700a997b00356781000097969900',
+            'target_id_usb_id': '0240000032044e45000a700a997b00356781000097969900',
+            'target_id_mbed_htm': '0240000032044e45000a700a997b00356781000097969900'
+        })
+
+    def test_nrf52_dk_daplink(self):
+        self.run_test('nrf52_dk_daplink', {
+            'target_id_usb_id': u'110100004420312043574641323032203233303397969903',
+            'vendor_id': '0d28',
+            'product_id': '0204'
+        }, {
+            'platform_name': 'NRF52_DK',
+            'device_type': 'daplink',
+            'target_id': '110100004420312043574641323032203233303397969903',
+            'target_id_usb_id': '110100004420312043574641323032203233303397969903',
+            'target_id_mbed_htm': '110100004420312043574641323032203233303397969903'
+        })
+
+    def test_nrf52_dk_jlink(self):
+        self.run_test('nrf52_dk_jlink', {
+            'target_id_usb_id': u'000682546728',
+            'vendor_id': '1366',
+            'product_id': '1015'
+        }, {
+            'platform_name': 'NRF52_DK',
+            'device_type': 'jlink',
+            'target_id': '000682546728',
+            'target_id_usb_id': '000682546728'
+        })
+
 
 
 if __name__ == '__main__':
