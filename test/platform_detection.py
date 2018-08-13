@@ -19,7 +19,6 @@ limitations under the License.
 import unittest
 import os
 import copy
-import pprint
 from mock import patch, mock_open, DEFAULT
 
 from mbed_lstools.lstools_base import MbedLsToolsBase
@@ -37,6 +36,13 @@ except NameError:
     # Python 3
     basestring = str
 
+
+def get_case_insensitive_path(path, file_name):
+    for entry in os.listdir(path):
+        if entry.lower() == file_name.lower():
+            return os.path.join(path, entry)
+
+    raise Exception('No matching file for %s found in $s' % (file_name, path))
 
 
 class PlatformDetectionTestCase(unittest.TestCase):
@@ -72,9 +78,8 @@ class PlatformDetectionTestCase(unittest.TestCase):
 
         def do_open(path, mode='r'):
             file_name = os.path.basename(path)
-            test_data_file_path = os.path.join(test_data_case_path, file_name)
             try:
-                with open(test_data_file_path, 'r') as test_data_file:
+                with open(get_case_insensitive_path(test_data_case_path, file_name), 'r') as test_data_file:
                     test_data_file_data = test_data_file.read()
             except OSError:
                 raise OSError("(mocked open) No such file or directory: '%s'" % (path))
