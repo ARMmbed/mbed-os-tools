@@ -911,7 +911,7 @@ Below the same callback registered using decorator:
 
 ### Callback decorator definition
 ```python
-from mbed_host_tests import BaseHostTest
+from mbed_host_tests.host_tests import BaseHostTest, event_callback
 
 class DetectRuntimeError(BaseHostTest):
 
