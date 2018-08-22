@@ -93,9 +93,9 @@ class HostTestRegistry:
         """! User friendly printing method to show hooked plugins
         @return Returns string formatted with PrettyTable
         """
-        from prettytable import PrettyTable
+        from prettytable import PrettyTable, HEADER
         column_names = ['name', 'type', 'capabilities', 'stable', 'os_support', 'required_parameters']
-        pt = PrettyTable(column_names)
+        pt = PrettyTable(column_names, junction_char="|", hrules=HEADER)
         for column in column_names:
             pt.align[column] = 'l'
         for plugin_name in sorted(self.PLUGINS.keys()):
