@@ -1205,5 +1205,7 @@ Use following command to test the example and the comparison log:
 mbedhtrun -d D: -p COM46 -m K64F -f .\BUILD\K64F\GCC_ARM\benchmark.bin --compare-log compare.log
 ```
 
+In case an application requires more time to process data and generate results, you can use the option ```--polling-timeout``` to override the default timeout setting.
+
 A tested comparison log can be checked into GitHub with the examples and can be used in the CI for example verification.
 
