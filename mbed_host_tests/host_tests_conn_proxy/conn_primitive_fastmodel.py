@@ -54,7 +54,7 @@ class FastmodelConnectorPrimitive(ConnectorPrimitive):
             self.logger.prn_err("Importing failed : %s" % str(e))
             raise ConnectorPrimitiveException("Importing failed : %s" % str(e))
         try:
-            self.resource = self.fm_agent_module.FastmodelAgent(self.logger)
+            self.resource = self.fm_agent_module.FastmodelAgent(logger=self.logger)
             self.resource.setup_simulator(self.platform_name,self.fm_config)
             if self.__resource_allocated():
                 pass
