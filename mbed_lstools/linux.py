@@ -44,7 +44,7 @@ class MbedLsToolsLinuxGeneric(MbedLsToolsBase):
         """
         MbedLsToolsBase.__init__(self, **kwargs)
         self.nlp = re.compile(
-            r'(pci|usb)-[0-9a-zA-Z_-]*_(?P<usbid>[0-9a-zA-Z]*)-.*$')
+            r'(pci|usb)-[0-9a-zA-Z:_-]*_(?P<usbid>[0-9a-zA-Z]*)-.*$')
         self.mmp = re.compile(
             r'(?P<dev>(/[^/ ]*)+) on (?P<dir>(/[^/ ]*)+) ')
         self.udp = re.compile(r'^[0-9]+-[0-9]+[^:\s]*$')

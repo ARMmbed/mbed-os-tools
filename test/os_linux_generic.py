@@ -126,13 +126,15 @@ class LinuxPortTestCase(unittest.TestCase):
             'usb-MBED_VFS_0240000028884e45001f700f6bf000118021000097969900-0:0',
             'usb-MBED_VFS_0240000028884e450036700f6bf000118021000097969900-0:0',
             'usb-MBED_VFS_0240000029164e45001b0012706e000df301000097969900-0:0',
-            'usb-MBED_VFS_0240000029164e45002f0012706e0006f301000097969900-0:0'
+            'usb-MBED_VFS_0240000029164e45002f0012706e0006f301000097969900-0:0',
+            'usb-MBED_VFS_9900000031864e45000a100e0000003c0000000097969901-0:0'
         ],
         '/dev/serial/by-id': [
             'usb-ARM_DAPLink_CMSIS-DAP_0240000028634e4500135006691700105f21000097969900-if01',
             'usb-ARM_DAPLink_CMSIS-DAP_0240000028884e450018700f6bf000338021000097969900-if01',
             'usb-ARM_DAPLink_CMSIS-DAP_0240000028884e450036700f6bf000118021000097969900-if01',
-            'usb-ARM_DAPLink_CMSIS-DAP_0240000029164e45001b0012706e000df301000097969900-if01'
+            'usb-ARM_DAPLink_CMSIS-DAP_0240000029164e45001b0012706e000df301000097969900-if01',
+            'usb-ARM_BBC_micro:bit_CMSIS-DAP_9900000031864e45000a100e0000003c0000000097969901-if01'
         ],
         '/sys/class/block': [
             'sdb',
@@ -140,7 +142,8 @@ class LinuxPortTestCase(unittest.TestCase):
             'sdd',
             'sde',
             'sdf',
-            'sdg'
+            'sdg',
+            'sdh',
         ],
         '/sys/class/block/../../devices/pci0000:00/0000:00:06.0/usb1/1-1/1-1.2/1-1.2.6': [
             'idVendor',
@@ -165,6 +168,10 @@ class LinuxPortTestCase(unittest.TestCase):
         '/sys/class/block/../../devices/pci0000:00/0000:00:06.0/usb1/1-7': [
             'idVendor',
             'idProduct'
+        ],
+        '/sys/class/block/../../devices/pci0000:00/0000:00:06.0/usb1/1-8': [
+            'idVendor',
+            'idProduct'
         ]
     }
 
@@ -180,7 +187,9 @@ class LinuxPortTestCase(unittest.TestCase):
         '/sys/class/block/../../devices/pci0000:00/0000:00:06.0/usb1/1-6/idVendor': '0d28\n',
         '/sys/class/block/../../devices/pci0000:00/0000:00:06.0/usb1/1-6/idProduct': '0204\n',
         '/sys/class/block/../../devices/pci0000:00/0000:00:06.0/usb1/1-7/idVendor': '0d28\n',
-        '/sys/class/block/../../devices/pci0000:00/0000:00:06.0/usb1/1-7/idProduct': '0204\n'
+        '/sys/class/block/../../devices/pci0000:00/0000:00:06.0/usb1/1-7/idProduct': '0204\n',
+        '/sys/class/block/../../devices/pci0000:00/0000:00:06.0/usb1/1-8/idVendor': '0d28\n',
+        '/sys/class/block/../../devices/pci0000:00/0000:00:06.0/usb1/1-8/idProduct': '0204\n'
     }
 
     link_dict_rpi = {
@@ -190,16 +199,19 @@ class LinuxPortTestCase(unittest.TestCase):
         '/dev/disk/by-id/usb-MBED_VFS_0240000028884e450036700f6bf000118021000097969900-0:0': '../../sde',
         '/dev/disk/by-id/usb-MBED_VFS_0240000029164e45001b0012706e000df301000097969900-0:0': '../../sdf',
         '/dev/disk/by-id/usb-MBED_VFS_0240000029164e45002f0012706e0006f301000097969900-0:0': '../../sdg',
+        '/dev/disk/by-id/usb-MBED_VFS_9900000031864e45000a100e0000003c0000000097969901-0:0': '../../sdh',
         '/dev/serial/by-id/usb-ARM_DAPLink_CMSIS-DAP_0240000028634e4500135006691700105f21000097969900-if01': '../../ttyACM0',
         '/dev/serial/by-id/usb-ARM_DAPLink_CMSIS-DAP_0240000028884e450018700f6bf000338021000097969900-if01': '../../ttyACM1',
         '/dev/serial/by-id/usb-ARM_DAPLink_CMSIS-DAP_0240000028884e450036700f6bf000118021000097969900-if01': '../../ttyACM3',
         '/dev/serial/by-id/usb-ARM_DAPLink_CMSIS-DAP_0240000029164e45001b0012706e000df301000097969900-if01': '../../ttyACM2',
+        '/dev/serial/by-id/usb-ARM_BBC_micro:bit_CMSIS-DAP_9900000031864e45000a100e0000003c0000000097969901-if01': '../../ttyACM4',
         '/sys/class/block/sdb': '../../devices/pci0000:00/0000:00:06.0/usb1/1-1/1-1.2/1-1.2.6/1-1.2.6:1.0/host8568/target8568:0:0/8568:0:0:0/block/sdb',
         '/sys/class/block/sdc': '../../devices/pci0000:00/0000:00:06.0/usb1/1-3/1-3:1.0/host4/target4:0:0/4:0:0:0/block/sdc',
         '/sys/class/block/sdd': '../../devices/pci0000:00/0000:00:06.0/usb1/1-4/1-4:1.0/host5/target5:0:0/5:0:0:0/block/sdd',
         '/sys/class/block/sde': '../../devices/pci0000:00/0000:00:06.0/usb1/1-5/1-5:1.0/host6/target6:0:0/6:0:0:0/block/sde',
         '/sys/class/block/sdf': '../../devices/pci0000:00/0000:00:06.0/usb1/1-6/1-6:1.0/host7/target7:0:0/7:0:0:0/block/sdf',
-        '/sys/class/block/sdg': '../../devices/pci0000:00/0000:00:06.0/usb1/1-7/1-7:1.0/host8/target8:0:0/8:0:0:0/block/sdg'
+        '/sys/class/block/sdg': '../../devices/pci0000:00/0000:00:06.0/usb1/1-7/1-7:1.0/host8/target8:0:0/8:0:0:0/block/sdg',
+        '/sys/class/block/sdh': '../../devices/pci0000:00/0000:00:06.0/usb1/1-8/1-7:1.0/host9/target9:0:0/9:0:0:0/block/sdh'
     }
 
     mount_list_rpi = [
@@ -208,7 +220,8 @@ class LinuxPortTestCase(unittest.TestCase):
         b'/dev/sdd on /media/usb2 type vfat (rw,noexec,nodev,sync,noatime,nodiratime,gid=1000,uid=1000,dmask=000,fmask=000)',
         b'/dev/sde on /media/usb3 type vfat (rw,noexec,nodev,sync,noatime,nodiratime,gid=1000,uid=1000,dmask=000,fmask=000)',
         b'/dev/sdf on /media/usb4 type vfat (rw,noexec,nodev,sync,noatime,nodiratime,gid=1000,uid=1000,dmask=000,fmask=000)',
-        b'/dev/sdg on /media/usb5 type vfat (rw,noexec,nodev,sync,noatime,nodiratime,gid=1000,uid=1000,dmask=000,fmask=000)'
+        b'/dev/sdg on /media/usb5 type vfat (rw,noexec,nodev,sync,noatime,nodiratime,gid=1000,uid=1000,dmask=000,fmask=000)',
+        b'/dev/sdh on /media/usb6 type vfat (rw,noexec,nodev,sync,noatime,nodiratime,gid=1000,uid=1000,dmask=000,fmask=000)'
     ]
     def test_get_detected_rpi(self):
         mbed_det = self.find_candidates_with_patch(
@@ -235,7 +248,6 @@ class LinuxPortTestCase(unittest.TestCase):
             'vendor_id': '0d28',
             'product_id': '0204'
           }, mbed_det)
-
         self.assertIn({
             'mount_point': '/media/usb3',
             'serial_port': '/dev/ttyACM3',
@@ -243,6 +255,13 @@ class LinuxPortTestCase(unittest.TestCase):
             'vendor_id': '0d28',
             'product_id': '0204'
           }, mbed_det)
+        self.assertIn({
+            'mount_point': '/media/usb6',
+            'serial_port': '/dev/ttyACM4',
+            'target_id_usb_id': '9900000031864e45000a100e0000003c0000000097969901',
+            'vendor_id': '0d28',
+            'product_id': '0204'
+        }, mbed_det)
 
 
     listdir_dict_1 = {
