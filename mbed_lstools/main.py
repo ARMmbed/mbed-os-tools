@@ -97,10 +97,10 @@ def print_version(mbeds, args):
 def print_mbeds(mbeds, args, simple):
     devices = mbeds.list_mbeds(unique_names=True, read_details_txt=True)
     if devices:
-        from prettytable import PrettyTable
+        from prettytable import PrettyTable, HEADER
         columns = ['platform_name', 'platform_name_unique', 'mount_point',
                     'serial_port', 'target_id', 'daplink_version']
-        pt = PrettyTable(columns)
+        pt = PrettyTable(columns, junction_char="|", hrules=HEADER)
         pt.align = 'l'
         for d in devices:
             pt.add_row([d.get(col, None) or 'unknown' for col in columns])
