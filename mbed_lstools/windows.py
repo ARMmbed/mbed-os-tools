@@ -38,7 +38,7 @@ else:
 
 
 MAX_COMPOSITE_DEVICE_SUBDEVICES = 5
-MBED_STORAGE_DEVICE_VENDOR_STRINGS = ['ven_mbed', 'ven_segger', 'ven_arm_v2m', 'ven_nxp']
+MBED_STORAGE_DEVICE_VENDOR_STRINGS = ['ven_mbed', 'ven_segger', 'ven_arm_v2m', 'ven_nxp', 'ven_atmel']
 
 
 def _get_values_with_numeric_keys(reg_key):

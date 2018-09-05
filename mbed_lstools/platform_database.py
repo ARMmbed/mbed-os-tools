@@ -324,6 +324,9 @@ DEFAULT_PLATFORM_DB = {
             u'platform_name': u'KL43Z',
             u'jlink_device_name': u'MKL43Z256xxx4'
         }
+    },
+    u'atmel': {
+        u'2241': 'SAML21J18A'
     }
 }
 

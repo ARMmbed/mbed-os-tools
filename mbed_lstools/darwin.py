@@ -28,7 +28,7 @@ logger.addHandler(logging.NullHandler())
 DEBUG = logging.DEBUG
 del logging
 
-mbed_volume_name_match = re.compile(r'\b(mbed|SEGGER MSD)\b', re.I)
+mbed_volume_name_match = re.compile(r'\b(mbed|SEGGER MSD|ATMEL EDBG Media)\b', re.I)
 
 def _find_TTY(obj):
     ''' Find the first tty (AKA IODialinDevice) that we can find in the
