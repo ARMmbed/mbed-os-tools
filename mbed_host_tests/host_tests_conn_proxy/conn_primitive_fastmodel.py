@@ -54,7 +54,8 @@ class FastmodelConnectorPrimitive(ConnectorPrimitive):
             self.logger.prn_err("Importing failed : %s" % str(e))
             raise ConnectorPrimitiveException("Importing failed : %s" % str(e))
         try:
-            self.resource = self.fm_agent_module.create(self.platform_name,self.fm_config,self.logger)
+            self.resource = self.fm_agent_module.FastmodelAgent(logger=self.logger)
+            self.resource.setup_simulator(self.platform_name,self.fm_config)
             if self.__resource_allocated():
                 pass
         except self.fm_agent_module.SimulatorError as e:
@@ -72,9 +73,9 @@ class FastmodelConnectorPrimitive(ConnectorPrimitive):
         except self.fm_agent_module.SimulatorError as e:
             self.logger.prn_err("start_simulator() failed: %s"% str(e))
             raise ConnectorPrimitiveException("FastModel launching failed as throw FastModelError!")
-            
+
     def __fastmodel_run(self):
-        """! Use fm_agent API to run the FastModel, this is functionally equivalent to reset DUT """
+        """! Use fm_agent API to run the FastModel """
         self.logger.prn_inf("Running FastModel...")
         try:
             if not self.resource.run_simulator():
@@ -150,7 +151,12 @@ class FastmodelConnectorPrimitive(ConnectorPrimitive):
                 self.logger.prn_err("FastmodelConnectorPrimitive.finish() failed: %s"% str(e))
 
     def reset(self):
-        self.__fastmodel_run()
+        if self.__resource_allocated():
+            try:
+                if not self.resource.reset_simulator():
+                    self.logger.prn_err("FastModel reset failed, reset_simulator() return False!")
+            except self.fm_agent_module.SimulatorError as e:
+                self.logger.prn_err("FastmodelConnectorPrimitive.reset() failed: %s"% str(e))
 
     def __del__(self):
         self.finish()
