@@ -72,7 +72,8 @@ class MbedLsToolsBase(object):
     VENDOR_ID_DEVICE_TYPE_MAP = {
         '0483': 'stlink',
         '0d28': 'daplink',
-        '1366': 'jlink'
+        '1366': 'jlink',
+        '03eb': 'atmel'
     }
 
     def __init__(self, list_unmounted=False, **kwargs):
@@ -230,6 +231,9 @@ class MbedLsToolsBase(object):
             if device.get('device_type') == 'jlink':
                 self._update_device_details_jlink(device, read_details_txt)
 
+            if device.get('device_type') == 'atmel':
+                self._update_device_details_atmel(device, read_details_txt)
+
         except (OSError, IOError) as e:
             logger.warning(
                 'Marking device with mount point "%s" as unmounted due to the '
@@ -331,6 +335,25 @@ class MbedLsToolsBase(object):
                             device['target_id_usb_id'])
             device['target_id'] = device['target_id_usb_id']
         device['target_id_mbed_htm'] = htm_target_id
+
+    def _update_device_details_atmel(self, device, _):
+        """ Updates the Atmel device information based on files from its 'mount_point'
+            @param device Dictionary containing device information
+            @param read_details_txt A boolean controlling the presense of the
+              output dict attributes read from other files present on the 'mount_point'
+        """
+
+        # Atmel uses a system similar to DAPLink, but there's no details.txt with a target ID
+        # to identify device we can use the serial, which is ATMLXXXXYYYYYYY
+        # where XXXX is the board identifier.
+        # This can be verified by looking at readme.htm, which also uses the board ID to redirect to platform page
+
+        device['target_id'] = device['target_id_usb_id'][4:8]
+        platform_data = self.plat_db.get(device['target_id'],
+                                    device_type='atmel',
+                                    verbose_data=True)
+
+        device.update(platform_data or {"platform_name": None})
 
     def mock_manufacture_id(self, mid, platform_name, oper='+'):
         """! Replace (or add if manufacture id doesn't exist) entry in self.manufacture_ids
