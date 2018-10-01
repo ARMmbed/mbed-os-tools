@@ -126,41 +126,58 @@ def enum_host_tests(path, verbose=False):
     """ Enumerates and registers locally stored host tests
         Host test are derived from mbed_host_tests.BaseHostTest classes
     """
+    if not path:
+        return
+
+    path = path.strip('"')
+    if not os.path.exists(path) or not os.path.isdir(path):
+        return
+
     if verbose:
         print("HOST: Inspecting '%s' for local host tests..."% abspath(path))
 
-    if path:
-        # Normalize path and check proceed if directory 'path' exist
-        path = path.strip('"')  # Remove quotes from command line
-        if os.path.exists(path) and os.path.isdir(path):
-            # Listing Python tiles within path directory
-            host_tests_list = [f for f in listdir(path) if isfile(join(path, f))]
-            for ht in host_tests_list:
-                if ht.endswith(".py"):
-                    abs_path = abspath(join(path, ht))
-                    try:
-                        mod = imp.load_source(ht[:-3], abs_path)
-                    except Exception as e:
-                        print("HOST: Error! While loading local host test module '%s'"% abs_path)
-                        print("HOST: %s"% str(e))
-                        continue
-                    if verbose:
-                        print("HOST: Loading module '%s': "% (ht), str(mod))
+    python_modules = [
+        f for f in listdir(path)
+        if isfile(join(path, f)) and f.endswith(".py")
+    ]
+    for module_file in python_modules:
+        module_name = module_file[:-3]
+        try:
+            mod = imp.load_source(module_name, abspath(join(path, module_file)))
+        except Exception as e:
+            print(
+                "HOST: Error! While loading local host test module '%s'"
+                % abs_path
+            )
+            print("HOST: %s"% str(e))
+            continue
+        if verbose:
+            print("HOST: Loading module '%s': "% (module_file), str(mod))
 
-                    for mod_name, mod_obj in inspect.getmembers(mod):
-                        if inspect.isclass(mod_obj):
-                            #if verbose:
-                            #    print 'HOST: Class found:', str(mod_obj), type(mod_obj)
-                            if issubclass(mod_obj, BaseHostTest) and str(mod_obj) != str(BaseHostTest):
-                                host_test_name = ht[:-3]
-                                if mod_obj.name:
-                                    host_test_name = mod_obj.name
-                                host_test_cls = mod_obj
-                                host_test_cls.script_location = abs_path
-                                if verbose:
-                                    print("HOST: Found host test implementation: %s -|> %s"% (str(mod_obj), str(BaseHostTest)))
-                                    print("HOST: Registering '%s' as '%s'"% (str(host_test_cls), host_test_name))
-                                HOSTREGISTRY.register_host_test(host_test_name, host_test_cls())
+        for mod_name, mod_obj in inspect.getmembers(mod):
+            if (
+                inspect.isclass(mod_obj) and
+                issubclass(mod_obj, BaseHostTest) and
+                str(mod_obj) != str(BaseHostTest)
+            ):
+                if mod_obj.name:
+                    host_test_name = mod_obj.name
+                else:
+                    host_test_name = module_name
+                host_test_cls = mod_obj
+                host_test_cls.script_location = abs_path
+                if verbose:
+                    print(
+                        "HOST: Found host test implementation: %s -|> %s"
+                        % (str(mod_obj), str(BaseHostTest))
+                    )
+                    print(
+                        "HOST: Registering '%s' as '%s'"
+                        % (str(host_test_cls), host_test_name)
+                    )
+                HOSTREGISTRY.register_host_test(
+                    host_test_name, host_test_cls()
+                )
 
 def init_host_test_cli_params():
     """! Function creates CLI parser object and returns populated options object.
