@@ -108,11 +108,13 @@ def print_ht_list(verbose=False):
     for column in column_names:
         pt.align[column] = 'l'
 
-    for ht in sorted(HOSTREGISTRY.HOST_TESTS.keys()):
-        cls_str = str(HOSTREGISTRY.HOST_TESTS[ht].__class__)
-        script_path_str = HOSTREGISTRY.HOST_TESTS[ht].script_location if HOSTREGISTRY.HOST_TESTS[ht].script_location else 'mbed-host-tests'
-        row = [ht, cls_str, script_path_str]
-        pt.add_row(row)
+    for name, host_test in sorted(HOSTREGISTRY.HOST_TESTS.items()):
+        cls_str = str(host_test.__class__)
+        if host_test.script_location:
+            src_path = host_test.script_location
+        else:
+            src_path = 'mbed-host-tests'
+        pt.add_row([name, cls_str, src_path])
     print(pt.get_string())
 
 def enum_host_tests(path, verbose=False):
