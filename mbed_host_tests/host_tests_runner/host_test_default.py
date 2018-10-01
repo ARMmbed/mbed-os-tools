@@ -54,10 +54,9 @@ class DefaultTestSelector(DefaultTestSelectorBase):
 
         # Handle extra command from
         if options:
-            enum_host_tests("./test/host_tests", verbose=options.verbose)
             if options.enum_host_tests:
-                path = self.options.enum_host_tests
-                enum_host_tests(path, verbose=options.verbose)
+                for path in options.enum_host_tests:
+                    enum_host_tests(path, verbose=options.verbose)
 
             if options.list_reg_hts:    # --list option
                 print_ht_list(verbose=options.verbose)

@@ -258,6 +258,8 @@ def init_host_test_cli_params():
 
     parser.add_option("-e", "--enum-host-tests",
                       dest="enum_host_tests",
+                      action="append",
+                      default=["./test/host_tests"],
                       help="Define directory with local host tests")
 
     parser.add_option('', '--test-cfg',
