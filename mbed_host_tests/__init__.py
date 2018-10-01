@@ -158,7 +158,7 @@ def enum_host_tests(path, verbose=False):
                 else:
                     host_test_name = module_name
                 host_test_cls = mod_obj
-                host_test_cls.script_location = abs_path
+                host_test_cls.script_location = join(path, module_file)
                 if verbose:
                     print(
                         "HOST: Found host test implementation: %s -|> %s"
