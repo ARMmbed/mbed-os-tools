@@ -30,7 +30,7 @@ import os
 import imp
 import inspect
 from os import listdir
-from os.path import isfile, join, abspath
+from os.path import isfile, join, abspath, basename
 import sys
 from optparse import OptionParser
 from optparse import SUPPRESS_HELP
@@ -121,58 +121,56 @@ def enum_host_tests(path, verbose=False):
     """ Enumerates and registers locally stored host tests
         Host test are derived from mbed_host_tests.BaseHostTest classes
     """
-    if not path:
-        return
-
-    path = path.strip('"')
-    if not os.path.exists(path) or not os.path.isdir(path):
-        return
-
-    if verbose:
-        print("HOST: Inspecting '%s' for local host tests..."% abspath(path))
-
-    python_modules = [
-        f for f in listdir(path)
-        if isfile(join(path, f)) and f.endswith(".py")
-    ]
-    for module_file in python_modules:
-        module_name = module_file[:-3]
-        try:
-            mod = imp.load_source(module_name, abspath(join(path, module_file)))
-        except Exception as e:
-            print(
-                "HOST: Error! While loading local host test module '%s'"
-                % abs_path
-            )
-            print("HOST: %s"% str(e))
-            continue
+    if path:
+        path = path.strip('"')
         if verbose:
-            print("HOST: Loading module '%s': "% (module_file), str(mod))
+            print("HOST: Inspecting '%s' for local host tests..." % path)
+        if os.path.exists(path) and os.path.isdir(path):
+            python_modules = [
+                f for f in listdir(path)
+                if isfile(join(path, f)) and f.endswith(".py")
+            ]
+            for module_file in python_modules:
+                _add_module_to_registry(path, module_file, verbose)
 
-        for mod_name, mod_obj in inspect.getmembers(mod):
-            if (
-                inspect.isclass(mod_obj) and
-                issubclass(mod_obj, BaseHostTest) and
-                str(mod_obj) != str(BaseHostTest)
-            ):
-                if mod_obj.name:
-                    host_test_name = mod_obj.name
-                else:
-                    host_test_name = module_name
-                host_test_cls = mod_obj
-                host_test_cls.script_location = join(path, module_file)
-                if verbose:
-                    print(
-                        "HOST: Found host test implementation: %s -|> %s"
-                        % (str(mod_obj), str(BaseHostTest))
-                    )
-                    print(
-                        "HOST: Registering '%s' as '%s'"
-                        % (str(host_test_cls), host_test_name)
-                    )
-                HOSTREGISTRY.register_host_test(
-                    host_test_name, host_test_cls()
+def _add_module_to_registry(path, module_file, verbose):
+    module_name = module_file[:-3]
+    try:
+        mod = imp.load_source(module_name, abspath(join(path, module_file)))
+    except Exception as e:
+        print(
+            "HOST: Error! While loading local host test module '%s'"
+            % join(path, module_file)
+        )
+        print("HOST: %s" % str(e))
+        return
+    if verbose:
+        print("HOST: Loading module '%s': %s"% (module_file, str(mod)))
+
+    for name, obj in inspect.getmembers(mod):
+        if (
+            inspect.isclass(obj) and
+            issubclass(obj, BaseHostTest) and
+            str(obj) != str(BaseHostTest)
+        ):
+            if obj.name:
+                host_test_name = obj.name
+            else:
+                host_test_name = module_name
+            host_test_cls = obj
+            host_test_cls.script_location = join(path, module_file)
+            if verbose:
+                print(
+                    "HOST: Found host test implementation: %s -|> %s"
+                    % (str(obj), str(BaseHostTest))
                 )
+                print(
+                    "HOST: Registering '%s' as '%s'"
+                    % (str(host_test_cls), host_test_name)
+                )
+            HOSTREGISTRY.register_host_test(
+                host_test_name, host_test_cls()
+            )
 
 def init_host_test_cli_params():
     """! Function creates CLI parser object and returns populated options object.
