@@ -108,13 +108,6 @@ def print_ht_list(verbose=False):
     for column in column_names:
         pt.align[column] = 'l'
 
-    ht_str_len = 0
-    cls_str_len = 0
-    for ht in HOSTREGISTRY.HOST_TESTS:
-        cls_str = str(HOSTREGISTRY.HOST_TESTS[ht].__class__)
-
-        if len(ht) > ht_str_len: ht_str_len = len(ht)
-        if len(cls_str) > cls_str_len: cls_str_len = len(cls_str)
     for ht in sorted(HOSTREGISTRY.HOST_TESTS.keys()):
         cls_str = str(HOSTREGISTRY.HOST_TESTS[ht].__class__)
         script_path_str = HOSTREGISTRY.HOST_TESTS[ht].script_location if HOSTREGISTRY.HOST_TESTS[ht].script_location else 'mbed-host-tests'
