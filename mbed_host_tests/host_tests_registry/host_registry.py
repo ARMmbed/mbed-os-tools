@@ -17,6 +17,8 @@ limitations under the License.
 Author: Przemyslaw Wirkus <Przemyslaw.Wirkus@arm.com>
 """
 
+import os.path
+
 class HostRegistry:
     """ Class stores registry with host tests and objects representing them
     """
@@ -56,3 +58,78 @@ class HostRegistry:
         @return True if ht_name is registered (available), else False
         """
         return ht_name in self.HOST_TESTS and self.HOST_TESTS[ht_name] is not None
+
+    def table(self, verbose=False):
+        """! Prints list of registered host test classes (by name)
+            @Detail For devel & debug purposes
+        """
+        from prettytable import PrettyTable, HEADER
+        column_names = ['name', 'class', 'origin']
+        pt = PrettyTable(column_names, junction_char="|", hrules=HEADER)
+        for column in column_names:
+            pt.align[column] = 'l'
+
+        for name, host_test in sorted(self.HOST_TESTS.items()):
+            cls_str = str(host_test.__class__)
+            if host_test.script_location:
+                src_path = host_test.script_location
+            else:
+                src_path = 'mbed-host-tests'
+            pt.add_row([name, cls_str, src_path])
+        return pt.get_string()
+
+    def register_from_path(self, path, verbose=False):
+        """ Enumerates and registers locally stored host tests
+            Host test are derived from mbed_host_tests.BaseHostTest classes
+        """
+        if path:
+            path = path.strip('"')
+            if verbose:
+                print("HOST: Inspecting '%s' for local host tests..." % path)
+            if os.path.exists(path) and os.path.isdir(path):
+                python_modules = [
+                    f for f in listdir(path)
+                    if isfile(join(path, f)) and f.endswith(".py")
+                ]
+                for module_file in python_modules:
+                    self._add_module_to_registry(path, module_file, verbose)
+
+    def _add_module_to_registry(self, path, module_file, verbose):
+        module_name = module_file[:-3]
+        try:
+            mod = imp.load_source(module_name, abspath(join(path, module_file)))
+        except Exception as e:
+            print(
+                "HOST: Error! While loading local host test module '%s'"
+                % join(path, module_file)
+            )
+            print("HOST: %s" % str(e))
+            return
+        if verbose:
+            print("HOST: Loading module '%s': %s"% (module_file, str(mod)))
+
+        for name, obj in inspect.getmembers(mod):
+            if (
+                inspect.isclass(obj) and
+                issubclass(obj, BaseHostTest) and
+                str(obj) != str(BaseHostTest)
+            ):
+                if obj.name:
+                    host_test_name = obj.name
+                else:
+                    host_test_name = module_name
+                host_test_cls = obj
+                host_test_cls.script_location = join(path, module_file)
+                if verbose:
+                    print(
+                        "HOST: Found host test implementation: %s -|> %s"
+                        % (str(obj), str(BaseHostTest))
+                    )
+                    print(
+                        "HOST: Registering '%s' as '%s'"
+                        % (str(host_test_cls), host_test_name)
+                    )
+                self.register_host_test(
+                    host_test_name, host_test_cls()
+                )
+

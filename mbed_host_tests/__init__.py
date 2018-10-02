@@ -38,25 +38,6 @@ from mbed_host_tests import host_tests_plugins
 from mbed_host_tests.host_tests_registry import HostRegistry
 from mbed_host_tests.host_tests import BaseHostTest, event_callback
 
-# Host test supervisors
-from  mbed_host_tests.host_tests.echo import EchoTest
-from  mbed_host_tests.host_tests.rtc_auto import RTCTest
-from  mbed_host_tests.host_tests.hello_auto import HelloTest
-from  mbed_host_tests.host_tests.detect_auto import DetectPlatformTest
-from  mbed_host_tests.host_tests.wait_us_auto import WaitusTest
-from  mbed_host_tests.host_tests.default_auto import DefaultAuto
-from  mbed_host_tests.host_tests.dev_null_auto import DevNullTest
-
-# Populate registry with supervising objects
-HOSTREGISTRY = HostRegistry()
-HOSTREGISTRY.register_host_test("echo", EchoTest())
-HOSTREGISTRY.register_host_test("default", DefaultAuto())
-HOSTREGISTRY.register_host_test("rtc_auto", RTCTest())
-HOSTREGISTRY.register_host_test("hello_auto", HelloTest())
-HOSTREGISTRY.register_host_test("detect_auto", DetectPlatformTest())
-HOSTREGISTRY.register_host_test("default_auto", DefaultAuto())
-HOSTREGISTRY.register_host_test("wait_us_auto", WaitusTest())
-HOSTREGISTRY.register_host_test("dev_null_auto", DevNullTest())
 
 # Set the default baud rate
 DEFAULT_BAUD_RATE = 9600
@@ -66,30 +47,6 @@ DEFAULT_BAUD_RATE = 9600
 ###############################################################################
 
 
-def get_host_test(ht_name):
-    """! Fetches host test object from HOSTREGISTRY
-    @param ht_name Host test name
-    @return Returns registered host test supervisor.
-            If host test is not registered by name function returns None.
-    """
-    return HOSTREGISTRY.get_host_test(ht_name)
-
-def is_host_test(ht_name):
-    """! Checks if host test supervisor is registered in host test registry.
-    @param ht_name Host test name
-    @return If host test supervisor is registered returns True otherwise False.
-    """
-    return HOSTREGISTRY.is_host_test(ht_name)
-
-def get_host_test_list():
-    """! Returns list of host test names and its classes
-    @return Dictionary of {host_test_name : __class__}
-    """
-    result = {}
-    for ht in sorted(HOSTREGISTRY.HOST_TESTS.keys()):
-        result[ht] = HOSTREGISTRY.HOST_TESTS[ht].__class__
-    return result
-
 def get_plugin_caps(methods=None):
     if not methods:
         methods = ['CopyMethod', 'ResetMethod']
@@ -98,79 +55,6 @@ def get_plugin_caps(methods=None):
         result[method] = host_tests_plugins.get_plugin_caps(method)
     return result
 
-def print_ht_list(verbose=False):
-    """! Prints list of registered host test classes (by name)
-        @Detail For devel & debug purposes
-    """
-    from prettytable import PrettyTable, HEADER
-    column_names = ['name', 'class', 'origin']
-    pt = PrettyTable(column_names, junction_char="|", hrules=HEADER)
-    for column in column_names:
-        pt.align[column] = 'l'
-
-    for name, host_test in sorted(HOSTREGISTRY.HOST_TESTS.items()):
-        cls_str = str(host_test.__class__)
-        if host_test.script_location:
-            src_path = host_test.script_location
-        else:
-            src_path = 'mbed-host-tests'
-        pt.add_row([name, cls_str, src_path])
-    print(pt.get_string())
-
-def enum_host_tests(path, verbose=False):
-    """ Enumerates and registers locally stored host tests
-        Host test are derived from mbed_host_tests.BaseHostTest classes
-    """
-    if path:
-        path = path.strip('"')
-        if verbose:
-            print("HOST: Inspecting '%s' for local host tests..." % path)
-        if os.path.exists(path) and os.path.isdir(path):
-            python_modules = [
-                f for f in listdir(path)
-                if isfile(join(path, f)) and f.endswith(".py")
-            ]
-            for module_file in python_modules:
-                _add_module_to_registry(path, module_file, verbose)
-
-def _add_module_to_registry(path, module_file, verbose):
-    module_name = module_file[:-3]
-    try:
-        mod = imp.load_source(module_name, abspath(join(path, module_file)))
-    except Exception as e:
-        print(
-            "HOST: Error! While loading local host test module '%s'"
-            % join(path, module_file)
-        )
-        print("HOST: %s" % str(e))
-        return
-    if verbose:
-        print("HOST: Loading module '%s': %s"% (module_file, str(mod)))
-
-    for name, obj in inspect.getmembers(mod):
-        if (
-            inspect.isclass(obj) and
-            issubclass(obj, BaseHostTest) and
-            str(obj) != str(BaseHostTest)
-        ):
-            if obj.name:
-                host_test_name = obj.name
-            else:
-                host_test_name = module_name
-            host_test_cls = obj
-            host_test_cls.script_location = join(path, module_file)
-            if verbose:
-                print(
-                    "HOST: Found host test implementation: %s -|> %s"
-                    % (str(obj), str(BaseHostTest))
-                )
-                print(
-                    "HOST: Registering '%s' as '%s'"
-                    % (str(host_test_cls), host_test_name)
-                )
-            HOSTREGISTRY.register_host_test(
-                host_test_name, host_test_cls()
-            )
 
 def init_host_test_cli_params():
     """! Function creates CLI parser object and returns populated options object.
