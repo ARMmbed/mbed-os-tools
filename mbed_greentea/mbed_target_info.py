@@ -69,7 +69,7 @@ TARGET_INFO_MAPPING = {
     },
     "RAPIDIOT_K64F" : {
         "properties" : {
-                "forced_reset_timeout":10
+                "forced_reset_timeout":7
             }
     },
     "NUCLEO_F401RE" : {
