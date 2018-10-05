@@ -67,6 +67,11 @@ TARGET_INFO_MAPPING = {
                 "program_cycle_s": 4
             }
     },
+    "RAPIDIOT_K64F" : {
+        "properties" : {
+                "forced_reset_timeout":7
+            }
+    },
     "NUCLEO_F401RE" : {
         "yotta_targets": [
                 {
