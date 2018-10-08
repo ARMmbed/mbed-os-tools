@@ -57,6 +57,6 @@ setup(name='mbed-host-tests',
                         "PrettyTable>=0.7.2",
                         "requests",
                         "mbed-ls>=1.0.0",
-                        "pyOCD>=0.8.1a1",
+                        "pyOCD==0.12.0",
                         "intelhex",
                         "future"])
