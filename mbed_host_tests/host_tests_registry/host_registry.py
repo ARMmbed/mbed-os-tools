@@ -18,6 +18,7 @@ Author: Przemyslaw Wirkus <Przemyslaw.Wirkus@arm.com>
 """
 
 import os.path
+from os import listdir
 
 class HostRegistry:
     """ Class stores registry with host tests and objects representing them
