@@ -17,12 +17,25 @@ limitations under the License.
 Author: Przemyslaw Wirkus <Przemyslaw.Wirkus@arm.com>
 """
 
-from importlib import load_source
+try:
+    from imp import load_source
+except ImportError:
+    import importlib
+    import sys
+
+    def load_source(module_name, file_path):
+        spec = importlib.util.spec_from_file_location(module_name, file_path)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        sys.modules[module_name] = module
+        return module
+
+
 from inspect import getmembers, isclass
 from os import listdir
 from os.path import abspath, exists, isdir, isfile, join
 
-from .. import BaseHostTest
+from ..host_tests.base_host_test import BaseHostTest
 
 
 class HostRegistry:
