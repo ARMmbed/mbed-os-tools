@@ -17,13 +17,18 @@ limitations under the License.
 Author: Przemyslaw Wirkus <Przemyslaw.Wirkus@arm.com>
 """
 
-import os.path
+from importlib import load_source
+from inspect import getmembers, isclass
 from os import listdir
+from os.path import abspath, exists, isdir, isfile, join
+
+from .. import BaseHostTest
+
 
 class HostRegistry:
     """ Class stores registry with host tests and objects representing them
     """
-    HOST_TESTS = {} # Map between host_test_name -> host_test_object
+    HOST_TESTS = {}  # Map between host_test_name -> host_test_object
 
     def register_host_test(self, ht_name, ht_object):
         """! Registers host test object by name
@@ -58,7 +63,8 @@ class HostRegistry:
 
         @return True if ht_name is registered (available), else False
         """
-        return ht_name in self.HOST_TESTS and self.HOST_TESTS[ht_name] is not None
+        return (ht_name in self.HOST_TESTS and
+                self.HOST_TESTS[ht_name] is not None)
 
     def table(self, verbose=False):
         """! Prints list of registered host test classes (by name)
@@ -87,7 +93,7 @@ class HostRegistry:
             path = path.strip('"')
             if verbose:
                 print("HOST: Inspecting '%s' for local host tests..." % path)
-            if os.path.exists(path) and os.path.isdir(path):
+            if exists(path) and isdir(path):
                 python_modules = [
                     f for f in listdir(path)
                     if isfile(join(path, f)) and f.endswith(".py")
@@ -98,7 +104,7 @@ class HostRegistry:
     def _add_module_to_registry(self, path, module_file, verbose):
         module_name = module_file[:-3]
         try:
-            mod = imp.load_source(module_name, abspath(join(path, module_file)))
+            mod = load_source(module_name, abspath(join(path, module_file)))
         except Exception as e:
             print(
                 "HOST: Error! While loading local host test module '%s'"
@@ -107,11 +113,11 @@ class HostRegistry:
             print("HOST: %s" % str(e))
             return
         if verbose:
-            print("HOST: Loading module '%s': %s"% (module_file, str(mod)))
+            print("HOST: Loading module '%s': %s" % (module_file, str(mod)))
 
-        for name, obj in inspect.getmembers(mod):
+        for name, obj in getmembers(mod):
             if (
-                inspect.isclass(obj) and
+                isclass(obj) and
                 issubclass(obj, BaseHostTest) and
                 str(obj) != str(BaseHostTest)
             ):
@@ -133,4 +139,3 @@ class HostRegistry:
                 self.register_host_test(
                     host_test_name, host_test_cls()
                 )
-
