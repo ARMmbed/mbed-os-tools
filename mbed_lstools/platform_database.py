@@ -194,6 +194,7 @@ DEFAULT_PLATFORM_DB = {
         u'1075': u'NRF51822_OTA',
         u'1080': u'OC_MBUINO',
         u'1090': u'RBLAB_NRF51822',
+        u'1093': u'RBLAB_BLENANO2',
         u'1095': u'RBLAB_BLENANO',
         u'1100': u'NRF51_DK',
         u'1101': u'NRF52_DK',
