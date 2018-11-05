@@ -30,10 +30,18 @@ else:
 
 from mbed_host_tests import BaseHostTest
 from multiprocessing import Process, Queue, Lock
-from mbed_host_tests import print_ht_list
-from mbed_host_tests import get_host_test
-from mbed_host_tests import enum_host_tests
 from mbed_host_tests import host_tests_plugins
+from ..host_tests_registry import HostRegistry
+
+# Host test supervisors
+from  mbed_host_tests.host_tests.echo import EchoTest
+from  mbed_host_tests.host_tests.rtc_auto import RTCTest
+from  mbed_host_tests.host_tests.hello_auto import HelloTest
+from  mbed_host_tests.host_tests.detect_auto import DetectPlatformTest
+from  mbed_host_tests.host_tests.wait_us_auto import WaitusTest
+from  mbed_host_tests.host_tests.default_auto import DefaultAuto
+from  mbed_host_tests.host_tests.dev_null_auto import DevNullTest
+
 from mbed_host_tests.host_tests_logger import HtrunLogger
 from mbed_host_tests.host_tests_conn_proxy import conn_process
 from mbed_host_tests.host_tests_runner.host_test import DefaultTestSelectorBase
@@ -52,14 +60,26 @@ class DefaultTestSelector(DefaultTestSelectorBase):
 
         self.logger = HtrunLogger('HTST')
 
+        self.registry = HostRegistry()
+        self.registry.register_host_test("echo", EchoTest())
+        self.registry.register_host_test("default", DefaultAuto())
+        self.registry.register_host_test("rtc_auto", RTCTest())
+        self.registry.register_host_test("hello_auto", HelloTest())
+        self.registry.register_host_test("detect_auto", DetectPlatformTest())
+        self.registry.register_host_test("default_auto", DefaultAuto())
+        self.registry.register_host_test("wait_us_auto", WaitusTest())
+        self.registry.register_host_test("dev_null_auto", DevNullTest())
+
         # Handle extra command from
         if options:
             if options.enum_host_tests:
-                path = self.options.enum_host_tests
-                enum_host_tests(path, verbose=options.verbose)
+                for path in options.enum_host_tests:
+                    self.registry.register_from_path(
+                        path, verbose=options.verbose
+                    )
 
             if options.list_reg_hts:    # --list option
-                print_ht_list(verbose=options.verbose)
+                print(self.registry.table(options.verbose))
                 sys.exit(0)
 
             if options.list_plugins:    # --plugins option
@@ -295,7 +315,7 @@ class DefaultTestSelector(DefaultTestSelectorBase):
                         self.logger.prn_inf("DUT greentea-client version: " + self.client_version)
                     elif key == '__host_test_name':
                         # Load dynamically requested host test
-                        self.test_supervisor = get_host_test(value)
+                        self.test_supervisor = self.registry.get_host_test(value)
 
                         # Check if host test object loaded is actually host test class
                         # derived from 'mbed_host_tests.BaseHostTest()'
