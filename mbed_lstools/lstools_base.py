@@ -430,6 +430,18 @@ class MbedLsToolsBase(object):
         self.dummy_counter[platform_name] += 1
         return platform
 
+    def get_supported_platforms(self, device_type=None):
+        """! Return a dictionary of supported target ids and the corresponding platform name
+        @param device_type Filter which device entries are returned from the platform database
+        @return Dictionary of { 'target_id': 'platform_name', ... }
+        """
+        kwargs = {}
+        if device_type is not None:
+            kwargs['device_type'] = device_type
+
+        items = self.plat_db.items(**kwargs)
+        return {i[0]: i[1] for i in items}
+
     @deprecated("List formatting methods are deprecated to simplify the API. "
                 "Please use 'list_mbeds' instead.")
     def list_platforms(self):
