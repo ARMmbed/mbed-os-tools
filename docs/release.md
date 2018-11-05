@@ -58,6 +58,17 @@ be completed:
 - Any relevant issues on each of the legacy projects' GitHub pages are filed against `mbed-tools`
 - All documentation for `mbed-tools` needs to be delivered to the Mbed OS docs team for deployment to `os.mbed.com/docs`
 
+## Releasing
+
+![Release versioning](package_versioning.png)
+
+The packages need to be released in the correct order. This is due to the new dependencies described above. Follow these steps to make a new release of the tools:
+
+1. Release mbed-tools with a patch version increase
+2. For each legacy package, change the "mbed-tools" requirement version to the number just released (in this case it would be 0.0.1).
+3. For each legacy package, increase each patch number (this will vary with each package). 
+4. Release each legacy package to pypi
+
 ## Documentation
 
 All public APIs are required to be fully documented with comments throughout the codebase. From these comments,
