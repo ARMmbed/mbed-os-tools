@@ -38,7 +38,7 @@ _The above diagram shows the released packages in boxes. The exposed modules are
 
 - `mbed_tools.detect` - All code contained within Mbed LS, used for detecting attached platforms
 - `mbed_tools.test` - All code used to test platforms with the "greentea" framework
- - [Q @Jimmy] I suppose in the future this will also need to support icetea?
+ - Will also need to plan ahead for icetea integration here
 
 The other packages will then be in charge of taking these modules and exposing the existing public API. (ex. `import mbed_lstools` for mbed-ls)
 The goal will be in the future to remove the other bespoke packages and just consolidate on the `mbed_tools.*` API exposed by `mbed-tools`.
