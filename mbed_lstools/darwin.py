@@ -17,8 +17,12 @@ limitations under the License.
 
 import re
 import subprocess
-import plistlib
 import platform
+try:
+    from plistlib import loads
+except ImportError:
+    from plistlib import readPlistFromString as loads
+from xml.parsers.expat import ExpatError
 
 from .lstools_base import MbedLsToolsBase
 
@@ -29,6 +33,16 @@ DEBUG = logging.DEBUG
 del logging
 
 mbed_volume_name_match = re.compile(r'\b(mbed|SEGGER MSD|ATMEL EDBG Media)\b', re.I)
+
+
+def _plist_from_popen(popen):
+    out, _ = popen.communicate()
+    if not out:
+        return []
+    try:
+        return loads(out)
+    except ExpatError:
+        return []
 
 def _find_TTY(obj):
     ''' Find the first tty (AKA IODialinDevice) that we can find in the
@@ -121,8 +135,7 @@ class MbedLsToolsDarwin(MbedLsToolsBase):
     def _mount_points(self):
         ''' Returns map {volume_id: mount_point} '''
         diskutil_ls = subprocess.Popen(['diskutil', 'list', '-plist'], stdout=subprocess.PIPE)
-        disks = plistlib.readPlist(diskutil_ls.stdout)
-        diskutil_ls.wait()
+        disks = _plist_from_popen(diskutil_ls)
 
         if logger.isEnabledFor(DEBUG):
             import pprint
@@ -152,11 +165,7 @@ class MbedLsToolsDarwin(MbedLsToolsBase):
 
         for usb_controller in usb_controllers:
             ioreg_usb = subprocess.Popen(['ioreg', '-a', '-r', cmp_par, usb_controller, '-l'], stdout=subprocess.PIPE)
-            try:
-                usb_tree = plistlib.readPlist(ioreg_usb.stdout)
-            except:
-                usb_tree = []
-            ioreg_usb.wait()
+            usb_tree = _plist_from_popen(ioreg_usb)
 
         r = {}
 

@@ -160,6 +160,7 @@ class DarwinTestCase(unittest.TestCase):
                      'ioreg': usb_tree}[command[0]],
                     to_ret.stdout)
                 to_ret.stdout.seek(0)
+                to_ret.communicate.return_value = (to_ret.stdout.getvalue(), "")
                 return to_ret
             _popen.side_effect = do_popen
             candidates = self.darwin.find_candidates()
