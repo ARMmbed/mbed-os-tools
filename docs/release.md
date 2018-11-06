@@ -15,25 +15,6 @@ The only thing that will change on their system is an additional package will be
 
 ## Package and API structure
 
-```
-mbed_lstools            mbed_host_tests         mbed_greentea
- +---------+          +-----------------+     +---------------+
- |         |          |                 |     |               |
- | mbed-ls |          | mbed-host-tests |     | mbed-greentea |
- |         |          |                 |     |               |
- +----+----+          +--------+--------+     +-------+-------+
-      ^                        ^                      ^
-      |              mbed_tools.test |                      |
-      |                        |                      |
-      |                  +-----+------+               |
-      |   mbed_tools.detect    |            |   mbed_tools.test   |
-      +------------------+ mbed-tools +---------------+
-                         |            |
-                         +------------+
-```
-
-_The above diagram shows the released packages in boxes. The exposed modules are shown next to the packages._
-
 `mbed-tools` will expose the following modules:
 
 - `mbed_tools.detect` - All code contained within Mbed LS, used for detecting attached platforms
@@ -66,7 +47,7 @@ The packages need to be released in the correct order. This is due to the new de
 
 1. Release mbed-tools with a patch version increase
 2. For each legacy package, change the "mbed-tools" requirement version to the number just released (in this case it would be 0.0.1).
-3. For each legacy package, increase each patch number (this will vary with each package). 
+3. For each legacy package, increase each patch number (this will vary with each package).
 4. Release each legacy package to pypi
 
 ## Documentation
