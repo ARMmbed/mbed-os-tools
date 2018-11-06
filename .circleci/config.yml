@@ -4,6 +4,9 @@ commands:
         steps:
             - checkout
             - run:
+                name: If this is a pull request, merge it with the current master branch before testing
+                command: if [ -n "$CIRCLE_PULL_REQUEST" ]; then git fetch origin master && git checkout origin/master && git merge $CIRCLE_BRANCH; fi
+            - run:
                 name: Run mbed_lstools tests
                 working_directory: mbed_lstools
                 command: pip install --user -r test_requirements.txt
