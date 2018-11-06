@@ -20,7 +20,7 @@ import unittest
 import sys
 import os
 from mock import patch, mock_open
-from mbed_lstools.linux import MbedLsToolsLinuxGeneric
+from mbed_tools.detect.linux import MbedLsToolsLinuxGeneric
 
 
 class LinuxPortTestCase(unittest.TestCase):
@@ -41,7 +41,7 @@ class LinuxPortTestCase(unittest.TestCase):
     ]
 
     def test_get_mount_point_basic(self):
-        with patch('mbed_lstools.linux.MbedLsToolsLinuxGeneric._run_cli_process') as _cliproc:
+        with patch('mbed_tools.detect.linux.MbedLsToolsLinuxGeneric._run_cli_process') as _cliproc:
             _cliproc.return_value = (b'\n'.join(self.vfat_devices), None, 0)
             mount_dict = dict(self.linux_generic._fat_mounts())
             _cliproc.assert_called_once_with('mount')
@@ -65,7 +65,7 @@ class LinuxPortTestCase(unittest.TestCase):
     ]
 
     def test_get_mount_point_ext(self):
-        with patch('mbed_lstools.linux.MbedLsToolsLinuxGeneric._run_cli_process') as _cliproc:
+        with patch('mbed_tools.detect.linux.MbedLsToolsLinuxGeneric._run_cli_process') as _cliproc:
             _cliproc.return_value = (b'\n'.join(self.vfat_devices_ext), None, 0)
             mount_dict = dict(self.linux_generic._fat_mounts())
             _cliproc.assert_called_once_with('mount')
@@ -90,12 +90,12 @@ class LinuxPortTestCase(unittest.TestCase):
             file_object.__iter__.return_value = open_dict[path].splitlines(True)
             return file_object
 
-        with patch('mbed_lstools.linux.MbedLsToolsLinuxGeneric._run_cli_process') as _cliproc,\
+        with patch('mbed_tools.detect.linux.MbedLsToolsLinuxGeneric._run_cli_process') as _cliproc,\
              patch('os.readlink') as _readlink,\
              patch('os.listdir') as _listdir,\
-             patch('mbed_lstools.linux.abspath') as _abspath,\
-             patch('mbed_lstools.linux.open', do_open) as _,\
-             patch('mbed_lstools.linux.isdir') as _isdir:
+             patch('mbed_tools.detect.linux.abspath') as _abspath,\
+             patch('mbed_tools.detect.linux.open', do_open) as _,\
+             patch('mbed_tools.detect.linux.isdir') as _isdir:
             _isdir.return_value = True
             _cliproc.return_value = (b'\n'.join(mount_list), None, 0)
             def do_readlink(link):

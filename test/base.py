@@ -27,7 +27,7 @@ from mock import patch, MagicMock
 from copy import deepcopy
 from six import StringIO
 
-import mbed_lstools.main as cli
+import mbed_tools.detect.main as cli
 
 
 try:
