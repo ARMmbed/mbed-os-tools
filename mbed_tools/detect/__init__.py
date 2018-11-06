@@ -34,6 +34,5 @@ but it's already delivered as part of the mbed SDK's test suite and a command
 line tool (see below).
 """
 
-from .main import mbedls_main
 from .main import create
 
