@@ -1,0 +1,42 @@
+version: 2.1
+commands:
+    setup_and_run_tests:
+        steps:
+            - checkout
+            - run:
+                name: Run mbed_lstools tests
+                working_directory: mbed_lstools
+                command: pip install --user -r test_requirements.txt
+            - run:
+                name: Run mbed_lstools tests
+                working_directory: mbed_lstools
+                command: python -m coverage run setup.py test
+jobs:
+    test_python27:
+        docker:
+            - image: circleci/python:2.7-stretch-node
+        steps:
+            - setup_and_run_tests
+    test_python35:
+        docker:
+            - image: circleci/python:3.5-stretch-node
+        steps:
+            - setup_and_run_tests
+    test_python36:
+        docker:
+            - image: circleci/python:3.6-stretch-node
+        steps:
+            - setup_and_run_tests
+    test_python37:
+        docker:
+            - image: circleci/python:3.7-stretch-node
+        steps:
+            - setup_and_run_tests
+workflows:
+    version: 2
+    test:
+        jobs:
+          - test_python27
+          - test_python35
+          - test_python36
+          - test_python37
