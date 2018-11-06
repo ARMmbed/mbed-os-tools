@@ -7,3 +7,6 @@ __pycache__/
 *.swp
 .mbedls-mock
 mbedls.json
+
+# Generated test config for local CircleCI testing
+.circleci/processed.yml
