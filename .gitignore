@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+.coverage
+.eggs/
+*.egg-info/
+*.egg
+*.swp
+.mbedls-mock
+mbedls.json
