@@ -16,7 +16,7 @@ limitations under the License.
 """
 
 from time import time
-from mbed_host_tests import BaseHostTest
+from mbed_tools.test import BaseHostTest
 
 
 class WaitusTest(BaseHostTest):

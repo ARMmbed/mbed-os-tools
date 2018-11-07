@@ -22,7 +22,7 @@ import os
 import re
 import sys
 import platform
-from mbed_host_tests.host_tests_plugins.host_test_plugins import HostTestPluginBase
+from mbed_tools.test.host_tests_plugins.host_test_plugins import HostTestPluginBase
 
 
 class HostOSDetectionTestCase(unittest.TestCase):

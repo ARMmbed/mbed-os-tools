@@ -21,9 +21,9 @@ import json
 import os
 import mbed_lstools
 from time import sleep
-from mbed_host_tests import DEFAULT_BAUD_RATE
-import mbed_host_tests.host_tests_plugins as ht_plugins
-from mbed_host_tests.host_tests_logger import HtrunLogger
+from mbed_tools.test import DEFAULT_BAUD_RATE
+import mbed_tools.test.host_tests_plugins as ht_plugins
+from mbed_tools.test.host_tests_logger import HtrunLogger
 
 
 class Mbed:

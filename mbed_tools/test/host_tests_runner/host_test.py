@@ -19,7 +19,7 @@ Author: Przemyslaw Wirkus <Przemyslaw.Wirkus@arm.com>
 
 import pkg_resources  # part of setuptools
 from sys import stdout
-from mbed_host_tests.host_tests_runner.mbed_base import Mbed
+from mbed_tools.test.host_tests_runner.mbed_base import Mbed
 
 
 class HostTestResults(object):

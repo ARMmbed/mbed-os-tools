@@ -18,7 +18,7 @@ limitations under the License.
 
 import six
 import unittest
-from mbed_host_tests.host_tests_registry import HostRegistry
+from mbed_tools.test.host_tests_registry import HostRegistry
 
 
 class HostRegistryTestCase(unittest.TestCase):

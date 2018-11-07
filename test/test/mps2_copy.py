@@ -19,7 +19,7 @@ limitations under the License.
 import unittest
 import os
 
-from mbed_host_tests.host_tests_plugins.module_copy_mps2 import HostTestPluginCopyMethod_MPS2
+from mbed_tools.test.host_tests_plugins.module_copy_mps2 import HostTestPluginCopyMethod_MPS2
 
 class MPS2CopyTestCase(unittest.TestCase):
 

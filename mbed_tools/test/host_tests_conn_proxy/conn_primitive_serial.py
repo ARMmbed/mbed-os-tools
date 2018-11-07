@@ -19,8 +19,8 @@ limitations under the License.
 
 import time
 from serial import Serial, SerialException
-from mbed_host_tests import host_tests_plugins
-from mbed_host_tests.host_tests_plugins.host_test_plugins import HostTestPluginBase
+from mbed_tools.test import host_tests_plugins
+from mbed_tools.test.host_tests_plugins.host_test_plugins import HostTestPluginBase
 from .conn_primitive import ConnectorPrimitive, ConnectorPrimitiveException
 
 

@@ -16,7 +16,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from mbed_host_tests.host_tests_logger import HtrunLogger
+from mbed_tools.test.host_tests_logger import HtrunLogger
 
 
 class ConnectorPrimitiveException(Exception):

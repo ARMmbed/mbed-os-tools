@@ -26,7 +26,7 @@ from os import access, F_OK
 from sys import stdout
 from time import sleep
 from subprocess import call
-from mbed_host_tests.host_tests_logger import HtrunLogger
+from mbed_tools.test.host_tests_logger import HtrunLogger
 
 
 class HostTestPluginBase:

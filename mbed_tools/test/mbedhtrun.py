@@ -18,8 +18,8 @@ Author: Przemyslaw Wirkus <Przemyslaw.Wirkus@arm.com>
 """
 
 from multiprocessing import freeze_support
-from mbed_host_tests import init_host_test_cli_params
-from mbed_host_tests.host_tests_runner.host_test_default import DefaultTestSelector
+from mbed_tools.test import init_host_test_cli_params
+from mbed_tools.test.host_tests_runner.host_test_default import DefaultTestSelector
 
 
 def main():

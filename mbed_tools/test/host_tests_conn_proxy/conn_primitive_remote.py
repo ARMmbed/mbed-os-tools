@@ -16,8 +16,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from mbed_host_tests import DEFAULT_BAUD_RATE
-from mbed_host_tests.host_tests_conn_proxy.conn_primitive import ConnectorPrimitive
+from mbed_tools.test import DEFAULT_BAUD_RATE
+from mbed_tools.test.host_tests_conn_proxy.conn_primitive import ConnectorPrimitive
 
 
 class RemoteConnectorPrimitive(ConnectorPrimitive):

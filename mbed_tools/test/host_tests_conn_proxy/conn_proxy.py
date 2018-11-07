@@ -22,7 +22,7 @@ import re
 import sys
 import uuid
 from time import time
-from mbed_host_tests.host_tests_logger import HtrunLogger
+from mbed_tools.test.host_tests_logger import HtrunLogger
 from .conn_primitive_serial import SerialConnectorPrimitive
 from .conn_primitive_remote import RemoteConnectorPrimitive
 from .conn_primitive_fastmodel import FastmodelConnectorPrimitive

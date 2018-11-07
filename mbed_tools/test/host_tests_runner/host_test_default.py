@@ -28,24 +28,24 @@ if (sys.version_info > (3, 0)):
 else:
     from Queue import Empty as QueueEmpty
 
-from mbed_host_tests import BaseHostTest
+from mbed_tools.test import BaseHostTest
 from multiprocessing import Process, Queue, Lock
-from mbed_host_tests import host_tests_plugins
+from mbed_tools.test import host_tests_plugins
 from ..host_tests_registry import HostRegistry
 
 # Host test supervisors
-from  mbed_host_tests.host_tests.echo import EchoTest
-from  mbed_host_tests.host_tests.rtc_auto import RTCTest
-from  mbed_host_tests.host_tests.hello_auto import HelloTest
-from  mbed_host_tests.host_tests.detect_auto import DetectPlatformTest
-from  mbed_host_tests.host_tests.wait_us_auto import WaitusTest
-from  mbed_host_tests.host_tests.default_auto import DefaultAuto
-from  mbed_host_tests.host_tests.dev_null_auto import DevNullTest
+from  mbed_tools.test.host_tests.echo import EchoTest
+from  mbed_tools.test.host_tests.rtc_auto import RTCTest
+from  mbed_tools.test.host_tests.hello_auto import HelloTest
+from  mbed_tools.test.host_tests.detect_auto import DetectPlatformTest
+from  mbed_tools.test.host_tests.wait_us_auto import WaitusTest
+from  mbed_tools.test.host_tests.default_auto import DefaultAuto
+from  mbed_tools.test.host_tests.dev_null_auto import DevNullTest
 
-from mbed_host_tests.host_tests_logger import HtrunLogger
-from mbed_host_tests.host_tests_conn_proxy import conn_process
-from mbed_host_tests.host_tests_runner.host_test import DefaultTestSelectorBase
-from mbed_host_tests.host_tests_toolbox.host_functional import handle_send_break_cmd
+from mbed_tools.test.host_tests_logger import HtrunLogger
+from mbed_tools.test.host_tests_conn_proxy import conn_process
+from mbed_tools.test.host_tests_runner.host_test import DefaultTestSelectorBase
+from mbed_tools.test.host_tests_toolbox.host_functional import handle_send_break_cmd
 
 
 class DefaultTestSelector(DefaultTestSelectorBase):
@@ -118,11 +118,11 @@ class DefaultTestSelector(DefaultTestSelectorBase):
 
     def is_host_test_obj_compatible(self, obj_instance):
         """! Check if host test object loaded is actually host test class
-             derived from 'mbed_host_tests.BaseHostTest()'
+             derived from 'mbed_tools.test.BaseHostTest()'
              Additionaly if host test class implements custom ctor it should
              call BaseHostTest().__Init__()
         @param obj_instance Instance of host test derived class
-        @return True if obj_instance is derived from mbed_host_tests.BaseHostTest()
+        @return True if obj_instance is derived from mbed_tools.test.BaseHostTest()
                 and BaseHostTest.__init__() was called, else return False
         """
         result = False
@@ -130,11 +130,11 @@ class DefaultTestSelector(DefaultTestSelectorBase):
             result = True
             self.logger.prn_inf("host test class: '%s'"% obj_instance.__class__)
 
-            # Check if host test (obj_instance) is derived from mbed_host_tests.BaseHostTest()
+            # Check if host test (obj_instance) is derived from mbed_tools.test.BaseHostTest()
             if not isinstance(obj_instance, BaseHostTest):
                 # In theory we should always get host test objects inheriting from BaseHostTest()
                 # because loader will only load those.
-                self.logger.prn_err("host test must inherit from mbed_host_tests.BaseHostTest() class")
+                self.logger.prn_err("host test must inherit from mbed_tools.test.BaseHostTest() class")
                 result = False
 
             # Check if BaseHostTest.__init__() was called when custom host test is created
@@ -318,7 +318,7 @@ class DefaultTestSelector(DefaultTestSelectorBase):
                         self.test_supervisor = self.registry.get_host_test(value)
 
                         # Check if host test object loaded is actually host test class
-                        # derived from 'mbed_host_tests.BaseHostTest()'
+                        # derived from 'mbed_tools.test.BaseHostTest()'
                         # Additionaly if host test class implements custom ctor it should
                         # call BaseHostTest().__Init__()
                         if self.test_supervisor and self.is_host_test_obj_compatible(self.test_supervisor):

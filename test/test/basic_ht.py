@@ -18,7 +18,7 @@ limitations under the License.
 
 import unittest
 
-from mbed_host_tests import get_plugin_caps
+from mbed_tools.test import get_plugin_caps
 
 class BasicHostTestsTestCase(unittest.TestCase):
 

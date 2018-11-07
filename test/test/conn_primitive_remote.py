@@ -19,7 +19,7 @@ limitations under the License.
 import unittest
 import mock
 
-from mbed_host_tests.host_tests_conn_proxy.conn_primitive_remote import RemoteConnectorPrimitive
+from mbed_tools.test.host_tests_conn_proxy.conn_primitive_remote import RemoteConnectorPrimitive
 
 
 class RemoteResourceMock(object):

@@ -770,7 +770,7 @@ int app_start(int, char*[]) {
 
 * Example host test template:
 ```python
-from mbed_host_tests import BaseHostTest
+from mbed_tools.test import BaseHostTest
 
 class YourCustomHostTest(BaseHostTest):
 
@@ -889,7 +889,7 @@ You can register callbacks in ```setup()``` phase or decorate callback functions
 
 ### Callback registration in setup() method
 ```python
-from mbed_host_tests import BaseHostTest
+from mbed_tools.test import BaseHostTest
 
 class DetectRuntimeError(BaseHostTest):
 
@@ -911,7 +911,7 @@ Below the same callback registered using decorator:
 
 ### Callback decorator definition
 ```python
-from mbed_host_tests.host_tests import BaseHostTest, event_callback
+from mbed_tools.test.host_tests import BaseHostTest, event_callback
 
 class DetectRuntimeError(BaseHostTest):
 
@@ -939,7 +939,7 @@ We will use allowed to override ```__rxd_line``` event to hook to DUT RXD channe
 #### Before Greentea v0.2.0
 ```python
 from sys import stdout
-from mbed_host_tests import BaseHostTest
+from mbed_tools.test import BaseHostTest
 
 class DetectRuntimeError(BaseHostTest):
 
@@ -972,7 +972,7 @@ class DetectRuntimeError(BaseHostTest):
 
 #### Using __rdx_line event
 ```python
-from mbed_host_tests import BaseHostTest
+from mbed_tools.test import BaseHostTest
 
 class DetectRuntimeError(BaseHostTest):
     """! We _expect_ to detect 'Runtime error' """
@@ -1028,7 +1028,7 @@ class DetectRuntimeError(BaseHostTest):
 Here you can find references to modules and repositories contain examples of test suites and test cases written using ```greentea-client```, ```utest``` and ```unity```:
 * ```utest``` module contains [test cases](https://github.com/ARMmbed/utest/tree/master/test) written using ```utest``` itself.
 * ```minar``` module contains [test cases](https://github.com/ARMmbed/minar/tree/master/test) written without ```utest```. Note: ```utest``` may use ```minar``` for callback scheduling and can't be use to test ```minar``` itself.
-* ```mbed-drivers``` module contains [test cases](https://github.com/ARMmbed/mbed-drivers/tree/master/test) written with and without ```utest``` harness. Currently all ```mbed-drivers``` tests are using [build-in to ```htrun``` host tests](https://github.com/ARMmbed/htrun/tree/master/mbed_host_tests/host_tests).
+* ```mbed-drivers``` module contains [test cases](https://github.com/ARMmbed/mbed-drivers/tree/master/test) written with and without ```utest``` harness. Currently all ```mbed-drivers``` tests are using [build-in to ```htrun``` host tests](https://github.com/ARMmbed/htrun/tree/master/mbed_tools.test/host_tests).
 * And finally ```sockets``` module contains [test cases](https://github.com/ARMmbed/sockets/tree/master/test) with [custom host tests](https://github.com/ARMmbed/sockets/tree/master/test/host_tests).
 
 # Plugins
