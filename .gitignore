@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.coverage
+.eggs/
+*.egg-info/
+*.egg
+*.swp
+.mbedls-mock
+mbedls.json
+
+# Generated test config for local CircleCI testing
+.circleci/processed.yml

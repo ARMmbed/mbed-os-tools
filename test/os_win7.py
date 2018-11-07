@@ -27,7 +27,7 @@ _winreg = MagicMock()
 sys.modules['_winreg']  = _winreg
 sys.modules['winreg'] = _winreg
 
-from mbed_lstools.windows import (MbedLsToolsWin7, CompatibleIDsNotFoundException,
+from mbed_tools.detect.windows import (MbedLsToolsWin7, CompatibleIDsNotFoundException,
     _get_cached_mounted_points, _is_mbed_volume, _get_values_with_numeric_keys,
     _get_disks, _get_usb_storage_devices, _determine_valid_non_composite_devices,
     _determine_subdevice_capability)
@@ -129,7 +129,7 @@ class Win7TestCase(unittest.TestCase):
 
     def test_get_values_with_numeric_keys(self):
         dummy_key = 'dummy_key'
-        with patch('mbed_lstools.windows._iter_vals') as _iter_vals:
+        with patch('mbed_tools.detect.windows._iter_vals') as _iter_vals:
             _iter_vals.return_value = [
                 ('0', True),
                 ('1', True),
@@ -157,8 +157,8 @@ class Win7TestCase(unittest.TestCase):
         dummy_val = 'dummy_val'
         volume_string_1 = u'_??_USBSTOR#Disk&Ven_MBED&Prod_VFS&Rev_0.1#0240000032044e4500367009997b00086781000097969900&0#{53f56307-b6bf-11d0-94f2-00a0c91efb8b}'
         volume_string_2 = u'_??_USBSTOR#Disk&Ven_MBED&Prod_VFS&Rev_0.1#1234000032044e4500367009997b00086781000097969900&0#{53f56307-b6bf-11d0-94f2-00a0c91efb8b}'
-        with patch('mbed_lstools.windows._iter_vals') as _iter_vals, \
-             patch('mbed_lstools.windows._is_mbed_volume') as _is_mbed_volume:
+        with patch('mbed_tools.detect.windows._iter_vals') as _iter_vals, \
+             patch('mbed_tools.detect.windows._is_mbed_volume') as _is_mbed_volume:
             _winreg.OpenKey.return_value = dummy_val
             _iter_vals.return_value = [
                 ('dummy_device', 'this is not a valid volume string'),
@@ -196,8 +196,8 @@ class Win7TestCase(unittest.TestCase):
             'dummy_volume_1',
             'dummy_volume_2',
         ]
-        with patch('mbed_lstools.windows._get_values_with_numeric_keys') as _num_keys, \
-             patch('mbed_lstools.windows._is_mbed_volume') as _is_mbed_volume:
+        with patch('mbed_tools.detect.windows._get_values_with_numeric_keys') as _num_keys, \
+             patch('mbed_tools.detect.windows._is_mbed_volume') as _is_mbed_volume:
             _winreg.OpenKey.return_value = dummy_key
             _num_keys.return_value = volume_strings
             _is_mbed_volume.return_value = True
@@ -226,8 +226,8 @@ class Win7TestCase(unittest.TestCase):
             'dummy_usb_storage_1',
             'dummy_usb_storage_2',
         ]
-        with patch('mbed_lstools.windows._get_values_with_numeric_keys') as _num_keys, \
-             patch('mbed_lstools.windows._is_mbed_volume') as _is_mbed_volume:
+        with patch('mbed_tools.detect.windows._get_values_with_numeric_keys') as _num_keys, \
+             patch('mbed_tools.detect.windows._is_mbed_volume') as _is_mbed_volume:
             _winreg.OpenKey.return_value = dummy_key
             _num_keys.return_value = volume_strings
             _is_mbed_volume.return_value = True
@@ -267,7 +267,7 @@ class Win7TestCase(unittest.TestCase):
 
         _winreg.OpenKey.return_value = dummy_key
 
-        with patch('mbed_lstools.windows._determine_subdevice_capability') as _capability:
+        with patch('mbed_tools.detect.windows._determine_subdevice_capability') as _capability:
             _capability.return_value = 'msd'
 
             result = _determine_valid_non_composite_devices(devices, target_id_usb_id_mount_point_map)
@@ -376,7 +376,7 @@ class Win7TestCase(unittest.TestCase):
         }
         self.setUpRegistry(value_dict, key_dict)
 
-        with patch('mbed_lstools.windows.MbedLsToolsWin7._run_cli_process') as _cliproc:
+        with patch('mbed_tools.detect.windows.MbedLsToolsWin7._run_cli_process') as _cliproc:
             _cliproc.return_value = ("", "", 0)
             expected_info = {
                 'mount_point': 'F:',
@@ -414,7 +414,7 @@ class Win7TestCase(unittest.TestCase):
         }
         self.setUpRegistry(value_dict, key_dict)
 
-        with patch('mbed_lstools.windows.MbedLsToolsWin7._run_cli_process') as _cliproc:
+        with patch('mbed_tools.detect.windows.MbedLsToolsWin7._run_cli_process') as _cliproc:
             _cliproc.return_value = ("", "", 0)
             expected_info = {
                 'mount_point': 'F:',
@@ -429,7 +429,7 @@ class Win7TestCase(unittest.TestCase):
             self.assertNoRegMut()
 
     def test_mount_point_ready(self):
-        with patch('mbed_lstools.windows.MbedLsToolsWin7._run_cli_process') as _cliproc:
+        with patch('mbed_tools.detect.windows.MbedLsToolsWin7._run_cli_process') as _cliproc:
             _cliproc.return_value = ("dummy", "", 0)
             self.assertTrue(self.lstool.mount_point_ready("dummy"))
 

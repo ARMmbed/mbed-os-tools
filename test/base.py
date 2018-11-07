@@ -21,13 +21,12 @@ import os
 import errno
 import logging
 import re
-import pkg_resources
 import json
 from mock import patch, MagicMock
 from copy import deepcopy
 from six import StringIO
 
-import mbed_lstools.main as cli
+import mbed_tools.detect.main as cli
 
 
 try:
@@ -54,11 +53,6 @@ class CLIComands(unittest.TestCase):
 
     def tearDown(self):
         self._stdout.stop()
-
-    def test_print_version(self):
-        cli.print_version(self.mbeds, self.args)
-        self.assertIn(pkg_resources.require('mbed-ls')[0].version,
-                      self.stdout.getvalue())
 
     def test_print_table(self):
         cli.print_table(self.mbeds, self.args)
@@ -115,22 +109,3 @@ class CLIParser(unittest.TestCase):
     def tearDown(self):
         pass
 
-    def test_parse_cli_defaults(self):
-        args = cli.parse_cli([])
-        assert callable(args.command)
-
-    def test_parse_cli_conflict(self):
-        try:
-            args = cli.parse_cli(["-j", "-J"])
-            assert False, "Parsing conflicting options should have failed"
-        except:
-            pass
-
-    def test_parse_cli_single_param(self):
-        for p in ['j', 'J', 'p', 'P', '-version', 'd', 'u']:
-            args = cli.parse_cli(['-' + p])
-            assert callable(args.command)
-
-class CLISetup(unittest.TestCase):
-    def test_start_logging(self):
-        cli.start_logging()

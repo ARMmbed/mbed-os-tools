@@ -22,7 +22,7 @@ import plistlib
 from mock import MagicMock, patch
 from six import BytesIO
 
-from mbed_lstools.darwin import MbedLsToolsDarwin
+from mbed_tools.detect.darwin import MbedLsToolsDarwin
 
 class DarwinTestCase(unittest.TestCase):
     """Tests for the Darwin port

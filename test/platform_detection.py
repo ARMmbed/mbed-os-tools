@@ -21,7 +21,7 @@ import os
 import copy
 from mock import patch, mock_open, DEFAULT
 
-from mbed_lstools.lstools_base import MbedLsToolsBase
+from mbed_tools.detect.lstools_base import MbedLsToolsBase
 
 TEST_DATA_PATH = 'test_data'
 
@@ -88,8 +88,8 @@ class PlatformDetectionTestCase(unittest.TestCase):
             file_object.__iter__.return_value = test_data_file_data.splitlines(True)
             return file_object
 
-        with patch("mbed_lstools.lstools_base.MbedLsToolsBase.mount_point_ready") as _mpr,\
-             patch('mbed_lstools.lstools_base.open', do_open) as _,\
+        with patch("mbed_tools.detect.lstools_base.MbedLsToolsBase.mount_point_ready") as _mpr,\
+             patch('mbed_tools.detect.lstools_base.open', do_open) as _,\
              patch('os.listdir') as _listdir:
             _mpr.return_value = True
             _listdir.return_value = test_data_case_file_names

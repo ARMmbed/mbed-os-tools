@@ -4,12 +4,10 @@ commands:
         steps:
             - checkout
             - run:
-                name: Run mbed_lstools tests
-                working_directory: mbed_lstools
+                name: Install test requirements
                 command: pip install --user -r test_requirements.txt
             - run:
-                name: Run mbed_lstools tests
-                working_directory: mbed_lstools
+                name: Run tests
                 command: python -m coverage run setup.py test
 jobs:
     test_python27:
