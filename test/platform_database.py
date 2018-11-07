@@ -70,9 +70,16 @@ class EmptyPlatformDatabaseTests(unittest.TestCase):
     def test_broken_database(self):
         """Verify that the platform database correctly reset's its database
         """
+        stringio = MagicMock()
+        def mock_open(*args, **kwargs):
+            arg = args[1] if len(args) > 1 else kwargs.get('mode', 'r')
+            if 'r' in arg:
+                raise IOError("Bogus")
+            else:
+                return stringio
+
         with patch("mbed_tools.detect.platform_database.open") as _open:
-            stringio = MagicMock()
-            _open.side_effect = (IOError("Bogus"), stringio)
+            _open.side_effect = mock_open
             self.pdb = PlatformDatabase([LOCAL_PLATFORM_DATABASE])
             stringio.__enter__.return_value.write.assert_called_with(
                 unicode(json.dumps(DEFAULT_PLATFORM_DB)))
