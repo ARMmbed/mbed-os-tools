@@ -20,7 +20,7 @@ Author: Przemyslaw Wirkus <Przemyslaw.Wirkus@arm.com>
 import os
 import sys
 import platform
-import mbed_lstools
+import mbed_tools.detect
 
 from os import access, F_OK
 from sys import stdout
@@ -134,9 +134,9 @@ class HostTestPluginBase:
             timeout_step = 0.5
             timeout = int(timeout / timeout_step)
             for i in range(timeout):
-                # mbed_lstools.create() should be done inside the loop.
+                # mbed_tools.detect.create() should be done inside the loop.
                 # Otherwise it will loop on same data.
-                mbeds = mbed_lstools.create()
+                mbeds = mbed_tools.detect.create()
                 mbed_list = mbeds.list_mbeds() #list of mbeds present
                 # get first item in list with a matching target_id, if present
                 mbed_target = next((x for x in mbed_list if x['target_id']==target_id), None)
@@ -188,8 +188,8 @@ class HostTestPluginBase:
             timeout_step = 0.5
             timeout = int(timeout / timeout_step)
             for i in range(timeout):
-                # mbed_lstools.create() should be done inside the loop. Otherwise it will loop on same data.
-                mbeds = mbed_lstools.create()
+                # mbed_tools.detect.create() should be done inside the loop. Otherwise it will loop on same data.
+                mbeds = mbed_tools.detect.create()
                 mbed_list = mbeds.list_mbeds() #list of mbeds present
                 # get first item in list with a matching target_id, if present
                 mbed_target = next((x for x in mbed_list if x['target_id']==target_id), None)

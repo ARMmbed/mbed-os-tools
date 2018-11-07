@@ -19,7 +19,7 @@ Author: Przemyslaw Wirkus <Przemyslaw.Wirkus@arm.com>
 
 import json
 import os
-import mbed_lstools
+import mbed_tools.detect
 from time import sleep
 from mbed_tools.test import DEFAULT_BAUD_RATE
 import mbed_tools.test.host_tests_plugins as ht_plugins
@@ -124,8 +124,8 @@ class Mbed:
             bad_files = set(['FAIL.TXT'])
             # Re-try at max 5 times with 0.5 sec in delay
             for i in range(5):
-                # mbed_lstools.create() should be done inside the loop. Otherwise it will loop on same data.
-                mbeds = mbed_lstools.create()
+                # mbed_tools.detect.create() should be done inside the loop. Otherwise it will loop on same data.
+                mbeds = mbed_tools.detect.create()
                 mbed_list = mbeds.list_mbeds() #list of mbeds present
                 # get first item in list with a matching target_id, if present
                 mbed_target = next((x for x in mbed_list if x['target_id']==target_id), None)
