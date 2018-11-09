@@ -230,10 +230,6 @@ Remount count: 0
         self.assertEqual(to_check[0]['device_type'], 'unknown')
         self.assertEqual(to_check[0]['platform_name'], 'K64F')
 
-    def test_list_manufacture_ids(self):
-        table_str = self.base.list_manufacture_ids()
-        self.assertTrue(isinstance(table_str, basestring))
-
     def test_mock_manufacture_ids_default_multiple(self):
         # oper='+'
         for mid, platform_name in [('0341', 'TEST_PLATFORM_NAME_1'),
