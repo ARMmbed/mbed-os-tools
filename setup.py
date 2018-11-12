@@ -42,6 +42,11 @@ setup(name='mbed-tools',
       license='Apache-2.0',
       test_suite = 'test',
       install_requires=[
+          'PySerial>=3.0',
+          'requests',
+          'pyOCD==0.12.0',
+          'intelhex',
+          'future',
           'PrettyTable>=0.7.2',
           'fasteners',
           'appdirs>=1.4'
