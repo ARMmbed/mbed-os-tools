@@ -35,17 +35,6 @@ mbedls_root_logger.setLevel(logging.WARNING)
 logger = logging.getLogger("mbedls.lstools_base")
 logger.addHandler(logging.NullHandler())
 
-def deprecated(reason):
-    """Deprecate a function/method with a decorator"""
-    def actual_decorator(func):
-        @functools.wraps(func)
-        def new_func(*args, **kwargs):
-            logger.warning("Call to deprecated function %s. %s",
-                        func.__name__, reason)
-            return func(*args, **kwargs)
-        return new_func
-    return actual_decorator
-
 class FSInteraction(object):
     BeforeFilter = 1
     AfterFilter = 2
@@ -103,17 +92,6 @@ class MbedLsToolsBase(object):
         @return A dict with the keys 'mount_point', 'serial_port' and 'target_id_usb_id'
         """
         raise NotImplemented
-
-    @deprecated("Functionality has been moved into 'list_mbeds'. "
-                "Please use list_mbeds with 'unique_names=True' and "
-                "'read_details_txt=True'")
-    def list_mbeds_ext(self):
-        """! Function adds extra information for each mbed device
-        @return Returns list of mbed devices plus extended data like 'platform_name_unique'
-        @details Get information about mbeds with extended parameters/info included
-        """
-
-        return self.list_mbeds(unique_names=True, read_details_txt=True)
 
     def list_mbeds(
             self, fs_interaction=FSInteraction.BeforeFilter,
@@ -368,24 +346,6 @@ class MbedLsToolsBase(object):
         else:
             raise ValueError("oper can only be [+-]")
 
-    @deprecated("List formatting methods are deprecated for a simpler API. "
-                "Please use 'list_mbeds' instead.")
-    def list_manufacture_ids(self):
-        """! Creates list of all available mappings for target_id -> Platform
-        @return String with table formatted output
-        """
-        from prettytable import PrettyTable, HEADER
-
-        columns = ['target_id_prefix', 'platform_name']
-        pt = PrettyTable(columns, junction_char="|", hrules=HEADER)
-        for col in columns:
-            pt.align[col] = 'l'
-
-        for target_id_prefix, platform_name in sorted(self.plat_db.items()):
-            pt.add_row([target_id_prefix, platform_name])
-
-        return pt.get_string()
-
     def retarget_read(self):
         """! Load retarget data from local file
         @return Curent retarget configuration (dictionary)
@@ -442,50 +402,6 @@ class MbedLsToolsBase(object):
         items = self.plat_db.items(**kwargs)
         return {i[0]: i[1] for i in items}
 
-    @deprecated("List formatting methods are deprecated to simplify the API. "
-                "Please use 'list_mbeds' instead.")
-    def list_platforms(self):
-        """! Useful if you just want to know which platforms are currently available on the system
-        @return List of (unique values) available platforms
-        """
-        result = []
-        mbeds = self.list_mbeds()
-        for i, val in enumerate(mbeds):
-            platform_name = str(val['platform_name'])
-            if platform_name not in result:
-                result.append(platform_name)
-        return result
-
-    @deprecated("List formatting methods are deprecated to simplify the API. "
-                "Please use 'list_mbeds' instead.")
-    def list_platforms_ext(self):
-        """! Useful if you just want to know how many platforms of each type are currently available on the system
-        @return Dict of platform: platform_count
-        """
-        result = {}
-        mbeds = self.list_mbeds()
-        for i, val in enumerate(mbeds):
-            platform_name = str(val['platform_name'])
-            if platform_name not in result:
-                result[platform_name] = 1
-            else:
-                result[platform_name] += 1
-        return result
-
-    @deprecated("List formatting methods are deprecated to simplify the API. "
-                "Please use 'list_mbeds' instead.")
-    def list_mbeds_by_targetid(self):
-        """! Get information about mbeds with extended parameters/info included
-        @return Returns dictionary where keys are TargetIDs and values are mbed structures
-        @details Ordered by target id (key: target_id).
-        """
-        result = {}
-        mbed_list = self.list_mbeds_ext()
-        for mbed in mbed_list:
-            target_id = mbed['target_id']
-            result[target_id] = mbed
-        return result
-
     def __str__(self):
         """! Object to string casting
 
@@ -493,67 +409,7 @@ class MbedLsToolsBase(object):
         """
         return self.get_string()
 
-    @deprecated("List formatting methods are deprecated to simplify the API. "
-                "Please use 'list_mbeds' instead.")
-    def get_string(self, border=False, header=True, padding_width=1, sortby='platform_name'):
-        """! Printing with some sql table like decorators
-        @param border Table border visibility
-        @param header Table header visibility
-        @param padding_width Table padding
-        @param sortby Column used to sort results
-        @return Returns string which can be printed on console
-        """
-        from prettytable import PrettyTable, HEADER
-        result = ''
-        mbeds = self.list_mbeds(unique_names=True, read_details_txt=True)
-        if mbeds:
-            """ ['platform_name', 'mount_point', 'serial_port', 'target_id'] - columns generated from USB auto-detection
-                ['platform_name_unique', ...] - columns generated outside detection subsystem (OS dependent detection)
-            """
-            columns = ['platform_name', 'platform_name_unique', 'mount_point', 'serial_port', 'target_id', 'daplink_version']
-            pt = PrettyTable(columns, junction_char="|", hrules=HEADER)
-            for col in columns:
-                pt.align[col] = 'l'
-
-            for mbed in mbeds:
-                row = []
-                for col in columns:
-                    row.append(mbed[col] if col in mbed and mbed[col] else 'unknown')
-                pt.add_row(row)
-            result = pt.get_string(border=border, header=header, padding_width=padding_width, sortby=sortby)
-        return result
-
     # Private functions supporting API
-
-    @deprecated("This method will be removed from the public API. "
-                "Please use 'list_mbeds' instead")
-    def get_json_data_from_file(self, json_spec_filename, verbose=False):
-        """! Loads from file JSON formatted string to data structure
-        @return None if JSON can be loaded
-        """
-        try:
-            with open(json_spec_filename) as data_file:
-                try:
-                    return json.load(data_file)
-                except ValueError as json_error_msg:
-                    logger.error("Parsing file(%s): %s", json_spec_filename, json_error_msg)
-                    return None
-        except IOError as fileopen_error_msg:
-            logger.warning(fileopen_error_msg)
-            return None
-
-    @deprecated("This method will be removed from the public API. "
-                "Please use 'list_mbeds' instead")
-    def get_htm_target_id(self, mount_point):
-        target_id, _ = self._read_htm_ids(mount_point)
-        return target_id
-
-    @deprecated("This method will be removed from the public API. "
-                "Please use 'list_mbeds' instead")
-    def get_mbed_htm(self, mount_point):
-        _, build_info = self._read_htm_ids(mount_point)
-        return build_info
-
     def _read_htm_ids(self, mount_point):
         """! Function scans mbed.htm to get information about TargetID.
         @param mount_point mbed mount point (disk / drive letter)
@@ -572,11 +428,6 @@ class MbedLsToolsBase(object):
             if m:
                 result['url'] = m.group(1).strip()
         return target_id, result
-
-    @deprecated("This method will be removed from the public API. "
-                "Please use 'list_mbeds' instead")
-    def get_mbed_htm_comment_section_ver_build(self, line):
-        return self._mbed_htm_comment_section_ver_build(line)
 
     def _mbed_htm_comment_section_ver_build(self, line):
         """! Check for Version and Build date of interface chip firmware im mbed.htm file
@@ -601,21 +452,11 @@ class MbedLsToolsBase(object):
             return (version_str.strip(), build_str.strip())
         return None
 
-    @deprecated("This method will be removed from the public API. "
-                "Please use 'list_mbeds' instead")
-    def get_mbed_htm_lines(self, mount_point):
-        return self._htm_lines(mount_point)
-
     def _htm_lines(self, mount_point):
         if mount_point:
             mbed_htm_path = join(mount_point, self.MBED_HTM_NAME)
             with open(mbed_htm_path, 'r') as f:
                 return f.readlines()
-
-    @deprecated("This method will be removed from the public API. "
-                "Please use 'list_mbeds' instead")
-    def get_details_txt(self, mount_point):
-        return self._details_txt(mount_point)
 
     def _details_txt(self, mount_point):
         """! Load DETAILS.TXT to dictionary:
@@ -646,11 +487,6 @@ class MbedLsToolsBase(object):
                 return self._parse_details(f.readlines())
         return None
 
-    @deprecated("This method will be removed from the public API. "
-                "Please use 'list_mbeds' instead")
-    def parse_details_txt(self, lines):
-        return self._parse_details(lines)
-
     def _parse_details(self, lines):
         result = {}
         for line in lines:
@@ -661,11 +497,6 @@ class MbedLsToolsBase(object):
         if 'Interface Version' in result:
             result['Version'] = result['Interface Version']
         return result
-
-    @deprecated("This method will be removed from the public API. "
-                "Please use 'list_mbeds' instead")
-    def scan_html_line_for_target_id(self, line):
-        return self._target_id_from_htm(line)
 
     def _target_id_from_htm(self, line):
         """! Extract Target id from htm line.
@@ -690,12 +521,6 @@ class MbedLsToolsBase(object):
         """! Check if a mount point is ready for file operations
         """
         return exists(path) and isdir(path)
-
-    @staticmethod
-    @deprecated("This method will be removed from the public API. "
-                "Please use 'list_mbeds' instead")
-    def run_cli_process(cmd, shell=True):
-        return MbedLsToolsBase._run_cli_process(cmd, shell)
 
     @staticmethod
     def _run_cli_process(cmd, shell=True):
