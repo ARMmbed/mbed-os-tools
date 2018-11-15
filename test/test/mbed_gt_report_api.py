@@ -21,7 +21,7 @@ import tempfile
 import unittest
 
 from mock import patch
-from mbed_greentea import mbed_report_api
+from mbed_tools.test import mbed_report_api
 
 class GreenteaReportApiFunctionality(unittest.TestCase):
     def setUp(self):
