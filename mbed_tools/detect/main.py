@@ -19,9 +19,7 @@ limitations under the License.
 
 import os
 import sys
-import json
 import platform
-from collections import defaultdict
 
 # Make sure that any global generic setup is run
 from . import lstools_base
@@ -84,25 +82,6 @@ def mbed_lstools_os_info():
               sys.platform)
     return result
 
-def print_mbeds(mbeds, args, simple):
-    devices = mbeds.list_mbeds(unique_names=True, read_details_txt=True)
-    if devices:
-        from prettytable import PrettyTable, HEADER
-        columns = ['platform_name', 'platform_name_unique', 'mount_point',
-                    'serial_port', 'target_id', 'daplink_version']
-        pt = PrettyTable(columns, junction_char="|", hrules=HEADER)
-        pt.align = 'l'
-        for d in devices:
-            pt.add_row([d.get(col, None) or 'unknown' for col in columns])
-        print(pt.get_string(border=not simple, header=not simple,
-                            padding_width=1, sortby='platform_name_unique'))
-
-def print_table(mbeds, args):
-    return print_mbeds(mbeds, args, False)
-
-def print_simple(mbeds, args):
-    return print_mbeds(mbeds, args, True)
-
 def mock_platform(mbeds, args):
     for token in args.mock.split(','):
         if ':' in token:
@@ -119,30 +98,4 @@ def mock_platform(mbeds, args):
             mbeds.mock_manufacture_id(mid, 'dummy', oper=oper)
         else:
             logger.error("Could not parse mock from token: '%s'", token)
-
-def list_platforms(mbeds, args):
-    print(mbeds.list_manufacture_ids())
-
-def mbeds_as_json(mbeds, args):
-    print(json.dumps(mbeds.list_mbeds(unique_names=True,
-                                      read_details_txt=True),
-                     indent=4, sort_keys=True))
-
-def json_by_target_id(mbeds, args):
-    print(json.dumps({m['target_id']: m for m
-                      in mbeds.list_mbeds(unique_names=True,
-                                          read_details_txt=True)},
-                     indent=4, sort_keys=True))
-
-def json_platforms(mbeds, args):
-    platforms = set()
-    for d in mbeds.list_mbeds():
-        platforms |= set([d['platform_name']])
-    print(json.dumps(list(platforms), indent=4, sort_keys=True))
-
-def json_platforms_ext(mbeds, args):
-    platforms = defaultdict(lambda: 0)
-    for d in mbeds.list_mbeds():
-        platforms[d['platform_name']] += 1
-    print(json.dumps(platforms, indent=4, sort_keys=True))
 
