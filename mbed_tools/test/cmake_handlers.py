@@ -21,7 +21,7 @@ import re
 import os
 import os.path
 
-from mbed_greentea.mbed_greentea_log import gt_logger
+from mbed_tools.test.mbed_greentea_log import gt_logger
 
 def load_ctest_testsuite(link_target, binary_type='.bin', verbose=False):
     """! Loads CMake.CTest formatted data about tests from test directory

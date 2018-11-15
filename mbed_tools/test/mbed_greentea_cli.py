@@ -35,32 +35,32 @@ except ImportError:
 from threading import Thread
 
 
-from mbed_greentea.mbed_test_api import get_test_build_properties
-from mbed_greentea.mbed_test_api import get_test_spec
-from mbed_greentea.mbed_test_api import get_thread_with_max_stack_size
-from mbed_greentea.mbed_test_api import run_host_test
-from mbed_greentea.mbed_test_api import log_mbed_devices_in_table
-from mbed_greentea.mbed_test_api import TEST_RESULTS
-from mbed_greentea.mbed_test_api import TEST_RESULT_OK, TEST_RESULT_FAIL
-from mbed_greentea.mbed_test_api import parse_global_resource_mgr
-from mbed_greentea.mbed_test_api import parse_fast_model_connection
-from mbed_greentea.mbed_report_api import exporter_text
-from mbed_greentea.mbed_report_api import exporter_testcase_text
-from mbed_greentea.mbed_report_api import exporter_json
-from mbed_greentea.mbed_report_api import exporter_testcase_junit
-from mbed_greentea.mbed_report_api import exporter_html
-from mbed_greentea.mbed_report_api import exporter_memory_metrics_csv
-from mbed_greentea.mbed_greentea_log import gt_logger
-from mbed_greentea.mbed_greentea_dlm import GREENTEA_KETTLE_PATH
-from mbed_greentea.mbed_greentea_dlm import greentea_get_app_sem
-from mbed_greentea.mbed_greentea_dlm import greentea_update_kettle
-from mbed_greentea.mbed_greentea_dlm import greentea_clean_kettle
-from mbed_greentea.mbed_greentea_hooks import GreenteaHooks
-from mbed_greentea.tests_spec import TestBinary
-from mbed_greentea.mbed_target_info import get_platform_property
+from mbed_tools.test.mbed_test_api import get_test_build_properties
+from mbed_tools.test.mbed_test_api import get_test_spec
+from mbed_tools.test.mbed_test_api import get_thread_with_max_stack_size
+from mbed_tools.test.mbed_test_api import run_host_test
+from mbed_tools.test.mbed_test_api import log_mbed_devices_in_table
+from mbed_tools.test.mbed_test_api import TEST_RESULTS
+from mbed_tools.test.mbed_test_api import TEST_RESULT_OK, TEST_RESULT_FAIL
+from mbed_tools.test.mbed_test_api import parse_global_resource_mgr
+from mbed_tools.test.mbed_test_api import parse_fast_model_connection
+from mbed_tools.test.mbed_report_api import exporter_text
+from mbed_tools.test.mbed_report_api import exporter_testcase_text
+from mbed_tools.test.mbed_report_api import exporter_json
+from mbed_tools.test.mbed_report_api import exporter_testcase_junit
+from mbed_tools.test.mbed_report_api import exporter_html
+from mbed_tools.test.mbed_report_api import exporter_memory_metrics_csv
+from mbed_tools.test.mbed_greentea_log import gt_logger
+from mbed_tools.test.mbed_greentea_dlm import GREENTEA_KETTLE_PATH
+from mbed_tools.test.mbed_greentea_dlm import greentea_get_app_sem
+from mbed_tools.test.mbed_greentea_dlm import greentea_update_kettle
+from mbed_tools.test.mbed_greentea_dlm import greentea_clean_kettle
+from mbed_tools.test.mbed_greentea_hooks import GreenteaHooks
+from mbed_tools.test.tests_spec import TestBinary
+from mbed_tools.test.mbed_target_info import get_platform_property
 
-from mbed_greentea.cmake_handlers import list_binaries_for_builds
-from mbed_greentea.cmake_handlers import list_binaries_for_targets
+from mbed_tools.test.cmake_handlers import list_binaries_for_builds
+from mbed_tools.test.cmake_handlers import list_binaries_for_targets
 
 try:
     import mbed_lstools
