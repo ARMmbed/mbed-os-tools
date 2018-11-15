@@ -60,35 +60,6 @@ class GreenteaCliFunctionality(unittest.TestCase):
     def tearDown(self):
         pass
 
-    def test_get_greentea_version(self):
-        version = mbed_greentea_cli.get_greentea_version()
-
-        self.assertIs(type(version), str)
-
-        a, b, c = version.split('.')
-
-        self.assertEqual(a.isdigit(), True)
-        self.assertEqual(b.isdigit(), True)
-        self.assertEqual(c.isdigit(), True)
-
-    def test_print_version(self):
-        version = mbed_greentea_cli.get_greentea_version()
-
-        sys.stdout = stdout_capture = six.StringIO()
-        mbed_greentea_cli.print_version()
-        sys.stdout = sys.__stdout__
-
-        printed_version = stdout_capture.getvalue().splitlines()[0]
-        self.assertEqual(printed_version, version)
-
-    def test_get_hello_string(self):
-        version = mbed_greentea_cli.get_greentea_version()
-        hello_string = mbed_greentea_cli.get_hello_string()
-
-        self.assertIs(type(version), str)
-        self.assertIs(type(hello_string), str)
-        self.assertIn(version, hello_string)
-
     def test_get_local_host_tests_dir_invalid_path(self):
         test_path = mbed_greentea_cli.get_local_host_tests_dir("invalid-path")
         self.assertEqual(test_path, None)
