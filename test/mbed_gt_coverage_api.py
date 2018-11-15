@@ -56,7 +56,7 @@ class GreenteaCoverageAPI(unittest.TestCase):
         with open(path, 'r') as f:
             read_data = f.read()
 
-        self.assertEqual(read_data, payload.decode("utf-8"))
+        self.assertEqual(read_data, payload.decode("utf-8", "ignore"))
         os.close(handle)
         os.remove(path)
 
