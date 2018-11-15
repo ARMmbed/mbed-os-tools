@@ -16,10 +16,9 @@ limitations under the License.
 """
 
 import re
-from os.path import join, isdir, dirname, abspath
 import os
 
-from .lstools_base import MbedLsToolsBase
+from .lstools_base import MbedDetectLsToolsBase
 
 import logging
 logger = logging.getLogger("mbedls.lstools_linux")
@@ -31,18 +30,18 @@ SYSFS_BLOCK_DEVICE_PATH = '/sys/class/block'
 def _readlink(link):
     content = os.readlink(link)
     if content.startswith(".."):
-        return abspath(join(dirname(link), content))
+        return os.path.abspath(os.path.join(os.path.dirname(link), content))
     else:
         return content
 
 
-class MbedLsToolsLinuxGeneric(MbedLsToolsBase):
+class MbedLsToolsLinuxGeneric(MbedDetectLsToolsBase):
     """ mbed-enabled platform for Linux with udev
     """
     def __init__(self, **kwargs):
         """! ctor
         """
-        MbedLsToolsBase.__init__(self, **kwargs)
+        MbedDetectLsToolsBase.__init__(self, **kwargs)
         self.nlp = re.compile(
             r'(pci|usb)-[0-9a-zA-Z:_-]*_(?P<usbid>[0-9a-zA-Z]*)-.*$')
         self.mmp = re.compile(
@@ -72,9 +71,9 @@ class MbedLsToolsLinuxGeneric(MbedLsToolsBase):
           looks for all serial devices connected to this computer
         @return A dict: Device USBID -> device file in /dev
         """
-        dir = join("/dev", device_type, "by-id")
-        if isdir(dir):
-            to_ret = dict(self._hex_ids([join(dir, f) for f in os.listdir(dir)]))
+        dir = os.path.join("/dev", device_type, "by-id")
+        if os.path.isdir(dir):
+            to_ret = dict(self._hex_ids([os.path.join(dir, f) for f in os.listdir(dir)]))
             logger.debug("Found %s devices by id %r", device_type, to_ret)
             return to_ret
         else:
