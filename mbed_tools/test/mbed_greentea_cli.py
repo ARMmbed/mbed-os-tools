@@ -62,22 +62,8 @@ from mbed_tools.test.mbed_target_info import get_platform_property
 from mbed_tools.test.cmake_handlers import list_binaries_for_builds
 from mbed_tools.test.cmake_handlers import list_binaries_for_targets
 
-try:
-    import mbed_lstools
-    import mbed_host_tests
-except ImportError as e:
-    gt_logger.gt_log_err("Not all required Python modules were imported!")
-    gt_logger.gt_log_err(str(e))
-    gt_logger.gt_log("Check if:")
-    gt_logger.gt_log_tab("1. You've correctly installed dependency module using setup tools or pip:")
-    gt_logger.gt_log_tab("* python setup.py install", tab_count=2)
-    gt_logger.gt_log_tab("* pip install <module-name>", tab_count=2)
-    gt_logger.gt_log_tab("2. There are no errors preventing import in dependency modules")
-    gt_logger.gt_log_tab("See: https://github.com/ARMmbed/greentea#installing-greentea")
-    exit(-2342)
-
-MBED_LMTOOLS = 'mbed_lstools' in sys.modules
-MBED_HOST_TESTS = 'mbed_host_tests' in sys.modules
+from . import host_tests_plugins
+import mbed_tools.detect
 
 RET_NO_DEVICES = 1001
 RET_YOTTA_BUILD_FAIL = -1
@@ -209,13 +195,13 @@ def main():
                     default=True,
                     help="Skip calling 'yotta build' on this module")
 
-    copy_methods_str = "Plugin support: " + ', '.join(mbed_host_tests.host_tests_plugins.get_plugin_caps('CopyMethod'))
+    copy_methods_str = "Plugin support: " + ', '.join(host_tests_plugins.get_plugin_caps('CopyMethod'))
     parser.add_option("-c", "--copy",
                     dest="copy_method",
                     help="Copy (flash the target) method selector. " + copy_methods_str,
                     metavar="COPY_METHOD")
 
-    reset_methods_str = "Plugin support: " + ', '.join(mbed_host_tests.host_tests_plugins.get_plugin_caps('ResetMethod'))
+    reset_methods_str = "Plugin support: " + ', '.join(host_tests_plugins.get_plugin_caps('ResetMethod'))
     parser.add_option("-r", "--reset",
                     dest="reset_method",
                     help="Reset method selector. " + reset_methods_str,
@@ -701,14 +687,6 @@ def main_cli(opts, args, gt_instance_uuid=None):
             parallel_test_exec = 1
         return parallel_test_exec
 
-    if not MBED_LMTOOLS:
-        gt_logger.gt_log_err("error: mbed-ls proprietary module not installed")
-        return (-1)
-
-    if not MBED_HOST_TESTS:
-        gt_logger.gt_log_err("error: mbed-host-tests proprietary module not installed")
-        return (-1)
-
     # This is how you magically control colours in this piece of art software
     gt_logger.colorful(not opts.plain)
 
@@ -759,7 +737,7 @@ def main_cli(opts, args, gt_instance_uuid=None):
     parallel_test_exec = get_parallel_value(opts.parallel_test_exec)
 
     # Detect devices connected to system
-    mbeds = mbed_lstools.create()
+    mbeds = mbed_tools.detect.create()
     mbeds_list = mbeds.list_mbeds(unique_names=True, read_details_txt=True)
 
     if opts.global_resource_mgr:
