@@ -40,7 +40,7 @@ class FSInteraction(object):
     AfterFilter = 2
     Never = 3
 
-class MbedLsToolsBase(object):
+class MbedDetectLsToolsBase(object):
     """ Base class for mbed-lstools, defines mbed-ls tools interface for
     mbed-enabled devices detection for various hosts
     """
