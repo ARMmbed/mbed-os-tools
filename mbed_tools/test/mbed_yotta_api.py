@@ -21,13 +21,13 @@ import os
 import re
 import json
 
-from mbed_greentea.mbed_common_api import run_cli_command
-from mbed_greentea.mbed_greentea_log import gt_logger
-from mbed_greentea.mbed_yotta_module_parse import YottaModule, YottaConfig
-from mbed_greentea.mbed_target_info import get_mbed_target_from_current_dir
-from mbed_greentea.mbed_target_info import get_binary_type_for_platform
-from mbed_greentea.cmake_handlers import load_ctest_testsuite
-from mbed_greentea.tests_spec import TestSpec, TestBuild, Test, TestBinary
+from mbed_tools.test.mbed_common_api import run_cli_command
+from mbed_tools.test.mbed_greentea_log import gt_logger
+from mbed_tools.test.mbed_yotta_module_parse import YottaModule, YottaConfig
+from mbed_tools.test.mbed_target_info import get_mbed_target_from_current_dir
+from mbed_tools.test.mbed_target_info import get_binary_type_for_platform
+from mbed_tools.test.cmake_handlers import load_ctest_testsuite
+from mbed_tools.test.tests_spec import TestSpec, TestBuild, Test, TestBinary
 
 
 

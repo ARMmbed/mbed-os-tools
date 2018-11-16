@@ -29,7 +29,6 @@ from mbed_tools.test import host_tests_plugins
 from mbed_tools.test.host_tests_registry import HostRegistry
 from mbed_tools.test.host_tests import BaseHostTest, event_callback
 
-
 # Set the default baud rate
 DEFAULT_BAUD_RATE = 9600
 

@@ -31,8 +31,8 @@ except ImportError:
             yield
         except excs:
             pass
-from mbed_greentea.mbed_common_api import run_cli_process
-from mbed_greentea.mbed_greentea_log import gt_logger
+from mbed_tools.test.mbed_common_api import run_cli_process
+from mbed_tools.test.mbed_greentea_log import gt_logger
 
 
 ## Information about some properties of targets (platforms)

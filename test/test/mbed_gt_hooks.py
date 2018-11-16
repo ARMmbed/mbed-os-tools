@@ -18,8 +18,8 @@ import sys
 import unittest
 
 from mock import patch
-from mbed_greentea.mbed_greentea_hooks import GreenteaCliTestHook
-from mbed_greentea.mbed_greentea_hooks import LcovHook
+from mbed_tools.test.mbed_greentea_hooks import GreenteaCliTestHook
+from mbed_tools.test.mbed_greentea_hooks import LcovHook
 
 class GreenteaCliTestHookTest(unittest.TestCase):
 

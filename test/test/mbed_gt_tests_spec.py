@@ -18,7 +18,7 @@ limitations under the License.
 
 import os
 import unittest
-from mbed_greentea.tests_spec import Test, TestBinary, TestBuild, TestSpec
+from mbed_tools.test.tests_spec import Test, TestBinary, TestBuild, TestSpec
 
 simple_test_spec = {
     "builds": {

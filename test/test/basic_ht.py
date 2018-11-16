@@ -18,9 +18,7 @@ limitations under the License.
 
 import unittest
 
-from mbed_tools.test import get_plugin_caps
-
-class BasicHostTestsTestCase(unittest.TestCase):
+class BasicTestCase(unittest.TestCase):
 
     def setUp(self):
         pass
@@ -28,10 +26,9 @@ class BasicHostTestsTestCase(unittest.TestCase):
     def tearDown(self):
         pass
 
-    def test_get_plugin_caps(self):
-        d = get_plugin_caps()
-        self.assertIs(type(d), dict)
-
+    def test_example(self):
+        self.assertEqual(True, True)
+        self.assertNotEqual(True, False)
 
 if __name__ == '__main__':
     unittest.main()

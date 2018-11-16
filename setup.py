@@ -49,7 +49,11 @@ setup(name='mbed-tools',
           'future',
           'PrettyTable>=0.7.2',
           'fasteners',
-          'appdirs>=1.4'
+          'appdirs>=1.4',
+          'junit-xml',
+          'lockfile',
+          'six',
+          'colorama>=0.3,<0.4'
       ],
       tests_require = [
           'mock>=2',
