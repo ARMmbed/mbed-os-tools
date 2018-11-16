@@ -136,7 +136,7 @@ def run_htrun(cmd, verbose):
         # When dumping output to file both \r and \n will be a new line
         # To avoid this "extra new-line" we only use \n at the end
 
-        test_error = htrun_failure_line.search(line)
+        test_error = htrun_failure_line.search(decoded_line)
         if test_error:
             gt_logger.gt_log_err(test_error.group(1))
 
