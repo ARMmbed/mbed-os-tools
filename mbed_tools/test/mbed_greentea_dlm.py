@@ -46,11 +46,13 @@ def greentea_get_app_sem():
     return gt_file_sem, gt_file_sem_name, gt_instance_uuid
 
 def greentea_get_target_lock(target_id):
+    greentea_home_dir_init()
     file_path = os.path.join(HOME_DIR, GREENTEA_HOME_DIR, target_id)
     lock = lockfile.LockFile(file_path)
     return lock
 
 def greentea_get_global_lock():
+    greentea_home_dir_init()
     file_path = os.path.join(HOME_DIR, GREENTEA_HOME_DIR, GREENTEA_GLOBAL_LOCK)
     lock = lockfile.LockFile(file_path)
     return lock
