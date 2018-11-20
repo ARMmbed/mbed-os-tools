@@ -22,11 +22,10 @@ Author: Przemyslaw Wirkus <Przemyslaw.wirkus@arm.com>
 import os
 import fnmatch
 
-from .mbed_test_api import run_host_test, TEST_RESULT_OK, TEST_RESULT_FAIL
+from .cmake_handlers import list_binaries_for_builds, list_binaries_for_targets
 from .mbed_greentea_log import gt_logger
 from .mbed_target_info import get_platform_property
-
-from .cmake_handlers import list_binaries_for_builds, list_binaries_for_targets
+from .mbed_test_api import run_host_test, TEST_RESULT_OK, TEST_RESULT_FAIL
 
 RET_NO_DEVICES = 1001
 RET_YOTTA_BUILD_FAIL = -1
