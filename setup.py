@@ -20,48 +20,43 @@ from distutils.core import setup
 from io import open
 from setuptools import find_packages
 
-DESCRIPTION = 'The tools to build, test, and work with Mbed OS'
-OWNER_NAMES = 'Jimmy Brisson, Brian Daniels'
-OWNER_EMAILS = 'jimmy.brisson@arm.com, brian.daniels@arm.com'
+DESCRIPTION = "The tools to build, test, and work with Mbed OS"
+OWNER_NAMES = "Jimmy Brisson, Brian Daniels"
+OWNER_EMAILS = "jimmy.brisson@arm.com, brian.daniels@arm.com"
 
 
 # Utility function to cat in a file (used for the README)
 def read(fname):
-    return open(os.path.join(os.path.dirname(__file__), fname), encoding='utf8').read()
+    return open(os.path.join(os.path.dirname(__file__), fname), encoding="utf8").read()
 
 
 setup(
-    name='mbed-tools',
-    version='0.0.1',
+    name="mbed-tools",
+    version="0.0.1",
     description=DESCRIPTION,
-    long_description=read('README.md'),
+    long_description=read("README.md"),
     author=OWNER_NAMES,
     author_email=OWNER_EMAILS,
     maintainer=OWNER_NAMES,
     maintainer_email=OWNER_EMAILS,
-    url='https://github.com/ARMmbed/mbed-tools',
+    url="https://github.com/ARMmbed/mbed-tools",
     packages=find_packages(),
-    license='Apache-2.0',
-    test_suite='test',
+    license="Apache-2.0",
+    test_suite="test",
     install_requires=[
-        'PySerial>=3.0',
-        'requests',
-        'pyOCD==0.12.0',
-        'intelhex',
-        'future',
-        'PrettyTable>=0.7.2',
-        'fasteners',
-        'appdirs>=1.4',
-        'junit-xml',
-        'lockfile',
-        'six',
-        'colorama>=0.3,<0.4'
+        "PySerial>=3.0",
+        "requests",
+        "pyOCD==0.12.0",
+        "intelhex",
+        "future",
+        "PrettyTable>=0.7.2",
+        "fasteners",
+        "appdirs>=1.4",
+        "junit-xml",
+        "lockfile",
+        "six",
+        "colorama>=0.3,<0.4",
     ],
-    tests_require=[
-        'mock>=2',
-        'pytest>=3'
-    ],
-    extras_require={
-        'colorized_logs': ['colorlog']
-    }
+    tests_require=["mock>=2", "pytest>=3"],
+    extras_require={"colorized_logs": ["colorlog"]},
 )
