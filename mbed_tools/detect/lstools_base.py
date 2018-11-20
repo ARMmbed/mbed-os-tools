@@ -16,16 +16,12 @@ limitations under the License.
 """
 
 import re
-import os
-import sys
-import functools
-from os.path import expanduser
-from io import open
-import json
-from os import listdir
-from os.path import isfile, join, exists, isdir
-import logging
 from abc import ABCMeta, abstractmethod
+from io import open
+from json import load
+from os import listdir
+from os.path import expanduser, isfile, join, exists, isdir
+import logging
 
 from .platform_database import PlatformDatabase, LOCAL_PLATFORM_DATABASE, \
     LOCAL_MOCKS_DATABASE
@@ -198,7 +194,7 @@ class MbedDetectLsToolsBase(object):
             return
 
         try:
-            directory_entries = os.listdir(device['mount_point'])
+            directory_entries = listdir(device['mount_point'])
             device['directory_entries'] = directory_entries
             device['target_id'] = device['target_id_usb_id']
 
@@ -277,7 +273,7 @@ class MbedDetectLsToolsBase(object):
             logger.warning('No valid file found to update JLink device details')
             return
 
-        board_file_path = os.path.join(device['mount_point'], lower_case_map[board_file_key])
+        board_file_path = join(device['mount_point'], lower_case_map[board_file_key])
         with open(board_file_path, 'r') as board_file:
             board_file_lines = board_file.readlines()
 
@@ -350,11 +346,11 @@ class MbedDetectLsToolsBase(object):
         """! Load retarget data from local file
         @return Curent retarget configuration (dictionary)
         """
-        if os.path.isfile(self.RETARGET_FILE_NAME):
+        if isfile(self.RETARGET_FILE_NAME):
             logger.debug("reading retarget file %s", self.RETARGET_FILE_NAME)
             try:
                 with open(self.RETARGET_FILE_NAME, "r", encoding="utf-8") as f:
-                    return json.load(f)
+                    return load(f)
             except IOError as e:
                 logger.exception(e)
             except ValueError as e:
@@ -482,7 +478,7 @@ class MbedDetectLsToolsBase(object):
         """
 
         if mount_point:
-            path_to_details_txt = os.path.join(mount_point, self.DETAILS_TXT_NAME)
+            path_to_details_txt = join(mount_point, self.DETAILS_TXT_NAME)
             with open(path_to_details_txt, 'r') as f:
                 return self._parse_details(f.readlines())
         return None

@@ -23,29 +23,28 @@ import sys
 import traceback
 from time import time
 from sre_compile import error
-if (sys.version_info > (3, 0)):
-    from queue import Empty as QueueEmpty # Queue here refers to the module, not a class
-else:
-    from Queue import Empty as QueueEmpty
 
-from mbed_tools.test import BaseHostTest
-from multiprocessing import Process, Queue, Lock
-from mbed_tools.test import host_tests_plugins
+from multiprocessing import Process, Queue
+from .. import host_tests_plugins, BaseHostTest
 from ..host_tests_registry import HostRegistry
 
 # Host test supervisors
-from  mbed_tools.test.host_tests.echo import EchoTest
-from  mbed_tools.test.host_tests.rtc_auto import RTCTest
-from  mbed_tools.test.host_tests.hello_auto import HelloTest
-from  mbed_tools.test.host_tests.detect_auto import DetectPlatformTest
-from  mbed_tools.test.host_tests.wait_us_auto import WaitusTest
-from  mbed_tools.test.host_tests.default_auto import DefaultAuto
-from  mbed_tools.test.host_tests.dev_null_auto import DevNullTest
+from ..host_tests.echo import EchoTest
+from ..host_tests.rtc_auto import RTCTest
+from ..host_tests.hello_auto import HelloTest
+from ..host_tests.detect_auto import DetectPlatformTest
+from ..host_tests.wait_us_auto import WaitusTest
+from ..host_tests.default_auto import DefaultAuto
+from ..host_tests.dev_null_auto import DevNullTest
 
-from mbed_tools.test.host_tests_logger import HtrunLogger
-from mbed_tools.test.host_tests_conn_proxy import conn_process
-from mbed_tools.test.host_tests_runner.host_test import DefaultTestSelectorBase
-from mbed_tools.test.host_tests_toolbox.host_functional import handle_send_break_cmd
+from .host_test import DefaultTestSelectorBase
+from ..host_tests_logger import HtrunLogger
+from ..host_tests_conn_proxy import conn_process
+from ..host_tests_toolbox.host_functional import handle_send_break_cmd
+if (sys.version_info > (3, 0)):
+    from queue import Empty as QueueEmpty
+else:
+    from Queue import Empty as QueueEmpty
 
 
 class DefaultTestSelector(DefaultTestSelectorBase):

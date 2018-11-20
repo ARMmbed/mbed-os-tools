@@ -17,11 +17,12 @@ limitations under the License.
 Author: Russ Butler <russ.butler@arm.com>
 """
 
-import os
-from .host_test_plugins import HostTestPluginBase
-from pyOCD.board import MbedBoard
 from intelhex import IntelHex
 import itertools
+import os
+from pyOCD.board import MbedBoard
+
+from .host_test_plugins import HostTestPluginBase
 
 
 def _enum_continguous_addr_start_end(addr_list):

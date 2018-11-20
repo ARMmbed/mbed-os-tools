@@ -17,16 +17,13 @@ limitations under the License.
 Author: Przemyslaw Wirkus <Przemyslaw.Wirkus@arm.com>
 """
 
-import sys
 from threading import Lock
 
 try:
     import colorama
+    COLORAMA = True
 except ImportError:
-    pass
-
-# We will check if import actually was successful
-COLORAMA = 'colorama' in sys.modules
+    COLORAMA = False
 
 
 class GreenTeaSimpleLockLogger:

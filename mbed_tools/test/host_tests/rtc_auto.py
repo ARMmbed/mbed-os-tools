@@ -17,7 +17,7 @@ limitations under the License.
 
 import re
 from time import time, strftime, gmtime
-from mbed_tools.test import BaseHostTest
+from .. import BaseHostTest
 
 class RTCTest(BaseHostTest):
     PATTERN_RTC_VALUE = "\[(\d+)\] \[(\d+-\d+-\d+ \d+:\d+:\d+ [AaPpMm]{2})\]"

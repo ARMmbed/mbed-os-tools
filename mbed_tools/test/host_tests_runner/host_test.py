@@ -17,9 +17,9 @@ limitations under the License.
 Author: Przemyslaw Wirkus <Przemyslaw.Wirkus@arm.com>
 """
 
-import pkg_resources  # part of setuptools
+import pkg_resources
 from sys import stdout
-from mbed_tools.test.host_tests_runner.mbed_base import Mbed
+from .mbed_base import Mbed
 
 
 class HostTestResults(object):
@@ -34,7 +34,7 @@ class HostTestResults(object):
             RESULT_FAILURE = 'failure',
             RESULT_ERROR = 'error',
             RESULT_END = 'end',
-            RESULT_UNDEF = 'undefined', # Rather for debug purpose
+            RESULT_UNDEF = 'undefined',
             RESULT_TIMEOUT = 'timeout',
             RESULT_IOERR_COPY = "ioerr_copy",
             RESULT_IOERR_DISK = "ioerr_disk",

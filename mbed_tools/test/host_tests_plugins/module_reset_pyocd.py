@@ -16,13 +16,8 @@ limitations under the License.
 
 Author: Russ Butler <russ.butler@arm.com>
 """
-
-import re
-import pkg_resources
-from .host_test_plugins import HostTestPluginBase
-from os.path import join, basename
 from pyOCD.board import MbedBoard
-
+from .host_test_plugins import HostTestPluginBase
 
 class HostTestPluginResetMethod_pyOCD(HostTestPluginBase):
 

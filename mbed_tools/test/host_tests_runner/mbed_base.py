@@ -19,11 +19,11 @@ Author: Przemyslaw Wirkus <Przemyslaw.Wirkus@arm.com>
 
 import json
 import os
-import mbed_tools.detect
 from time import sleep
-from mbed_tools.test import DEFAULT_BAUD_RATE
-import mbed_tools.test.host_tests_plugins as ht_plugins
-from mbed_tools.test.host_tests_logger import HtrunLogger
+import ..host_tests_plugins as ht_plugins
+from ... import detect
+from .. import DEFAULT_BAUD_RATE
+from ..host_tests_logger import HtrunLogger
 
 
 class Mbed:

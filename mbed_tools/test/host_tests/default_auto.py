@@ -16,7 +16,7 @@ limitations under the License.
 """
 
 
-from mbed_tools.test import BaseHostTest
+from .. import BaseHostTest
 
 
 class DefaultAuto(BaseHostTest):

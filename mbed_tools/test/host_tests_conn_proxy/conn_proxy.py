@@ -16,13 +16,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from past.builtins import basestring
-
 import re
 import sys
 import uuid
 from time import time
-from mbed_tools.test.host_tests_logger import HtrunLogger
+from ..host_tests_logger import HtrunLogger
 from .conn_primitive_serial import SerialConnectorPrimitive
 from .conn_primitive_remote import RemoteConnectorPrimitive
 from .conn_primitive_fastmodel import FastmodelConnectorPrimitive

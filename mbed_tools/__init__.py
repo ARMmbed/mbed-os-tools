@@ -1,2 +1,2 @@
-from mbed_tools import detect
-from mbed_tools import test
+from . import detect
+from . import test

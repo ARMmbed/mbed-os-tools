@@ -22,16 +22,10 @@ Author: Przemyslaw Wirkus <Przemyslaw.wirkus@arm.com>
 import os
 import fnmatch
 
-from mbed_tools.test.mbed_test_api import run_host_test
-from mbed_tools.test.mbed_test_api import TEST_RESULT_OK, TEST_RESULT_FAIL
-from mbed_tools.test.mbed_greentea_log import gt_logger
-from mbed_tools.test.mbed_target_info import get_platform_property
-
-from mbed_tools.test.cmake_handlers import list_binaries_for_builds
-from mbed_tools.test.cmake_handlers import list_binaries_for_targets
-
-from . import host_tests_plugins
-import mbed_tools.detect
+from .cmake_handlers import list_binaries_for_builds, list_binaries_for_targets
+from .mbed_greentea_log import gt_logger
+from .mbed_target_info import get_platform_property
+from .mbed_test_api import run_host_test, TEST_RESULT_OK, TEST_RESULT_FAIL
 
 RET_NO_DEVICES = 1001
 RET_YOTTA_BUILD_FAIL = -1
