@@ -94,7 +94,7 @@ class MbedDetectLsToolsBase(object):
 
         @return A dict with the keys 'mount_point', 'serial_port' and 'target_id_usb_id'
         """
-        raise NotImplemented
+        raise NotImplementedError
 
     def list_mbeds(
         self,
@@ -552,13 +552,13 @@ class MbedDetectLsToolsBase(object):
         @return Target id or None
         """
         # Detecting modern mbed.htm file format
-        m = re.search("\?code=([a-fA-F0-9]+)", line)
+        m = re.search("\\?code=([a-fA-F0-9]+)", line)
         if m:
             result = m.groups()[0]
             logger.debug("Found target id %s in htm line %s", result, line)
             return result
         # Last resort, we can try to see if old mbed.htm format is there
-        m = re.search("\?auth=([a-fA-F0-9]+)", line)
+        m = re.search("\\?auth=([a-fA-F0-9]+)", line)
         if m:
             result = m.groups()[0]
             logger.debug("Found target id %s in htm line %s", result, line)
