@@ -352,7 +352,7 @@ class MbedDetectLsToolsBase(object):
             device["target_id"] = htm_target_id
         else:
             logger.debug(
-                "Could not read htm on from usb id %s. " "Falling back to usb id",
+                "Could not read htm on from usb id %s. Falling back to usb id",
                 device["target_id_usb_id"],
             )
             device["target_id"] = device["target_id_usb_id"]

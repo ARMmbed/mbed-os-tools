@@ -466,7 +466,7 @@ class PlatformDatabase(object):
                 return False
         else:
             logger.error(
-                "Can't update platform database: " "destination database is ambiguous"
+                "Can't update platform database: destination database is ambiguous"
             )
             return False
 
