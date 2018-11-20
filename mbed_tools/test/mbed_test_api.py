@@ -27,14 +27,14 @@ import string
 from time import time
 from subprocess import Popen, PIPE, STDOUT
 
-from mbed_tools.test.tests_spec import TestSpec
-from mbed_tools.test.mbed_yotta_api import get_test_spec_from_yt_module
-from mbed_tools.test.mbed_greentea_log import gt_logger
-from mbed_tools.test.mbed_coverage_api import coverage_dump_file
-from mbed_tools.test.mbed_coverage_api import coverage_pack_hex_payload
+from .tests_spec import TestSpec
+from .mbed_yotta_api import get_test_spec_from_yt_module
+from .mbed_greentea_log import gt_logger
+from .mbed_coverage_api import coverage_dump_file
+from .mbed_coverage_api import coverage_pack_hex_payload
 
-from mbed_tools.test.cmake_handlers import list_binaries_for_builds
-from mbed_tools.test.cmake_handlers import list_binaries_for_targets
+from .cmake_handlers import list_binaries_for_builds
+from .cmake_handlers import list_binaries_for_targets
 
 
 # Return codes for test script

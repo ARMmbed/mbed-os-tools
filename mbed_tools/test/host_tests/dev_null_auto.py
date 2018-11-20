@@ -15,7 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from mbed_tools.test import BaseHostTest
+from .. import BaseHostTest
 
 class DevNullTest(BaseHostTest):
 

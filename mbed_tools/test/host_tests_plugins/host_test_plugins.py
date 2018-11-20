@@ -20,13 +20,14 @@ Author: Przemyslaw Wirkus <Przemyslaw.Wirkus@arm.com>
 import os
 import sys
 import platform
-import mbed_tools.detect
 
 from os import access, F_OK
 from sys import stdout
 from time import sleep
 from subprocess import call
-from mbed_tools.test.host_tests_logger import HtrunLogger
+
+from ... import detect
+from ..host_tests_logger import HtrunLogger
 
 
 class HostTestPluginBase:

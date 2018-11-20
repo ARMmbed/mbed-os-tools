@@ -21,7 +21,7 @@ import sys
 import json
 from time import sleep
 from serial import Serial, SerialException
-from mbed_tools.test import host_tests_plugins, DEFAULT_BAUD_RATE
+from .. import host_tests_plugins, DEFAULT_BAUD_RATE
 
 
 def flash_dev(disk=None,
