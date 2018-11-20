@@ -22,9 +22,10 @@ import sys
 import platform
 
 # Make sure that any global generic setup is run
-from . import lstools_base
+from . import lstools_base  # noqa: F401
 
 import logging
+
 logger = logging.getLogger("mbedls.main")
 logger.addHandler(logging.NullHandler())
 del logging
@@ -40,14 +41,17 @@ def create(**kwargs):
     result = None
     mbed_os = mbed_os_support()
     if mbed_os is not None:
-        if mbed_os == 'Windows7':
+        if mbed_os == "Windows7":
             from .windows import MbedLsToolsWin7
+
             result = MbedLsToolsWin7(**kwargs)
-        elif mbed_os == 'LinuxGeneric':
+        elif mbed_os == "LinuxGeneric":
             from .linux import MbedLsToolsLinuxGeneric
+
             result = MbedLsToolsLinuxGeneric(**kwargs)
-        elif mbed_os == 'Darwin':
+        elif mbed_os == "Darwin":
             from .darwin import MbedLsToolsDarwin
+
             result = MbedLsToolsDarwin(**kwargs)
     return result
 
@@ -61,12 +65,12 @@ def mbed_os_support():
     """
     result = None
     os_info = mbed_lstools_os_info()
-    if (os_info[0] == 'nt' and os_info[1] == 'Windows'):
-        result = 'Windows7'
-    elif (os_info[0] == 'posix' and os_info[1] == 'Linux'):
-        result = 'LinuxGeneric'
-    elif (os_info[0] == 'posix' and os_info[1] == 'Darwin'):
-        result = 'Darwin'
+    if os_info[0] == "nt" and os_info[1] == "Windows":
+        result = "Windows7"
+    elif os_info[0] == "posix" and os_info[1] == "Linux":
+        result = "LinuxGeneric"
+    elif os_info[0] == "posix" and os_info[1] == "Darwin":
+        result = "Darwin"
     return result
 
 
@@ -75,27 +79,29 @@ def mbed_lstools_os_info():
 
     @return Returns tuple with information about OS and host platform
     """
-    result = (os.name,
-              platform.system(),
-              platform.release(),
-              platform.version(),
-              sys.platform)
+    result = (
+        os.name,
+        platform.system(),
+        platform.release(),
+        platform.version(),
+        sys.platform,
+    )
     return result
 
+
 def mock_platform(mbeds, args):
-    for token in args.mock.split(','):
-        if ':' in token:
-            oper = '+' # Default
-            mid, platform_name = token.split(':')
-            if mid and mid[0] in ['+', '-']:
-                oper = mid[0]   # Operation (character)
-                mid = mid[1:]   # We remove operation character
+    for token in args.mock.split(","):
+        if ":" in token:
+            oper = "+"  # Default
+            mid, platform_name = token.split(":")
+            if mid and mid[0] in ["+", "-"]:
+                oper = mid[0]  # Operation (character)
+                mid = mid[1:]  # We remove operation character
             mbeds.mock_manufacture_id(mid, platform_name, oper=oper)
-        elif token and token[0] in ['-', '!']:
+        elif token and token[0] in ["-", "!"]:
             # Operations where do not specify data after colon: --mock=-1234,-7678
             oper = token[0]
             mid = token[1:]
-            mbeds.mock_manufacture_id(mid, 'dummy', oper=oper)
+            mbeds.mock_manufacture_id(mid, "dummy", oper=oper)
         else:
             logger.error("Could not parse mock from token: '%s'", token)
-

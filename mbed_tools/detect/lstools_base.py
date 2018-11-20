@@ -23,18 +23,24 @@ from os import listdir
 from os.path import expanduser, isfile, join, exists, isdir
 import logging
 
-from .platform_database import PlatformDatabase, LOCAL_PLATFORM_DATABASE, \
-    LOCAL_MOCKS_DATABASE
+from .platform_database import (
+    PlatformDatabase,
+    LOCAL_PLATFORM_DATABASE,
+    LOCAL_MOCKS_DATABASE,
+)
+
 mbedls_root_logger = logging.getLogger("mbedls")
 mbedls_root_logger.setLevel(logging.WARNING)
 
 logger = logging.getLogger("mbedls.lstools_base")
 logger.addHandler(logging.NullHandler())
 
+
 class FSInteraction(object):
     BeforeFilter = 1
     AfterFilter = 2
     Never = 3
+
 
 class MbedDetectLsToolsBase(object):
     """ Base class for mbed-lstools, defines mbed-ls tools interface for
@@ -49,34 +55,35 @@ class MbedDetectLsToolsBase(object):
 
     # Directory where we will store global (OS user specific mocking)
     HOME_DIR = expanduser("~")
-    MOCK_FILE_NAME = '.mbedls-mock'
-    RETARGET_FILE_NAME = 'mbedls.json'
-    DETAILS_TXT_NAME = 'DETAILS.TXT'
-    MBED_HTM_NAME = 'mbed.htm'
+    MOCK_FILE_NAME = ".mbedls-mock"
+    RETARGET_FILE_NAME = "mbedls.json"
+    DETAILS_TXT_NAME = "DETAILS.TXT"
+    MBED_HTM_NAME = "mbed.htm"
 
     VENDOR_ID_DEVICE_TYPE_MAP = {
-        '0483': 'stlink',
-        '0d28': 'daplink',
-        '1366': 'jlink',
-        '03eb': 'atmel'
+        "0483": "stlink",
+        "0d28": "daplink",
+        "1366": "jlink",
+        "03eb": "atmel",
     }
 
     def __init__(self, list_unmounted=False, **kwargs):
         """ ctor
         """
-        self.retarget_data = {}          # Used to retarget mbed-enabled platform properties
+        self.retarget_data = {}  # Used to retarget mbed-enabled platform properties
 
         platform_dbs = []
-        if isfile(self.MOCK_FILE_NAME) or ("force_mock" in kwargs and kwargs['force_mock']):
+        if isfile(self.MOCK_FILE_NAME) or (
+            "force_mock" in kwargs and kwargs["force_mock"]
+        ):
             platform_dbs.append(self.MOCK_FILE_NAME)
         elif isfile(LOCAL_MOCKS_DATABASE):
             platform_dbs.append(LOCAL_MOCKS_DATABASE)
         platform_dbs.append(LOCAL_PLATFORM_DATABASE)
-        self.plat_db = PlatformDatabase(platform_dbs,
-                                        primary_database=platform_dbs[0])
+        self.plat_db = PlatformDatabase(platform_dbs, primary_database=platform_dbs[0])
         self.list_unmounted = list_unmounted
 
-        if 'skip_retarget' not in kwargs or not kwargs['skip_retarget']:
+        if "skip_retarget" not in kwargs or not kwargs["skip_retarget"]:
             self.retarget()
 
     @abstractmethod
@@ -90,9 +97,12 @@ class MbedDetectLsToolsBase(object):
         raise NotImplemented
 
     def list_mbeds(
-            self, fs_interaction=FSInteraction.BeforeFilter,
-            filter_function=None, unique_names=False,
-            read_details_txt=False):
+        self,
+        fs_interaction=FSInteraction.BeforeFilter,
+        filter_function=None,
+        unique_names=False,
+        read_details_txt=False,
+    ):
         """ List details of connected devices
         @return Returns list of structures with detailed info about each mbed
         @param fs_interaction A member of the FSInteraction class that picks the
@@ -104,7 +114,8 @@ class MbedDetectLsToolsBase(object):
           'platform_unique_name' member of the output dict
         @param read_details_txt A boolean controlling the presense of the
           output dict attributes read from other files present on the 'mount_point'
-        @details Function returns list of dictionaries with mbed attributes 'mount_point', TargetID name etc.
+        @details Function returns list of dictionaries with mbed attributes
+          'mount_point', TargetID name etc.
         Function returns mbed list with platform names if possible
         """
         platform_count = {}
@@ -112,49 +123,63 @@ class MbedDetectLsToolsBase(object):
         logger.debug("Candidates for display %r", candidates)
         result = []
         for device in candidates:
-            device['device_type'] = self._detect_device_type(device)
-            if  ((not device['mount_point'] or
-                  not self.mount_point_ready(device['mount_point'])) and
-                 not self.list_unmounted):
-                if  (device['target_id_usb_id'] and device['serial_port']):
+            device["device_type"] = self._detect_device_type(device)
+            if (
+                not device["mount_point"]
+                or not self.mount_point_ready(device["mount_point"])
+            ) and not self.list_unmounted:
+                if device["target_id_usb_id"] and device["serial_port"]:
                     logger.warning(
                         "MBED with target id '%s' is connected, but not mounted. "
                         "Use the '-u' flag to include it in the list.",
-                        device['target_id_usb_id'])
+                        device["target_id_usb_id"],
+                    )
             else:
-                platform_data = self.plat_db.get(device['target_id_usb_id'][0:4],
-                    device_type=device['device_type'] or 'daplink', verbose_data=True)
+                platform_data = self.plat_db.get(
+                    device["target_id_usb_id"][0:4],
+                    device_type=device["device_type"] or "daplink",
+                    verbose_data=True,
+                )
                 device.update(platform_data or {"platform_name": None})
                 maybe_device = {
                     FSInteraction.BeforeFilter: self._fs_before_id_check,
                     FSInteraction.AfterFilter: self._fs_after_id_check,
-                    FSInteraction.Never: self._fs_never
+                    FSInteraction.Never: self._fs_never,
                 }[fs_interaction](device, filter_function, read_details_txt)
-                if maybe_device and (maybe_device['mount_point'] or self.list_unmounted):
+                if maybe_device and (
+                    maybe_device["mount_point"] or self.list_unmounted
+                ):
                     if unique_names:
-                        name = device['platform_name']
+                        name = device["platform_name"]
                         platform_count.setdefault(name, -1)
                         platform_count[name] += 1
-                        device['platform_name_unique'] = (
-                            "%s[%d]" % (name, platform_count[name]))
+                        device["platform_name_unique"] = "%s[%d]" % (
+                            name,
+                            platform_count[name],
+                        )
                     try:
-                        device.update(self.retarget_data[device['target_id']])
-                        logger.debug("retargeting %s with %r",
-                                     device['target_id'],
-                                     self.retarget_data[device['target_id']])
+                        device.update(self.retarget_data[device["target_id"]])
+                        logger.debug(
+                            "retargeting %s with %r",
+                            device["target_id"],
+                            self.retarget_data[device["target_id"]],
+                        )
                     except KeyError:
                         pass
 
-                    # This is done for API compatibility, would prefer for this to just be None
-                    device['device_type'] = device['device_type'] if device['device_type'] else 'unknown'
+                    # This is done for API compatibility, would prefer for this to
+                    # just be None
+                    device["device_type"] = (
+                        device["device_type"] if device["device_type"] else "unknown"
+                    )
                     result.append(maybe_device)
 
         return result
 
     def _fs_never(self, device, filter_function, read_details_txt):
         """Filter device without touching the file system of the device"""
-        device['target_id'] = device['target_id_usb_id']
-        device['target_id_mbed_htm'] = None
+        device["target_id"] = device["target_id_usb_id"]
+        device["target_id_mbed_htm"] = None
         if not filter_function or filter_function(device):
             return device
         else:
@@ -165,7 +190,7 @@ class MbedDetectLsToolsBase(object):
         Said another way: Touch the file system before filtering
         """
 
-        device['target_id'] = device['target_id_usb_id']
+        device["target_id"] = device["target_id_usb_id"]
         self._update_device_from_fs(device, read_details_txt)
         if not filter_function or filter_function(device):
             return device
@@ -176,8 +201,8 @@ class MbedDetectLsToolsBase(object):
         """Filter device before touching the file system of the device.
         Said another way: Touch the file system after filtering
         """
-        device['target_id'] = device['target_id_usb_id']
-        device['target_id_mbed_htm'] = None
+        device["target_id"] = device["target_id_usb_id"]
+        device["target_id_mbed_htm"] = None
         if not filter_function or filter_function(device):
             self._update_device_from_fs(device, read_details_txt)
             return device
@@ -190,30 +215,32 @@ class MbedDetectLsToolsBase(object):
             @param read_details_txt A boolean controlling the presense of the
               output dict attributes read from other files present on the 'mount_point'
         """
-        if not device.get('mount_point', None):
+        if not device.get("mount_point", None):
             return
 
         try:
-            directory_entries = listdir(device['mount_point'])
-            device['directory_entries'] = directory_entries
-            device['target_id'] = device['target_id_usb_id']
+            directory_entries = listdir(device["mount_point"])
+            device["directory_entries"] = directory_entries
+            device["target_id"] = device["target_id_usb_id"]
 
             # Always try to update using daplink compatible boards processself.
             # This is done for backwards compatibility.
             self._update_device_details_daplink_compatible(device, read_details_txt)
 
-            if device.get('device_type') == 'jlink':
+            if device.get("device_type") == "jlink":
                 self._update_device_details_jlink(device, read_details_txt)
 
-            if device.get('device_type') == 'atmel':
+            if device.get("device_type") == "atmel":
                 self._update_device_details_atmel(device, read_details_txt)
 
         except (OSError, IOError) as e:
             logger.warning(
                 'Marking device with mount point "%s" as unmounted due to the '
-                'following error: %s', device['mount_point'], e)
-            device['mount_point'] = None
-
+                "following error: %s",
+                device["mount_point"],
+                e,
+            )
+            device["mount_point"] = None
 
     def _detect_device_type(self, device):
         """ Returns a string of the device type
@@ -221,72 +248,85 @@ class MbedDetectLsToolsBase(object):
             @return Device type located in VENDOR_ID_DEVICE_TYPE_MAP or None if unknown
         """
 
-        return self.VENDOR_ID_DEVICE_TYPE_MAP.get(device.get('vendor_id'))
-
+        return self.VENDOR_ID_DEVICE_TYPE_MAP.get(device.get("vendor_id"))
 
     def _update_device_details_daplink_compatible(self, device, read_details_txt):
-        """ Updates the daplink-specific device information based on files from its 'mount_point'
+        """ Updates the daplink-specific device information based on files from its
+        'mount_point'
             @param device Dictionary containing device information
             @param read_details_txt A boolean controlling the presense of the
               output dict attributes read from other files present on the 'mount_point'
         """
-        lowercase_directory_entries = [e.lower() for e in device['directory_entries']]
+        lowercase_directory_entries = [e.lower() for e in device["directory_entries"]]
         if self.MBED_HTM_NAME.lower() in lowercase_directory_entries:
             self._update_device_from_htm(device)
         elif not read_details_txt:
-            logger.debug('Since mbed.htm is not present, attempting to use '
-                         'details.txt for the target id')
+            logger.debug(
+                "Since mbed.htm is not present, attempting to use "
+                "details.txt for the target id"
+            )
             read_details_txt = True
 
-        if read_details_txt and self.DETAILS_TXT_NAME.lower() in lowercase_directory_entries:
-            details_txt = self._details_txt(device['mount_point']) or {}
-            device.update({"daplink_%s" % f.lower().replace(' ', '_'): v
-                           for f, v in details_txt.items()})
+        if (
+            read_details_txt
+            and self.DETAILS_TXT_NAME.lower() in lowercase_directory_entries
+        ):
+            details_txt = self._details_txt(device["mount_point"]) or {}
+            device.update(
+                {
+                    "daplink_%s" % f.lower().replace(" ", "_"): v
+                    for f, v in details_txt.items()
+                }
+            )
 
             # If details.txt contains the target id, this is the most trusted source
-            if device.get('daplink_unique_id', None):
-                device['target_id'] = device['daplink_unique_id']
+            if device.get("daplink_unique_id", None):
+                device["target_id"] = device["daplink_unique_id"]
 
-        if device['target_id']:
-            identifier = device['target_id'][0:4]
-            platform_data = self.plat_db.get(identifier,
-                                             device_type='daplink',
-                                             verbose_data=True)
+        if device["target_id"]:
+            identifier = device["target_id"][0:4]
+            platform_data = self.plat_db.get(
+                identifier, device_type="daplink", verbose_data=True
+            )
             if not platform_data:
-                logger.warning('daplink entry: "%s" not found in platform database', identifier)
+                logger.warning(
+                    'daplink entry: "%s" not found in platform database', identifier
+                )
             else:
                 device.update(platform_data)
         else:
-            device['platform_name'] = None
+            device["platform_name"] = None
 
     def _update_device_details_jlink(self, device, _):
         """ Updates the jlink-specific device information based on files from its 'mount_point'
             @param device Dictionary containing device information
         """
-        lower_case_map = {e.lower(): e for e in device['directory_entries']}
+        lower_case_map = {e.lower(): e for e in device["directory_entries"]}
 
-        if 'board.html' in lower_case_map:
-            board_file_key = 'board.html'
-        elif 'user guide.html' in lower_case_map:
-            board_file_key = 'user guide.html'
+        if "board.html" in lower_case_map:
+            board_file_key = "board.html"
+        elif "user guide.html" in lower_case_map:
+            board_file_key = "user guide.html"
         else:
-            logger.warning('No valid file found to update JLink device details')
+            logger.warning("No valid file found to update JLink device details")
             return
 
-        board_file_path = join(device['mount_point'], lower_case_map[board_file_key])
-        with open(board_file_path, 'r') as board_file:
+        board_file_path = join(device["mount_point"], lower_case_map[board_file_key])
+        with open(board_file_path, "r") as board_file:
             board_file_lines = board_file.readlines()
 
         for line in board_file_lines:
-            m = re.search(r'url=([\w\d\:\-/\\\?\.=-_]+)', line)
+            m = re.search(r"url=([\w\d\:\-/\\\?\.=-_]+)", line)
             if m:
-                device['url'] = m.group(1).strip()
-                identifier = device['url'].split('/')[-1]
-                platform_data = self.plat_db.get(identifier,
-                                                 device_type='jlink',
-                                                 verbose_data=True)
+                device["url"] = m.group(1).strip()
+                identifier = device["url"].split("/")[-1]
+                platform_data = self.plat_db.get(
+                    identifier, device_type="jlink", verbose_data=True
+                )
                 if not platform_data:
-                    logger.warning('jlink entry: "%s", not found in platform database', identifier)
+                    logger.warning(
+                        'jlink entry: "%s", not found in platform database', identifier
+                    )
                 else:
                     device.update(platform_data)
                 break
@@ -295,20 +335,28 @@ class MbedDetectLsToolsBase(object):
         """Set the 'target_id', 'target_id_mbed_htm', 'platform_name' and
         'daplink_*' attributes by reading from mbed.htm on the device
         """
-        htm_target_id, daplink_info = self._read_htm_ids(device['mount_point'])
+        htm_target_id, daplink_info = self._read_htm_ids(device["mount_point"])
         if daplink_info:
-            device.update({"daplink_%s" % f.lower().replace(' ', '_'): v
-                           for f, v in daplink_info.items()})
+            device.update(
+                {
+                    "daplink_%s" % f.lower().replace(" ", "_"): v
+                    for f, v in daplink_info.items()
+                }
+            )
         if htm_target_id:
-            logger.debug("Found htm target id, %s, for usb target id %s",
-                            htm_target_id, device['target_id_usb_id'])
-            device['target_id'] = htm_target_id
+            logger.debug(
+                "Found htm target id, %s, for usb target id %s",
+                htm_target_id,
+                device["target_id_usb_id"],
+            )
+            device["target_id"] = htm_target_id
         else:
-            logger.debug("Could not read htm on from usb id %s. "
-                            "Falling back to usb id",
-                            device['target_id_usb_id'])
-            device['target_id'] = device['target_id_usb_id']
-        device['target_id_mbed_htm'] = htm_target_id
+            logger.debug(
+                "Could not read htm on from usb id %s. " "Falling back to usb id",
+                device["target_id_usb_id"],
+            )
+            device["target_id"] = device["target_id_usb_id"]
+        device["target_id_mbed_htm"] = htm_target_id
 
     def _update_device_details_atmel(self, device, _):
         """ Updates the Atmel device information based on files from its 'mount_point'
@@ -317,27 +365,28 @@ class MbedDetectLsToolsBase(object):
               output dict attributes read from other files present on the 'mount_point'
         """
 
-        # Atmel uses a system similar to DAPLink, but there's no details.txt with a target ID
-        # to identify device we can use the serial, which is ATMLXXXXYYYYYYY
+        # Atmel uses a system similar to DAPLink, but there's no details.txt with a
+        # target ID to identify device we can use the serial, which is ATMLXXXXYYYYYYY
         # where XXXX is the board identifier.
-        # This can be verified by looking at readme.htm, which also uses the board ID to redirect to platform page
+        # This can be verified by looking at readme.htm, which also uses the board ID
+        # to redirect to platform page
 
-        device['target_id'] = device['target_id_usb_id'][4:8]
-        platform_data = self.plat_db.get(device['target_id'],
-                                    device_type='atmel',
-                                    verbose_data=True)
+        device["target_id"] = device["target_id_usb_id"][4:8]
+        platform_data = self.plat_db.get(
+            device["target_id"], device_type="atmel", verbose_data=True
+        )
 
         device.update(platform_data or {"platform_name": None})
 
-    def mock_manufacture_id(self, mid, platform_name, oper='+'):
+    def mock_manufacture_id(self, mid, platform_name, oper="+"):
         """! Replace (or add if manufacture id doesn't exist) entry in self.manufacture_ids
         @param oper '+' add new mock / override existing entry
                     '-' remove mid from mocking entry
         @return Mocked structure (json format)
         """
-        if oper is '+':
+        if oper is "+":
             self.plat_db.add(mid, platform_name, permanent=True)
-        elif oper is '-':
+        elif oper is "-":
             self.plat_db.remove(mid, permanent=True)
         else:
             raise ValueError("oper can only be [+-]")
@@ -368,32 +417,34 @@ class MbedDetectLsToolsBase(object):
     def get_dummy_platform(self, platform_name):
         """! Returns simple dummy platform """
         if not hasattr(self, "dummy_counter"):
-            self.dummy_counter = {} # platform<str>: counter<int>
+            self.dummy_counter = {}  # platform<str>: counter<int>
 
         if platform_name not in self.dummy_counter:
             self.dummy_counter[platform_name] = 0
 
         platform = {
             "platform_name": platform_name,
-            "platform_name_unique": "%s[%d]"% (platform_name, self.dummy_counter[platform_name]),
+            "platform_name_unique": "%s[%d]"
+            % (platform_name, self.dummy_counter[platform_name]),
             "mount_point": "DUMMY",
             "serial_port": "DUMMY",
             "target_id": "DUMMY",
             "target_id_mbed_htm": "DUMMY",
             "target_id_usb_id": "DUMMY",
-            "daplink_version": "DUMMY"
+            "daplink_version": "DUMMY",
         }
         self.dummy_counter[platform_name] += 1
         return platform
 
     def get_supported_platforms(self, device_type=None):
         """! Return a dictionary of supported target ids and the corresponding platform name
-        @param device_type Filter which device entries are returned from the platform database
+        @param device_type Filter which device entries are returned from the platform
+          database
         @return Dictionary of { 'target_id': 'platform_name', ... }
         """
         kwargs = {}
         if device_type is not None:
-            kwargs['device_type'] = device_type
+            kwargs["device_type"] = device_type
 
         items = self.plat_db.items(**kwargs)
         return {i[0]: i[1] for i in items}
@@ -410,7 +461,8 @@ class MbedDetectLsToolsBase(object):
         """! Function scans mbed.htm to get information about TargetID.
         @param mount_point mbed mount point (disk / drive letter)
         @return Function returns targetID, in case of failure returns None.
-        @details Note: This function should be improved to scan variety of boards' mbed.htm files
+        @details Note: This function should be improved to scan variety of boards'
+          mbed.htm files
         """
         result = {}
         target_id = None
@@ -418,11 +470,11 @@ class MbedDetectLsToolsBase(object):
             target_id = target_id or self._target_id_from_htm(line)
             ver_bld = self._mbed_htm_comment_section_ver_build(line)
             if ver_bld:
-                result['version'], result['build'] = ver_bld
+                result["version"], result["build"] = ver_bld
 
-            m = re.search(r'url=([\w\d\:/\\\?\.=-_]+)', line)
+            m = re.search(r"url=([\w\d\:/\\\?\.=-_]+)", line)
             if m:
-                result['url'] = m.group(1).strip()
+                result["url"] = m.group(1).strip()
         return target_id, result
 
     def _mbed_htm_comment_section_ver_build(self, line):
@@ -430,19 +482,20 @@ class MbedDetectLsToolsBase(object):
         @return (version, build) tuple if successful, None if no info found
         """
         # <!-- Version: 0200 Build: Mar 26 2014 13:22:20 -->
-        m = re.search(r'^<!-- Version: (\d+) Build: ([\d\w: ]+) -->', line)
+        m = re.search(r"^<!-- Version: (\d+) Build: ([\d\w: ]+) -->", line)
         if m:
             version_str, build_str = m.groups()
             return (version_str.strip(), build_str.strip())
 
-        # <!-- Version: 0219 Build: Feb  2 2016 15:20:54 Git Commit SHA: 0853ba0cdeae2436c52efcba0ba76a6434c200ff Git local mods:No-->
-        m = re.search(r'^<!-- Version: (\d+) Build: ([\d\w: ]+) Git Commit SHA', line)
+        # <!-- Version: 0219 Build: Feb  2 2016 15:20:54 Git Commit SHA:
+        #   0853ba0cdeae2436c52efcba0ba76a6434c200ff Git local mods:No-->
+        m = re.search(r"^<!-- Version: (\d+) Build: ([\d\w: ]+) Git Commit SHA", line)
         if m:
             version_str, build_str = m.groups()
             return (version_str.strip(), build_str.strip())
 
         # <!-- Version: 0.14.3. build 471 -->
-        m = re.search(r'^<!-- Version: ([\d+\.]+)\. build (\d+) -->', line)
+        m = re.search(r"^<!-- Version: ([\d+\.]+)\. build (\d+) -->", line)
         if m:
             version_str, build_str = m.groups()
             return (version_str.strip(), build_str.strip())
@@ -451,7 +504,7 @@ class MbedDetectLsToolsBase(object):
     def _htm_lines(self, mount_point):
         if mount_point:
             mbed_htm_path = join(mount_point, self.MBED_HTM_NAME)
-            with open(mbed_htm_path, 'r') as f:
+            with open(mbed_htm_path, "r") as f:
                 return f.readlines()
 
     def _details_txt(self, mount_point):
@@ -479,19 +532,19 @@ class MbedDetectLsToolsBase(object):
 
         if mount_point:
             path_to_details_txt = join(mount_point, self.DETAILS_TXT_NAME)
-            with open(path_to_details_txt, 'r') as f:
+            with open(path_to_details_txt, "r") as f:
                 return self._parse_details(f.readlines())
         return None
 
     def _parse_details(self, lines):
         result = {}
         for line in lines:
-            if not line.startswith('#'):
-                key, _, value = line.partition(':')
+            if not line.startswith("#"):
+                key, _, value = line.partition(":")
                 if value:
                     result[key] = value.strip()
-        if 'Interface Version' in result:
-            result['Version'] = result['Interface Version']
+        if "Interface Version" in result:
+            result["Version"] = result["Interface Version"]
         return result
 
     def _target_id_from_htm(self, line):
@@ -499,13 +552,13 @@ class MbedDetectLsToolsBase(object):
         @return Target id or None
         """
         # Detecting modern mbed.htm file format
-        m = re.search('\?code=([a-fA-F0-9]+)', line)
+        m = re.search("\?code=([a-fA-F0-9]+)", line)
         if m:
             result = m.groups()[0]
             logger.debug("Found target id %s in htm line %s", result, line)
             return result
         # Last resort, we can try to see if old mbed.htm format is there
-        m = re.search('\?auth=([a-fA-F0-9]+)', line)
+        m = re.search("\?auth=([a-fA-F0-9]+)", line)
         if m:
             result = m.groups()[0]
             logger.debug("Found target id %s in htm line %s", result, line)
