@@ -21,11 +21,13 @@ import os
 from .lstools_base import MbedDetectLsToolsBase
 
 import logging
+
 logger = logging.getLogger("mbedls.lstools_linux")
 logger.addHandler(logging.NullHandler())
 del logging
 
-SYSFS_BLOCK_DEVICE_PATH = '/sys/class/block'
+SYSFS_BLOCK_DEVICE_PATH = "/sys/class/block"
+
 
 def _readlink(link):
     content = os.readlink(link)
@@ -38,31 +40,31 @@ def _readlink(link):
 class MbedLsToolsLinuxGeneric(MbedDetectLsToolsBase):
     """ mbed-enabled platform for Linux with udev
     """
+
     def __init__(self, **kwargs):
         """! ctor
         """
         MbedDetectLsToolsBase.__init__(self, **kwargs)
-        self.nlp = re.compile(
-            r'(pci|usb)-[0-9a-zA-Z:_-]*_(?P<usbid>[0-9a-zA-Z]*)-.*$')
-        self.mmp = re.compile(
-            r'(?P<dev>(/[^/ ]*)+) on (?P<dir>(/[^/ ]*)+) ')
-        self.udp = re.compile(r'^[0-9]+-[0-9]+[^:\s]*$')
+        self.nlp = re.compile(r"(pci|usb)-[0-9a-zA-Z:_-]*_(?P<usbid>[0-9a-zA-Z]*)-.*$")
+        self.mmp = re.compile(r"(?P<dev>(/[^/ ]*)+) on (?P<dir>(/[^/ ]*)+) ")
+        self.udp = re.compile(r"^[0-9]+-[0-9]+[^:\s]*$")
 
     def find_candidates(self):
-        disk_ids = self._dev_by_id('disk')
-        serial_ids = self._dev_by_id('serial')
+        disk_ids = self._dev_by_id("disk")
+        serial_ids = self._dev_by_id("serial")
         mount_ids = dict(self._fat_mounts())
         usb_info = self._sysfs_block_devices(disk_ids.values())
         logger.debug("Mount mapping %r", mount_ids)
 
         return [
             {
-                'mount_point' : mount_ids.get(disk_dev),
-                'serial_port' : serial_ids.get(disk_uuid),
-                'target_id_usb_id' : disk_uuid,
-                'vendor_id': usb_info.get(disk_dev, {}).get('vendor_id'),
-                'product_id': usb_info.get(disk_dev, {}).get('product_id')
-            } for disk_uuid, disk_dev in disk_ids.items()
+                "mount_point": mount_ids.get(disk_dev),
+                "serial_port": serial_ids.get(disk_uuid),
+                "target_id_usb_id": disk_uuid,
+                "vendor_id": usb_info.get(disk_dev, {}).get("vendor_id"),
+                "product_id": usb_info.get(disk_dev, {}).get("product_id"),
+            }
+            for disk_uuid, disk_dev in disk_ids.items()
         ]
 
     def _dev_by_id(self, device_type):
@@ -73,15 +75,21 @@ class MbedLsToolsLinuxGeneric(MbedDetectLsToolsBase):
         """
         dir = os.path.join("/dev", device_type, "by-id")
         if os.path.isdir(dir):
-            to_ret = dict(self._hex_ids([os.path.join(dir, f) for f in os.listdir(dir)]))
+            to_ret = dict(
+                self._hex_ids([os.path.join(dir, f) for f in os.listdir(dir)])
+            )
             logger.debug("Found %s devices by id %r", device_type, to_ret)
             return to_ret
         else:
-            logger.error("Could not get %s devices by id. "
-                         "This could be because your Linux distribution "
-                         "does not use udev, or does not create /dev/%s/by-id "
-                         "symlinks. Please submit an issue to github.com/"
-                         "armmbed/mbed-ls.", device_type, device_type)
+            logger.error(
+                "Could not get %s devices by id. "
+                "This could be because your Linux distribution "
+                "does not use udev, or does not create /dev/%s/by-id "
+                "symlinks. Please submit an issue to github.com/"
+                "armmbed/mbed-ls.",
+                device_type,
+                device_type,
+            )
             return {}
 
     def _fat_mounts(self):
@@ -89,11 +97,11 @@ class MbedLsToolsLinuxGeneric(MbedDetectLsToolsBase):
         @result Returns list of all mounted vfat devices
         @details Uses Linux shell command: 'mount'
         """
-        _stdout, _, retval = self._run_cli_process('mount')
+        _stdout, _, retval = self._run_cli_process("mount")
         if not retval:
             for line in _stdout.splitlines():
-                if b'vfat' in line:
-                    match = self.mmp.search(line.decode('utf-8'))
+                if b"vfat" in line:
+                    match = self.mmp.search(line.decode("utf-8"))
                     if match:
                         yield match.group("dev"), match.group("dir")
 
@@ -111,7 +119,7 @@ class MbedLsToolsLinuxGeneric(MbedDetectLsToolsBase):
                 yield match.group("usbid"), _readlink(dl)
 
     def _sysfs_block_devices(self, block_devices):
-        device_names = { os.path.basename(d): d  for d in block_devices }
+        device_names = {os.path.basename(d): d for d in block_devices}
         sysfs_block_devices = set(os.listdir(SYSFS_BLOCK_DEVICE_PATH))
         common_device_names = sysfs_block_devices.intersection(set(device_names.keys()))
         result = {}
@@ -119,41 +127,53 @@ class MbedLsToolsLinuxGeneric(MbedDetectLsToolsBase):
         for common_device_name in common_device_names:
             sysfs_path = os.path.join(SYSFS_BLOCK_DEVICE_PATH, common_device_name)
             full_sysfs_path = os.readlink(sysfs_path)
-            path_parts = full_sysfs_path.split('/')
+            path_parts = full_sysfs_path.split("/")
 
             end_index = None
             for index, part in enumerate(path_parts):
                 if self.udp.search(part):
                     end_index = index
 
-            if end_index == None:
-                logger.debug('Did not find suitable usb folder for usb info: %s', full_sysfs_path)
+            if end_index is None:
+                logger.debug(
+                    "Did not find suitable usb folder for usb info: %s", full_sysfs_path
+                )
                 continue
 
-            usb_info_rel_path = path_parts[:end_index + 1]
-            usb_info_path = os.path.join(SYSFS_BLOCK_DEVICE_PATH, os.sep.join(usb_info_rel_path))
+            usb_info_rel_path = path_parts[: end_index + 1]
+            usb_info_path = os.path.join(
+                SYSFS_BLOCK_DEVICE_PATH, os.sep.join(usb_info_rel_path)
+            )
 
             vendor_id = None
             product_id = None
 
-            vendor_id_file_paths = os.path.join(usb_info_path, 'idVendor')
-            product_id_file_paths = os.path.join(usb_info_path, 'idProduct')
+            vendor_id_file_paths = os.path.join(usb_info_path, "idVendor")
+            product_id_file_paths = os.path.join(usb_info_path, "idProduct")
 
             try:
-                with open(vendor_id_file_paths, 'r') as vendor_file:
+                with open(vendor_id_file_paths, "r") as vendor_file:
                     vendor_id = vendor_file.read().strip()
             except OSError as e:
-                logger.debug('Failed to read vendor id file %s weith error:', vendor_id_file_paths, e)
+                logger.debug(
+                    "Failed to read vendor id file %s weith error:",
+                    vendor_id_file_paths,
+                    e,
+                )
 
             try:
-                with open(product_id_file_paths, 'r') as product_file:
+                with open(product_id_file_paths, "r") as product_file:
                     product_id = product_file.read().strip()
             except OSError as e:
-                logger.debug('Failed to read product id file %s weith error:', product_id_file_paths, e)
+                logger.debug(
+                    "Failed to read product id file %s weith error:",
+                    product_id_file_paths,
+                    e,
+                )
 
             result[device_names[common_device_name]] = {
-                'vendor_id': vendor_id,
-                'product_id': product_id
+                "vendor_id": vendor_id,
+                "product_id": product_id,
             }
 
         return result

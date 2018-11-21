@@ -9,6 +9,15 @@ commands:
             - run:
                 name: Run tests
                 command: python -m coverage run setup.py test
+    enforce_style:
+        steps:
+            - checkout
+            - run:
+                name: Install flake 8
+                command: pip install --user flake8
+            - run:
+                name: Enforce styling
+                command: python -m flake8
 jobs:
     test_python27:
         docker:
@@ -30,6 +39,11 @@ jobs:
             - image: circleci/python:3.7-stretch-node
         steps:
             - setup_and_run_tests
+    style_enforcement:
+        docker:
+            - image: circleci/python:3.7-stretch-node
+        steps:
+            - enforce_style
 workflows:
     version: 2
     test:
@@ -38,3 +52,4 @@ workflows:
           - test_python35
           - test_python36
           - test_python37
+          - style_enforcement
