@@ -2,10 +2,6 @@
 
 We appreciate your contributions! Because this is an open source project, we want to keep it as easy as possible to contribute changes. However, we need contributors to follow a few guidelines.
 
-## Contributor agreement
-
-For us to accept your pull request, we need you to agree to our [contributor agreement](http://developer.mbed.org/contributor_agreement/) to give us the necessary rights to use and distribute your contributions. (To click through the agreement, create an account on mbed.com, and log in.)
-
 ## Enhancements and bugs
 
 Enhancements are:
