@@ -2,10 +2,6 @@
 
 We appreciate your contributions! Because this is an open source project, we want to keep it as easy as possible to contribute changes. However, we need contributors to follow a few guidelines.
 
-## Contributor agreement
-
-For us to accept your pull request, we need you to agree to our [contributor agreement](http://developer.mbed.org/contributor_agreement/) to give us the necessary rights to use and distribute your contributions. (To click through the agreement, create an account on mbed.com, and log in.)
-
 ## Enhancements and bugs
 
 Enhancements are:
@@ -150,6 +146,10 @@ def make_squares(key, value=0):
 * `camelCase` only to conform to pre-existing conventions.
 * Attributes: `interface`, `_internal`, `__private`
 * Try to avoid the `__private` form.
+
+## Checking code style
+
+We use [flake8](http://flake8.pycqa.org/en/latest/index.html) to enforce our style conventions. You can check your code style by running `flake8` from your command line in the root project directory.
 
 ## Testing and code coverage
 

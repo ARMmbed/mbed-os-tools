@@ -8,3 +8,8 @@ To contribute changes to these packages, please commit them to this repository. 
 - mbed-greentea - `mbed_tools/test` for the implementation, `test/test` for the tests
 - mbed-host-tests - `mbed_tools/test` for the implementation, `test/test` for the tests
 
+## License and contributions
+
+The software is provided under [Apache-2.0 license](LICENSE). Contributions to this project are accepted under the same license. Please see [contributing.md](CONTRIBUTING.md) for more info.
+
+This project contains code from other projects. The original license text is included in those source files. They must comply with our [license guide](https://os.mbed.com/docs/latest/reference/license.html)
