@@ -147,6 +147,10 @@ def make_squares(key, value=0):
 * Attributes: `interface`, `_internal`, `__private`
 * Try to avoid the `__private` form.
 
+## Checking code style
+
+We use [flake8](http://flake8.pycqa.org/en/latest/index.html) to enforce our style conventions. You can check your code style by running `flake8` from your command line in the root project directory.
+
 ## Testing and code coverage
 
 The application should be unit tested (at least a minimal set of unit tests should be implemented in the `/test` directory). We should be able to measure the unit test code coverage.
