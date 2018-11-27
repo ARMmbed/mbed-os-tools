@@ -21,27 +21,27 @@ commands:
 jobs:
     test_python27:
         docker:
-            - image: circleci/python:2.7-stretch-node
+            - image: python:2.7-stretch
         steps:
             - setup_and_run_tests
     test_python35:
         docker:
-            - image: circleci/python:3.5-stretch-node
+            - image: python:3.5-stretch
         steps:
             - setup_and_run_tests
     test_python36:
         docker:
-            - image: circleci/python:3.6-stretch-node
+            - image: python:3.6-stretch
         steps:
             - setup_and_run_tests
     test_python37:
         docker:
-            - image: circleci/python:3.7-stretch-node
+            - image: python:3.7-stretch
         steps:
             - setup_and_run_tests
     style_enforcement:
         docker:
-            - image: circleci/python:3.7-stretch-node
+            - image: python:3.7-stretch
         steps:
             - enforce_style
 workflows:
