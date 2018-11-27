@@ -31,7 +31,7 @@ def read(fname):
 
 
 setup(
-    name="mbed-tools",
+    name="mbed-os-tools",
     version="0.0.1",
     description=DESCRIPTION,
     long_description=read("README.md"),
@@ -39,7 +39,7 @@ setup(
     author_email=OWNER_EMAILS,
     maintainer=OWNER_NAMES,
     maintainer_email=OWNER_EMAILS,
-    url="https://github.com/ARMmbed/mbed-tools",
+    url="https://github.com/ARMmbed/mbed-os-tools",
     packages=find_packages(),
     license="Apache-2.0",
     test_suite="test",
