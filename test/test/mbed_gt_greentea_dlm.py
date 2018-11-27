@@ -21,7 +21,7 @@ import unittest
 
 from lockfile import LockFile
 from mock import patch
-from mbed_tools.test import mbed_greentea_dlm
+from mbed_os_tools.test import mbed_greentea_dlm
 
 home_dir = tempfile.mkdtemp()
 mbed_greentea_dlm.HOME_DIR = home_dir

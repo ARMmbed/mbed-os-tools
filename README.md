@@ -4,9 +4,9 @@ This repository contains the python modules needed to work with Mbed OS. **The A
 
 To contribute changes to these packages, please commit them to this repository. The mapping of these packages to the `mbed-os-tools` modules is as follows:
 
-- mbed-ls - `mbed_tools/detect` for the implementation, `test/detect` for the tests
-- mbed-greentea - `mbed_tools/test` for the implementation, `test/test` for the tests
-- mbed-host-tests - `mbed_tools/test` for the implementation, `test/test` for the tests
+- mbed-ls - `mbed_os_tools/detect` for the implementation, `test/detect` for the tests
+- mbed-greentea - `mbed_os_tools/test` for the implementation, `test/test` for the tests
+- mbed-host-tests - `mbed_os_tools/test` for the implementation, `test/test` for the tests
 
 ## License and contributions
 

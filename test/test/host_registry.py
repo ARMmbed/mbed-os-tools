@@ -17,8 +17,8 @@ limitations under the License.
 """
 
 import unittest
-from mbed_tools.test.host_tests_registry import HostRegistry
-from mbed_tools.test import BaseHostTest
+from mbed_os_tools.test.host_tests_registry import HostRegistry
+from mbed_os_tools.test import BaseHostTest
 
 
 class HostRegistryTestCase(unittest.TestCase):

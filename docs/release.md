@@ -17,12 +17,12 @@ The only thing that will change on their system is an additional package will be
 
 `mbed-os-tools` will expose the following modules:
 
-- `mbed_tools.detect` - All code contained within Mbed LS, used for detecting attached platforms
-- `mbed_tools.test` - All code used to test platforms with the "greentea" framework
+- `mbed_os_tools.detect` - All code contained within Mbed LS, used for detecting attached platforms
+- `mbed_os_tools.test` - All code used to test platforms with the "greentea" framework
  - Will also need to plan ahead for icetea integration here
 
 The other packages will then be in charge of taking these modules and exposing the existing public API. (ex. `import mbed_lstools` for mbed-ls)
-The goal will be in the future to remove the other bespoke packages and just consolidate on the `mbed_tools.*` API exposed by `mbed-os-tools`.
+The goal will be in the future to remove the other bespoke packages and just consolidate on the `mbed_os_tools.*` API exposed by `mbed-os-tools`.
 This path gives us the opportunity to deprecate the other packages to allow users to migrate.
 
 ## Versioning

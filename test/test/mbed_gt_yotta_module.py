@@ -17,7 +17,7 @@ limitations under the License.
 """
 
 import unittest
-from mbed_tools.test.mbed_yotta_module_parse import YottaModule
+from mbed_os_tools.test.mbed_yotta_module_parse import YottaModule
 
 
 class YOttaConfigurationParse(unittest.TestCase):

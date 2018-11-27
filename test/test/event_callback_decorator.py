@@ -14,7 +14,7 @@
 
 import unittest
 
-from mbed_tools.test.host_tests.base_host_test import BaseHostTest, event_callback
+from mbed_os_tools.test.host_tests.base_host_test import BaseHostTest, event_callback
 
 
 class TestEvenCallbackDecorator(unittest.TestCase):

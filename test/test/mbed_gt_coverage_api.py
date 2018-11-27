@@ -18,7 +18,7 @@ limitations under the License.
 
 import os
 import unittest
-from mbed_tools.test import mbed_coverage_api
+from mbed_os_tools.test import mbed_coverage_api
 
 
 class GreenteaCoverageAPI(unittest.TestCase):

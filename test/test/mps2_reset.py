@@ -21,7 +21,7 @@ import mock
 import os
 import time
 
-from mbed_tools.test.host_tests_plugins.module_reset_mps2 import HostTestPluginResetMethod_MPS2
+from mbed_os_tools.test.host_tests_plugins.module_reset_mps2 import HostTestPluginResetMethod_MPS2
 
 class MPS2ResetTestCase(unittest.TestCase):
 
@@ -33,7 +33,7 @@ class MPS2ResetTestCase(unittest.TestCase):
 
     @mock.patch("os.name", "posix")
     @mock.patch("time.sleep")
-    @mock.patch("mbed_tools.test.host_tests_plugins.module_reset_mps2.HostTestPluginResetMethod_MPS2.run_command")
+    @mock.patch("mbed_os_tools.test.host_tests_plugins.module_reset_mps2.HostTestPluginResetMethod_MPS2.run_command")
     def test_check_sync(self, run_command_function, sleep_function):
         # Check that a sync call has correctly been executed
         self.mps2_reset_plugin.execute("reboot.txt", disk=".")

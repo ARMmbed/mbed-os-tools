@@ -18,7 +18,7 @@ limitations under the License.
 
 import unittest
 
-from mbed_tools.test.host_tests_plugins.module_reset_mbed import HostTestPluginResetMethod_Mbed
+from mbed_os_tools.test.host_tests_plugins.module_reset_mbed import HostTestPluginResetMethod_Mbed
 
 class HostOSDetectionTestCase(unittest.TestCase):
 

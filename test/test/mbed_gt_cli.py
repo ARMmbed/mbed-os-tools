@@ -20,8 +20,8 @@ import six
 import sys
 import unittest
 
-from mbed_tools.test import mbed_greentea_cli
-from mbed_tools.test.tests_spec import TestSpec
+from mbed_os_tools.test import mbed_greentea_cli
+from mbed_os_tools.test.tests_spec import TestSpec
 
 test_spec_def = {
     "builds": {

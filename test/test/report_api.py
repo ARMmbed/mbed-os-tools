@@ -19,7 +19,7 @@ limitations under the License.
 import unittest
 from mock import patch
 
-from mbed_tools.test.mbed_report_api import exporter_html, \
+from mbed_os_tools.test.mbed_report_api import exporter_html, \
     exporter_memory_metrics_csv, exporter_testcase_junit, \
     exporter_testcase_text, exporter_text, exporter_json
 

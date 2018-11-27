@@ -23,9 +23,9 @@ import errno
 import logging
 
 import platform
-from mbed_tools.detect.main import create
-from mbed_tools.detect.main import mbed_os_support
-from mbed_tools.detect.main import mbed_lstools_os_info
+from mbed_os_tools.detect.main import create
+from mbed_os_tools.detect.main import mbed_os_support
+from mbed_os_tools.detect.main import mbed_lstools_os_info
 
 
 class DetectOSTestCase(unittest.TestCase):

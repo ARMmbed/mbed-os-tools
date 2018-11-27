@@ -100,7 +100,7 @@ class HostRegistry:
 
     def register_from_path(self, path, verbose=False):
         """ Enumerates and registers locally stored host tests
-            Host test are derived from mbed_tools.test.BaseHostTest classes
+            Host test are derived from mbed_os_tools.test.BaseHostTest classes
         """
         if path:
             path = path.strip('"')

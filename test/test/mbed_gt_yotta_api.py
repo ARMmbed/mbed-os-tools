@@ -19,7 +19,7 @@ import os
 import shutil
 import tempfile
 import unittest
-from mbed_tools.test import mbed_yotta_api
+from mbed_os_tools.test import mbed_yotta_api
 
 def generate_paths_and_write(data):
     # Generate some dummy temp directories
