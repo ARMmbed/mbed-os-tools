@@ -137,7 +137,7 @@ class HostTestPluginBase:
             for i in range(timeout):
                 # mbed_os_tools.detect.create() should be done inside the loop.
                 # Otherwise it will loop on same data.
-                mbeds = mbed_os_tools.detect.create()
+                mbeds = detect.create()
                 mbed_list = mbeds.list_mbeds() #list of mbeds present
                 # get first item in list with a matching target_id, if present
                 mbed_target = next((x for x in mbed_list if x['target_id']==target_id), None)
@@ -190,7 +190,7 @@ class HostTestPluginBase:
             timeout = int(timeout / timeout_step)
             for i in range(timeout):
                 # mbed_os_tools.detect.create() should be done inside the loop. Otherwise it will loop on same data.
-                mbeds = mbed_os_tools.detect.create()
+                mbeds = detect.create()
                 mbed_list = mbeds.list_mbeds() #list of mbeds present
                 # get first item in list with a matching target_id, if present
                 mbed_target = next((x for x in mbed_list if x['target_id']==target_id), None)
