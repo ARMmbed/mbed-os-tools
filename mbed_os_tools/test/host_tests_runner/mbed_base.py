@@ -20,7 +20,7 @@ Author: Przemyslaw Wirkus <Przemyslaw.Wirkus@arm.com>
 import json
 import os
 from time import sleep
-import ..host_tests_plugins as ht_plugins
+from .. import host_tests_plugins as ht_plugins
 from ... import detect
 from .. import DEFAULT_BAUD_RATE
 from ..host_tests_logger import HtrunLogger
@@ -125,7 +125,7 @@ class Mbed:
             # Re-try at max 5 times with 0.5 sec in delay
             for i in range(5):
                 # mbed_os_tools.detect.create() should be done inside the loop. Otherwise it will loop on same data.
-                mbeds = mbed_os_tools.detect.create()
+                mbeds = detect.create()
                 mbed_list = mbeds.list_mbeds() #list of mbeds present
                 # get first item in list with a matching target_id, if present
                 mbed_target = next((x for x in mbed_list if x['target_id']==target_id), None)
@@ -234,4 +234,3 @@ class Mbed:
             self.port = device_info['serial_port']
             self.disk = device_info['mount_point']
         return result
-

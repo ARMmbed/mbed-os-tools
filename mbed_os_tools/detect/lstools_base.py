@@ -449,13 +449,6 @@ class MbedDetectLsToolsBase(object):
         items = self.plat_db.items(**kwargs)
         return {i[0]: i[1] for i in items}
 
-    def __str__(self):
-        """! Object to string casting
-
-        @return Stringified class object should be prettytable formated string
-        """
-        return self.get_string()
-
     # Private functions supporting API
     def _read_htm_ids(self, mount_point):
         """! Function scans mbed.htm to get information about TargetID.
