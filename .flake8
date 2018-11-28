@@ -4,4 +4,4 @@
 max-line-length = 88
 exclude =
     test,
-    mbed_tools/test
+    mbed_os_tools/test

@@ -17,7 +17,7 @@ limitations under the License.
 """
 
 import unittest
-from mbed_tools.test import mbed_greentea_cli
+from mbed_os_tools.test import mbed_greentea_cli
 
 class GreenteaFilteredTestList(unittest.TestCase):
 

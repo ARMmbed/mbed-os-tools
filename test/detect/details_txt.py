@@ -21,7 +21,7 @@ import os
 import errno
 import logging
 
-from mbed_tools.detect.main import create
+from mbed_os_tools.detect.main import create
 
 
 

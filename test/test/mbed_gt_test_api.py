@@ -17,7 +17,7 @@ limitations under the License.
 """
 
 import unittest
-from mbed_tools.test import mbed_test_api
+from mbed_os_tools.test import mbed_test_api
 
 
 
