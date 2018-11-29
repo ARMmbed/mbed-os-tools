@@ -1,20 +1,19 @@
 #!/usr/bin/env python
-"""
-mbed SDK
-Copyright (c) 2011-2018 ARM Limited
+# Copyright (c) 2018, Arm Limited and affiliates.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-"""
 import telnetlib
 import socket
 from .conn_primitive import ConnectorPrimitive, ConnectorPrimitiveException
@@ -35,7 +34,7 @@ class FastmodelConnectorPrimitive(ConnectorPrimitive):
 
         # Initialize FastModel
         if self.__fastmodel_init():
-        
+
             # FastModel Launch load and run, equivalent to DUT connection, flashing and reset...
             self.__fastmodel_launch()
             self.__fastmodel_load(self.image_path)
@@ -61,7 +60,7 @@ class FastmodelConnectorPrimitive(ConnectorPrimitive):
         except self.fm_agent_module.SimulatorError as e:
             self.logger.prn_err("module fm_agent, create() failed: %s"% str(e))
             raise ConnectorPrimitiveException("FastModel Initializing failed as throw SimulatorError!")
-            
+
         return True
 
     def __fastmodel_launch(self):
@@ -96,14 +95,14 @@ class FastmodelConnectorPrimitive(ConnectorPrimitive):
 
     def __resource_allocated(self):
         """! Check whether FastModel resource been allocated
-           @return True or throw an exception 
+           @return True or throw an exception
         """
         if self.resource:
             return True
         else:
             self.logger.prn_err("FastModel resource not available!")
             return False
-        
+
     def read(self, count):
         """! Read data from DUT, count is not used for FastModel"""
         date = str()
@@ -120,7 +119,7 @@ class FastmodelConnectorPrimitive(ConnectorPrimitive):
         """! Write 'payload' to DUT"""
         if self.__resource_allocated():
             if log:
-                self.logger.prn_txd(payload)       
+                self.logger.prn_txd(payload)
             try:
                 self.resource.write(payload)
             except self.fm_agent_module.SimulatorError as e:

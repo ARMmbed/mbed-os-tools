@@ -1,21 +1,17 @@
-"""
-mbed SDK
-Copyright (c) 2011-2015 ARM Limited
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-
-Author: Przemyslaw Wirkus <Przemyslaw.Wirkus@arm.com>
-"""
+# Copyright (c) 2018, Arm Limited and affiliates.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 from .host_test_plugins import HostTestPluginBase
 
@@ -72,7 +68,7 @@ class HostTestPluginResetMethod_JN51xx(HostTestPluginBase):
                 if capability == 'jn51xx':
                     # Example:
                     # The device should be automatically reset before the programmer disconnects.
-                    # Issuing a command with no file to program or read will put the device into 
+                    # Issuing a command with no file to program or read will put the device into
                     # programming mode and then reset it. E.g.
                     # $ JN51xxProgrammer.exe -s COM5 -V0
                     # COM5: Detected JN5179 with MAC address 00:15:8D:00:01:24:E0:37
