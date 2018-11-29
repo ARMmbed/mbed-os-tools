@@ -1,5 +1,5 @@
-# mbed SDK
-# Copyright (c) 2011-2015 ARM Limited
+# Copyright (c) 2018, Arm Limited and affiliates.
+# SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
