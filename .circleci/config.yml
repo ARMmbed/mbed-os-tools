@@ -39,6 +39,9 @@ jobs:
             - image: python:3.7-stretch
         steps:
             - setup_and_run_tests
+            - run:
+                name: Send coverage results to coveralls
+                command: python -m coveralls
     style_enforcement:
         docker:
             - image: python:3.7-stretch
