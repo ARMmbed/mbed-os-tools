@@ -1,0 +1,3 @@
+[run]
+include =
+    mbed_os_tools/*
