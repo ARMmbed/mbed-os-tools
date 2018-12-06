@@ -20,6 +20,7 @@ import re
 
 import threading
 from builtins import super
+from copy import copy
 from mbed_os_tools.test import init_host_test_cli_params
 from mbed_os_tools.test.host_tests_runner.host_test_default  import DefaultTestSelector
 from mock import patch, MagicMock
@@ -311,6 +312,9 @@ class BlackBoxHostTestTestCase(fake_filesystem_unittest.TestCase):
         self.assertEqual(result, 0)
 
     def test_host_test_windows(self):
+        win_mock_platform_info = copy(mock_platform_info)
+        win_mock_platform_info["mount_point"] = "D:"
+        win_mock_platform_info["serial_port"] = "COM5"
         with MockTestEnvironmentWindows(self, mock_platform_info, mock_image_path) as _env:
             test_selector = DefaultTestSelector(init_host_test_cli_params())
             result = test_selector.execute()
