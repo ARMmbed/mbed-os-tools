@@ -37,6 +37,7 @@ from .host_test import DefaultTestSelectorBase
 from ..host_tests_logger import HtrunLogger
 from ..host_tests_conn_proxy import conn_process
 from ..host_tests_toolbox.host_functional import handle_send_break_cmd
+from ... import __version__
 if (sys.version_info > (3, 0)):
     from queue import Empty as QueueEmpty
 else:
@@ -82,9 +83,7 @@ class DefaultTestSelector(DefaultTestSelectorBase):
                 sys.exit(0)
 
             if options.version:         # --version
-                import pkg_resources    # part of setuptools
-                version = pkg_resources.require("mbed-host-tests")[0].version
-                print(version)
+                print(__version__)
                 sys.exit(0)
 
             if options.send_break_cmd:  # -b with -p PORT (and optional -r RESET_TYPE)

@@ -26,10 +26,6 @@ class HostTestPluginResetMethod_pyOCD(HostTestPluginBase):
 
     def __init__(self):
         """! ctor
-        @details We can check module version by referring to version attribute
-        import pkg_resources
-        print pkg_resources.require("mbed-host-tests")[0].version
-        '2.7'
         """
         HostTestPluginBase.__init__(self)
 
