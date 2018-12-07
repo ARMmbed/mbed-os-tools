@@ -13,9 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pkg_resources
 from sys import stdout
 from .mbed_base import Mbed
+from ... import __version__
 
 
 class HostTestResults(object):
@@ -123,9 +123,7 @@ class Test(HostTestResults):
     def get_hello_string(self):
         """ Hello string used as first print
         """
-        pkg = 'mbed-host-tests'
-        version = pkg_resources.require(pkg)[0].version
-        return "host test executor ver. " + version
+        return "host test executor ver. " + __version__
 
 
 class DefaultTestSelectorBase(Test):

@@ -17,6 +17,7 @@ import os
 from distutils.core import setup
 from io import open
 from setuptools import find_packages
+import mbed_os_tools
 
 DESCRIPTION = "The tools to build, test, and work with Mbed OS"
 OWNER_NAMES = "Jimmy Brisson, Brian Daniels"
@@ -30,7 +31,7 @@ def read(fname):
 
 setup(
     name="mbed-os-tools",
-    version="0.0.1",
+    version=mbed_os_tools.__version__,
     description=DESCRIPTION,
     long_description=read("README.md"),
     author=OWNER_NAMES,
