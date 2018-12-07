@@ -19,18 +19,18 @@ import os
 import re
 
 import threading
+import shutil
+import tempfile
 from builtins import super
 from copy import copy
 from mbed_os_tools.test import init_host_test_cli_params
 from mbed_os_tools.test.host_tests_runner.host_test_default  import DefaultTestSelector
 from mock import patch, MagicMock
-from pyfakefs import fake_filesystem_unittest
 
 
 class MockThread(threading.Thread):
     def __init__(self, target=None, args=None):
         super().__init__(target=target, args=args)
-        print('Mock Thread constr')
         self._terminates = 0
         self.exitcode = 0 # TODO maybe this needs to be setable? Mock sys.exit
 
@@ -44,8 +44,8 @@ class MockSerial(object):
         self._kwargs = kwargs
         self._open = True
         self._rx_counter = 0
-        self._tx_buffer = ""
-        self._rx_buffer = ""
+        self._tx_buffer = b""
+        self._rx_buffer = b""
         self._upstream_write_cb = None
 
     def read(self, count):
@@ -63,12 +63,15 @@ class MockSerial(object):
         self._open = False
 
     def downstream_write(self, data):
+        self._rx_buffer += data.encode("utf-8")
+
+    def downstream_write_bytes(self, data):
         self._rx_buffer += data
 
     def on_upstream_write(self, func):
         self._upstream_write_cb = func
 
-kv_regex = re.compile(r"\{\{([\w\d_-]+);([^\}]+)\}\}")
+kv_regex = re.compile("\{\{([\w\d_-]+);([^\}]+)\}\}")
 
 class MockMbedDevice(object):
     def __init__(self, serial):
@@ -90,7 +93,7 @@ class MockMbedDevice(object):
         self._serial.downstream_write("{{{{{};{}}}}}\r\n".format(key, value))
 
     def on_write(self, data):
-        kvs = kv_regex.findall(data)
+        kvs = kv_regex.findall(data.decode("utf-8"))
 
         for key, value in kvs:
             self.handle_kv(key, value)
@@ -112,8 +115,12 @@ class MockTestEnvironment(object):
 
     def __init__(self, test_case, platform_info, image_path):
         self._test_case = test_case
-        self._platform_info = platform_info
-        self._image_path = image_path
+        self._tempdir = tempfile.mkdtemp()
+        self._platform_info = copy(platform_info)
+        self._platform_info['mount_point'] = os.path.join(self._tempdir, self._platform_info['mount_point'])
+        self._platform_info['serial_port'] = os.path.join(self._tempdir, self._platform_info['serial_port'])
+        self._image_path = os.path.join(self._tempdir, image_path)
+
         self._patch_definitions = []
         self.patches = {}
 
@@ -161,8 +168,11 @@ class MockTestEnvironment(object):
         self._patch_definitions.append((path, patch(path, **kwargs)))
 
     def __enter__(self):
-        self._test_case.fs.create_file(self._image_path)
-        self._test_case.fs.create_dir(self._platform_info['mount_point'])
+        os.makedirs(os.path.dirname(self._image_path))
+        with open(self._image_path, 'w') as _:
+            pass
+
+        os.makedirs(self._platform_info['mount_point'])
 
         for path, patcher in self._patch_definitions:
             self.patches[path] = patcher.start()
@@ -170,6 +180,8 @@ class MockTestEnvironment(object):
     def __exit__(self, type, value, traceback):
         for _, patcher in self._patch_definitions:
             patcher.stop()
+
+        shutil.rmtree(self._tempdir)
 
 class MockTestEnvironmentPosix(MockTestEnvironment):
 
@@ -280,20 +292,14 @@ class MockTestEnvironmentWindows(MockTestEnvironment):
 mock_platform_info = {
     "platform_name": "K64F",
     "target_id": "0240000031754e45000c0018948500156461000097969900",
-    "mount_point": os.path.normpath("/mnt/DAPLINK"),
-    "serial_port": os.path.normpath("/dev/ttyACM0"),
+    "mount_point": os.path.normpath("mnt/DAPLINK"),
+    "serial_port": os.path.normpath("dev/ttyACM0"),
 }
 mock_image_path = os.path.normpath(
     "BUILD/tests/K64F/GCC_ARM/TESTS/network/interface/interface.bin"
 )
 
-class BlackBoxHostTestTestCase(fake_filesystem_unittest.TestCase):
-
-    def setUp(self):
-        self.setUpPyfakefs()
-
-    def tearDown(self):
-        pass
+class BlackBoxHostTestTestCase(unittest.TestCase):
 
     def test_host_test_linux(self):
         with MockTestEnvironmentLinux(self, mock_platform_info, mock_image_path) as _env:

@@ -56,6 +56,6 @@ setup(
         "six",
         "colorama>=0.3,<0.4",
     ],
-    tests_require=["mock>=2", "pytest>=3", "pyfakefs==3.5.3"],
+    tests_require=["mock>=2", "pytest>=3"],
     extras_require={"colorized_logs": ["colorlog"]},
 )
