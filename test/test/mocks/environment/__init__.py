@@ -1,0 +1,84 @@
+import tempfile
+import os
+import shutil
+
+from mock import patch, MagicMock
+from copy import copy
+from ..serial import MockSerial
+from ..mbed_device import MockMbedDevice
+from ..thread import MockThread
+
+class MockTestEnvironment(object):
+
+    def __init__(self, test_case, platform_info, image_path):
+        self._test_case = test_case
+        self._tempdir = tempfile.mkdtemp()
+        self._platform_info = copy(platform_info)
+        self._platform_info['mount_point'] = os.path.splitdrive(os.path.join(self._tempdir, self._platform_info['mount_point']))[1]
+        self._platform_info['serial_port'] =  os.path.splitdrive(os.path.join(self._tempdir, self._platform_info['serial_port']))[1]
+        self._image_path =  os.path.splitdrive(os.path.join(self._tempdir, image_path))[1]
+
+        self._patch_definitions = []
+        self.patches = {}
+
+        args = (
+            'mbedhtrun -m {} -p {}:9600 -f '
+            '"{}" -e "TESTS/host_tests" -d {} -c default '
+            '-t {} -r default '
+            '-C 4 --sync 5 -P 60'
+        ).format(
+            self._platform_info['platform_name'],
+            self._platform_info['serial_port'],
+            self._image_path,
+            self._platform_info['mount_point'],
+            self._platform_info['target_id']
+        ).split()
+        self.patch('sys.argv', new=args)
+
+        # Mock detect
+        detect_mock = MagicMock()
+        detect_mock.return_value.list_mbeds.return_value = [
+            self._platform_info
+        ]
+        self.patch('mbed_os_tools.detect.create', new=detect_mock)
+
+        # Mock process
+        self.patch(
+            'mbed_os_tools.test.host_tests_runner.host_test_default.Process',
+            new=MagicMock(side_effect=self._process_side_effect)
+        )
+        self.patch(
+            'mbed_os_tools.test.host_tests_plugins.host_test_plugins.call',
+            new=MagicMock(return_value=0)
+        )
+
+        # Mock serial
+        mock_serial = MockSerial()
+        mock_device = MockMbedDevice(mock_serial)
+        self.patch(
+            'mbed_os_tools.test.host_tests_conn_proxy.conn_primitive_serial.Serial',
+            new=MagicMock(return_value=mock_serial)
+        )
+
+    @staticmethod
+    def _process_side_effect(target=None, args=None):
+        return MockThread(target=target, args=args)
+
+    def patch(self, path, **kwargs):
+        self._patch_definitions.append((path, patch(path, **kwargs)))
+
+    def __enter__(self):
+        os.makedirs(os.path.dirname(self._image_path))
+        with open(self._image_path, 'w') as _:
+            pass
+
+        os.makedirs(self._platform_info['mount_point'])
+
+        for path, patcher in self._patch_definitions:
+            self.patches[path] = patcher.start()
+
+    def __exit__(self, type, value, traceback):
+        for _, patcher in self._patch_definitions:
+            patcher.stop()
+
+        shutil.rmtree(self._tempdir)
