@@ -6,7 +6,7 @@ from mock import patch, MagicMock
 from copy import copy
 from ..serial import MockSerial
 from ..mbed_device import MockMbedDevice
-from ..thread import MockThread
+from ..process import MockProcess
 
 class MockTestEnvironment(object):
 
@@ -73,7 +73,7 @@ class MockTestEnvironment(object):
 
     @staticmethod
     def _process_side_effect(target=None, args=None):
-        return MockThread(target=target, args=args)
+        return MockProcess(target=target, args=args)
 
     def patch(self, path, **kwargs):
         self._patch_definitions.append((path, patch(path, **kwargs)))

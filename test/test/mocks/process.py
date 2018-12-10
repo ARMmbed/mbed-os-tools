@@ -1,7 +1,7 @@
 from builtins import super
 from threading import Thread
 
-class MockThread(Thread):
+class MockProcess(Thread):
     def __init__(self, target=None, args=None):
         super().__init__(target=target, args=args)
         self._terminates = 0
