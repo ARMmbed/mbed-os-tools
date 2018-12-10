@@ -19,7 +19,6 @@ class MockSerial(object):
     def write(self, data):
         self._tx_buffer += data
         if self._upstream_write_cb:
-            # TODO this may not work...
             self._upstream_write_cb(data)
 
     def close(self):

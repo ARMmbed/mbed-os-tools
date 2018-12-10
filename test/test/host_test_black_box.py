@@ -15,13 +15,9 @@
 # limitations under the License.
 
 import unittest
-import os
-import re
-from builtins import super
 from copy import copy
 from mbed_os_tools.test import init_host_test_cli_params
 from mbed_os_tools.test.host_tests_runner.host_test_default  import DefaultTestSelector
-from mock import patch, MagicMock
 
 from .mocks.environment.linux import MockTestEnvironmentLinux
 from .mocks.environment.darwin import MockTestEnvironmentDarwin
@@ -30,41 +26,38 @@ from .mocks.environment.windows import MockTestEnvironmentWindows
 mock_platform_info = {
     "platform_name": "K64F",
     "target_id": "0240000031754e45000c0018948500156461000097969900",
-    "mount_point": os.path.normpath("mnt/DAPLINK"),
-    "serial_port": os.path.normpath("dev/ttyACM0"),
+    "mount_point": "/mnt/DAPLINK",
+    "serial_port": "/dev/ttyACM0",
 }
-mock_image_path = os.path.normpath(
-    "BUILD/tests/K64F/GCC_ARM/TESTS/network/interface/interface.bin"
-)
+mock_image_path = "BUILD/tests/K64F/GCC_ARM/TESTS/network/interface/interface.bin"
 
 class BlackBoxHostTestTestCase(unittest.TestCase):
 
-    def test_host_test_linux(self):
-        with MockTestEnvironmentLinux(self, mock_platform_info, mock_image_path) as _env:
+    def _run_host_test(self, environment):
+        with environment as _env:
             test_selector = DefaultTestSelector(init_host_test_cli_params())
             result = test_selector.execute()
             test_selector.finish()
 
         self.assertEqual(result, 0)
+
+    def test_host_test_linux(self):
+        self._run_host_test(
+            MockTestEnvironmentLinux(self, mock_platform_info, mock_image_path)
+        )
 
     def test_host_test_darwin(self):
-        with MockTestEnvironmentDarwin(self, mock_platform_info, mock_image_path) as _env:
-            test_selector = DefaultTestSelector(init_host_test_cli_params())
-            result = test_selector.execute()
-            test_selector.finish()
-
-        self.assertEqual(result, 0)
+        self._run_host_test(
+            MockTestEnvironmentDarwin(self, mock_platform_info, mock_image_path)
+        )
 
     def test_host_test_windows(self):
         win_mock_platform_info = copy(mock_platform_info)
-        win_mock_platform_info["mount_point"] = "D:"
         win_mock_platform_info["serial_port"] = "COM5"
-        with MockTestEnvironmentWindows(self, mock_platform_info, mock_image_path) as _env:
-            test_selector = DefaultTestSelector(init_host_test_cli_params())
-            result = test_selector.execute()
-            test_selector.finish()
 
-        self.assertEqual(result, 0)
+        self._run_host_test(
+            MockTestEnvironmentWindows(self, win_mock_platform_info, mock_image_path)
+        )
 
 if __name__ == '__main__':
     unittest.main()
