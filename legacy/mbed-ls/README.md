@@ -1,6 +1,6 @@
 # Development moved
 
-The development of Mbed LS has been moved into the [mbed-os-tools](../../mbed_os_tools) package. You can continue to use this module for legacy reasons, however all further development should be continued in the new package.
+The development of Mbed LS has been moved into the [mbed-os-tools](../../src/mbed_os_tools) package. You can continue to use this module for legacy reasons, however all further development should be continued in the new package.
 
 -------------
 
@@ -404,7 +404,7 @@ Mbed LS currently supports the following types of debuggers:
 
 ### Adding support for DAPLink-compatible platforms (DAPLink, ST-LINK, and CMSIS-DAP)
 
-Add an entry to the `daplink` section of the [`DEFAULT_PLATFORM_DB`](../../mbed_os_tools/detect/platform_database.py).
+Add an entry to the `daplink` section of the [`DEFAULT_PLATFORM_DB`](../../src/mbed_os_tools/detect/platform_database.py).
 
 If your platform's name is `NEW_PLATFORM` and it has platform ID of `9999`, the new entry should be:
 
@@ -422,7 +422,7 @@ Please order the entries by the platform ID when adding new platforms.
 
 ### Adding support for J-Link platforms
 
-J-Link detection works differently due to the information present on the platform's filesystem. All new entries should be added to the `jlink` section of the [`DEFAULT_PLATFORM_DB`](../../mbed_os_tools/detect/platform_database.py).
+J-Link detection works differently due to the information present on the platform's filesystem. All new entries should be added to the `jlink` section of the [`DEFAULT_PLATFORM_DB`](../../src/mbed_os_tools/detect/platform_database.py).
 
 The following is an example `jlink` platform entry:
 
@@ -451,4 +451,4 @@ If your J-Link platform does not follow this convention, please raise an issue w
 
 The type of debugger present on the platform affects how it is detected. The USB Vendor ID is used to detect which type of debugger is present on the platform.
 
-If a new type of debugger is being introduced to Mbed LS with the platform, you will need to add the Vendor ID to the [identification map](../../mbed_os_tools/detect/lstools_base.py). You will also need to assign the correct "update from the filesystem" logic [here](../../mbed_os_tools/detect/lstools_base.py). If the debugger is compatible with the files presented by DAPLink, you may reuse that implementation when updating the device information from the filesystem. If it is not, you may need to write your own update logic. If you need guidance on this, please ask for it when you submit an issue or a pull request.
+If a new type of debugger is being introduced to Mbed LS with the platform, you will need to add the Vendor ID to the [identification map](../../src/mbed_os_tools/detect/lstools_base.py). You will also need to assign the correct "update from the filesystem" logic [here](../../src/mbed_os_tools/detect/lstools_base.py). If the debugger is compatible with the files presented by DAPLink, you may reuse that implementation when updating the device information from the filesystem. If it is not, you may need to write your own update logic. If you need guidance on this, please ask for it when you submit an issue or a pull request.

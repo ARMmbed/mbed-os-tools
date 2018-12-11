@@ -4,5 +4,5 @@
 max-line-length = 88
 exclude =
     test,
-    mbed_os_tools/test,
+    src/mbed_os_tools/test,
     legacy
