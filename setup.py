@@ -17,7 +17,7 @@ import os
 from distutils.core import setup
 from io import open
 from setuptools import find_packages
-import mbed_os_tools
+#import mbed_os_tools
 
 DESCRIPTION = "The tools to build, test, and work with Mbed OS"
 OWNER_NAMES = "Jimmy Brisson, Brian Daniels"
@@ -31,7 +31,7 @@ def read(fname):
 
 setup(
     name="mbed-os-tools",
-    version=mbed_os_tools.__version__,
+    version='0.0.1',
     description=DESCRIPTION,
     long_description=read("README.md"),
     author=OWNER_NAMES,
@@ -39,7 +39,8 @@ setup(
     maintainer=OWNER_NAMES,
     maintainer_email=OWNER_EMAILS,
     url="https://github.com/ARMmbed/mbed-os-tools",
-    packages=find_packages(),
+    packages=find_packages("src"),
+    package_dir={"": "src"},
     license="Apache-2.0",
     test_suite="test",
     install_requires=[
