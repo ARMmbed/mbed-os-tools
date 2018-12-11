@@ -41,7 +41,7 @@ setup(name='mbed-ls',
       author_email=OWNER_EMAILS,
       maintainer=OWNER_NAMES,
       maintainer_email=OWNER_EMAILS,
-      url='https://github.com/ARMmbed/mbed-ls',
+      url='https://github.com/ARMmbed/mbed-os-tools',
       packages=find_packages(),
       license="Apache-2.0",
       test_suite = 'test',
@@ -52,8 +52,7 @@ setup(name='mbed-ls',
       },
       install_requires=[
           "PrettyTable>=0.7.2",
-          "fasteners",
-          "appdirs>=1.4"
+          "mbed_os_tools==0.0.1"
       ],
       tests_require = [
           "mock>=2",
