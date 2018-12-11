@@ -89,8 +89,8 @@ class PlatformDetectionTestCase(unittest.TestCase):
             return file_object
 
         with patch("mbed_lstools.lstools_base.MbedLsToolsBase.mount_point_ready") as _mpr,\
-             patch('mbed_lstools.lstools_base.open', do_open) as _,\
-             patch('os.listdir') as _listdir:
+             patch('mbed_os_tools.detect.lstools_base.open', do_open) as _,\
+             patch("mbed_os_tools.detect.lstools_base.listdir") as _listdir:
             _mpr.return_value = True
             _listdir.return_value = test_data_case_file_names
             results = self.base.list_mbeds(read_details_txt=True)
