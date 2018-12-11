@@ -18,7 +18,8 @@ commands:
         description: "Install mbed-os-tools for legacy package testing"
         steps:
             - run:
-                command: pip install .
+                name: "Install mbed-os-tools for legacy package testing"
+                command: pip install --user .
     setup_and_run_tests:
         steps:
             - checkout
