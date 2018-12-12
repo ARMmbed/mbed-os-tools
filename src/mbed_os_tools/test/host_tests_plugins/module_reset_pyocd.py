@@ -12,8 +12,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from pyOCD.board import MbedBoard
+
 from .host_test_plugins import HostTestPluginBase
+from pyocd.core.helpers import ConnectHelper
+
 
 class HostTestPluginResetMethod_pyOCD(HostTestPluginBase):
 
@@ -26,6 +28,10 @@ class HostTestPluginResetMethod_pyOCD(HostTestPluginBase):
 
     def __init__(self):
         """! ctor
+        @details We can check module version by referring to version attribute
+        import pkg_resources
+        print pkg_resources.require("mbed-host-tests")[0].version
+        '2.7'
         """
         HostTestPluginBase.__init__(self)
 
@@ -36,7 +42,6 @@ class HostTestPluginResetMethod_pyOCD(HostTestPluginBase):
 
     def execute(self, capability, *args, **kwargs):
         """! Executes capability by name
-
         @param capability Capability name
         @param args Additional arguments
         @param kwargs Additional arguments
@@ -52,10 +57,10 @@ class HostTestPluginResetMethod_pyOCD(HostTestPluginBase):
             if kwargs['target_id']:
                 if capability == 'pyocd':
                     target_id = kwargs['target_id']
-                    with MbedBoard.chooseBoard(board_id=target_id) as board:
-                        board.target.reset()
-                        board.target.resume()
-                        board.uninit(resume=False)
+                    with ConnectHelper.session_with_chosen_probe(unique_id=target_id,
+                                resume_on_disconnect=False) as session:
+                        session.target.reset()
+                        session.target.resume()
                         result = True
         return result
 

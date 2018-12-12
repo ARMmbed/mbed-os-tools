@@ -46,7 +46,7 @@ setup(
     install_requires=[
         "PySerial>=3.0",
         "requests",
-        "pyOCD==0.12.0",
+        "pyocd==0.14.0",
         "intelhex",
         "future",
         "PrettyTable>=0.7.2",
