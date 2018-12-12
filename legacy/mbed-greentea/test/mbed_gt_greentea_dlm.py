@@ -23,20 +23,26 @@ from lockfile import LockFile
 from mock import patch
 from mbed_greentea import mbed_greentea_dlm
 
-home_dir = tempfile.mkdtemp()
-mbed_greentea_dlm.HOME_DIR = home_dir
-mbed_greentea_dlm.GREENTEA_HOME_DIR = ".mbed-greentea"
-mbed_greentea_dlm.GREENTEA_GLOBAL_LOCK = "glock.lock"
-mbed_greentea_dlm.GREENTEA_KETTLE = "kettle.json" # active Greentea instances
-mbed_greentea_dlm.GREENTEA_KETTLE_PATH = os.path.join(mbed_greentea_dlm.HOME_DIR, mbed_greentea_dlm.GREENTEA_HOME_DIR, mbed_greentea_dlm.GREENTEA_KETTLE)
-
 
 class GreenteaDlmFunctionality(unittest.TestCase):
     def setUp(self):
-        pass
+        temp_dir = tempfile.mkdtemp()
+        self.home_tools_patch = patch('mbed_os_tools.test.mbed_greentea_dlm.HOME_DIR', temp_dir)
+        self.home_local_patch = patch('mbed_greentea.mbed_greentea_dlm.HOME_DIR', temp_dir)
+        kettle_dir = os.path.join(temp_dir, mbed_greentea_dlm.GREENTEA_HOME_DIR, mbed_greentea_dlm.GREENTEA_KETTLE)
+        self.kettle_tools_patch = patch('mbed_os_tools.test.mbed_greentea_dlm.GREENTEA_KETTLE_PATH', kettle_dir)
+        self.kettle_local_patch = patch('mbed_greentea.mbed_greentea_dlm.GREENTEA_KETTLE_PATH', kettle_dir)
+
+        self.home_tools_patch.start()
+        self.home_local_patch.start()
+        self.kettle_tools_patch.start()
+        self.kettle_local_patch.start()
 
     def tearDown(self):
-        pass
+        self.home_tools_patch.stop()
+        self.home_local_patch.stop()
+        self.kettle_tools_patch.stop()
+        self.kettle_local_patch.stop()
 
     def test_greentea_home_dir_init(self):
         mbed_greentea_dlm.greentea_home_dir_init()
