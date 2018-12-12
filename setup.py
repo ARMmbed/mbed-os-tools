@@ -55,7 +55,7 @@ setup(
         "junit-xml",
         "lockfile",
         "six",
-        "colorama>=0.3,<0.4",
+        "colorama>=0.3,<0.5",
     ],
     tests_require=["mock>=2", "pytest>=3"],
     extras_require={"colorized_logs": ["colorlog"]},
