@@ -53,5 +53,8 @@ setup(name='mbed-greentea',
       },
       install_requires=[
           "mbed-os-tools"
+      ],
+      tests_require = [
+          "mock>=2"
       ]
 )
