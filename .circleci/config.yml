@@ -1,14 +1,33 @@
 version: 2.1
 commands:
+    run_tests:
+        description: "Run tests for << parameters.working_directory >>"
+        parameters:
+            working_directory:
+                type: string
+        steps:
+            - run:
+                name: "Install test requirements for \"<< parameters.working_directory >>\""
+                working_directory: << parameters.working_directory >>
+                command: pip install --user -r test_requirements.txt
+            - run:
+                name: "Run tests for \"<< parameters.working_directory >>\""
+                working_directory: << parameters.working_directory >>
+                command: python -m coverage run setup.py test
+    install_mbed_os_tools:
+        description: "Install mbed-os-tools for legacy package testing"
+        steps:
+            - run:
+                name: "Install mbed-os-tools for legacy package testing"
+                command: pip install --user .
     setup_and_run_tests:
         steps:
             - checkout
-            - run:
-                name: Install test requirements
-                command: pip install --user -r test_requirements.txt
-            - run:
-                name: Run tests
-                command: python -m coverage run setup.py test
+            - run_tests:
+                working_directory: .
+            - install_mbed_os_tools
+            - run_tests:
+                working_directory: legacy/mbed-ls
     enforce_style:
         steps:
             - checkout
@@ -18,6 +37,14 @@ commands:
             - run:
                 name: Enforce styling
                 command: python -m flake8
+    combine_and_send_coverage:
+        steps:
+            - run:
+                name: Combine all coverage results
+                command: python -m coverage combine .coverage legacy/*/.coverage
+            - run:
+                name: Send coverage results to coveralls
+                command: python -m coveralls
 jobs:
     test_python27:
         docker:
@@ -39,9 +66,8 @@ jobs:
             - image: python:3.7-stretch
         steps:
             - setup_and_run_tests
-            - run:
-                name: Send coverage results to coveralls
-                command: python -m coveralls
+            - combine_and_send_coverage
+
     style_enforcement:
         docker:
             - image: python:3.7-stretch

@@ -1,3 +1,3 @@
 [run]
 source =
-    mbed_os_tools
+    src/mbed_os_tools

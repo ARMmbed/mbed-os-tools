@@ -15,9 +15,7 @@
 
 import os
 from distutils.core import setup
-from io import open
 from setuptools import find_packages
-import mbed_os_tools
 
 DESCRIPTION = "The tools to build, test, and work with Mbed OS"
 OWNER_NAMES = "Jimmy Brisson, Brian Daniels"
@@ -26,12 +24,13 @@ OWNER_EMAILS = "jimmy.brisson@arm.com, brian.daniels@arm.com"
 
 # Utility function to cat in a file (used for the README)
 def read(fname):
-    return open(os.path.join(os.path.dirname(__file__), fname), encoding="utf8").read()
+    with open(os.path.join(os.path.dirname(__file__), fname), 'r') as f:
+        return f.read()
 
 
 setup(
     name="mbed-os-tools",
-    version=mbed_os_tools.__version__,
+    version=read("src/mbed_os_tools/VERSION.txt"),
     description=DESCRIPTION,
     long_description=read("README.md"),
     author=OWNER_NAMES,
@@ -39,7 +38,9 @@ setup(
     maintainer=OWNER_NAMES,
     maintainer_email=OWNER_EMAILS,
     url="https://github.com/ARMmbed/mbed-os-tools",
-    packages=find_packages(),
+    packages=find_packages("src"),
+    package_dir={"": "src"},
+    package_data={"": ["VERSION.txt"]},
     license="Apache-2.0",
     test_suite="test",
     install_requires=[

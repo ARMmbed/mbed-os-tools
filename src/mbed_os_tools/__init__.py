@@ -13,4 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__version__ = "0.0.1"
+import os
+
+_version_file_path = os.path.join(os.path.dirname(__file__), "VERSION.txt")
+with open(_version_file_path, 'r') as _version_file:
+    __version__ = _version_file.read().strip()
