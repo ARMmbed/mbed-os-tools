@@ -28,7 +28,6 @@ from distutils.core import setup
 from setuptools import find_packages
 
 
-LICENSE = open('LICENSE', encoding="utf-8").read()
 DESCRIPTION = "mbed 3.0 onwards test suite, codename Greentea. The test suite is a collection of tools that enable automated testing on mbed-enabled platforms"
 OWNER_NAMES = 'Anna Bridge, Azim Khan'
 OWNER_EMAILS = 'Anna.Bridge@arm.com, Azim.Khan@arm.com'
@@ -45,20 +44,14 @@ setup(name='mbed-greentea',
       author_email=OWNER_EMAILS,
       maintainer=OWNER_NAMES,
       maintainer_email=OWNER_EMAILS,
-      url='https://github.com/ARMmbed/greentea',
+      url='https://github.com/ARMmbed/mbed-os-tools',
       packages=find_packages(),
-      license=LICENSE,
+      license="Apache-2.0",
       test_suite = 'test',
       entry_points={
           "console_scripts": ["mbedgt=mbed_greentea.mbed_greentea_cli:main",],
       },
-      install_requires=["PrettyTable>=0.7.2",
-                        "PySerial>=3.0",
-                        "mbed-host-tests>=1.2.0",
-                        "mbed-ls>=1.3.4",
-                        "junit-xml",
-                        "lockfile",
-                        "mock",
-                        "six",
-                        "colorama>=0.3,<0.5",
-                        "future"])
+      install_requires=[
+          "mbed-os-tools"
+      ]
+)
