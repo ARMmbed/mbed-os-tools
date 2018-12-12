@@ -1,0 +1,78 @@
+*.py[cod]
+
+# Distribution dir
+dist
+
+# MANIFEST file
+MANIFEST
+
+# Private settings
+private_settings.py
+
+# Default Build Directory
+build/
+
+# Eclipse Project Files
+.cproject
+.project
+.pydevproject
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+.eggs/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Installer logs
+pip-log.txt
+
+# Unit test / coverage reports
+.coverage
+.tox
+nosetests.xml
+htmlcov/
+junitTestReport
+
+# Translations
+*.mo
+
+# Mr Developer
+.mr.developer.cfg
+
+output.txt
+uVision Project/
+.mbedtest/
+
+# Sublime Text Project Files
+*.sublime*
+
+*.bak
+debug.log
+
+# Ignore OS X Desktop Services Store files
+.DS_Store
+
+# Orig diff files
+*.orig
+
+# PyCharm
+*.idea
+
+# Doxygen
+html/
+latex/
