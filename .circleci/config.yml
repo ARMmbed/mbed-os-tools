@@ -27,6 +27,8 @@ commands:
                 working_directory: .
             - install_mbed_os_tools
             - run_tests:
+                working_directory: legacy/mbed-greentea
+            - run_tests:
                 working_directory: legacy/mbed-ls
     enforce_style:
         steps:
