@@ -1,3 +1,9 @@
+# Development moved
+
+The development of Greentea has been moved into the [mbed-os-tools](../../src/mbed_os_tools) package. You can continue to use this module for legacy reasons, however all further development should be continued in the new package.
+
+-------------
+
 [![Circle CI](https://circleci.com/gh/ARMmbed/greentea.svg?style=svg)](https://circleci.com/gh/ARMmbed/greentea)
 [![Coverage Status](https://coveralls.io/repos/github/ARMmbed/greentea/badge.svg?branch=master)](https://coveralls.io/github/ARMmbed/greentea?branch=master)
 [![PyPI version](https://badge.fury.io/py/mbed-greentea.svg)](https://badge.fury.io/py/mbed-greentea)
@@ -174,7 +180,7 @@ Fast Models FVPs are software models for Arm reference design platfrom
 
 Greentea supports running test on Fast Models. And [mbed-fastmodel-agent](https://github.com/ARMmbed/mbed-fastmodel-agent) module is required for this purpose.
 
-The "--fm" option only available when the `mbed-fastmodel-agent` module is installed :  
+The "--fm" option only available when the `mbed-fastmodel-agent` module is installed :
 
 You can run tests for FVP_MPS2_Cortex-M3 models, by '--fm' option:
 ```
