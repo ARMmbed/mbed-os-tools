@@ -427,6 +427,14 @@ class DefaultTestSelector(DefaultTestSelectorBase):
                         self.logger.prn_inf("%s received"% (key))
                         callbacks__exit_event_queue = True
                         break
+                    elif key == '__timeout_set':
+                        # Dynamic timeout set
+                        timeout_duration = int(value) # New timeout
+                        self.logger.prn_inf("setting timeout to: %d sec"% int(value))
+                    elif key == '__timeout_adjust':
+                        # Dynamic timeout adjust
+                        timeout_duration = timeout_duration + int(value) # adjust time
+                        self.logger.prn_inf("adjusting timeout with %d sec (now %d)" % (int(value), timeout_duration))
                     elif key in callbacks:
                         # Handle callback
                         callbacks[key](key, value, timestamp)

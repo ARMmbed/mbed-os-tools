@@ -13,19 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from intelhex import IntelHex
-import itertools
 import os
-from pyOCD.board import MbedBoard
-
 from .host_test_plugins import HostTestPluginBase
-
-
-def _enum_continguous_addr_start_end(addr_list):
-    """Generator to get contiguous address ranges with start and end address"""
-    for _, b in itertools.groupby(enumerate(addr_list), lambda x_y: x_y[1] - x_y[0]):
-        b = list(b)
-        yield b[0][1], b[-1][1]
+from pyocd.core.helpers import ConnectHelper
+from pyocd.flash.loader import FileProgrammer
 
 
 class HostTestPluginCopyMethod_pyOCD(HostTestPluginBase):
@@ -48,7 +39,6 @@ class HostTestPluginCopyMethod_pyOCD(HostTestPluginBase):
 
     def execute(self, capability, *args, **kwargs):
         """! Executes capability by name
-
         @param capability Capability name
         @param args Additional arguments
         @param kwargs Additional arguments
@@ -67,7 +57,7 @@ class HostTestPluginCopyMethod_pyOCD(HostTestPluginBase):
 
         target_id = kwargs['target_id']
         image_path = os.path.normpath(kwargs['image_path'])
-        with MbedBoard.chooseBoard(board_id=target_id) as board:
+        with ConnectHelper.session_with_chosen_probe(unique_id=target_id, resume_on_disconnect=False) as session:
             # Performance hack!
             # Eventually pyOCD will know default clock speed
             # per target
@@ -81,51 +71,11 @@ class HostTestPluginCopyMethod_pyOCD(HostTestPluginBase):
                 test_clock = 1000000
 
             # Configure link
-            board.link.set_clock(test_clock)
-            board.link.set_deferred_transfer(True)
+            session.probe.set_clock(test_clock)
 
-            # Collect address, data pairs for programming
-            program_list = []
-            extension = os.path.splitext(image_path)[1]
-            if extension == '.bin':
-                # Binary file format
-                memory_map = board.target.getMemoryMap()
-                rom_region = memory_map.getBootMemory()
-                with open(image_path, "rb") as file_handle:
-                    program_data = file_handle.read()
-                program_list.append((rom_region.start, program_data))
-            elif extension == '.hex':
-                # Intel hex file format
-                ihex = IntelHex(image_path)
-                addresses = ihex.addresses()
-                addresses.sort()
-                for start, end in _enum_continguous_addr_start_end(addresses):
-                    size = end - start + 1
-                    data = ihex.tobinarray(start=start, size=size)
-                    data = bytearray(data)
-                    program_list.append((start, data))
-            else:
-                # Unsupported
-                raise Exception("Unsupported file format %s" % extension)
-
-            # Program data
-            flash_builder = board.flash.getFlashBuilder()
-            for addr, data in program_list:
-                flash_builder.addData(addr, list(bytearray(data)))
-            flash_builder.program()
-
-            # Read back and verify programming was successful
-            for addr, data in program_list:
-                read_data = board.target.readBlockMemoryUnaligned8(addr,
-                                                                   len(data))
-                read_data = bytearray(read_data)
-                if bytes(data) != bytes(read_data):
-                    raise Exception("Flash programming error - failed to "
-                                    "program address 0x%x size %s" %
-                                    (addr, len(data)))
-
-            # Cleanup
-            board.uninit(resume=False)
+            # Program the file
+            programmer = FileProgrammer(session)
+            programmer.program(image_path)
 
         return True
 
