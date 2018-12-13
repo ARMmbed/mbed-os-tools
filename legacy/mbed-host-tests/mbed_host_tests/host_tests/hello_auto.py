@@ -15,22 +15,4 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from mbed_host_tests import BaseHostTest
-
-class HelloTest(BaseHostTest):
-    HELLO_WORLD = "Hello World"
-
-    __result = None
-
-    def _callback_hello_world(self, key, value, timestamp):
-        self.__result = value == self.HELLO_WORLD
-        self.notify_complete()
-
-    def setup(self):
-        self.register_callback("hello_world", self._callback_hello_world)
-
-    def result(self):
-        return self.__result
-
-    def teardown(self):
-        pass
+from mbed_os_tools.test.host_tests.hello_auto import HelloTest

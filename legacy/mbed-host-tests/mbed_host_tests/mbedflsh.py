@@ -21,7 +21,7 @@ import sys
 import optparse
 
 ### Flashing/Reset API provided by mbed--host-tests (mbedhtrun)
-from . import host_tests_plugins
+from mbed_os_tools.test import host_tests_plugins
 
 
 def cmd_parser_setup():
