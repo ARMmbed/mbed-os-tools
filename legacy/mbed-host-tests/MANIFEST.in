@@ -1,2 +1,2 @@
-include README.md LICENSE CONTRIBUTING.md
+include README.md
 include .coveragerc
