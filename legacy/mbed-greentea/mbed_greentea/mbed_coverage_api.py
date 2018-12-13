@@ -17,4 +17,7 @@ limitations under the License.
 Author: Przemyslaw Wirkus <Przemyslaw.wirkus@arm.com>
 """
 
-from mbed_os_tools.test.mbed_coverage_api import *
+from mbed_os_tools.test.mbed_coverage_api import (
+    coverage_pack_hex_payload,
+    coverage_dump_file,
+)
