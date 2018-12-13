@@ -1,5 +1,9 @@
-[![Circle CI](https://circleci.com/gh/ARMmbed/htrun.svg?style=svg)](https://circleci.com/gh/ARMmbed/htrun)
-[![Coverage Status](https://coveralls.io/repos/github/ARMmbed/htrun/badge.svg?branch=master)](https://coveralls.io/github/ARMmbed/htrun?branch=master)
+# Development moved
+
+The development of htrun has been moved into the [mbed-os-tools](../../src/mbed_os_tools) package. You can continue to use this module for legacy reasons, however all further development should be continued in the new package.
+
+-------------
+
 [![PyPI version](https://badge.fury.io/py/mbed-host-tests.svg)](https://badge.fury.io/py/mbed-host-tests)
 
 # Table of contents
@@ -137,7 +141,7 @@ Command line switch `--grm` has format: `<module_name>:<IP_address>:<port_number
 
 This option is designed for htrun to use Arm Fast Models.
 
-The "--fm" option only available when [mbed-fastmodel-agent](https://github.com/ARMmbed/mbed-fastmodel-agent) module is installed :  
+The "--fm" option only available when [mbed-fastmodel-agent](https://github.com/ARMmbed/mbed-fastmodel-agent) module is installed :
 
 Load local file `/path/to/file/binary.elf` to onto fastmodel FVP_MPS2_m3 simulators:
 ```
@@ -183,14 +187,14 @@ $ pip install mbed-host-tests --upgrade
 ```
 
 ## Installation from Python sources
-To install the mbed test suite, first clone the `htrun` repository:
+To install the mbed test suite, first clone the `mbed-os-tools` repository:
 ```
-$ git clone https://github.com/ARMmbed/htrun.git
+$ git clone https://github.com/ARMmbed/mbed-os-tools.git
 ```
 
-Change the directory to the `htrun` directory:
+Change the directory to the `mbed-os-tools/legacy/mbed-host-tests` directory:
 ```
-$ cd htrun
+$ cd mbed-os-tools/legacy/mbed-host-tests
 ```
 
 Now you are ready to install `htrun`:
@@ -220,7 +224,7 @@ Options:
 mbed's test suite (codenamed ```Greentea```) supports the *test supervisor* concept. This concept is realized by this module. ```mbed-host-tests``` is a collection of host tests. Host test is script written in Python, which is executed in parallel with the test suite runner (a binary running on the target hardware / device under test) to monitor the test execution's progress or to control the test flow (interaction with the mbed device under test - DUT). The host test is also responsible for grabbing the test result, or deducing it from the test runner's behavior.
 
 Key-value protocol was developed and is used to provide communication layer between DUT (device under test) and host computer. Key-value protocol defined host computer as master and DUT as slave.
-* Slave side APIs and key-value protocol implementation is encapsulated in [greentea-client](https://github.com/ARMmbed/greentea-client) module.
+* Slave side APIs and key-value protocol implementation is encapsulated in [greentea-client](https://github.com/ARMmbed/mbed-os/tree/master/features/frameworks/greentea-client) module.
 * Master side APIs and key-value protocol is encapsulated in  ```mbed-host-tests```.
 
 ```mbed-host-tests``` responsibilities are:
@@ -1041,7 +1045,7 @@ The SARA NBIOT EVK board must be connected to a Windows PC using a Segger JLink 
 
 # Testing mbed-os examples
 
-mbed-os examples are essentially sample apps written as inspirational code for developers to understand the mbed-os APIs and coding paradigms. Before every mbed-os release all examples are tested across all supported configs and platforms. There is already a large set examples available and as they grow it is important to automate them. Hence automating examples make sense. Although it is important not to pollute them with test like instrumentation. As that will defeat the purpose of examples being simple and specific. 
+mbed-os examples are essentially sample apps written as inspirational code for developers to understand the mbed-os APIs and coding paradigms. Before every mbed-os release all examples are tested across all supported configs and platforms. There is already a large set examples available and as they grow it is important to automate them. Hence automating examples make sense. Although it is important not to pollute them with test like instrumentation. As that will defeat the purpose of examples being simple and specific.
 
 Hence the strategy for testing examples is based on observation instead of interaction. An example's serial logging is captured and converted into a templated log. All successive executions of this example should match this log.
 
@@ -1050,87 +1054,87 @@ Templated log simply means a log with text that does not change or regular expre
 ```
 
 							      >	Using Ethernet LWIP
-								
+
 							      >	Client IP Address is 10.2.203.139
-								
+
 							      >	Connecting with developer.mbed.org
-								
+
 Starting the TLS handshake...								Starting the TLS handshake...
-								
+
 							      >	TLS connection to developer.mbed.org established
-								
+
 Server certificate:								Server certificate:
-								
-							      >	
+
+							      >
 								    cert. version     : 3
-							      >	
+							      >
 								    serial number     : 11:21:B8:47:9B:21:6C:B1:C6:AF:BC:5D:0
-							      >	
+							      >
 								    issuer name       : C=BE, O=GlobalSign nv-sa, CN=GlobalSi
-							      >	
+							      >
 								    subject name      : C=GB, ST=Cambridgeshire, L=Cambridge,
-							      >	
+							      >
 								    issued  on        : 2016-03-03 12:26:08
-							      >	
+							      >
 								    expires on        : 2017-04-05 10:31:02
-							      >	
+							      >
 								    signed using      : RSA with SHA-256
-							      >	
+							      >
 								    RSA key size      : 2048 bits
-							      >	
+							      >
 								    basic constraints : CA=false
-							      >	
+							      >
 								    subject alt name  : *.mbed.com, mbed.org, *.mbed.org, mbe
-							      >	
+							      >
 								    key usage         : Digital Signature, Key Encipherment
-							      >	
+							      >
 								    ext key usage     : TLS Web Server Authentication, TLS We
 
 Certificate verification passed								Certificate verification passed
-								
 
-								
-								
+
+
+
 							      >	HTTPS: Received 439 chars from server
-								
+
 							      >	HTTPS: Received 200 OK status ... [OK]
-								
+
 HTTPS: Received 'Hello world!' status ... [OK]								HTTPS: Received 'Hello world!' status ... [OK]
-								
+
 HTTPS: Received message:								HTTPS: Received message:
-								
 
-								
-								
+
+
+
 							      >	HTTP/1.1 200 OK
-								
-							      >	Server: nginx/1.7.10
-								
-							      >	Date: Thu, 01 Dec 2016 13:56:32 GMT
-								
-							      >	Content-Type: text/plain
-								
-							      >	Content-Length: 14
-								
-							      >	Connection: keep-alive
-								
-							      >	Last-Modified: Fri, 27 Jul 2012 13:30:34 GMT
-								
-							      >	Accept-Ranges: bytes
-								
-							      >	Cache-Control: max-age=36000
-								
-							      >	Expires: Thu, 01 Dec 2016 23:56:32 GMT
-								
-							      >	X-Upstream-L3: 172.17.0.3:80
-								
-							      >	X-Upstream-L2: developer-sjc-indigo-2-nginx
-								
-							      >	Strict-Transport-Security: max-age=31536000; includeSubdomain
-								
 
-								
-								
+							      >	Server: nginx/1.7.10
+
+							      >	Date: Thu, 01 Dec 2016 13:56:32 GMT
+
+							      >	Content-Type: text/plain
+
+							      >	Content-Length: 14
+
+							      >	Connection: keep-alive
+
+							      >	Last-Modified: Fri, 27 Jul 2012 13:30:34 GMT
+
+							      >	Accept-Ranges: bytes
+
+							      >	Cache-Control: max-age=36000
+
+							      >	Expires: Thu, 01 Dec 2016 23:56:32 GMT
+
+							      >	X-Upstream-L3: 172.17.0.3:80
+
+							      >	X-Upstream-L2: developer-sjc-indigo-2-nginx
+
+							      >	Strict-Transport-Security: max-age=31536000; includeSubdomain
+
+
+
+
 Hello world!								Hello world!
 
 ```
@@ -1142,53 +1146,53 @@ Another example with regular examples is shown below:
 ```
 
   SHA-256                  :\s*\d+ Kb/s,\s*\d+ cycles/byte							      |	  SHA-256                  :       1922 Kb/s,         61 cycl
-								
+
   SHA-512                  :\s*\d+ Kb/s,\s*\d+ cycles/byte							      |	  SHA-512                  :        614 Kb/s,        191 cycl
-								
+
   AES-CBC-128              :\s*\d+ Kb/s,\s*\d+ cycles/byte							      |	  AES-CBC-128              :       1401 Kb/s,         83 cycl
-								
+
   AES-CBC-192              :\s*\d+ Kb/s,\s*\d+ cycles/byte							      |	  AES-CBC-192              :       1231 Kb/s,         95 cycl
-								
+
   AES-CBC-256              :\s*\d+ Kb/s,\s*\d+ cycles/byte							      |	  AES-CBC-256              :       1097 Kb/s,        106 cycl
-								
+
   AES-GCM-128              :\s*\d+ Kb/s,\s*\d+ cycles/byte							      |	  AES-GCM-128              :        429 Kb/s,        273 cycl
-								
+
   AES-GCM-192              :\s*\d+ Kb/s,\s*\d+ cycles/byte							      |	  AES-GCM-192              :        412 Kb/s,        285 cycl
-								
+
   AES-GCM-256              :\s*\d+ Kb/s,\s*\d+ cycles/byte							      |	  AES-GCM-256              :        395 Kb/s,        297 cycl
-								
+
   AES-CCM-128              :\s*\d+ Kb/s,\s*\d+ cycles/byte							      |	  AES-CCM-128              :        604 Kb/s,        194 cycl
-								
+
   AES-CCM-192              :\s*\d+ Kb/s,\s*\d+ cycles/byte							      |	  AES-CCM-192              :        539 Kb/s,        217 cycl
-								
+
   AES-CCM-256              :\s*\d+ Kb/s,\s*\d+ cycles/byte							      |	  AES-CCM-256              :        487 Kb/s,        241 cycl
-								
+
   CTR_DRBG \(NOPR\)          :\s*\d+ Kb/s,\s*\d+ cycles/byte							      |	  CTR_DRBG (NOPR)          :       1145 Kb/s,        102 cycl
-								
+
   CTR_DRBG \(PR\)            :\s*\d+ Kb/s,\s*\d+ cycles/byte							      |	  CTR_DRBG (PR)            :        821 Kb/s,        142 cycl
-								
+
   HMAC_DRBG SHA-256 \(NOPR\) :\s*\d+ Kb/s,\s*\d+ cycles/byte							      |	  HMAC_DRBG SHA-256 (NOPR) :        219 Kb/s,        537 cycl
-								
+
   HMAC_DRBG SHA-256 \(PR\)   :\s*\d+ Kb/s,\s*\d+ cycles/byte							      |	  HMAC_DRBG SHA-256 (PR)   :        193 Kb/s,        612 cycl
-								
+
   RSA-2048                 :\s*\d+ ms/ public							      |	  RSA-2048                 :      30 ms/ public
-								
+
   RSA-2048                 :\s*\d+ ms/private							      |	  RSA-2048                 :    1054 ms/private
-								
+
   RSA-4096                 :\s*\d+ ms/ public							      |	  RSA-4096                 :     101 ms/ public
-								
+
   RSA-4096                 :\s*\d+ ms/private							      |	  RSA-4096                 :    5790 ms/private
-								
+
   ECDHE-secp384r1          :\s*\d+ ms/handshake							      |	  ECDHE-secp384r1          :    1023 ms/handshake
-								
+
   ECDHE-secp256r1          :\s*\d+ ms/handshake							      |	  ECDHE-secp256r1          :     678 ms/handshake
-								
+
   ECDHE-Curve25519         :\s*\d+ ms/handshake							      |	  ECDHE-Curve25519         :     580 ms/handshake
-								
+
   ECDH-secp384r1           :\s*\d+ ms/handshake							      |	  ECDH-secp384r1           :     503 ms/handshake
-								
+
   ECDH-secp256r1           :\s*\d+ ms/handshake							      |	  ECDH-secp256r1           :     336 ms/handshake
-								
+
   ECDH-Curve25519          :\s*\d+ ms/handshake							      |	  ECDH-Curve25519          :     300 ms/handshake
 
 ```
@@ -1208,4 +1212,3 @@ mbedhtrun -d D: -p COM46 -m K64F -f .\BUILD\K64F\GCC_ARM\benchmark.bin --compare
 In case an application requires more time to process data and generate results, you can use the option ```--polling-timeout``` to override the default timeout setting.
 
 A tested comparison log can be checked into GitHub with the examples and can be used in the CI for example verification.
-
