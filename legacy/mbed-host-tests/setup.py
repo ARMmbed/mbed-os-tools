@@ -57,7 +57,7 @@ setup(name='mbed-host-tests',
       install_requires=[
         "mbed-os-tools==0.0.1"
       ],
-      test_requires=[
+      tests_require=[
         "mock>=2"
       ]
 )
