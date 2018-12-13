@@ -14,7 +14,7 @@ commands:
                 name: "Run tests for \"<< parameters.working_directory >>\""
                 working_directory: << parameters.working_directory >>
                 command: python -m coverage run setup.py test
-    install_mbed_os_tools:
+    install_all_tools:
         description: "Install all tools"
         steps:
             - run:
