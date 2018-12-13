@@ -15,21 +15,36 @@ commands:
                 working_directory: << parameters.working_directory >>
                 command: python -m coverage run setup.py test
     install_mbed_os_tools:
-        description: "Install mbed-os-tools for legacy package testing"
+        description: "Install all tools"
         steps:
             - run:
                 name: "Install mbed-os-tools for legacy package testing"
+                command: pip install --user .
+            - run:
+                name: "Install legacy mbed-ls"
+                working_directory: legacy/mbed-ls
+                command: pip install --user .
+            - run:
+                name: "Install legacy mbed-host-tests"
+                working_directory: legacy/mbed-host-tests
+                command: pip install --user .
+            - run:
+                name: "Install legacy mbed-greentea"
+                working_directory: legacy/mbed-greentea
                 command: pip install --user .
     setup_and_run_tests:
         steps:
             - checkout
             - run_tests:
                 working_directory: .
-            - install_mbed_os_tools
-            - run_tests:
-                working_directory: legacy/mbed-greentea
+            - install_all_tools
             - run_tests:
                 working_directory: legacy/mbed-ls
+            - run_tests:
+                working_directory: legacy/mbed-host-tests
+            - run_tests:
+                working_directory: legacy/mbed-greentea
+
     enforce_style:
         steps:
             - checkout
