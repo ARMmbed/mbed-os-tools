@@ -28,8 +28,8 @@ from io import open
 from setuptools import find_packages
 
 DESCRIPTION = "mbed tools used to flash, reset and supervise test execution for mbed-enabled devices"
-OWNER_NAMES = 'Przemyslaw Wirkus, Azim Khan, Stefan Gutmann'
-OWNER_EMAILS = 'Przemyslaw.Wirkus@arm.com, Azim.Khan@arm.com, Stefan.Gutmann@arm.com'
+OWNER_NAMES = 'Jimmy Brisson, Brian Daniels'
+OWNER_EMAILS = 'Jimmy.Brisson@arm.com, Brian.Daniels@arm.com'
 
 
 # Utility function to cat in a file (used for the README)
@@ -45,7 +45,7 @@ setup(name='mbed-host-tests',
       author_email=OWNER_EMAILS,
       maintainer=OWNER_NAMES,
       maintainer_email=OWNER_EMAILS,
-      url='https://github.com/ARMmbed/htrun',
+      url='https://github.com/ARMmbed/mbed-os-tools',
       packages=find_packages(),
       license="Apache-2.0",
       test_suite = 'test',
@@ -54,10 +54,10 @@ setup(name='mbed-host-tests',
             ["mbedhtrun=mbed_host_tests.mbedhtrun:main",
              "mbedflsh=mbed_host_tests.mbedflsh:main"],
       },
-      install_requires=["PySerial>=3.0",
-                        "PrettyTable>=0.7.2",
-                        "requests",
-                        "mbed-ls>=1.0.0",
-                        "pyocd>=0.14.0",
-                        "intelhex",
-                        "future"])
+      install_requires=[
+        "mbed-os-tools==0.0.1"
+      ],
+      test_requires=[
+        "mock>=2"
+      ]
+)
