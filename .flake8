@@ -3,6 +3,13 @@
 # I'm inclined to agree, or not to dissagree.
 max-line-length = 88
 exclude =
-    test,
-    src/mbed_os_tools/test,
-    legacy
+    legacy/*,
+    src/mbed_os_tools/test/host_tests/*,
+    src/mbed_os_tools/test/host_tests_conn_proxy/*,
+    src/mbed_os_tools/test/host_tests_logger/*,
+    src/mbed_os_tools/test/host_tests_plugins/*,
+    src/mbed_os_tools/test/host_tests_registry/*,
+    src/mbed_os_tools/test/host_tests_runner/*,
+    src/mbed_os_tools/test/host_tests_toolbox/*,
+    src/mbed_os_tools/test/mbed_*.py,
+    test/*,
