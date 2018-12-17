@@ -1,12 +1,19 @@
 # Mbed OS Tools
 
-This repository contains the python modules needed to work with Mbed OS. **The APIs in this repository are not stable**, as indicated by the 0.x.x semantic version. For this reason, it is recommened to continue using the existing python packages: [mbed-ls](https://github.com/ARMmbed/mbed-os-tools/tree/master/legacy/mbed-ls), [mbed-host-tests](https://github.com/ARMmbed/mbed-os-tools/tree/master/legacy/mbed-host-tests), and [mbed-greentea](https://github.com/ARMmbed/mbed-os-tools/tree/master/legacy/mbed-greentea).
+This repository contains the python modules needed to work with Mbed OS. Historically, the Mbed OS tools have been delivered in separate packages and repositories. Their APIs have evolved separately over time, each with their own style and syntax. This project is working to unify these packages into a single intuitive API.
 
-To contribute changes to these packages, please commit them to this repository. The mapping of these packages to the `mbed-os-tools` modules is as follows:
+## Packages
 
-- mbed-ls - `src/mbed_os_tools/detect` for the implementation, `test/detect` for the tests
-- mbed-greentea - `src/mbed_os_tools/test` for the implementation, `test/test` for the tests
-- mbed-host-tests - `src/mbed_os_tools/test` for the implementation, `test/test` for the tests
+Below is a table showing what packages are delivered from this repository:
+
+| PyPI Package | Source | Depends on | Stable API |
+| ------- | ------ | ---------- | ---------- |
+| mbed-os-tools | `src/` | | **No** |
+| mbed-ls | `legacy/mbed-ls/` | mbed-os-tools | **Yes** |
+| mbed-host-tests | `legacy/mbed-host-tests/` | mbed-os-tools | **Yes** |
+| mbed-greentea | `legacy/mbed-greentea/` | mbed-os-tools | **Yes** |
+
+As indicated above, **the API provided by `mbed-os-tools` is not stable**. For this reason, please continue to use the other packages.
 
 ## License and contributions
 
