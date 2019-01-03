@@ -15,9 +15,13 @@
 
 import os
 from .host_test_plugins import HostTestPluginBase
-from pyocd.core.helpers import ConnectHelper
-from pyocd.flash.loader import FileProgrammer
 
+try:
+    from pyocd.core.helpers import ConnectHelper
+    from pyocd.flash.loader import FileProgrammer
+    PYOCD_PRESENT = True
+except ImportError:
+    PYOCD_PRESENT = False
 
 class HostTestPluginCopyMethod_pyOCD(HostTestPluginBase):
     # Plugin interface
@@ -44,6 +48,13 @@ class HostTestPluginCopyMethod_pyOCD(HostTestPluginBase):
         @param kwargs Additional arguments
         @return Capability call return value
         """
+        if not PYOCD_PRESENT:
+            self.print_plugin_error(
+                'The "pyocd" feature is not installed. Please run '
+                '"pip install mbed-os-tools[pyocd]" to enable the "pyocd" copy plugin.'
+            )
+            return False
+
         if not self.check_parameters(capability, *args, **kwargs):
             return False
 

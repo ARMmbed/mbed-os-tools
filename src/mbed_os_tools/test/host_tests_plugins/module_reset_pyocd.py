@@ -14,7 +14,12 @@
 # limitations under the License.
 
 from .host_test_plugins import HostTestPluginBase
-from pyocd.core.helpers import ConnectHelper
+
+try:
+    from pyocd.core.helpers import ConnectHelper
+    PYOCD_PRESENT = True
+except ImportError:
+    PYOCD_PRESENT = False
 
 
 class HostTestPluginResetMethod_pyOCD(HostTestPluginBase):
@@ -48,6 +53,13 @@ class HostTestPluginResetMethod_pyOCD(HostTestPluginBase):
         @details Each capability e.g. may directly just call some command line program or execute building pythonic function
         @return Capability call return value
         """
+        if not PYOCD_PRESENT:
+            self.print_plugin_error(
+                'The "pyocd" feature is not installed. Please run '
+                '"pip install mbed-os-tools[pyocd]" to enable the "pyocd" reset plugin.'
+            )
+            return False
+
         if not kwargs['target_id']:
             self.print_plugin_error("Error: target_id not set")
             return False
