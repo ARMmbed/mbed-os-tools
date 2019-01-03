@@ -64,6 +64,12 @@ jobs:
                 script: 'python -m pip install --upgrade pip && pip install -r test_requirements.txt && pip install pytest'
                 displayName: 'Install mbed-os test dependencies'
             -
+                script: |
+                    pip install --user flake8
+                    python -m flake8
+                condition: eq(variables['extraActions'], 'true')
+                displayName: 'Enforce code style'
+            -
                 script: "python -m coverage run setup.py test"
                 displayName: "Test mbed-os-tools"
             -
@@ -93,12 +99,6 @@ jobs:
                 script: "python -m coverage run setup.py test"
                 displayName: "Test mbed-greentea"
                 workingDirectory: 'legacy/mbed-greentea'
-            -
-                script: |
-                    pip install --user flake8
-                    python -m flake8
-                condition: eq(variables['extraActions'], 'true')
-                displayName: 'Enforce code style'
             -
                 script: |
                     python -m coverage combine .coverage legacy/*/.coverage
