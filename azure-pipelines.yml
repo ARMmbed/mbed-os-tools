@@ -1,0 +1,115 @@
+jobs:
+    -
+        job: Test
+        strategy:
+            matrix:
+                LinuxPython27:
+                    python.version: '2.7'
+                    imageName: ubuntu-16.04
+                    extraActions: 'false'
+                LinuxPython35:
+                    python.version: '3.5'
+                    imageName: ubuntu-16.04
+                    extraActions: 'false'
+                LinuxPython36:
+                    python.version: '3.6'
+                    imageName: ubuntu-16.04
+                    extraActions: 'false'
+                LinuxPython37:
+                    python.version: '3.7'
+                    imageName: ubuntu-16.04
+                    extraActions: 'true'
+                MacPython27:
+                    python.version: '2.7'
+                    imageName: macos-10.13
+                    extraActions: 'false'
+                MacPython35:
+                    python.version: '3.5'
+                    imageName: macos-10.13
+                    extraActions: 'false'
+                MacPython36:
+                    python.version: '3.6'
+                    imageName: macos-10.13
+                    extraActions: 'false'
+                MacPython37:
+                    python.version: '3.7'
+                    imageName: macos-10.13
+                    extraActions: 'false'
+                WindowsPython27:
+                    python.version: '2.7'
+                    imageName: vs2017-win2016
+                    extraActions: 'false'
+                WindowsPython35:
+                    python.version: '3.5'
+                    imageName: vs2017-win2016
+                    extraActions: 'false'
+                WindowsPython36:
+                    python.version: '3.6'
+                    imageName: vs2017-win2016
+                    extraActions: 'false'
+                WindowsPython37:
+                    python.version: '3.7'
+                    imageName: vs2017-win2016
+                    extraActions: 'false'
+            maxParallel: 10
+        pool:
+            vmImage: $(imageName)
+        steps:
+            -
+                task: UsePythonVersion@0
+                inputs:
+                    versionSpec: $(python.version)
+                    architecture: x64
+            -
+                script: 'python -m pip install --upgrade pip && pip install -r test_requirements.txt && pip install pytest'
+                displayName: 'Install mbed-os test dependencies'
+            -
+                script: |
+                    pip install --user flake8
+                    python -m flake8
+                condition: eq(variables['extraActions'], 'true')
+                displayName: 'Enforce code style'
+            -
+                script: "python -m coverage run setup.py test"
+                displayName: "Test mbed-os-tools"
+            -
+                script: "pip install ."
+                displayName: "Install mbed-os-tools"
+            -
+                script: 'pip install . && pip install -r test_requirements.txt'
+                displayName: 'Install mbed-ls'
+                workingDirectory: 'legacy/mbed-ls'
+            -
+                script: 'pip install . && pip install -r test_requirements.txt'
+                displayName: 'Install mbed-host-tests'
+                workingDirectory: 'legacy/mbed-host-tests'
+            -
+                script: 'pip install . && pip install -r test_requirements.txt'
+                displayName: 'Install mbed-greentea'
+                workingDirectory: 'legacy/mbed-greentea'
+            -
+                script: "python -m coverage run setup.py test"
+                displayName: "Test mbed-ls"
+                workingDirectory: 'legacy/mbed-ls'
+            -
+                script: "python -m coverage run setup.py test"
+                displayName: "Test mbed-host-tests"
+                workingDirectory: 'legacy/mbed-host-tests'
+            -
+                script: "python -m coverage run setup.py test"
+                displayName: "Test mbed-greentea"
+                workingDirectory: 'legacy/mbed-greentea'
+    -
+        job: Build
+        dependsOn: Test
+        pool:
+            vmImage: Ubuntu-16.04
+        steps:
+            -
+                task: UsePythonVersion@0
+                inputs:
+                    versionSpec: 3.x
+                    architecture: x64
+            -
+                script: 'python setup.py sdist'
+                displayName: 'Build sdist'
