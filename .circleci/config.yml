@@ -18,19 +18,19 @@ commands:
         description: "Install all tools"
         steps:
             - run:
-                name: "Install mbed-os-tools for legacy package testing"
+                name: "Install mbed-os-tools for other package testing"
                 command: pip install --user .
             - run:
-                name: "Install legacy mbed-ls"
-                working_directory: legacy/mbed-ls
+                name: "Install mbed-ls"
+                working_directory: packages/mbed-ls
                 command: pip install --user .
             - run:
-                name: "Install legacy mbed-host-tests"
-                working_directory: legacy/mbed-host-tests
+                name: "Install mbed-host-tests"
+                working_directory: packages/mbed-host-tests
                 command: pip install --user .
             - run:
-                name: "Install legacy mbed-greentea"
-                working_directory: legacy/mbed-greentea
+                name: "Install mbed-greentea"
+                working_directory: packages/mbed-greentea
                 command: pip install --user .
     setup_and_run_tests:
         steps:
@@ -39,11 +39,11 @@ commands:
                 working_directory: .
             - install_all_tools
             - run_tests:
-                working_directory: legacy/mbed-ls
+                working_directory: packages/mbed-ls
             - run_tests:
-                working_directory: legacy/mbed-host-tests
+                working_directory: packages/mbed-host-tests
             - run_tests:
-                working_directory: legacy/mbed-greentea
+                working_directory: packages/mbed-greentea
 
     enforce_style:
         steps:
@@ -58,7 +58,7 @@ commands:
         steps:
             - run:
                 name: Combine all coverage results
-                command: python -m coverage combine .coverage legacy/*/.coverage
+                command: python -m coverage combine .coverage packages/*/.coverage
             - run:
                 name: Send coverage results to coveralls
                 command: python -m coveralls
