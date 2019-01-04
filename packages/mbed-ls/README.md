@@ -36,7 +36,7 @@ Install Mbed LS from sources with the following commands:
 
 ```bash
 $ git clone https://github.com/ARMmbed/mbed-os-tools.git
-$ cd mbed-os-tools/legacy/mbed-ls
+$ cd mbed-os-tools/packages/mbed-ls
 $ python setup.py install
 ```
 
