@@ -9,9 +9,9 @@ Below is a table showing what packages are delivered from this repository:
 | PyPI Package | Source | Depends on | Stable API |
 | ------- | ------ | ---------- | ---------- |
 | mbed-os-tools | `src/` | | **No** |
-| mbed-ls | `legacy/mbed-ls/` | mbed-os-tools | **Yes** |
-| mbed-host-tests | `legacy/mbed-host-tests/` | mbed-os-tools | **Yes** |
-| mbed-greentea | `legacy/mbed-greentea/` | mbed-os-tools | **Yes** |
+| mbed-ls | `packages/mbed-ls/` | mbed-os-tools | **Yes** |
+| mbed-host-tests | `packages/mbed-host-tests/` | mbed-os-tools | **Yes** |
+| mbed-greentea | `packages/mbed-greentea/` | mbed-os-tools | **Yes** |
 
 As indicated above, **the API provided by `mbed-os-tools` is not stable**. For this reason, please continue to use the other packages.
 
