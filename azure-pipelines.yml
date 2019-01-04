@@ -99,13 +99,6 @@ jobs:
                 script: "python -m coverage run setup.py test"
                 displayName: "Test mbed-greentea"
                 workingDirectory: 'legacy/mbed-greentea'
-            -
-                script: |
-                    python -m coverage combine .coverage legacy/*/.coverage
-                    pip install coveralls
-                    python -m coveralls
-                condition: eq(variables['extraActions'], 'true')
-                displayName: 'Publish code coverage to Coveralls'
     -
         job: Build
         dependsOn: Test
