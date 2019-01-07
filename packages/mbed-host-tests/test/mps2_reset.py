@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """
 mbed SDK
 Copyright (c) 2018 ARM Limited
