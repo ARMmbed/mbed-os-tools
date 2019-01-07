@@ -160,10 +160,10 @@ To install the mbed test suite, first clone the `mbed-os-tools` repository:
 $ git clone https://github.com/ARMmbed/mbed-os-tools.git
 ```
 
-Change the directory to the `mbed-os-tools/legacy/mbed-host-tests` directory:
+Change the directory to the `mbed-os-tools/packages/mbed-host-tests` directory:
 
 ```
-$ cd mbed-os-tools/legacy/mbed-host-tests
+$ cd mbed-os-tools/packages/mbed-host-tests
 ```
 
 Now you are ready to install `htrun`:

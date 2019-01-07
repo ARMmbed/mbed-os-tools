@@ -3,7 +3,7 @@
 # I'm inclined to agree, or not to dissagree.
 max-line-length = 88
 exclude =
-    legacy/*,
+    packages/*,
     src/mbed_os_tools/test/host_tests/*,
     src/mbed_os_tools/test/host_tests_conn_proxy/*,
     src/mbed_os_tools/test/host_tests_logger/*,
