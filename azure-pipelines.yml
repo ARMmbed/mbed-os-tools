@@ -78,27 +78,33 @@ jobs:
             -
                 script: 'pip install . && pip install -r test_requirements.txt'
                 displayName: 'Install mbed-ls'
-                workingDirectory: 'legacy/mbed-ls'
+                workingDirectory: 'packages/mbed-ls'
             -
                 script: 'pip install . && pip install -r test_requirements.txt'
                 displayName: 'Install mbed-host-tests'
-                workingDirectory: 'legacy/mbed-host-tests'
+                workingDirectory: 'packages/mbed-host-tests'
             -
                 script: 'pip install . && pip install -r test_requirements.txt'
                 displayName: 'Install mbed-greentea'
-                workingDirectory: 'legacy/mbed-greentea'
+                workingDirectory: 'packages/mbed-greentea'
             -
                 script: "python -m coverage run setup.py test"
                 displayName: "Test mbed-ls"
-                workingDirectory: 'legacy/mbed-ls'
+                workingDirectory: 'packages/mbed-ls'
             -
                 script: "python -m coverage run setup.py test"
                 displayName: "Test mbed-host-tests"
-                workingDirectory: 'legacy/mbed-host-tests'
+                workingDirectory: 'packages/mbed-host-tests'
             -
                 script: "python -m coverage run setup.py test"
                 displayName: "Test mbed-greentea"
-                workingDirectory: 'legacy/mbed-greentea'
+                workingDirectory: 'packages/mbed-greentea'
+            -
+                script: |
+                    python -m coverage combine .coverage packages/*/.coverage
+                    python -m coveralls
+                condition: eq(variables['extraActions'], 'true')
+                displayName: 'Send coverage results to coveralls'
     -
         job: Build
         dependsOn: Test
