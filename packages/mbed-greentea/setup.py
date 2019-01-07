@@ -52,7 +52,7 @@ setup(name='mbed-greentea',
           "console_scripts": ["mbedgt=mbed_greentea.mbed_greentea_cli:main",],
       },
       install_requires=[
-          "mbed-os-tools"
+          "mbed-os-tools==0.0.1"
       ],
       tests_require = [
           "mock>=2"
