@@ -54,14 +54,6 @@ commands:
             - run:
                 name: Enforce styling
                 command: python -m flake8
-    combine_and_send_coverage:
-        steps:
-            - run:
-                name: Combine all coverage results
-                command: python -m coverage combine .coverage packages/*/.coverage
-            - run:
-                name: Send coverage results to coveralls
-                command: python -m coveralls
 jobs:
     test_python27:
         docker:
@@ -83,7 +75,6 @@ jobs:
             - image: python:3.7-stretch
         steps:
             - setup_and_run_tests
-            - combine_and_send_coverage
 
     style_enforcement:
         docker:
