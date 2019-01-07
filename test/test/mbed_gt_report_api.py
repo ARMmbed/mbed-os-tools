@@ -106,9 +106,10 @@ class GreenteaReportApiFunctionality(unittest.TestCase):
         payload  = "PAYLOAD"
         filepath = "."
 
+        old_stdout = sys.stdout
         sys.stdout = stdout_capture = six.StringIO()
         result = mbed_report_api.export_to_file(filepath, payload)
-        sys.stdout = sys.__stdout__
+        sys.stdout = old_stdout
 
         command_output = stdout_capture.getvalue().splitlines()[0]
         self.assertIn("file failed:", command_output)
