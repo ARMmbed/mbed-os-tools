@@ -508,13 +508,16 @@ class PlatformDatabase(object):
         logger.debug("Trying remove of %s", id)
         if id is "*" and device_type in self._dbs[self._prim_db]:
             self._dbs[self._prim_db][device_type] = {}
-        for db in self._dbs.values():
-            if device_type in db and id in db[device_type]:
-                logger.debug("Removing id...")
-                removed = db[device_type][id]
-                del db[device_type][id]
-                self._keys[device_type].remove(id)
-                if permanent:
-                    self._update_db()
+            if permanent:
+                self._update_db()
+        else:
+            for db in self._dbs.values():
+                if device_type in db and id in db[device_type]:
+                    logger.debug("Removing id...")
+                    removed = db[device_type][id]
+                    del db[device_type][id]
+                    self._keys[device_type].remove(id)
+                    if permanent:
+                        self._update_db()
 
-                return _modify_data_format(removed, verbose_data)
+                    return _modify_data_format(removed, verbose_data)
