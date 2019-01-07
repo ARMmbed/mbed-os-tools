@@ -8,6 +8,3 @@ __pycache__/
 .mbedls-mock
 mbedls.json
 build/
-
-# Generated test config for local CircleCI testing
-.circleci/processed.yml
