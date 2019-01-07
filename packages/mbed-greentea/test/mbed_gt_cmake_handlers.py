@@ -100,9 +100,10 @@ add_test(mbed-client-test-helloworld-mbedclient "mbed-client-test-helloworld-mbe
         full_path = os.path.join(root_path, "resources")
 
         def run_and_capture(path, verbose=False):
+            old_stdout = sys.stdout
             sys.stdout = stdout_capture = six.StringIO()
             cmake_handlers.list_binaries_for_targets(build_dir=path, verbose_footer=verbose)
-            sys.stdout = sys.__stdout__
+            sys.stdout = old_stdout
 
             return stdout_capture.getvalue()
 
@@ -128,9 +129,10 @@ add_test(mbed-client-test-helloworld-mbedclient "mbed-client-test-helloworld-mbe
 
         for verbose in [True, False]:
             # Capture logging output
+            old_stdout = sys.stdout
             sys.stdout = stdout_capture = six.StringIO()
             cmake_handlers.list_binaries_for_builds(spec, verbose_footer=verbose)
-            sys.stdout = sys.__stdout__
+            sys.stdout = old_stdout
 
             output = stdout_capture.getvalue()
             self.assertTrue("available tests for build 'K64F-ARM'" in output)

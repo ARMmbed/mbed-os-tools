@@ -74,9 +74,10 @@ class GreenteaCliFunctionality(unittest.TestCase):
     def test_print_version(self):
         version = mbed_greentea_cli.get_greentea_version()
 
+        old_stdout = sys.stdout
         sys.stdout = stdout_capture = six.StringIO()
         mbed_greentea_cli.print_version()
-        sys.stdout = sys.__stdout__
+        sys.stdout = old_stdout
 
         printed_version = stdout_capture.getvalue().splitlines()[0]
         self.assertEqual(printed_version, version)

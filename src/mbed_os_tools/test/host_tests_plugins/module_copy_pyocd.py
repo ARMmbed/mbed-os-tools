@@ -73,7 +73,7 @@ class HostTestPluginCopyMethod_pyOCD(HostTestPluginBase):
             # Eventually pyOCD will know default clock speed
             # per target
             test_clock = 10000000
-            target_type = board.getTargetType()
+            target_type = session.board.target_type
             if target_type == "nrf51":
                 # Override clock since 10MHz is too fast
                 test_clock = 1000000
