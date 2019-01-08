@@ -16,7 +16,7 @@
 import re
 import os
 
-from .lstools_base import MbedDetectLsToolsBase
+from .lstools_base import MbedLsToolsBase
 
 import logging
 
@@ -35,14 +35,14 @@ def _readlink(link):
         return content
 
 
-class MbedLsToolsLinuxGeneric(MbedDetectLsToolsBase):
+class MbedLsToolsLinuxGeneric(MbedLsToolsBase):
     """ mbed-enabled platform for Linux with udev
     """
 
     def __init__(self, **kwargs):
         """! ctor
         """
-        MbedDetectLsToolsBase.__init__(self, **kwargs)
+        MbedLsToolsBase.__init__(self, **kwargs)
         self.nlp = re.compile(r"(pci|usb)-[0-9a-zA-Z:_-]*_(?P<usbid>[0-9a-zA-Z]*)-.*$")
         self.mmp = re.compile(r"(?P<dev>(/[^/ ]*)+) on (?P<dir>(/[^/ ]*)+) ")
         self.udp = re.compile(r"^[0-9]+-[0-9]+[^:\s]*$")

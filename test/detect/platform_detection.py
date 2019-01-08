@@ -18,11 +18,11 @@ import os
 import copy
 from mock import patch, mock_open, DEFAULT
 
-from mbed_os_tools.detect.lstools_base import MbedDetectLsToolsBase
+from mbed_os_tools.detect.lstools_base import MbedLsToolsBase
 
 TEST_DATA_PATH = 'test_data'
 
-class DummyLsTools(MbedDetectLsToolsBase):
+class DummyLsTools(MbedLsToolsBase):
     return_value = []
     def find_candidates(self):
         return self.return_value
@@ -85,7 +85,7 @@ class PlatformDetectionTestCase(unittest.TestCase):
             file_object.__iter__.return_value = test_data_file_data.splitlines(True)
             return file_object
 
-        with patch("mbed_os_tools.detect.lstools_base.MbedDetectLsToolsBase.mount_point_ready") as _mpr,\
+        with patch("mbed_os_tools.detect.lstools_base.MbedLsToolsBase.mount_point_ready") as _mpr,\
              patch('mbed_os_tools.detect.lstools_base.open', do_open) as _,\
              patch('mbed_os_tools.detect.lstools_base.listdir') as _listdir:
             _mpr.return_value = True

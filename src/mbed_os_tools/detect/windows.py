@@ -18,7 +18,7 @@ import sys
 from collections import defaultdict
 from copy import copy
 
-from .lstools_base import MbedDetectLsToolsBase
+from .lstools_base import MbedLsToolsBase
 
 import logging
 
@@ -245,12 +245,12 @@ class CompatibleIDsNotFoundException(Exception):
     pass
 
 
-class MbedLsToolsWin7(MbedDetectLsToolsBase):
+class MbedLsToolsWin7(MbedLsToolsBase):
     """ mbed-enabled platform detection for Windows
     """
 
     def __init__(self, **kwargs):
-        MbedDetectLsToolsBase.__init__(self, **kwargs)
+        MbedLsToolsBase.__init__(self, **kwargs)
         self.os_supported.append("Windows7")
 
     def find_candidates(self):

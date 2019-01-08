@@ -23,7 +23,7 @@ except ImportError:
     from plistlib import readPlistFromString as loads
 from xml.parsers.expat import ExpatError
 
-from .lstools_base import MbedDetectLsToolsBase
+from .lstools_base import MbedLsToolsBase
 
 import logging
 
@@ -108,12 +108,12 @@ def _dfs_usb_info(obj, parents):
     return output
 
 
-class MbedLsToolsDarwin(MbedDetectLsToolsBase):
+class MbedLsToolsDarwin(MbedLsToolsBase):
     """ mbed-enabled platform detection on Mac OS X
     """
 
     def __init__(self, **kwargs):
-        MbedDetectLsToolsBase.__init__(self, **kwargs)
+        MbedLsToolsBase.__init__(self, **kwargs)
         self.mac_version = float(".".join(platform.mac_ver()[0].split(".")[:2]))
 
     def find_candidates(self):
