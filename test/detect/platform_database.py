@@ -19,6 +19,7 @@ import errno
 import logging
 import tempfile
 import json
+import shutil
 from mock import patch, MagicMock, DEFAULT
 from io import StringIO
 
@@ -35,7 +36,8 @@ class EmptyPlatformDatabaseTests(unittest.TestCase):
     """
 
     def setUp(self):
-        self.base_db_path = os.path.join(tempfile.mkdtemp(), 'base')
+        self.tempd_dir = tempfile.mkdtemp()
+        self.base_db_path = os.path.join(self.tempd_dir, 'base')
         self.base_db = open(self.base_db_path, 'w+b')
         self.base_db.write(b'{}')
         self.base_db.seek(0)
@@ -43,6 +45,7 @@ class EmptyPlatformDatabaseTests(unittest.TestCase):
 
     def tearDown(self):
         self.base_db.close()
+        shutil.rmtree(self.tempd_dir)
 
     def test_broken_database_io(self):
         """Verify that the platform database still works without a
