@@ -43,7 +43,7 @@ class BasicTestCase(unittest.TestCase):
     """
 
     def setUp(self):
-        self.base = DummyLsTools()
+        self.base = DummyLsTools(force_mock=True)
 
     def tearDown(self):
         pass
