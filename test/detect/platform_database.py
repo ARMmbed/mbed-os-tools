@@ -19,6 +19,7 @@ import errno
 import logging
 import tempfile
 import json
+import shutil
 from mock import patch, MagicMock, DEFAULT
 from io import StringIO
 
@@ -35,7 +36,8 @@ class EmptyPlatformDatabaseTests(unittest.TestCase):
     """
 
     def setUp(self):
-        self.base_db_path = os.path.join(tempfile.mkdtemp(), 'base')
+        self.tempd_dir = tempfile.mkdtemp()
+        self.base_db_path = os.path.join(self.tempd_dir, 'base')
         self.base_db = open(self.base_db_path, 'w+b')
         self.base_db.write(b'{}')
         self.base_db.seek(0)
@@ -43,6 +45,7 @@ class EmptyPlatformDatabaseTests(unittest.TestCase):
 
     def tearDown(self):
         self.base_db.close()
+        shutil.rmtree(self.tempd_dir)
 
     def test_broken_database_io(self):
         """Verify that the platform database still works without a
@@ -122,6 +125,60 @@ class EmptyPlatformDatabaseTests(unittest.TestCase):
         self.assertEqual(self.pdb.get('4753', None), 'Test_Platform')
         self.assertEqual(self.pdb.remove('4753', permanent=False), 'Test_Platform')
         self.assertEqual(self.pdb.get('4753', None), None)
+
+    def test_remove_all(self):
+        """Test that multiple entries can be removed at once
+        """
+        self.assertEqual(self.pdb.get('4753', None), None)
+        self.assertEqual(self.pdb.get('4754', None), None)
+        self.pdb.add('4753', 'Test_Platform1', permanent=False)
+        self.pdb.add('4754', 'Test_Platform2', permanent=False)
+        self.assertEqual(self.pdb.get('4753', None), 'Test_Platform1')
+        self.assertEqual(self.pdb.get('4754', None), 'Test_Platform2')
+        self.pdb.remove('*', permanent=False)
+        self.assertEqual(self.pdb.get('4753', None), None)
+        self.assertEqual(self.pdb.get('4754', None), None)
+
+    def test_remove_permanent(self):
+        """Test that once something is removed permanently it no longer shows up
+        when queried
+        """
+        self.assertEqual(self.pdb.get('4753', None), None)
+        self.pdb.add('4753', 'Test_Platform', permanent=True)
+        self.assertEqual(self.pdb.get('4753', None), 'Test_Platform')
+
+        # Recreate platform database to simulate rerunning mbedls
+        self.pdb = PlatformDatabase([self.base_db_path])
+        self.assertEqual(self.pdb.get('4753', None), 'Test_Platform')
+        self.assertEqual(self.pdb.remove('4753', permanent=True), 'Test_Platform')
+        self.assertEqual(self.pdb.get('4753', None), None)
+
+        # Recreate platform database to simulate rerunning mbedls
+        self.pdb = PlatformDatabase([self.base_db_path])
+        self.assertEqual(self.pdb.get('4753', None), None)
+
+    def test_remove_all_permanent(self):
+        """Test that multiple entries can be removed permanently at once
+        """
+        self.assertEqual(self.pdb.get('4753', None), None)
+        self.assertEqual(self.pdb.get('4754', None), None)
+        self.pdb.add('4753', 'Test_Platform1', permanent=True)
+        self.pdb.add('4754', 'Test_Platform2', permanent=True)
+        self.assertEqual(self.pdb.get('4753', None), 'Test_Platform1')
+        self.assertEqual(self.pdb.get('4754', None), 'Test_Platform2')
+
+        # Recreate platform database to simulate rerunning mbedls
+        self.pdb = PlatformDatabase([self.base_db_path])
+        self.assertEqual(self.pdb.get('4753', None), 'Test_Platform1')
+        self.assertEqual(self.pdb.get('4754', None), 'Test_Platform2')
+        self.pdb.remove('*', permanent=True)
+        self.assertEqual(self.pdb.get('4753', None), None)
+        self.assertEqual(self.pdb.get('4754', None), None)
+
+        # Recreate platform database to simulate rerunning mbedls
+        self.pdb = PlatformDatabase([self.base_db_path])
+        self.assertEqual(self.pdb.get('4753', None), None)
+        self.assertEqual(self.pdb.get('4754', None), None)
 
     def test_bogus_add(self):
         """Test that add requires properly formatted platform ids

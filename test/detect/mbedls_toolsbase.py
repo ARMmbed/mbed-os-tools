@@ -41,7 +41,7 @@ class BasicTestCase(unittest.TestCase):
     """
 
     def setUp(self):
-        self.base = DummyLsTools()
+        self.base = DummyLsTools(force_mock=True)
 
     def tearDown(self):
         pass
@@ -263,6 +263,7 @@ Remount count: 0
         self.assertEqual(None, self.base.plat_db.get("0341"))
         self.assertEqual(None, self.base.plat_db.get("0342"))
         self.assertEqual(None, self.base.plat_db.get("0343"))
+
 
     def test_update_device_from_fs_mid_unmount(self):
         dummy_mount = 'dummy_mount'
