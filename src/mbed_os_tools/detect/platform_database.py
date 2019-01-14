@@ -314,6 +314,7 @@ DEFAULT_PLATFORM_DB = {
         u"C033": u"UBLOX_C030_R410M",
         u"C034": u"UBLOX_C030_S200",
         u"C035": u"UBLOX_C030_R3121",
+        u"C036": u"UBLOX_C030_R412M",
         u"FFFF": u"K20 BOOTLOADER",
         u"RIOT": u"RIOT",
     },
