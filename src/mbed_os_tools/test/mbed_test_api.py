@@ -125,7 +125,7 @@ def run_htrun(cmd, verbose):
     htrun_failure_line = re.compile('\[RXD\] (:\d+::FAIL: .*)')
 
     for line in iter(p.stdout.readline, b''):
-        decoded_line = line.decode('utf-8', 'ignore')
+        decoded_line = line.decode("utf-8", "replace")
         htrun_output += decoded_line
         # When dumping output to file both \r and \n will be a new line
         # To avoid this "extra new-line" we only use \n at the end
@@ -135,7 +135,20 @@ def run_htrun(cmd, verbose):
             gt_logger.gt_log_err(test_error.group(1))
 
         if verbose:
-            sys.stdout.write(decoded_line.rstrip() + '\n')
+            output = decoded_line.rstrip() + '\n'
+            try:
+                # Try to output decoded unicode. Should be fine in most Python 3
+                # environments.
+                sys.stdout.write(output)
+            except UnicodeEncodeError:
+                try:
+                    # Try to encode to unicode bytes and let the terminal handle
+                    # the decoding. Some Python 2 and OS combinations handle this
+                    # gracefully.
+                    sys.stdout.write(output.encode("utf-8"))
+                except TypeError:
+                    # Fallback to printing just ascii characters
+                    sys.stdout.write(output.encode("ascii", "replace").decode("ascii"))
             sys.stdout.flush()
 
     # Check if process was terminated by signal

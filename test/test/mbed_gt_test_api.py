@@ -15,7 +15,7 @@
 
 import unittest
 from mbed_os_tools.test import mbed_test_api
-
+from mock import patch, MagicMock
 
 
 class GreenteaTestAPI(unittest.TestCase):
@@ -588,6 +588,16 @@ Plugin info: HostTestPluginBase::BasePlugin: Waiting up to 60 sec for '024000003
     def test_get_testcase_result_start_tag_missing(self):
         result = mbed_test_api.get_testcase_result(self.OUTPUT_STARTTAG_MISSING)
         self.assertEqual(result['DNS query']['utest_log'], "__testcase_start tag not found.")
+
+    def test_run_htrun_unicode(self):
+        with patch("mbed_os_tools.test.mbed_test_api.run_command") as _run_command:
+            read_line_mock = MagicMock()
+            read_line_mock.decode = MagicMock(return_value=u"\u036b")
+            p_mock = MagicMock()
+            p_mock.wait = MagicMock(return_value=1337)
+            p_mock.stdout.readline = MagicMock(side_effect=[read_line_mock])
+            _run_command.return_value = p_mock
+            returncode, htrun_output = mbed_test_api.run_htrun("dummy", True)
 
 if __name__ == '__main__':
     unittest.main()
