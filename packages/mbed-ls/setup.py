@@ -52,7 +52,7 @@ setup(name='mbed-ls',
       },
       install_requires=[
           "PrettyTable>=0.7.2",
-          "mbed_os_tools==0.0.1"
+          "mbed-os-tools==0.0.1"
       ],
       tests_require = [
           "mock>=2",
