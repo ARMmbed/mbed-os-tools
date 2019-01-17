@@ -8,10 +8,10 @@ Below is a table showing what packages are delivered from this repository:
 
 | PyPI package | Source | Depends on | Stable API |
 | ------- | ------ | ---------- | ---------- |
-| `mbed-os-tools` | `src/` | | **No** |
-| `mbed-ls` | `packages/mbed-ls/` | `mbed-os-tools` | **Yes** |
-| `mbed-host-tests` | `packages/mbed-host-tests/` | `mbed-os-tools` | **Yes** |
-| `mbed-greentea` | `packages/mbed-greentea/` | `mbed-os-tools` | **Yes** |
+| `mbed-os-tools` ([Documentation](docs)) | [`src/`](src) | | **No** |
+| `mbed-ls` ([Documentation](packages/mbed-ls/README.md)) | [`packages/mbed-ls/`](packages/mbed-ls) | `mbed-os-tools` | **Yes** |
+| `mbed-host-tests` ([Documentation](packages/mbed-host-tests/README.md)) | [`packages/mbed-host-tests/`](packages/mbed-host-tests/) | `mbed-os-tools` | **Yes** |
+| `mbed-greentea` ([Documentation](packages/mbed-greentea/README.md)) | [`packages/mbed-greentea/`](packages/mbed-greentea/) | `mbed-os-tools` | **Yes** |
 
 As indicated above, **the API `mbed-os-tools` provides is not stable**. For this reason, please continue to use the other packages.
 
