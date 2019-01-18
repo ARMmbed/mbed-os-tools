@@ -29,9 +29,7 @@ class ParseMbedHTMTestCase(unittest.TestCase):
 
     # DAPlink <0240
     test_mbed_htm_k64f_url_str = '<meta http-equiv="refresh" content="0; url=http://mbed.org/device/?code=02400203D94B0E7724B7F3CF"/>'
-    test_mbed_htm_l152re_url_str = '<meta http-equiv="refresh" content="0; url=http://mbed.org/device/?code=07100200656A9A955A0F0CB8"/>'
     test_mbed_htm_lpc1768_url_str = '<meta http-equiv="refresh" content="0; url=http://mbed.org/start?auth=101000000000000000000002F7F1869557200730298d254d3ff3509e3fe4722d&loader=11972&firmware=16457&configuration=4" />'
-    test_mbed_htm_nucleo_l031k6_str = '<meta http-equiv="refresh" content="0; url=http://mbed.org/device/?code=07900221461663077952F5AA"/>'
     test_mbed_htm_nrf51_url_str = '<meta http-equiv="refresh" content="0; url=http://mbed.org/device/?code=1100021952333120353935373130313232323032AFD5DFD8"/>'
 
     # DAPLink 0240
@@ -47,17 +45,9 @@ class ParseMbedHTMTestCase(unittest.TestCase):
         target_id = self.mbeds._target_id_from_htm(self.test_mbed_htm_k64f_url_str)
         self.assertEqual('02400203D94B0E7724B7F3CF', target_id)
 
-    def test_mbed_htm_l152re_url(self):
-        target_id = self.mbeds._target_id_from_htm(self.test_mbed_htm_l152re_url_str)
-        self.assertEqual('07100200656A9A955A0F0CB8', target_id)
-
     def test_mbed_htm_lpc1768_url(self):
         target_id = self.mbeds._target_id_from_htm(self.test_mbed_htm_lpc1768_url_str)
         self.assertEqual('101000000000000000000002F7F1869557200730298d254d3ff3509e3fe4722d', target_id)
-
-    def test_daplink_nucleo_l031k6_url(self):
-        target_id = self.mbeds._target_id_from_htm(self.test_mbed_htm_nucleo_l031k6_str)
-        self.assertEqual('07900221461663077952F5AA', target_id)
 
     def test_daplink_240_mbed_html(self):
         target_id = self.mbeds._target_id_from_htm(self.test_daplink_240_mbed_html_str)
@@ -82,10 +72,6 @@ class ParseMbedHTMTestCase(unittest.TestCase):
         ver_bld = self.mbeds._mbed_htm_comment_section_ver_build('<!-- Version: 0200 Build: Mar 26 2014 13:22:20 -->')
         self.assertIsNotNone(ver_bld)
         self.assertEqual(('0200', 'Mar 26 2014 13:22:20'), ver_bld)
-
-        ver_bld = self.mbeds._mbed_htm_comment_section_ver_build('<!-- Version: 0200 Build: Aug 27 2014 13:29:28 -->')
-        self.assertIsNotNone(ver_bld)
-        self.assertEqual(('0200', 'Aug 27 2014 13:29:28'), ver_bld)
 
         ver_bld = self.mbeds._mbed_htm_comment_section_ver_build('<!-- Version: 0219 Build: Feb  2 2016 15:20:54 Git Commit SHA: 0853ba0cdeae2436c52efcba0ba76a6434c200ff Git local mods:No-->')
         self.assertIsNotNone(ver_bld)
