@@ -78,8 +78,6 @@ from mbed_os_tools.test.mbed_greentea_cli import (
     run_test_thread,
 )
 
-RET_NO_DEVICES = 1001
-RET_YOTTA_BUILD_FAIL = -1
 LOCAL_HOST_TESTS_DIR = './test/host_tests'  # Used by mbedhtrun -e <dir>
 
 
@@ -339,7 +337,7 @@ def main():
             except KeyboardInterrupt:
                 greentea_clean_kettle(gt_instance_uuid)
                 gt_logger.gt_log_err("ctrl+c keyboard interrupt!")
-                return(-2)    # Keyboard interrupt
+                return 1    # Keyboard interrupt
             except:
                 greentea_clean_kettle(gt_instance_uuid)
                 gt_logger.gt_log_err("unexpected error:")
@@ -353,7 +351,7 @@ def main():
             cli_ret = main_cli(opts, args)
         except KeyboardInterrupt:
             gt_logger.gt_log_err("ctrl+c keyboard interrupt!")
-            return(-2)    # Keyboard interrupt
+            return 1    # Keyboard interrupt
         except Exception as e:
             gt_logger.gt_log_err("unexpected error:")
             gt_logger.gt_log_tab(str(e))
@@ -364,6 +362,8 @@ def main():
         gt_logger.gt_log("completed in %.2f sec"% delta)
 
     if cli_ret:
+        if cli_ret < 0 or cli_ret > 255:
+            cli_ret = 1
         gt_logger.gt_log_err("exited with code %d"% cli_ret)
 
     return(cli_ret)
