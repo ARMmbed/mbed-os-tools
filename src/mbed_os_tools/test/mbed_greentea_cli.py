@@ -55,7 +55,7 @@ def create_filtered_test_list(ctest_test_list, test_by_names, skip_test, test_sp
 
     if test_by_names:
         filtered_ctest_test_list = {}   # Subset of 'ctest_test_list'
-        test_list = test_by_names.split(',')
+        test_list = test_by_names.lower().split(',')
         gt_logger.gt_log("test case filter (specified with -n option)")
 
         for test_name in set(test_list):
