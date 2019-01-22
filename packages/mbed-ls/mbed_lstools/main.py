@@ -189,7 +189,7 @@ def mbedls_main():
 
     if mbeds is None:
         logger.critical('This platform is not supported! Pull requests welcome at github.com/ARMmbed/mbed-ls')
-        sys.exit(-1)
+        sys.exit(1)
 
     ret_code = args.command(mbeds, args)
     if not ret_code:
