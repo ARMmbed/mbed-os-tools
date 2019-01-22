@@ -28,15 +28,18 @@ def main():
              2. Call default test execution function run() to start test instrumentation
     """
     freeze_support()
-    result = -2
+    result = 1
     test_selector = DefaultTestSelector(init_host_test_cli_params())
     try:
         result = test_selector.execute()
     except (KeyboardInterrupt, SystemExit):
         test_selector.finish()
-        result = -3
         raise
     else:
         test_selector.finish()
+
+    # Ensure we don't return a negative value
+    if result < 0 or result > 255:
+        result = 1
 
     return result
