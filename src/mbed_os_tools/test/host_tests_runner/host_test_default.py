@@ -37,7 +37,6 @@ from .host_test import DefaultTestSelectorBase
 from ..host_tests_logger import HtrunLogger
 from ..host_tests_conn_proxy import conn_process
 from ..host_tests_toolbox.host_functional import handle_send_break_cmd
-from ... import __version__
 if (sys.version_info > (3, 0)):
     from queue import Empty as QueueEmpty
 else:
@@ -80,18 +79,6 @@ class DefaultTestSelector(DefaultTestSelectorBase):
 
             if options.list_plugins:    # --plugins option
                 host_tests_plugins.print_plugin_info()
-                sys.exit(0)
-
-            if options.version:         # --version
-                print(__version__)
-                sys.exit(0)
-
-            if options.send_break_cmd:  # -b with -p PORT (and optional -r RESET_TYPE)
-                handle_send_break_cmd(port=options.port,
-                    disk=options.disk,
-                    reset_type=options.forced_reset_type,
-                    baudrate=options.baud_rate,
-                    verbose=options.verbose)
                 sys.exit(0)
 
             if options.global_resource_mgr or options.fast_model_connection:
