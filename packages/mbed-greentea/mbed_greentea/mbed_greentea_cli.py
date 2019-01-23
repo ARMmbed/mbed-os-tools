@@ -36,7 +36,6 @@ from threading import Thread
 from mbed_os_tools.test.mbed_test_api import (
     get_test_build_properties,
     get_test_spec,
-    run_host_test,
     log_mbed_devices_in_table,
     TEST_RESULTS,
     TEST_RESULT_OK,
@@ -67,6 +66,8 @@ from mbed_os_tools.test.mbed_greentea_hooks import GreenteaHooks
 from mbed_os_tools.test.tests_spec import TestBinary
 from mbed_os_tools.test.mbed_target_info import get_platform_property
 
+from .mbed_test_api import run_host_test
+
 import mbed_os_tools.detect
 import mbed_os_tools.test.host_tests_plugins as host_tests_plugins
 from mbed_os_tools.test.mbed_greentea_cli import (
@@ -75,7 +76,6 @@ from mbed_os_tools.test.mbed_greentea_cli import (
     LOCAL_HOST_TESTS_DIR,
     get_local_host_tests_dir,
     create_filtered_test_list,
-    run_test_thread,
 )
 
 LOCAL_HOST_TESTS_DIR = './test/host_tests'  # Used by mbedhtrun -e <dir>
@@ -368,6 +368,207 @@ def main():
 
     return(cli_ret)
 
+def run_test_thread(test_result_queue, test_queue, opts, mut, build, build_path, greentea_hooks):
+    test_exec_retcode = 0
+    test_platforms_match = 0
+    test_report = {}
+
+    disk = mut['mount_point']
+    port = mut['serial_port']
+    micro = mut['platform_name']
+    program_cycle_s = get_platform_property(micro, "program_cycle_s")
+    forced_reset_timeout = get_platform_property(micro, "forced_reset_timeout")
+    copy_method = get_platform_property(micro, "copy_method")
+    reset_method = get_platform_property(micro, "reset_method")
+
+    while not test_queue.empty():
+        try:
+            test = test_queue.get(False)
+        except Exception as e:
+            gt_logger.gt_log_err(str(e))
+            break
+
+        test_result = 'SKIPPED'
+
+        if opts.copy_method:
+            copy_method = opts.copy_method
+        elif not copy_method:
+            copy_method = 'shell'
+
+        if opts.reset_method:
+            reset_method = opts.reset_method
+
+        verbose = opts.verbose_test_result_only
+        enum_host_tests_path = get_local_host_tests_dir(opts.enum_host_tests)
+
+        test_platforms_match += 1
+        host_test_result = run_host_test(test['image_path'],
+                                         disk,
+                                         port,
+                                         build_path,
+                                         mut['target_id'],
+                                         micro=micro,
+                                         copy_method=copy_method,
+                                         reset=reset_method,
+                                         program_cycle_s=program_cycle_s,
+                                         forced_reset_timeout=forced_reset_timeout,
+                                         digest_source=opts.digest_source,
+                                         json_test_cfg=opts.json_test_configuration,
+                                         enum_host_tests_path=enum_host_tests_path,
+                                         global_resource_mgr=opts.global_resource_mgr,
+                                         fast_model_connection=opts.fast_model_connection,
+                                         num_sync_packtes=opts.num_sync_packtes,
+                                         tags=opts.tags,
+                                         retry_count=opts.retry_count,
+                                         polling_timeout=opts.polling_timeout,
+                                         verbose=verbose)
+
+        # Some error in htrun, abort test execution
+        if isinstance(host_test_result, int):
+            # int(host_test_result) > 0 - Call to mbedhtrun failed
+            # int(host_test_result) < 0 - Something went wrong while executing mbedhtrun
+            gt_logger.gt_log_err("run_test_thread.run_host_test() failed, aborting...")
+            break
+
+        # If execution was successful 'run_host_test' return tuple with results
+        single_test_result, single_test_output, single_testduration, single_timeout, result_test_cases, test_cases_summary, memory_metrics = host_test_result
+        test_result = single_test_result
+
+        build_path_abs = os.path.abspath(build_path)
+
+        if single_test_result != TEST_RESULT_OK:
+            test_exec_retcode += 1
+
+        if single_test_result in [TEST_RESULT_OK, TEST_RESULT_FAIL]:
+            if greentea_hooks:
+                # Test was successful
+                # We can execute test hook just after test is finished ('hook_test_end')
+                format = {
+                    "test_name": test['test_bin'],
+                    "test_bin_name": os.path.basename(test['image_path']),
+                    "image_path": test['image_path'],
+                    "build_path": build_path,
+                    "build_path_abs": build_path_abs,
+                    "build_name": build,
+                }
+                greentea_hooks.run_hook_ext('hook_test_end', format)
+
+        # Update report for optional reporting feature
+        test_suite_name = test['test_bin'].lower()
+        if build not in test_report:
+            test_report[build] = {}
+
+        if test_suite_name not in test_report[build]:
+            test_report[build][test_suite_name] = {}
+
+        if not test_cases_summary and not result_test_cases:
+            gt_logger.gt_log_warn("test case summary event not found")
+            gt_logger.gt_log_tab("no test case report present, assuming test suite to be a single test case!")
+
+            # We will map test suite result to test case to
+            # output valid test case in report
+
+            # Generate "artificial" test case name from test suite name#
+            # E.g:
+            #   mbed-drivers-test-dev_null -> dev_null
+            test_case_name = test_suite_name
+            test_str_idx = test_suite_name.find("-test-")
+            if test_str_idx != -1:
+                test_case_name = test_case_name[test_str_idx + 6:]
+
+            gt_logger.gt_log_tab("test suite: %s"% test_suite_name)
+            gt_logger.gt_log_tab("test case: %s"% test_case_name)
+
+            # Test case result: OK, FAIL or ERROR
+            tc_result_text = {
+                "OK": "OK",
+                "FAIL": "FAIL",
+            }.get(single_test_result, 'ERROR')
+
+            # Test case integer success code OK, FAIL and ERROR: (0, >0, <0)
+            tc_result = {
+                "OK": 0,
+                "FAIL": 1024,
+                "ERROR": -1024,
+            }.get(tc_result_text, '-2048')
+
+            # Test case passes and failures: (1 pass, 0 failures) or (0 passes, 1 failure)
+            tc_passed, tc_failed = {
+                0: (1, 0),
+            }.get(tc_result, (0, 1))
+
+            # Test case report build for whole binary
+            # Add test case made from test suite result to test case report
+            result_test_cases = {
+                test_case_name: {
+                        'duration': single_testduration,
+                        'time_start': 0.0,
+                        'time_end': 0.0,
+                        'utest_log': single_test_output.splitlines(),
+                        'result_text': tc_result_text,
+                        'passed': tc_passed,
+                        'failed': tc_failed,
+                        'result': tc_result,
+                    }
+            }
+
+            # Test summary build for whole binary (as a test case)
+            test_cases_summary = (tc_passed, tc_failed, )
+
+        gt_logger.gt_log("test on hardware with target id: %s"% (mut['target_id']))
+        gt_logger.gt_log("test suite '%s' %s %s in %.2f sec"% (test['test_bin'],
+            '.' * (80 - len(test['test_bin'])),
+            test_result,
+            single_testduration))
+
+        # Test report build for whole binary
+        test_report[build][test_suite_name]['single_test_result'] = single_test_result
+        test_report[build][test_suite_name]['single_test_output'] = single_test_output
+        test_report[build][test_suite_name]['elapsed_time'] = single_testduration
+        test_report[build][test_suite_name]['platform_name'] = micro
+        test_report[build][test_suite_name]['copy_method'] = copy_method
+        test_report[build][test_suite_name]['testcase_result'] = result_test_cases
+        test_report[build][test_suite_name]['memory_metrics'] = memory_metrics
+
+        test_report[build][test_suite_name]['build_path'] = build_path
+        test_report[build][test_suite_name]['build_path_abs'] = build_path_abs
+        test_report[build][test_suite_name]['image_path'] = test['image_path']
+        test_report[build][test_suite_name]['test_bin_name'] = os.path.basename(test['image_path'])
+
+        passes_cnt, failures_cnt = 0, 0
+        for tc_name in sorted(result_test_cases.keys()):
+            gt_logger.gt_log_tab("test case: '%s' %s %s in %.2f sec"% (tc_name,
+                '.' * (80 - len(tc_name)),
+                result_test_cases[tc_name].get('result_text', '_'),
+                result_test_cases[tc_name].get('duration', 0.0)))
+            if result_test_cases[tc_name].get('result_text', '_') == 'OK':
+                passes_cnt += 1
+            else:
+                failures_cnt += 1
+
+        if test_cases_summary:
+            passes, failures = test_cases_summary
+            gt_logger.gt_log("test case summary: %d pass%s, %d failur%s"% (passes,
+                '' if passes == 1 else 'es',
+                failures,
+                'e' if failures == 1 else 'es'))
+            if passes != passes_cnt or failures != failures_cnt:
+                gt_logger.gt_log_err("utest test case summary mismatch: utest reported passes and failures miscount!")
+                gt_logger.gt_log_tab("reported by utest: passes = %d, failures %d)"% (passes, failures))
+                gt_logger.gt_log_tab("test case result count: passes = %d, failures %d)"% (passes_cnt, failures_cnt))
+
+        if single_test_result != 'OK' and not verbose and opts.report_fails:
+            # In some cases we want to print console to see why test failed
+            # even if we are not in verbose mode
+            gt_logger.gt_log_tab("test failed, reporting console output (specified with --report-fails option)")
+            print
+            print(single_test_output)
+
+    #greentea_release_target_id(mut['target_id'], gt_instance_uuid)
+    test_result_queue.put({'test_platforms_match': test_platforms_match,
+                           'test_exec_retcode': test_exec_retcode,
+                           'test_report': test_report})
+    return
 
 def main_cli(opts, args, gt_instance_uuid=None):
     """! This is main CLI function with all command line parameters
@@ -447,7 +648,6 @@ def main_cli(opts, args, gt_instance_uuid=None):
                                          None,
                                          None,
                                          None,
-                                         hooks=greentea_hooks,
                                          digest_source=opts.digest_source,
                                          enum_host_tests_path=enum_host_tests_path,
                                          verbose=verbose)
