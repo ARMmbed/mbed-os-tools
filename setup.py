@@ -30,7 +30,7 @@ def read(fname):
 
 setup(
     name="mbed-os-tools",
-    version=read("src/mbed_os_tools/VERSION.txt"),
+    version=read("src/mbed_os_tools/VERSION.txt").strip(),
     description=DESCRIPTION,
     long_description=read("README.md"),
     author=OWNER_NAMES,
