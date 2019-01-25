@@ -570,7 +570,8 @@ class DefaultTestSelector(DefaultTestSelectorBase):
 
     @staticmethod
     def _parse_grm(grm_arg):
-        grm_module, grm_host, grm_port = grm_arg.split(':')
+        grm_module, leftover = grm_arg.split(':', 1)
+        grm_host, grm_port = leftover.rsplit(':', 1)
 
         return {
             "grm_module" : grm_module,
