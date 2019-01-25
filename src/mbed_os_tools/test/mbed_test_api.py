@@ -570,7 +570,8 @@ def parse_global_resource_mgr(global_resource_mgr):
     @return tuple wity four elements from GRM or None if error
     """
     try:
-        platform_name, module_name, ip_name, port_name = global_resource_mgr.split(':')
+        platform_name, module_name, leftover = global_resource_mgr.split(':', 2)
+        ip_name, port_name = leftover.rsplit(':', 1)
     except ValueError as e:
         return False
     return platform_name, module_name, ip_name, port_name
