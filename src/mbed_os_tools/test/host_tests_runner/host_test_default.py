@@ -179,14 +179,9 @@ class DefaultTestSelector(DefaultTestSelectorBase):
         }
 
         if self.options.global_resource_mgr:
-            grm_module, grm_host, grm_port = self.options.global_resource_mgr.split(':')
-
-            config.update({
-                "conn_resource" : 'grm',
-                "grm_module" : grm_module,
-                "grm_host" : grm_host,
-                "grm_port" : grm_port,
-            })
+            grm_config = self._parse_grm(self.options.global_resource_mgr)
+            grm_config["conn_resource"] = "grm"
+            config.update(grm_config)
 
         if self.options.fast_model_connection:
 
@@ -572,3 +567,13 @@ class DefaultTestSelector(DefaultTestSelectorBase):
                 # May not be a regular expression
                 return False
         return self.compare_log_idx == len(self.compare_log)
+
+    @staticmethod
+    def _parse_grm(grm_arg):
+        grm_module, grm_host, grm_port = grm_arg.split(':')
+
+        return {
+            "grm_module" : grm_module,
+            "grm_host" : grm_host,
+            "grm_port" : grm_port,
+        }
