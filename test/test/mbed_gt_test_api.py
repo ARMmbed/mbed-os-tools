@@ -604,8 +604,16 @@ Plugin info: HostTestPluginBase::BasePlugin: Waiting up to 60 sec for '024000003
         result = mbed_test_api.parse_global_resource_mgr(":".join(expected))
         self.assertEqual(result, expected)
 
+        expected = ("K64F", "module_name", "10.2.123.43", None)
+        result = mbed_test_api.parse_global_resource_mgr(":".join(expected[:3]))
+        self.assertEqual(result, expected)
+
         expected = ("K64F", "module_name", "https://10.2.123.43", "3334")
         result = mbed_test_api.parse_global_resource_mgr(":".join(expected))
+        self.assertEqual(result, expected)
+
+        expected = ("K64F", "module_name", "https://10.2.123.43", None)
+        result = mbed_test_api.parse_global_resource_mgr(":".join(expected[:3]))
         self.assertEqual(result, expected)
 
 if __name__ == '__main__':

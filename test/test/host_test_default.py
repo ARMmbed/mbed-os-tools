@@ -25,12 +25,28 @@ class HostTestDefaultTestCase(unittest.TestCase):
             "grm_host" : "10.2.123.43",
             "grm_port" : "3334",
         }
+
+        # Case that includes an IP address but no protocol
         arg = [expected["grm_module"], expected["grm_host"], expected["grm_port"]]
         result = DefaultTestSelector._parse_grm(":".join(arg))
         self.assertEqual(result, expected)
 
+        # Case that includes an IP address but no protocol nor a no port
+        expected["grm_port"] = None
+        arg = [expected["grm_module"], expected["grm_host"]]
+        result = DefaultTestSelector._parse_grm(":".join(arg))
+        self.assertEqual(result, expected)
+
+        # Case that includes an IP address and a protocol
         expected["grm_host"] = "https://10.2.123.43"
+        expected["grm_port"] = "443"
         arg = [expected["grm_module"], expected["grm_host"], expected["grm_port"]]
+        result = DefaultTestSelector._parse_grm(":".join(arg))
+        self.assertEqual(result, expected)
+
+        # Case that includes an IP address and a protocol, but no port
+        expected["grm_port"] = None
+        arg = [expected["grm_module"], expected["grm_host"]]
         result = DefaultTestSelector._parse_grm(":".join(arg))
         self.assertEqual(result, expected)
 
