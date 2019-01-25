@@ -571,7 +571,16 @@ def parse_global_resource_mgr(global_resource_mgr):
     """
     try:
         platform_name, module_name, leftover = global_resource_mgr.split(':', 2)
-        ip_name, port_name = leftover.rsplit(':', 1)
+        parts = leftover.rsplit(':', 1)
+
+        try:
+            ip_name, port_name = parts
+            _ = int(port_name)
+        except ValueError:
+            # No valid port was found, so assume no port was supplied
+            ip_name = leftover
+            port_name = None
+
     except ValueError as e:
         return False
     return platform_name, module_name, ip_name, port_name
