@@ -599,5 +599,14 @@ Plugin info: HostTestPluginBase::BasePlugin: Waiting up to 60 sec for '024000003
             _run_command.return_value = p_mock
             returncode, htrun_output = mbed_test_api.run_htrun("dummy", True)
 
+    def test_parse_global_resource_mgr(self):
+        expected = ("K64F", "module_name", "10.2.123.43", "3334")
+        result = mbed_test_api.parse_global_resource_mgr(":".join(expected))
+        self.assertEqual(result, expected)
+
+        expected = ("K64F", "module_name", "https://10.2.123.43", "3334")
+        result = mbed_test_api.parse_global_resource_mgr(":".join(expected))
+        self.assertEqual(result, expected)
+
 if __name__ == '__main__':
     unittest.main()
