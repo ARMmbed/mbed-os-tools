@@ -37,7 +37,7 @@ def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname), encoding="utf8").read()
 
 setup(name='mbed-host-tests',
-      version='1.5.0',
+      version='1.5.1',
       description=DESCRIPTION,
       long_description=read('README.md'),
       long_description_content_type='text/markdown',
@@ -55,7 +55,7 @@ setup(name='mbed-host-tests',
              "mbedflsh=mbed_host_tests.mbedflsh:main"],
       },
       install_requires=[
-        "mbed-os-tools==0.0.1"
+        "mbed-os-tools==0.0.2"
       ],
       tests_require=[
         "mock>=2"

@@ -34,7 +34,7 @@ def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname), encoding="utf8").read()
 
 setup(name='mbed-ls',
-      version='1.7.0',
+      version='1.7.1',
       description=DESCRIPTION,
       long_description=read('README.md'),
       author=OWNER_NAMES,
@@ -52,7 +52,7 @@ setup(name='mbed-ls',
       },
       install_requires=[
           "PrettyTable>=0.7.2",
-          "mbed-os-tools==0.0.1"
+          "mbed-os-tools==0.0.2"
       ],
       tests_require = [
           "mock>=2",
