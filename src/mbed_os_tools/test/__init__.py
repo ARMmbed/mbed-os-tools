@@ -237,8 +237,9 @@ def init_host_test_cli_params():
         "--grm",
         dest="global_resource_mgr",
         help=(
-            "[Experimental] Global resource manager service module name, IP "
-            "and port, example remote_client:10.2.123.43:3334"
+            'Global resource manager: "<remote mgr module>:<host url or IP address>'
+            '[:<port>]", Ex. "module_name:10.2.123.43:3334", '
+            'module_name:https://example.com"'
         ),
     )
 

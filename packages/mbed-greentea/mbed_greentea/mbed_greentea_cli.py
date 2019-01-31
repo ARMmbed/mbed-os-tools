@@ -176,7 +176,13 @@ def main():
 
     parser.add_option('-g', '--grm',
                     dest='global_resource_mgr',
-                    help='Global resource manager service query: platrform name, remote mgr module name, IP address and port, example K64F:module_name:10.2.123.43:3334')
+                    help=(
+                        'Global resource manager: "<platform name>:'
+                        '<remote mgr module>:<host url or IP address>[:<port>]", '
+                        'Ex. "K64F:module_name:10.2.123.43:3334", '
+                        '"K64F:module_name:https://example.com"'
+                    )
+    )
 
     # Show --fm option only if "fm_agent" module installed
     try:
