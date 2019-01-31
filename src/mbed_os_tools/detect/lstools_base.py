@@ -398,9 +398,9 @@ class MbedLsToolsBase(object):
                     '-' remove mid from mocking entry
         @return Mocked structure (json format)
         """
-        if oper is "+":
+        if oper == "+":
             self.plat_db.add(mid, platform_name, permanent=True)
-        elif oper is "-":
+        elif oper == "-":
             self.plat_db.remove(mid, permanent=True)
         else:
             raise ValueError("oper can only be [+-]")
