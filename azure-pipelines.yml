@@ -65,7 +65,7 @@ jobs:
                 displayName: 'Install mbed-os test dependencies'
             -
                 script: |
-                    pip install --user flake8
+                    pip install --user flake8==3.7.3
                     python -m flake8
                 condition: eq(variables['extraActions'], 'true')
                 displayName: 'Enforce code style'
