@@ -515,7 +515,7 @@ class PlatformDatabase(object):
         as a dict.
         """
         logger.debug("Trying remove of %s", id)
-        if id is "*" and device_type in self._dbs[self._prim_db]:
+        if id == "*" and device_type in self._dbs[self._prim_db]:
             self._dbs[self._prim_db][device_type] = {}
             if permanent:
                 self._update_db()
