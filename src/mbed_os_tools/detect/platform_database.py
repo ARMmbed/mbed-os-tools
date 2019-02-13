@@ -63,7 +63,7 @@ DEFAULT_PLATFORM_DB = {
         u"0230": u"K20D50M",
         u"0231": u"K22F",
         u"0234": u"RAPIDIOT_KW41Z",
-        u"0236": u"LPC55S69",
+        u"0236": u"LPC55S69_NS",
         u"0240": u"K64F",
         u"0245": u"K64F",
         u"0250": u"KW24D",
