@@ -686,7 +686,7 @@ def main_cli(opts, args, gt_instance_uuid=None):
             gt_logger.gt_log_warn("entering global resource manager mbed-ls dummy mode!")
             grm_platform_name, grm_module_name, grm_ip_name, grm_port_name = grm_values
             mbeds_list = []
-            if grm_platform_name is '*':
+            if grm_platform_name == '*':
                 required_devices = [tb.get_platform() for tb in test_spec.get_test_builds()]
                 for _ in range(parallel_test_exec):
                     for device in required_devices:
