@@ -266,6 +266,7 @@ DEFAULT_PLATFORM_DB = {
         u"3108": u"SDT32429B",
         u"3110": u"SDT32439B",
         u"3300": u"CC3220SF",
+        u"3701": u"S5JS100",
         u"4000": u"LPC11U35_Y5_MBUG",
         u"4005": u"NRF51822_Y5_MBUG",
         u"4100": u"MOTE_L152RC",
