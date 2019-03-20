@@ -544,16 +544,23 @@ def get_result_overlay_testcase_dropdown(result_div_id, index, testcase_result_n
 
     testcase_utest_log_dropdown = get_dropdown_html(testcase_utest_div_id,
                                                     "uTest Log",
-                                                    "\n".join(testcase_result['utest_log']).rstrip("\n"),
+                                                    "\n".join(testcase_result.get('utest_log', 'n/a')).rstrip("\n"),
                                                     output_text=True,
                                                     sub_dropdown=True)
 
-    testcase_info = testcase_result_template % (testcase_result['result_text'],
-                                                testcase_result['duration'],
-                                                datetime.datetime.fromtimestamp(testcase_result['time_start']).strftime('%d-%m-%Y %H:%M:%S.%f'),
-                                                datetime.datetime.fromtimestamp(testcase_result['time_end']).strftime('%d-%m-%Y %H:%M:%S.%f'),
-                                                testcase_result['failed'],
-                                                testcase_result['passed'],
+    time_start = 'n/a'
+    time_end = 'n/a'
+    if 'time_start' in testcase_result.keys():
+        time_start = datetime.datetime.fromtimestamp(testcase_result['time_start']).strftime('%d-%m-%Y %H:%M:%S.%f')
+    if 'time_end' in testcase_result.keys():
+        time_end = datetime.datetime.fromtimestamp(testcase_result['time_end']).strftime('%d-%m-%Y %H:%M:%S.%f')
+
+    testcase_info = testcase_result_template % (testcase_result.get('result_text', 'n/a'),
+                                                testcase_result.get('duration', 'n/a'),
+                                                time_start,
+                                                time_end,
+                                                testcase_result.get('failed', 'n/a'),
+                                                testcase_result.get('passed', 'n/a'),
                                                 testcase_utest_log_dropdown)
 
     testcase_class = get_result_colour_class(testcase_result['result_text'])
@@ -563,6 +570,7 @@ def get_result_overlay_testcase_dropdown(result_div_id, index, testcase_result_n
                                           title_classes=testcase_class,
                                           sub_dropdown=True)
     return testcase_dropdown
+
 
 def get_result_overlay_testcases_dropdown_menu(result_div_id, test_results):
     """! Get the HTML for a test overlay's testcase dropdown menu
