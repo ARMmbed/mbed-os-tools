@@ -23,7 +23,9 @@ class RemoteConnectorPrimitive(ConnectorPrimitive):
         self.config = config
         self.target_id = self.config.get('target_id', None)
         self.grm_host = config.get('grm_host', None)
-        self.grm_port = int(config.get('grm_port', 8000))
+        self.grm_port = config.get('grm_port', None)
+        if self.grm_port:
+            self.grm_port = int(self.grm_port)
         self.grm_module = config.get('grm_module', 'unknown')
         self.platform_name = config.get('platform_name', None)
         self.baudrate = config.get('baudrate', DEFAULT_BAUD_RATE)
