@@ -603,11 +603,21 @@ def get_result_overlay_dropdowns(result_div_id, test_results):
     """
 
     # The HTML for the dropdown containing the ouput of the test
+    import sys
+
     result_output_div_id = "%s_output" % result_div_id
+
+    if sys.version_info >= (3, 0):
+        if type(test_results['single_test_output']) == bytes:
+            test_output = test_results['single_test_output'].decode('utf-8', 'backslashreplace')
+        else:
+            test_output = test_results['single_test_output']
+    else:
+        test_output = test_results['single_test_output'].decode('utf-8', 'replace')
+
     result_output_dropdown = get_dropdown_html(result_output_div_id,
                                                "Test Output",
-                                               test_results['single_test_output']
-                                               .decode("utf-8", "replace")
+                                               test_output
                                                .rstrip("\n"),
                                                output_text=True)
 
