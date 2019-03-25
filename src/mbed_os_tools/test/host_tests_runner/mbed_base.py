@@ -88,6 +88,11 @@ class Mbed:
             """! Get the remount count from 'DETAILS.TXT' file
             @return Returns count, None if not-available
             """
+
+            #In case of no disk path, nothing to do
+            if disk_path is None:
+                return None
+                
             for cur_try in range(1, tries + 1):
                 try:
                     files_on_disk = [x.upper() for x in os.listdir(disk_path)]
