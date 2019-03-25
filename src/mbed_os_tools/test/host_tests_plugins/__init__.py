@@ -33,6 +33,8 @@ from . import module_reset_pyocd
 # Additional, non standard platforms
 from . import module_copy_silabs
 from . import module_reset_silabs
+from . import module_copy_jlink
+from . import module_reset_jlink
 from . import module_copy_stlink
 from . import module_reset_stlink
 from . import module_copy_ublox
@@ -56,6 +58,8 @@ HOST_TEST_PLUGIN_REGISTRY.register_plugin(module_copy_pyocd.load_plugin())
 # Extra platforms support
 HOST_TEST_PLUGIN_REGISTRY.register_plugin(module_copy_mps2.load_plugin())
 HOST_TEST_PLUGIN_REGISTRY.register_plugin(module_reset_mps2.load_plugin())
+HOST_TEST_PLUGIN_REGISTRY.register_plugin(module_copy_jlink.load_plugin())
+HOST_TEST_PLUGIN_REGISTRY.register_plugin(module_reset_jlink.load_plugin())
 HOST_TEST_PLUGIN_REGISTRY.register_plugin(module_copy_silabs.load_plugin())
 HOST_TEST_PLUGIN_REGISTRY.register_plugin(module_reset_silabs.load_plugin())
 HOST_TEST_PLUGIN_REGISTRY.register_plugin(module_copy_stlink.load_plugin())
