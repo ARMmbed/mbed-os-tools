@@ -604,11 +604,11 @@ def get_result_overlay_dropdowns(result_div_id, test_results):
 
     # The HTML for the dropdown containing the ouput of the test
     result_output_div_id = "%s_output" % result_div_id
-    result_output_dropdown = get_dropdown_html(result_output_div_id,
-                                               "Test Output",
-                                               test_results['single_test_output']
-                                               .decode("utf-8", "replace")
-                                               .rstrip("\n"),
+
+    test_output = test_results['single_test_output'] if type(test_results['single_test_output']) == str else \
+        test_results['single_test_output'].decode("utf-8", "replace")
+
+    result_output_dropdown = get_dropdown_html(result_output_div_id, "Test Output", test_output.rstrip("\n"),
                                                output_text=True)
 
     # Add a dropdown for the testcases if they are present
