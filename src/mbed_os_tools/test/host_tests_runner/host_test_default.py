@@ -164,6 +164,7 @@ class DefaultTestSelector(DefaultTestSelectorBase):
             "digest" : "serial",
             "port" : self.mbed.port,
             "baudrate" : self.mbed.serial_baud,
+            "mcu" : self.mbed.mcu,
             "program_cycle_s" : self.options.program_cycle_s,
             "reset_type" : self.options.forced_reset_type,
             "target_id" : self.options.target_id,

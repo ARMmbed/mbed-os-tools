@@ -36,6 +36,7 @@ class Mbed:
         self.logger = HtrunLogger('MBED')
         # Options related to copy / reset mbed device
         self.port = self.options.port
+        self.mcu = self.options.micro
         self.disk = self.options.disk
         self.target_id = self.options.target_id
         self.image_path = self.options.image_path.strip('"') if self.options.image_path is not None else ''
@@ -80,7 +81,7 @@ class Mbed:
                 self.logger.prn_err("Test configuration JSON Unexpected error:", str(e))
                 raise
 
-    def copy_image(self, image_path=None, disk=None, copy_method=None, port=None, retry_copy=5):
+    def copy_image(self, image_path=None, disk=None, copy_method=None, port=None, mcu=None, retry_copy=5):
         """! Closure for copy_image_raw() method.
         @return Returns result from copy plugin
         """
@@ -167,6 +168,8 @@ class Mbed:
             copy_method = self.copy_method
         if not port:
             port = self.port
+        if not mcu:
+            mcu = self.mcu
         if not retry_copy:
             retry_copy = self.retry_copy
         target_id = self.target_id
@@ -182,7 +185,7 @@ class Mbed:
         for count in range(0, retry_copy):
             initial_remount_count = get_remount_count(disk)
             # Call proper copy method
-            result = self.copy_image_raw(image_path, disk, copy_method, port)
+            result = self.copy_image_raw(image_path, disk, copy_method, port, mcu)
             sleep(self.program_cycle_s)
             if not result:
                 continue
@@ -191,7 +194,7 @@ class Mbed:
                 break
         return result
 
-    def copy_image_raw(self, image_path=None, disk=None, copy_method=None, port=None):
+    def copy_image_raw(self, image_path=None, disk=None, copy_method=None, port=None, mcu=None):
         """! Copy file depending on method you want to use. Handles exception
              and return code from shell copy commands.
         @return Returns result from copy plugin
@@ -209,6 +212,7 @@ class Mbed:
         result = ht_plugins.call_plugin('CopyMethod',
                                         copy_method,
                                         image_path=image_path,
+                                        mcu=mcu,
                                         serial=port,
                                         destination_disk=disk,
                                         target_id=self.target_id,
