@@ -221,18 +221,17 @@ class HostTestPluginBase:
             return False
         return True
 
-    def run_command(self, cmd, shell=True, stdin = None, stdout = None):
+    def run_command(self, cmd, shell=True, stdin = None):
         """! Runs command from command line.
         @param cmd Command to execute
         @param shell True if shell command should be executed (eg. ls, ps)
         @param stdin A custom stdin for the process running the command (defaults to None)
-        @param stdout A custom stdout for the process running the command (defaults to None)
         @details Function prints 'cmd' return code if execution failed
         @return True if command successfully executed
         """
         result = True
         try:
-            ret = call(cmd, shell=shell, stdin=stdin, stdout=stdout)
+            ret = call(cmd, shell=shell, stdin=stdin)
             if ret:
                 self.print_plugin_error("[ret=%d] Command: %s"% (int(ret), cmd))
                 return False

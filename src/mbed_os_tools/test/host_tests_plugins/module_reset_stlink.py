@@ -17,7 +17,6 @@ import os
 import sys
 import tempfile
 from .host_test_plugins import HostTestPluginBase
-from .host_tests_logger import HtrunLogger
 
 FIX_FILE_NAME = "enter_file.txt"
 
@@ -51,7 +50,6 @@ class HostTestPluginResetMethod_Stlink(HostTestPluginBase):
     def setup(self, *args, **kwargs):
         """! Configure plugin, this function should be called before plugin execute() method is used.
         """
-        self.logger = HtrunLogger('STLINK_RESET_PLUGIN')
         # Note you need to have eACommander.exe on your system path!
         self.ST_LINK_CLI = 'ST-LINK_CLI.exe'
         return True
@@ -66,7 +64,7 @@ class HostTestPluginResetMethod_Stlink(HostTestPluginBase):
             with open(file_path, "w") as fix_file:
                 fix_file.write(os.linesep)
         except (OSError, IOError):
-            self.logger.prn_err("Error opening STLINK-PRESS-ENTER-BUG file")
+            self.print_plugin_error("Error opening STLINK-PRESS-ENTER-BUG file")
             sys.exit(1)
 
 
@@ -95,16 +93,11 @@ class HostTestPluginResetMethod_Stlink(HostTestPluginBase):
                 enter_file_path = os.path.join(tempfile.gettempdir(), FIX_FILE_NAME)
                 self.create_stlink_fix_file(enter_file_path)
                 try:
-                    with open(enter_fix_file, 'r') as fix_file:
-                        std_args = {'stdin' : fix_file}
-                        if 'stdin' in kwargs:
-                            std_args['stdin'] = kwargs['stdin']
-                        if 'stdout' in kwargs:
-                            std_args['stdout'] = kwargs['stdout']
-
-                        result = self.run_command(cmd, **std_args)
+                    with open(enter_file_path, 'r') as fix_file:
+                        stdin_arg = kwargs.get('stdin', fix_file)
+                        result = self.run_command(cmd, stdin = stdin_arg)
                 except (OSError, IOError):
-                    self.logger.prn_err("Error opening STLINK-PRESS-ENTER-BUG file")
+                    self.print_plugin_error("Error opening STLINK-PRESS-ENTER-BUG file")
                     sys.exit(1)
 
         return result
