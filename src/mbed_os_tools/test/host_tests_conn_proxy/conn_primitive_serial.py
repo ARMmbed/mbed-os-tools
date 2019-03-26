@@ -31,6 +31,7 @@ class SerialConnectorPrimitive(ConnectorPrimitive):
         self.write_timeout = 5
         self.config = config
         self.target_id = self.config.get('target_id', None)
+        self.mcu = self.config.get('mcu', None)
         self.polling_timeout = config.get('polling_timeout', 60)
         self.forced_reset_timeout = config.get('forced_reset_timeout', 1)
         self.skip_reset = config.get('skip_reset', False)
@@ -86,6 +87,7 @@ class SerialConnectorPrimitive(ConnectorPrimitive):
             reset_type,
             serial=self.serial,
             disk=disk,
+            mcu=self.mcu,
             target_id=self.target_id,
             polling_timeout=self.config.get('polling_timeout'))
         # Post-reset sleep
