@@ -17,7 +17,6 @@ import os
 import tempfile
 
 from .host_test_plugins import HostTestPluginBase
-from ..host_tests_logger import HtrunLogger
 
 
 COPY_FILE = "copy.jlink"
@@ -45,7 +44,6 @@ class HostTestPluginCopyMethod_Jlink(HostTestPluginBase):
     def setup(self, *args, **kwargs):
         """! Configure plugin, this function should be called before plugin execute() method is used.
         """
-        self.logger = HtrunLogger('JLINK_COPY_PLUGIN')
         #Note you need to have jlink.exe on your system path!
         self.JLINK = 'JLink.exe'
         return True
@@ -58,22 +56,13 @@ class HostTestPluginCopyMethod_Jlink(HostTestPluginBase):
         @param image_path path to the binary file to flash
         """
         with open(path, "w") as jlink_script:
-            #TODO: Fix this wierd os.linesep in every line
-            jlink_script.write("connect {}".format(os.linesep))
-            jlink_script.write("erase {}".format(os.linesep))
-            jlink_script.write("loadbin {0} 0x80000000{1}".format(image_path, os.linesep))
-            jlink_script.write("r {}".format(os.linesep))
-            jlink_script.write("go {}".format(os.linesep))
-            jlink_script.write("exit {}".format(os.linesep))
+            jlink_script.write("connect\n")
+            jlink_script.write("erase\n")
+            jlink_script.write("loadbin {0} 0x08000000\n".format(image_path))
+            jlink_script.write("r\n")
+            jlink_script.write("go\n")
+            jlink_script.write("exit\n")
 
-    def internal_param_check(self, **kwargs):
-        """! Internal check for the JLINK sepcial kwargs
-        """
-        #TODO: Isn't this function's behaviour already covered in `required_parameters`? If so do we need to remove the logger as well?
-        if kwargs['mcu'] == None or kwargs['image_path'] == None:
-            self.logger.prn_err("MCU/image path isn't sepcified")
-            return False
-        return True
 
     def execute(self, capability, *args, **kwargs):
         """! Executes capability by name
@@ -89,9 +78,6 @@ class HostTestPluginCopyMethod_Jlink(HostTestPluginBase):
         result = False
         if self.check_parameters(capability, *args, **kwargs) is True:
             
-            if not self.internal_param_check(**kwargs):
-                return False
-            
             mcu = os.path.normpath(kwargs['mcu'])
             image_path = os.path.normpath(kwargs['image_path'])
 
@@ -99,23 +85,22 @@ class HostTestPluginCopyMethod_Jlink(HostTestPluginBase):
 
             self.build_jlink_script(jlink_file_path, image_path)
 
-            #TODO: Should these params be configurable somehow?
             if capability == 'JTAG':
                 cmd = [self.JLINK,
                        "-device", mcu,
                        "-if", "JTAG",
                        "-jtagconf", "-1,-1",
-                       "speed", "1000",
+                       "-speed", "1000",
                        "-CommanderScript", jlink_file_path]
 
             elif capability == 'SWD':
                 cmd = [self.JLINK,
                        "-device", mcu,
                        "-if", "SWD",
-                       "speed", "1000",
+                       "-speed", "1000",
                        "-CommanderScript", jlink_file_path]
             else:
-                self.logger.prn_err("Unsupported capability")
+                self.print_plugin_error("Unsupported capability")
 
             result = self.run_command(cmd)
 
