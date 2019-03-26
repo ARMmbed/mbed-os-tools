@@ -15,6 +15,7 @@
 
 import unittest
 from mock import patch
+from copy import copy
 
 from mbed_os_tools.test.mbed_report_api import exporter_html, \
     exporter_memory_metrics_csv, exporter_testcase_junit, \
@@ -49,5 +50,8 @@ class ReportEmitting(unittest.TestCase):
                 }
             }
         }
+        # Pass a copy of the test data
+        # A function call may modify the test data, and the modified
+        # data will be passed on to the next tests.
         for report_fn in self.report_fns:
-            report_fn(test_data)
+            report_fn(copy(test_data))
