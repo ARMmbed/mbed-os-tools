@@ -23,6 +23,7 @@ import sys
 import random
 import optparse
 import imp
+import io
 from time import time
 try:
     from Queue import Queue
@@ -980,7 +981,7 @@ def main_cli(opts, args, gt_instance_uuid=None):
             @return True if write was successful, else return False
             """
             try:
-                with open(filename, 'w') as f:
+                with io.open(filename, encoding="utf-8", errors="backslashreplace", mode="w") as f:
                     f.write(content)
             except IOError as e:
                 gt_logger.gt_log_err("can't export to '%s', reason:"% filename)
