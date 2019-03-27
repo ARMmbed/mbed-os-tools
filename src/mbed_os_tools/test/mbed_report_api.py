@@ -37,8 +37,7 @@ def exporter_json(test_result_ext, test_suite_properties=None):
     for target in test_result_ext.values():
         for suite in target.values():
             try:
-                suite["single_test_output"] = suite["single_test_output"]\
-                                              .decode("utf-8", "replace")
+                suite["single_test_output"] = suite["single_test_output"]
             except KeyError:
                 pass
     return json.dumps(test_result_ext, indent=4)
@@ -161,16 +160,7 @@ def exporter_testcase_junit(test_result_ext, test_suite_properties=None):
         test_results = test_result_ext[target_name]
         for test_suite_name in test_results:
             test = test_results[test_suite_name]
-
-            try:
-                if sys.version_info >= (3, 0):
-                    tc_stdout = str(test['single_test_output']).encode('ascii', 'ignore')
-                else:
-                    tc_stdout = test['single_test_output'].decode('unicode_escape').encode('ascii', 'ignore')
-            except UnicodeDecodeError as e:
-                err_mgs = "(UnicodeDecodeError) exporter_testcase_junit:", str(e)
-                tc_stdout = err_mgs
-                print(err_mgs)
+            tc_stdout = test['single_test_output']
 
             # testcase_result stores info about test case results
             testcase_result = test['testcase_result']
@@ -189,18 +179,7 @@ def exporter_testcase_junit(test_result_ext, test_suite_properties=None):
                 utest_log = testcase_result[tc_name].get('utest_log', '')
                 result_text = testcase_result[tc_name].get('result_text', "UNDEF")
 
-                try:
-                    lines = '\n'.join(utest_log)
-
-                    if sys.version_info >= (3, 0):
-                        tc_stderr = str(lines).encode('ascii', 'ignore')
-                    else:
-                        tc_stderr = lines.decode('unicode_escape').encode('ascii', 'ignore')
-                except UnicodeDecodeError as e:
-                    err_mgs = "(UnicodeDecodeError) exporter_testcase_junit:" + str(e)
-                    tc_stderr = err_mgs
-                    print(err_mgs)
-
+                tc_stderr = '\n'.join(utest_log)
                 tc_class = target_name + '.' + test_suite_name
 
                 if result_text == 'SKIPPED':
@@ -604,12 +583,11 @@ def get_result_overlay_dropdowns(result_div_id, test_results):
 
     # The HTML for the dropdown containing the ouput of the test
     result_output_div_id = "%s_output" % result_div_id
-    result_output_dropdown = get_dropdown_html(result_output_div_id,
-                                               "Test Output",
-                                               test_results['single_test_output']
-                                               .decode("utf-8", "replace")
-                                               .rstrip("\n"),
-                                               output_text=True)
+    result_output_dropdown = get_dropdown_html(
+        result_output_div_id, "Test Output",
+        test_results['single_test_output'].rstrip("\n"),
+        output_text=True
+    )
 
     # Add a dropdown for the testcases if they are present
     if len(test_results) > 0:
