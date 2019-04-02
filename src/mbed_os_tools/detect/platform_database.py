@@ -104,6 +104,7 @@ DEFAULT_PLATFORM_DB = {
         u"0462": u"MTB_USI_WM_BN_BM_22",
         u"0465": u"MTB_LAIRD_BL654",
         u"0466": u"MTB_MURATA_WSM_BL241",
+        u"0467": u"MTB_STM_S2LP",
         u"0468": u"MTB_STM_L475",
         u"0469": u"MTB_STM32_F439",
         u"0472": u"MTB_ACONNO_ACN52832",
