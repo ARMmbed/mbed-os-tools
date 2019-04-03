@@ -88,6 +88,8 @@ class ConnPrimitiveRemoteTestCase(unittest.TestCase):
         # allocate is called
         self.remote.client.allocate.assert_called_once_with({
             'platform_name': self.config.get('platform_name'),
+            'power_on': True,
+            'connected': True,
             'tags': {"a": True, "b": True}})
 
         # flash is called
