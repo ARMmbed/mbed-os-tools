@@ -71,6 +71,7 @@ class ConnPrimitiveRemoteTestCase(unittest.TestCase):
             "image_path": "test.bin",
             "platform_name": "my_platform",
         }
+        TestCommandToCheckIfTestModificationsAreTakenIntoAccount
         self.importer = mock.MagicMock()
         self.importer.side_effect = lambda x: RemoteModuleMock
         self.remote = RemoteConnectorPrimitive("remote", self.config, self.importer)
