@@ -37,7 +37,7 @@ def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname), encoding="utf-8").read()
 
 setup(name='mbed-greentea',
-      version='1.6.3',
+      version='1.6.4',
       description=DESCRIPTION,
       long_description=read('README.md'),
       author=OWNER_NAMES,
@@ -52,7 +52,7 @@ setup(name='mbed-greentea',
           "console_scripts": ["mbedgt=mbed_greentea.mbed_greentea_cli:main",],
       },
       install_requires=[
-          "mbed-os-tools==0.0.4",
+          "mbed-os-tools==0.0.5",
           "mbed-host-tests>=1.5.0,<2"
       ],
       tests_require = [
