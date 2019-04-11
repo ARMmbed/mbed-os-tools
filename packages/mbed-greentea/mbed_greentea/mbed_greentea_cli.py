@@ -695,7 +695,7 @@ def main_cli(opts, args, gt_instance_uuid=None):
             else:
                 for _ in range(parallel_test_exec):
                     mbeds_list.append(mbeds.get_dummy_platform(grm_platform_name))
-            opts.global_resource_mgr = ':'.join(grm_values[1:])
+            opts.global_resource_mgr = ':'.join([v for v in grm_values[1:] if v])
             gt_logger.gt_log_tab("adding dummy platform '%s'"% grm_platform_name)
         else:
             gt_logger.gt_log("global resource manager switch '--grm %s' in wrong format!"% opts.global_resource_mgr)
