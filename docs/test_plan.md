@@ -14,9 +14,9 @@ The goal of delivering the unified Mbed OS tools is to improve testing and quali
 
 The tools are currently in separate packages:
 
-- `mbed-ls` (Mbed LS): https://github.com/ARMmbed/mbed-ls
-- `mbed-host-tests` (htrun): https://github.com/ARMmbed/htrun
-- `mbed-greentea` (greentea): https://github.com/ARMmbed/greentea
+- `mbed-ls` (Mbed LS): https://pypi.org/project/mbed-ls
+- `mbed-host-tests` (htrun): https://pypi.org/project/mbed-host-tests
+- `mbed-greentea` (greentea): https://pypi.org/project/mbed-greentea
 
 They all have their own test suites of varying completeness. Part of the effort of bringing these projects into the unified tools packages was to get these test suites passing consistently under all operating systems.
 

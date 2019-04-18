@@ -33,6 +33,7 @@ setup(
     version=read("src/mbed_os_tools/VERSION.txt").strip(),
     description=DESCRIPTION,
     long_description=read("README.md"),
+    long_description_content_type='text/markdown',
     author=OWNER_NAMES,
     author_email=OWNER_EMAILS,
     maintainer=OWNER_NAMES,
