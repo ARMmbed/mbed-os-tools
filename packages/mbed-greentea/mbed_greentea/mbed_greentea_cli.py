@@ -424,6 +424,7 @@ def run_test_thread(test_result_queue, test_queue, opts, mut, build, build_path,
                                          enum_host_tests_path=enum_host_tests_path,
                                          global_resource_mgr=opts.global_resource_mgr,
                                          fast_model_connection=opts.fast_model_connection,
+                                         compare_log=test['compare_log'],
                                          num_sync_packtes=opts.num_sync_packtes,
                                          tags=opts.tags,
                                          retry_count=opts.retry_count,
@@ -872,10 +873,11 @@ def main_cli(opts, args, gt_instance_uuid=None):
 
             for test_name in filtered_ctest_test_list_keys:
                 image_path = filtered_ctest_test_list[test_name].get_binary(binary_type=TestBinary.BIN_TYPE_BOOTABLE).get_path()
+                compare_log = filtered_ctest_test_list[test_name].get_binary(binary_type=TestBinary.BIN_TYPE_BOOTABLE).get_comp_log()
                 if image_path is None:
                     gt_logger.gt_log_err("Failed to find test binary for test %s flash method %s" % (test_name, 'usb'))
                 else:
-                    test = {"test_bin": test_name, "image_path": image_path}
+                    test = {"test_bin": test_name, "image_path": image_path, "compare_log": compare_log}
                     test_queue.put(test)
 
             number_of_threads = 0

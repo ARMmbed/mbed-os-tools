@@ -74,6 +74,7 @@ def run_host_test(image_path,
                   enum_host_tests_path=None,
                   global_resource_mgr=None,
                   fast_model_connection=None,
+                  compare_log=None,
                   num_sync_packtes=None,
                   polling_timeout=None,
                   retry_count=1,
@@ -212,7 +213,8 @@ def run_host_test(image_path,
         # Example:
         # $ mbedhtrun -f "tests-mbed_drivers-generic_tests.elf" -m FVP_MPS2_M3 --fm DEFAULT
         cmd += ['--fm', fast_model_connection]
-
+    if compare_log:
+        cmd += ['--compare-log', compare_log]
     if program_cycle_s:
         cmd += ["-C", str(program_cycle_s)]
     if forced_reset_timeout:

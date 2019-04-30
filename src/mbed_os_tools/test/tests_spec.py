@@ -29,12 +29,13 @@ class TestBinary:
 
     KW_BIN_TYPE = "binary_type"
     KW_BIN_PATH = "path"
+    KW_COMP_LOG = "compare_log"
 
     BIN_TYPE_BOOTABLE = "bootable"
     BIN_TYPE_DEFAULT = BIN_TYPE_BOOTABLE
     SUPPORTED_BIN_TYPES = [BIN_TYPE_BOOTABLE]
 
-    def __init__(self, path, binary_type):
+    def __init__(self, path, binary_type, compare_log):
         """
         ctor.
 
@@ -48,6 +49,7 @@ class TestBinary:
         )
         self.__path = path
         self.__flash_method = binary_type
+        self.__comp_log = compare_log
 
     def get_path(self):
         """
@@ -55,6 +57,12 @@ class TestBinary:
         :return:
         """
         return self.__path
+    def get_comp_log(self):
+        """
+        Gives compare log file.
+        :return:
+        """
+        return self.__comp_log
 
 
 class Test:
@@ -109,10 +117,10 @@ class Test:
             ), "Binary spec should contain key [%s]" % ",".join(mandatory_keys)
             fm = binary.get(TestBinary.KW_BIN_TYPE, self.__default_flash_method)
             assert fm is not None, "Binary type not specified in build and binary spec."
-            tb = TestBinary(binary[TestBinary.KW_BIN_PATH], fm)
+            tb = TestBinary(binary[TestBinary.KW_BIN_PATH], fm, binary.get(TestBinary.KW_COMP_LOG))
             self.__binaries_by_flash_method[fm] = tb
 
-    def add_binary(self, path, binary_type):
+    def add_binary(self, path, binary_type, compare_log=None):
         """
         Add binary to the test.
 
@@ -120,7 +128,7 @@ class Test:
         :param binary_type:
         :return:
         """
-        self.__binaries_by_flash_method[binary_type] = TestBinary(path, binary_type)
+        self.__binaries_by_flash_method[binary_type] = TestBinary(path, binary_type, compare_log)
 
 
 class TestBuild:
