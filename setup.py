@@ -57,7 +57,7 @@ setup(
         "six>=1.0,<2.0",
         "colorama>=0.3,<0.5",
     ],
-    tests_require=["mock>=2", "pytest>=3"],
+    tests_require=read("test_requirements.txt").splitlines(),
     extras_require={
         "pyocd": ["pyocd==0.14.0"]
     },
