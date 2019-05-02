@@ -65,10 +65,13 @@ jobs:
                 displayName: 'Install mbed-os test dependencies'
             -
                 script: |
-                    pip install --user flake8==3.7.3 'urllib3<1.25'
+                    pip install --user flake8==3.7.3
                     python -m flake8
                 condition: eq(variables['extraActions'], 'true')
                 displayName: 'Enforce code style'
+            -
+                script: 'pip install --user "urllib3<1.25"'
+                displayName: 'Fix dependency issue for requests package'
             -
                 script: "python -m coverage run setup.py test"
                 displayName: "Test mbed-os-tools"
