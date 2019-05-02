@@ -61,7 +61,7 @@ jobs:
                     versionSpec: $(python.version)
                     architecture: x64
             -
-                script: 'python -m pip install --upgrade pip && pip install -r test_requirements.txt && pip install pytest'
+                script: 'python -m pip install --upgrade pip && pip install -r test_requirements.txt'
                 displayName: 'Install mbed-os test dependencies'
             -
                 script: |
@@ -69,6 +69,9 @@ jobs:
                     python -m flake8
                 condition: eq(variables['extraActions'], 'true')
                 displayName: 'Enforce code style'
+            -
+                script: 'pip install --user "urllib3<1.25"'
+                displayName: 'Fix dependency issue for requests package'
             -
                 script: "python -m coverage run setup.py test"
                 displayName: "Test mbed-os-tools"
