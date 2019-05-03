@@ -4,53 +4,53 @@ jobs:
         strategy:
             matrix:
                 LinuxPython27:
-                    python.version: '2.7'
+                    python.version: "2.7"
                     imageName: ubuntu-16.04
-                    extraActions: 'false'
+                    extraActions: "false"
                 LinuxPython35:
-                    python.version: '3.5'
+                    python.version: "3.5"
                     imageName: ubuntu-16.04
-                    extraActions: 'false'
+                    extraActions: "false"
                 LinuxPython36:
-                    python.version: '3.6'
+                    python.version: "3.6"
                     imageName: ubuntu-16.04
-                    extraActions: 'false'
+                    extraActions: "false"
                 LinuxPython37:
-                    python.version: '3.7'
+                    python.version: "3.7"
                     imageName: ubuntu-16.04
-                    extraActions: 'true'
+                    extraActions: "true"
                 MacPython27:
-                    python.version: '2.7'
+                    python.version: "2.7"
                     imageName: macos-10.13
-                    extraActions: 'false'
+                    extraActions: "false"
                 MacPython35:
-                    python.version: '3.5'
+                    python.version: "3.5"
                     imageName: macos-10.13
-                    extraActions: 'false'
+                    extraActions: "false"
                 MacPython36:
-                    python.version: '3.6'
+                    python.version: "3.6"
                     imageName: macos-10.13
-                    extraActions: 'false'
+                    extraActions: "false"
                 MacPython37:
-                    python.version: '3.7'
+                    python.version: "3.7"
                     imageName: macos-10.13
-                    extraActions: 'false'
+                    extraActions: "false"
                 WindowsPython27:
-                    python.version: '2.7'
+                    python.version: "2.7"
                     imageName: vs2017-win2016
-                    extraActions: 'false'
+                    extraActions: "false"
                 WindowsPython35:
-                    python.version: '3.5'
+                    python.version: "3.5"
                     imageName: vs2017-win2016
-                    extraActions: 'false'
+                    extraActions: "false"
                 WindowsPython36:
-                    python.version: '3.6'
+                    python.version: "3.6"
                     imageName: vs2017-win2016
-                    extraActions: 'false'
+                    extraActions: "false"
                 WindowsPython37:
-                    python.version: '3.7'
+                    python.version: "3.7"
                     imageName: vs2017-win2016
-                    extraActions: 'false'
+                    extraActions: "false"
             maxParallel: 10
         pool:
             vmImage: $(imageName)
@@ -61,17 +61,17 @@ jobs:
                     versionSpec: $(python.version)
                     architecture: x64
             -
-                script: 'python -m pip install --upgrade pip && pip install -r test_requirements.txt'
-                displayName: 'Install mbed-os test dependencies'
+                script: "python -m pip install --upgrade pip && pip install -r test_requirements.txt"
+                displayName: "Install mbed-os test dependencies"
             -
                 script: |
                     pip install --user flake8==3.7.3
                     python -m flake8
                 condition: eq(variables['extraActions'], 'true')
-                displayName: 'Enforce code style'
+                displayName: "Enforce code style"
             -
                 script: 'pip install --user "urllib3<1.25"'
-                displayName: 'Fix dependency issue for requests package'
+                displayName: "Fix dependency issue for requests package"
             -
                 script: "python -m coverage run setup.py test"
                 displayName: "Test mbed-os-tools"
@@ -79,35 +79,35 @@ jobs:
                 script: "python setup.py sdist && pip install dist/*"
                 displayName: "Install mbed-os-tools"
             -
-                script: 'python setup.py sdist && pip install dist/*'
-                displayName: 'Install mbed-ls'
-                workingDirectory: 'packages/mbed-ls'
+                script: "python setup.py sdist && pip install dist/*"
+                displayName: "Install mbed-ls"
+                workingDirectory: "packages/mbed-ls"
             -
-                script: 'python setup.py sdist && pip install dist/*'
-                displayName: 'Install mbed-host-tests'
-                workingDirectory: 'packages/mbed-host-tests'
+                script: "python setup.py sdist && pip install dist/*"
+                displayName: "Install mbed-host-tests"
+                workingDirectory: "packages/mbed-host-tests"
             -
-                script: 'python setup.py sdist && pip install dist/*'
-                displayName: 'Install mbed-greentea'
-                workingDirectory: 'packages/mbed-greentea'
+                script: "python setup.py sdist && pip install dist/*"
+                displayName: "Install mbed-greentea"
+                workingDirectory: "packages/mbed-greentea"
             -
                 script: "python -m coverage run setup.py test"
                 displayName: "Test mbed-ls"
-                workingDirectory: 'packages/mbed-ls'
+                workingDirectory: "packages/mbed-ls"
             -
                 script: "python -m coverage run setup.py test"
                 displayName: "Test mbed-host-tests"
-                workingDirectory: 'packages/mbed-host-tests'
+                workingDirectory: "packages/mbed-host-tests"
             -
                 script: "python -m coverage run setup.py test"
                 displayName: "Test mbed-greentea"
-                workingDirectory: 'packages/mbed-greentea'
+                workingDirectory: "packages/mbed-greentea"
             -
                 script: |
                     python -m coverage combine .coverage packages/*/.coverage
                     python -m coveralls
                 condition: eq(variables['extraActions'], 'true')
-                displayName: 'Send coverage results to coveralls'
+                displayName: "Send coverage results to coveralls"
     -
         job: Build
         dependsOn: Test
@@ -120,5 +120,5 @@ jobs:
                     versionSpec: 3.x
                     architecture: x64
             -
-                script: 'python setup.py sdist'
-                displayName: 'Build sdist'
+                script: "python setup.py sdist"
+                displayName: "Build sdist"
