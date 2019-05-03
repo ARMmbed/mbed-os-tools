@@ -76,18 +76,18 @@ jobs:
                 script: "python -m coverage run setup.py test"
                 displayName: "Test mbed-os-tools"
             -
-                script: "pip install ."
+                script: "python setup.py sdist && pip install dist/*"
                 displayName: "Install mbed-os-tools"
             -
-                script: 'pip install . && pip install -r test_requirements.txt'
+                script: 'python setup.py sdist && pip install dist/*'
                 displayName: 'Install mbed-ls'
                 workingDirectory: 'packages/mbed-ls'
             -
-                script: 'pip install . && pip install -r test_requirements.txt'
+                script: 'python setup.py sdist && pip install dist/*'
                 displayName: 'Install mbed-host-tests'
                 workingDirectory: 'packages/mbed-host-tests'
             -
-                script: 'pip install . && pip install -r test_requirements.txt'
+                script: 'python setup.py sdist && pip install dist/*'
                 displayName: 'Install mbed-greentea'
                 workingDirectory: 'packages/mbed-greentea'
             -
