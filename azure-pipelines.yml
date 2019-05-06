@@ -1,56 +1,71 @@
 jobs:
     -
+        job: Code style check
+        pool:
+            vmImage: ubuntu-16.04
+        steps:
+            -
+                task: UsePythonVersion@0
+                inputs:
+                    versionSpec: "3.7"
+                    architecture: x64
+            -
+                script: |
+                    pip install --user flake8==3.7.3
+                    python -m flake8
+                displayName: "Code style check"
+    -
         job: Test
         strategy:
             matrix:
                 LinuxPython27:
                     python.version: "2.7"
                     imageName: ubuntu-16.04
-                    extraActions: "false"
+                    sendCoverage: "false"
                 LinuxPython35:
                     python.version: "3.5"
                     imageName: ubuntu-16.04
-                    extraActions: "false"
+                    sendCoverage: "false"
                 LinuxPython36:
                     python.version: "3.6"
                     imageName: ubuntu-16.04
-                    extraActions: "false"
+                    sendCoverage: "false"
                 LinuxPython37:
                     python.version: "3.7"
                     imageName: ubuntu-16.04
-                    extraActions: "true"
+                    sendCoverage: "true"
                 MacPython27:
                     python.version: "2.7"
                     imageName: macos-10.13
-                    extraActions: "false"
+                    sendCoverage: "false"
                 MacPython35:
                     python.version: "3.5"
                     imageName: macos-10.13
-                    extraActions: "false"
+                    sendCoverage: "false"
                 MacPython36:
                     python.version: "3.6"
                     imageName: macos-10.13
-                    extraActions: "false"
+                    sendCoverage: "false"
                 MacPython37:
                     python.version: "3.7"
                     imageName: macos-10.13
-                    extraActions: "false"
+                    sendCoverage: "false"
                 WindowsPython27:
                     python.version: "2.7"
                     imageName: vs2017-win2016
-                    extraActions: "false"
+                    sendCoverage: "false"
                 WindowsPython35:
                     python.version: "3.5"
                     imageName: vs2017-win2016
-                    extraActions: "false"
+                    sendCoverage: "false"
                 WindowsPython36:
                     python.version: "3.6"
                     imageName: vs2017-win2016
-                    extraActions: "false"
+                    sendCoverage: "false"
                 WindowsPython37:
                     python.version: "3.7"
                     imageName: vs2017-win2016
-                    extraActions: "false"
+                    sendCoverage: "false"
             maxParallel: 10
         pool:
             vmImage: $(imageName)
@@ -63,12 +78,6 @@ jobs:
             -
                 script: "python -m pip install --upgrade pip && pip install -r test_requirements.txt"
                 displayName: "Install mbed-os test dependencies"
-            -
-                script: |
-                    pip install --user flake8==3.7.3
-                    python -m flake8
-                condition: eq(variables['extraActions'], 'true')
-                displayName: "Enforce code style"
             -
                 script: 'pip install --user "urllib3<1.25"'
                 displayName: "Fix dependency issue for requests package"
@@ -106,7 +115,7 @@ jobs:
                 script: |
                     python -m coverage combine .coverage packages/*/.coverage
                     python -m coveralls
-                condition: eq(variables['extraActions'], 'true')
+                condition: eq(variables['sendCoverage'], 'true')
                 displayName: "Send coverage results to coveralls"
             -
                 script: "pip uninstall -y mbed-os-tools mbed-ls mbed-greentea mbed-host-tests"
