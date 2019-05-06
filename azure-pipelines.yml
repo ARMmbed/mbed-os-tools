@@ -10,10 +10,11 @@ jobs:
                     versionSpec: "3.7"
                     architecture: x64
             -
-                script: |
-                    pip install --user flake8==3.7.3
-                    python -m flake8
-                displayName: "Code style check"
+                script: pip install --user flake8==3.7.3
+                displayName: "Install flake8"
+            -
+                script: python -m flake8
+                displayName: "Run flake8"
     -
         job: test
         strategy:
