@@ -1,56 +1,72 @@
 jobs:
     -
-        job: Test
+        job: code_style_check
+        pool:
+            vmImage: ubuntu-16.04
+        steps:
+            -
+                task: UsePythonVersion@0
+                inputs:
+                    versionSpec: "3.7"
+                    architecture: x64
+            -
+                script: pip install --user flake8==3.7.3
+                displayName: "Install flake8"
+            -
+                script: python -m flake8
+                displayName: "Run flake8"
+    -
+        job: test
         strategy:
             matrix:
-                LinuxPython27:
+                linux_python_2_7:
                     python.version: "2.7"
                     imageName: ubuntu-16.04
-                    extraActions: "false"
-                LinuxPython35:
+                    sendCoverage: "false"
+                linux_python_3_5:
                     python.version: "3.5"
                     imageName: ubuntu-16.04
-                    extraActions: "false"
-                LinuxPython36:
+                    sendCoverage: "false"
+                linux_python_3_6:
                     python.version: "3.6"
                     imageName: ubuntu-16.04
-                    extraActions: "false"
-                LinuxPython37:
+                    sendCoverage: "false"
+                linux_python_3_7:
                     python.version: "3.7"
                     imageName: ubuntu-16.04
-                    extraActions: "true"
-                MacPython27:
+                    sendCoverage: "true"
+                mac_python_2_7:
                     python.version: "2.7"
                     imageName: macos-10.13
-                    extraActions: "false"
-                MacPython35:
+                    sendCoverage: "false"
+                mac_python_3_5:
                     python.version: "3.5"
                     imageName: macos-10.13
-                    extraActions: "false"
-                MacPython36:
+                    sendCoverage: "false"
+                mac_python_3_6:
                     python.version: "3.6"
                     imageName: macos-10.13
-                    extraActions: "false"
-                MacPython37:
+                    sendCoverage: "false"
+                mac_python_3_7:
                     python.version: "3.7"
                     imageName: macos-10.13
-                    extraActions: "false"
-                WindowsPython27:
+                    sendCoverage: "false"
+                windows_python_2_7:
                     python.version: "2.7"
                     imageName: vs2017-win2016
-                    extraActions: "false"
-                WindowsPython35:
+                    sendCoverage: "false"
+                windows_python_3_5:
                     python.version: "3.5"
                     imageName: vs2017-win2016
-                    extraActions: "false"
-                WindowsPython36:
+                    sendCoverage: "false"
+                windows_python_3_6:
                     python.version: "3.6"
                     imageName: vs2017-win2016
-                    extraActions: "false"
-                WindowsPython37:
+                    sendCoverage: "false"
+                windows_python_3_7:
                     python.version: "3.7"
                     imageName: vs2017-win2016
-                    extraActions: "false"
+                    sendCoverage: "false"
             maxParallel: 10
         pool:
             vmImage: $(imageName)
@@ -63,12 +79,6 @@ jobs:
             -
                 script: "python -m pip install --upgrade pip && pip install -r test_requirements.txt"
                 displayName: "Install mbed-os test dependencies"
-            -
-                script: |
-                    pip install --user flake8==3.7.3
-                    python -m flake8
-                condition: eq(variables['extraActions'], 'true')
-                displayName: "Enforce code style"
             -
                 script: 'pip install --user "urllib3<1.25"'
                 displayName: "Fix dependency issue for requests package"
@@ -106,7 +116,7 @@ jobs:
                 script: |
                     python -m coverage combine .coverage packages/*/.coverage
                     python -m coveralls
-                condition: eq(variables['extraActions'], 'true')
+                condition: eq(variables['sendCoverage'], 'true')
                 displayName: "Send coverage results to coveralls"
             -
                 script: "pip uninstall -y mbed-os-tools mbed-ls mbed-greentea mbed-host-tests"
