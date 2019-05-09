@@ -137,6 +137,12 @@ List available reset and flashing plugins:
 $ mbedhtrun --plugins
 ```
 
+Flash binary file `/path/to/file/binary.bin` using plugin `stlink`. Use serial port `COM4` with baudrate `115200` to communicate with DUT:
+
+```
+mbedhtrun -c stlink -f /path/to/file/binary.bin -p COM4:115200
+```
+
 # Installation
 
 `htrun` is redistributed with sources, as Python 2.7 compatible module called `mbed-host-tests` and command line tool called `mbedhtrun`.
