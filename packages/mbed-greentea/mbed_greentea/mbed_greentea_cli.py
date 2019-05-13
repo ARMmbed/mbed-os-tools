@@ -984,7 +984,7 @@ def main_cli(opts, args, gt_instance_uuid=None):
             """
             try:
                 with io.open(filename, encoding="utf-8", errors="backslashreplace", mode="w") as f:
-                    f.write(content)
+                    f.write(content.decode('utf-8'))
             except IOError as e:
                 gt_logger.gt_log_err("can't export to '%s', reason:"% filename)
                 gt_logger.gt_log_err(str(e))
