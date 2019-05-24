@@ -395,7 +395,7 @@ def get_memory_metrics(output):
                 thread_arg = thread_entry_arg_split[1]
                 thread_info[thread_entry_arg]['arg'] = thread_arg
 
-    thread_info_list = thread_info.values()
+    thread_info_list = list(thread_info.values())
 
     return max_heap_usage, reserved_heap, thread_info_list
 
