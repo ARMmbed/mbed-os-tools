@@ -928,7 +928,6 @@ def main_cli(opts, args, gt_instance_uuid=None):
         execute_threads = []
 
         if opts.verbose_test_configuration_only:
-            print
             print("Example: execute 'mbedgt --target=TARGET_NAME' to start testing for TARGET_NAME target")
             return (0)
 
