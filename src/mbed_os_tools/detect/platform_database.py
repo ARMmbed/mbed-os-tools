@@ -243,6 +243,7 @@ DEFAULT_PLATFORM_DB = {
         u'1904': u'CY8CPROTO_063_BLE',
         u'1905': u'CY8CKIT_062_4343W',
         u'1906': u'CYW943012P6EVB_01',
+        u'1907': u'CY8CPROTO_064_SB',
         u'1909': u'CY8CPROTO_062S2_43012',
         u"2000": u"EFM32_G8XX_STK",
         u"2005": u"EFM32HG_STK3400",
