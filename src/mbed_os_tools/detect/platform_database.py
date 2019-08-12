@@ -113,6 +113,7 @@ DEFAULT_PLATFORM_DB = {
         u"0510": u"SPANSION_PLACEHOLDER",
         u"0602": u"EV_COG_AD3029LZ",
         u"0603": u"EV_COG_AD4050LZ",
+        u"0604": u"SDP_K1",
         u"0700": u"NUCLEO_F103RB",
         u"0705": u"NUCLEO_F302R8",
         u"0710": u"NUCLEO_L152RE",
