@@ -60,10 +60,15 @@ class PlatformValidator(object):
         # Set of all product codes found across all sources
         self._all_product_codes = set()
 
+        # Set of all board types found across all sources
+        self._all_board_types = set()
+
         # Database of product codes and associated board types for each source
         self._product_code_db = {}
         # Database of board types and associated product codes for each source
         self._board_type_db = {}
+        # Metadata associate with the source
+        self._source_meta_data = {}
 
         # Retrieve data from the os.mbed.com API and add to the overall set of product codes
         self._retrieve_platform_data(_OS_MBED_COM, self._os_mbed_com_source)
@@ -74,18 +79,32 @@ class PlatformValidator(object):
         # Add the local data (in this repo) into the overall set of product codes
         self._retrieve_platform_data(_TOOLS, self._tools_source)
 
-        logger.info("%d unique product codes are defined in total", len(self._all_product_codes))
+        logger.info("%d unique product codes for %d boards are defined in total", len(self._all_product_codes), len(self._all_board_types))
 
-    def _add_product_codes(self, source, product_code_db):
-        """Add to the set of all product codes found across all sources.
+    def _add_products_and_boards(self, source, product_code_db, board_type_db):
+        """Add to the set of all product codes and board types found across all sources.
 
         :param str source: Name of the data source.
         :param dict product_code_db: A dictionary with product codes as the keys.
+        :param dict board_type_db: A dictionary with board types as the keys.
         """
         product_codes = set(product_code_db.keys())
+        product_code_count = len(product_codes)
         self._all_product_codes = self._all_product_codes.union(product_codes)
 
-        logger.info("%s defines %d product codes.", source, len(product_codes))
+        board_types = set(board_type_db.keys())
+        board_type_count = len(board_types)
+        self._all_board_types = self._all_board_types.union(board_types)
+
+        self._source_meta_data[source] = {
+            "product_code_count": product_code_count,
+            "board_type_count": board_type_count,
+        }
+        self._source_meta_data["*"] = {
+            "product_code_count": len(self._all_product_codes),
+            "board_type_count": len(self._all_board_types),
+        }
+        logger.info("%s defines %d product codes for %d board types.", source, product_code_count, board_type_count)
 
     def _retrieve_platform_data(self, source, data_source_func):
         """Process a remote data source to obtain product codes and board types
@@ -106,7 +125,7 @@ class PlatformValidator(object):
 
         self._product_code_db[source] = product_code_db
         self._board_type_db[source] = board_type_db
-        self._add_product_codes(source, product_code_db)
+        self._add_products_and_boards(source, product_code_db, board_type_db)
 
         return product_code_db, board_type_db
 
@@ -362,6 +381,7 @@ class PlatformValidator(object):
         template_kwargs = {
             "data_sources": DATA_SOURCE_LIST,
             "analysis_results": self._analysis_results,
+            "meta_data": self._source_meta_data,
             "show_all": self._show_all,
             "error_count": self._error_count,
             "warning_count": self._warning_count,

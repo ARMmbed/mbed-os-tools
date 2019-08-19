@@ -36,13 +36,19 @@ table th {
   </head>
   <body>
     <h1>Platform Database Validation Results</h1>
+    <h2>Data Sources</h2>
+    <ul>
+{%- for data_source in data_sources %}
+    <li><b>{{ data_source }}</b> defines {{ meta_data[data_source].product_code_count }} product codes for {{ meta_data[data_source].board_type_count }} board types.</li>
+{%- endfor %}
+        <li>A total of {{ meta_data["*"].product_code_count }} unique product codes and {{ meta_data["*"].board_type_count }} board types are defined.</li>
+    </ul>
+    <h2>Analysis Summary</h2>
     <ul>
       <li>Errors: {{ error_count }}</li>
       <li>Warnings: {{ warning_count }}</li>
-      <li>Infos: {{ info_count }}</li>
     </ul>
-    <br>
-    <br>
+    <h2>{% if show_all %}All{% else %}Problematic{% endif %} Product Code Definitions</h2>
     <table id="analysis_results">
       <tr>
       <th>Product Code</th>
