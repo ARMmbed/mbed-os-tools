@@ -1,0 +1,87 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Platform Database Validation Results</title>
+    <style type="text/css">
+body {
+	font-family: Trebuchet MS, sans-serif;
+	font-size: 15px;
+	color: #444;
+	margin-right: 24px;
+}
+h1 {
+	font-size: 25px;
+}
+h2 {
+	font-size: 20px;
+}
+h3 {
+	font-size: 16px;
+	font-weight: bold;
+}
+table, th, td {
+    border: 1px solid black;
+    border-collapse: collapse;
+}
+th, td {
+    padding: 2px;
+    text-align: left;
+}
+table th {
+    background-color: black;
+    color: white;
+}
+    </style>
+  </head>
+  <body>
+    <h1>Platform Database Validation Results</h1>
+    <ul>
+      <li>Errors: {{ error_count }}</li>
+      <li>Warnings: {{ warning_count }}</li>
+      <li>Infos: {{ info_count }}</li>
+    </ul>
+    <br>
+    <br>
+    <table id="analysis_results">
+      <tr>
+      <th>Product Code</th>
+{%- for data_source in data_sources %}
+        <th colspan="2">{{ data_source }}</th>
+{%- endfor %}
+        <th>Analysis</th>
+      </tr>
+{%- for product_code, analysis_result in analysis_results|dictsort %}
+  {% if show_all or analysis_result.messages %}
+      <tr>
+        <td>{{ product_code }}</td>
+    {%- for data_source in data_sources %}
+      {%- set status = analysis_result.status[data_source] -%}
+        <td style="text-align:center">
+            {%- if status == "ok" -%}
+                ✅
+            {%- elif status == "error" -%}
+                ❌
+            {%- elif status == "warning" -%}
+                ⚠️
+            {%- else -%}
+                {{ status }}
+            {%- endif -%}
+        </td>
+        <td>
+      {%- for board_type in analysis_result.board_types[data_source] -%}
+          {{ board_type }}<br>
+      {%- endfor -%}
+        </td>
+    {%- endfor %}
+        <td>
+    {%- for message in analysis_result.messages -%}
+          {{ message }}<br>
+    {%- endfor -%}
+        </td>
+      </tr>
+  {% endif %}
+{%- endfor %}
+    </table>
+  </body>
+</html>
