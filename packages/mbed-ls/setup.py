@@ -44,7 +44,7 @@ setup(name='mbed-ls',
       url='https://github.com/ARMmbed/mbed-os-tools',
       packages=find_packages(),
       license="Apache-2.0",
-      test_suite = 'test',
+      test_suite='test',
       entry_points={
         "console_scripts": [
             "mbedls=mbed_lstools:mbedls_main",
@@ -54,11 +54,11 @@ setup(name='mbed-ls',
           "PrettyTable>=0.7.2",
           "mbed-os-tools==0.0.8"
       ],
-      tests_require = [
+      tests_require=[
           "mock>=2",
           "pytest>=3"
       ],
-      extras_require = {
+      extras_require={
           "colorized_logs": ["colorlog"]
       }
 )

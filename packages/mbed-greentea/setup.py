@@ -47,7 +47,7 @@ setup(name='mbed-greentea',
       url='https://github.com/ARMmbed/mbed-os-tools',
       packages=find_packages(),
       license="Apache-2.0",
-      test_suite = 'test',
+      test_suite='test',
       entry_points={
           "console_scripts": ["mbedgt=mbed_greentea.mbed_greentea_cli:main",],
       },
@@ -55,7 +55,7 @@ setup(name='mbed-greentea',
           "mbed-os-tools==0.0.8",
           "mbed-host-tests>=1.5.0,<2"
       ],
-      tests_require = [
+      tests_require=[
           "mock>=2"
       ]
 )

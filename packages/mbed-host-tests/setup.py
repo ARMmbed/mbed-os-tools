@@ -48,7 +48,7 @@ setup(name='mbed-host-tests',
       url='https://github.com/ARMmbed/mbed-os-tools',
       packages=find_packages(),
       license="Apache-2.0",
-      test_suite = 'test',
+      test_suite='test',
       entry_points={
         "console_scripts":
             ["mbedhtrun=mbed_host_tests.mbedhtrun:main",
