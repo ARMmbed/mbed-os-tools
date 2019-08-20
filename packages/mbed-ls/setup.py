@@ -5,7 +5,7 @@ PyPI package for the mbed SDK test suite ecosystem tools
 
 """
 mbed SDK
-Copyright (c) 2011-2018 ARM Limited
+Copyright (c) 2011-2019 ARM Limited
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -25,16 +25,21 @@ from io import open
 from setuptools import find_packages
 
 DESCRIPTION = "mbed-ls is a Python module that detects and lists mbed-enabled devices connected to the host computer"
-OWNER_NAMES = 'Jimmy Brisson, Brian Daniels'
-OWNER_EMAILS = 'jimmy.brisson@arm.com, brian.daniels@arm.com'
+OWNER_NAMES = 'Graham Hammond, Mark Edgeworth'
+OWNER_EMAILS = 'Graham.Hammond@arm.com, Mark.Edgeworth@arm.com'
 
 
-# Utility function to cat in a file (used for the README)
 def read(fname):
+    """
+    Utility function to cat in a file (used for the README)
+    @param fname: the name of the file to read, relative to the directory containing this file
+    @return: The string content of the opened file
+    """
     return open(os.path.join(os.path.dirname(__file__), fname), encoding="utf8").read()
 
+
 setup(name='mbed-ls',
-      version='1.7.7',
+      version='1.7.8',
       description=DESCRIPTION,
       long_description=read('README.md'),
       author=OWNER_NAMES,
@@ -44,7 +49,7 @@ setup(name='mbed-ls',
       url='https://github.com/ARMmbed/mbed-os-tools',
       packages=find_packages(),
       license="Apache-2.0",
-      test_suite = 'test',
+      test_suite='test',
       entry_points={
         "console_scripts": [
             "mbedls=mbed_lstools:mbedls_main",
@@ -52,13 +57,13 @@ setup(name='mbed-ls',
       },
       install_requires=[
           "PrettyTable>=0.7.2",
-          "mbed-os-tools==0.0.8"
+          "mbed-os-tools==0.0.9"
       ],
-      tests_require = [
+      tests_require=[
           "mock>=2",
           "pytest>=3"
       ],
-      extras_require = {
+      extras_require={
           "colorized_logs": ["colorlog"]
       }
 )

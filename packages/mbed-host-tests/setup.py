@@ -5,7 +5,7 @@ PyPI package for the mbed SDK test suite ecosystem tools
 
 """
 mbed SDK
-Copyright (c) 2011-2016 ARM Limited
+Copyright (c) 2011-2019 ARM Limited
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -28,16 +28,21 @@ from io import open
 from setuptools import find_packages
 
 DESCRIPTION = "mbed tools used to flash, reset and supervise test execution for mbed-enabled devices"
-OWNER_NAMES = 'Jimmy Brisson, Brian Daniels'
-OWNER_EMAILS = 'Jimmy.Brisson@arm.com, Brian.Daniels@arm.com'
+OWNER_NAMES = 'Qinghao Shi'
+OWNER_EMAILS = 'qinghao.shi@arm.com'
 
 
-# Utility function to cat in a file (used for the README)
 def read(fname):
+    """
+    Utility function to cat in a file (used for the README)
+    @param fname: the name of the file to read, relative to the directory containing this file
+    @return: The string content of the opened file
+    """
     return open(os.path.join(os.path.dirname(__file__), fname), encoding="utf8").read()
 
+
 setup(name='mbed-host-tests',
-      version='1.5.7',
+      version='1.5.8',
       description=DESCRIPTION,
       long_description=read('README.md'),
       long_description_content_type='text/markdown',
@@ -48,14 +53,14 @@ setup(name='mbed-host-tests',
       url='https://github.com/ARMmbed/mbed-os-tools',
       packages=find_packages(),
       license="Apache-2.0",
-      test_suite = 'test',
+      test_suite='test',
       entry_points={
         "console_scripts":
             ["mbedhtrun=mbed_host_tests.mbedhtrun:main",
              "mbedflsh=mbed_host_tests.mbedflsh:main"],
       },
       install_requires=[
-        "mbed-os-tools==0.0.8"
+        "mbed-os-tools==0.0.9"
       ],
       tests_require=[
         "mock>=2"
