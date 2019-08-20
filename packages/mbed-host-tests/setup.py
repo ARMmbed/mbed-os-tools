@@ -32,9 +32,14 @@ OWNER_NAMES = 'Jimmy Brisson, Brian Daniels'
 OWNER_EMAILS = 'Jimmy.Brisson@arm.com, Brian.Daniels@arm.com'
 
 
-# Utility function to cat in a file (used for the README)
 def read(fname):
+    """
+    Utility function to cat in a file (used for the README)
+    @param fname: the name of the file to read, relative to the directory containing this file
+    @return: The string content of the opened file
+    """
     return open(os.path.join(os.path.dirname(__file__), fname), encoding="utf8").read()
+
 
 setup(name='mbed-host-tests',
       version='1.5.7',

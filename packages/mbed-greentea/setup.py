@@ -32,9 +32,15 @@ DESCRIPTION = "mbed 3.0 onwards test suite, codename Greentea. The test suite is
 OWNER_NAMES = 'Anna Bridge, Azim Khan'
 OWNER_EMAILS = 'Anna.Bridge@arm.com, Azim.Khan@arm.com'
 
-# Utility function to cat in a file (used for the README)
+
 def read(fname):
+    """
+    Utility function to cat in a file (used for the README)
+    @param fname: the name of the file to read, relative to the directory containing this file
+    @return: The string content of the opened file
+    """
     return open(os.path.join(os.path.dirname(__file__), fname), encoding="utf-8").read()
+
 
 setup(name='mbed-greentea',
       version='1.7.1',
