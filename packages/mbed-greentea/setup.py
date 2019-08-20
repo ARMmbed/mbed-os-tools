@@ -5,7 +5,7 @@ PyPI package for the mbed SDK test suite
 
 """
 mbed SDK
-Copyright (c) 2011-2015 ARM Limited
+Copyright (c) 2011-2019 ARM Limited
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -29,15 +29,21 @@ from setuptools import find_packages
 
 
 DESCRIPTION = "mbed 3.0 onwards test suite, codename Greentea. The test suite is a collection of tools that enable automated testing on mbed-enabled platforms"
-OWNER_NAMES = 'Anna Bridge, Azim Khan'
-OWNER_EMAILS = 'Anna.Bridge@arm.com, Azim.Khan@arm.com'
+OWNER_NAMES = 'Anna Bridge, Qinghao Shi'
+OWNER_EMAILS = 'Anna.Bridge@arm.com, qinghao.shi@arm.com'
 
-# Utility function to cat in a file (used for the README)
+
 def read(fname):
+    """
+    Utility function to cat in a file (used for the README)
+    @param fname: the name of the file to read, relative to the directory containing this file
+    @return: The string content of the opened file
+    """
     return open(os.path.join(os.path.dirname(__file__), fname), encoding="utf-8").read()
 
+
 setup(name='mbed-greentea',
-      version='1.7.1',
+      version='1.7.2',
       description=DESCRIPTION,
       long_description=read('README.md'),
       author=OWNER_NAMES,
@@ -47,15 +53,15 @@ setup(name='mbed-greentea',
       url='https://github.com/ARMmbed/mbed-os-tools',
       packages=find_packages(),
       license="Apache-2.0",
-      test_suite = 'test',
+      test_suite='test',
       entry_points={
           "console_scripts": ["mbedgt=mbed_greentea.mbed_greentea_cli:main",],
       },
       install_requires=[
-          "mbed-os-tools==0.0.8",
+          "mbed-os-tools==0.0.9",
           "mbed-host-tests>=1.5.0,<2"
       ],
-      tests_require = [
+      tests_require=[
           "mock>=2"
       ]
 )
