@@ -5,7 +5,7 @@ PyPI package for the mbed SDK test suite ecosystem tools
 
 """
 mbed SDK
-Copyright (c) 2011-2016 ARM Limited
+Copyright (c) 2011-2019 ARM Limited
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -28,8 +28,8 @@ from io import open
 from setuptools import find_packages
 
 DESCRIPTION = "mbed tools used to flash, reset and supervise test execution for mbed-enabled devices"
-OWNER_NAMES = 'Jimmy Brisson, Brian Daniels'
-OWNER_EMAILS = 'Jimmy.Brisson@arm.com, Brian.Daniels@arm.com'
+OWNER_NAMES = 'Qinghao Shi'
+OWNER_EMAILS = 'qinghao.shi@arm.com'
 
 
 def read(fname):

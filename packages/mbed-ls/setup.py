@@ -5,7 +5,7 @@ PyPI package for the mbed SDK test suite ecosystem tools
 
 """
 mbed SDK
-Copyright (c) 2011-2018 ARM Limited
+Copyright (c) 2011-2019 ARM Limited
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -25,9 +25,8 @@ from io import open
 from setuptools import find_packages
 
 DESCRIPTION = "mbed-ls is a Python module that detects and lists mbed-enabled devices connected to the host computer"
-OWNER_NAMES = 'Jimmy Brisson, Brian Daniels'
-OWNER_EMAILS = 'jimmy.brisson@arm.com, brian.daniels@arm.com'
-
+OWNER_NAMES = 'Graham Hammond, Mark Edgeworth'
+OWNER_EMAILS = 'Graham.Hammond@arm.com, Mark.Edgeworth@arm.com'
 
 
 def read(fname):

@@ -5,7 +5,7 @@ PyPI package for the mbed SDK test suite
 
 """
 mbed SDK
-Copyright (c) 2011-2015 ARM Limited
+Copyright (c) 2011-2019 ARM Limited
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -29,8 +29,8 @@ from setuptools import find_packages
 
 
 DESCRIPTION = "mbed 3.0 onwards test suite, codename Greentea. The test suite is a collection of tools that enable automated testing on mbed-enabled platforms"
-OWNER_NAMES = 'Anna Bridge, Azim Khan'
-OWNER_EMAILS = 'Anna.Bridge@arm.com, Azim.Khan@arm.com'
+OWNER_NAMES = 'Anna Bridge, Qinghao Shi'
+OWNER_EMAILS = 'Anna.Bridge@arm.com, qinghao.shi@arm.com'
 
 
 def read(fname):
