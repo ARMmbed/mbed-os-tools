@@ -267,7 +267,7 @@ DEFAULT_PLATFORM_DB = {
         u"2202": u"WIZWIKI_W7500ECO",
         u"2203": u"WIZWIKI_W7500P",
         u"2500": u"ADV_WISE_1570",
-        u"2600": u"AGORA-DEV",
+        u"2600": u"EP_AGORA",
         u"3001": u"LPC11U24",
         u"3101": u"SDT32620B",
         u"3102": u"SDT32625B",
