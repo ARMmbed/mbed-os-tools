@@ -266,9 +266,9 @@ class PlatformValidator(object):
         defined_board_types = self._remove_placeholders(board_types)
         if len(board_types) > 1:
             if len(defined_board_types) == 1:
-                self._add_message(_OS_MBED_COM, "Placeholder board type needs to be removed.", warning=True)
+                self._add_message(source, "Placeholder board type needs to be removed.", warning=True)
             else:
-                self._add_message(_OS_MBED_COM, "Board type defined multiple times.", error=True)
+                self._add_message(source, "Board type defined multiple times.", error=True)
 
     def check_for_mismatches(self, source, board_types):
         defined_board_types = self._remove_placeholders(board_types)
