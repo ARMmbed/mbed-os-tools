@@ -52,6 +52,8 @@ table th {
     <table id="analysis_results">
       <tr>
       <th>Product Code</th>
+      <th>Mbed Enabled</th>
+      <th>Mbed OS</th>
 {%- for data_source in data_sources %}
         <th colspan="2">{{ data_source }}</th>
 {%- endfor %}
@@ -61,6 +63,12 @@ table th {
   {% if show_all or analysis_result.messages %}
       <tr>
         <td>{{ product_code }}</td>
+        <td>
+    {%- for mbed_enabled_type in mbed_support.mbed_enabled.get(product_code, []) -%}
+          {{ mbed_enabled_type }}<br>
+    {%- endfor -%}
+        </td>
+        <td>{{ mbed_support.mbed_os_support.get(product_code, [])|join(", ") }}</td>
     {%- for data_source in data_sources %}
       {%- set status = analysis_result.status[data_source] -%}
         <td style="text-align:center">

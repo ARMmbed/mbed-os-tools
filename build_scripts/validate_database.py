@@ -5,7 +5,9 @@ import sys
 import logging
 import argparse
 import json
+import re
 from collections import defaultdict
+from distutils.version import StrictVersion
 import requests
 import jinja2
 from mbed_os_tools.detect.platform_database import DEFAULT_PLATFORM_DB
@@ -24,6 +26,39 @@ _MBED_OS = "Mbed OS (targets.json)"
 _TOOLS = "Tools Platform Database"
 
 DATA_SOURCE_LIST = [_TOOLS, _MBED_OS, _OS_MBED_COM]
+
+# Re to extract version numbers in the form <major.minor> and <major> e.g. "5.12" from "Mbed OS 5.12"
+_version_number_re = re.compile(r"(\d+\.\d+|\d+)$")
+
+
+def _sort_versions(version_set):
+    """Sort versions using semver structure
+    :param list version_set: A set of version strings in the form {"2.0", "5.12"}
+    :return: A sorted (highest first) non duplicate list of version numbers in the form {"5.12", "2.0"}
+    :rtype: list
+    """
+    return sorted(version_set, key=StrictVersion, reverse=True)
+
+
+def _extract_versions(mbed_os_support):
+    """Extract and sort version numbers from the mbed_os_support strings.
+
+    :param list mbed_os_support: A list of version strings in the form ["Mbed OS 5.12", "Mbed OS 2"]
+    :return: A sorted (highest first) non duplicate list of version numbers in the form ["5.12", "2.0"]
+    :rtype: list
+    """
+    version_set = set()
+    for version_string in mbed_os_support:
+        match = _version_number_re.search(version_string)
+        if match:
+            # Get first and only match, which will be "d.d" or "d"
+            version_number = match.group(1)
+            # Append ".0" to any version number without a minor version i.e. "d" rather than "d.d"
+            # This form of version number is required to use StrictVersion sort from distutils
+            if version_number.isdigit():
+                version_number += ".0"
+            version_set.add(version_number)
+    return _sort_versions(version_set)
 
 
 class PlatformValidator(object):
@@ -67,6 +102,8 @@ class PlatformValidator(object):
         self._product_code_db = {}
         # Database of board types and associated product codes for each source
         self._board_type_db = {}
+        # Mbed support information
+        self._mbed_support_db = {}
         # Metadata associate with the source
         self._source_meta_data = {}
 
@@ -117,14 +154,24 @@ class PlatformValidator(object):
         """
         product_code_db = defaultdict(list)
         board_type_db = defaultdict(list)
+        mbed_os_support_db = defaultdict(list)
+        mbed_enabled_db = defaultdict(list)
 
-        for product_code, board_type in data_source_func():
+        for product_code, board_type, mbed_os_support, mbed_enabled in data_source_func():
             if product_code and board_type:
                 board_type_db[board_type].append(product_code)
                 product_code_db[product_code].append(board_type)
+            if product_code and mbed_os_support:
+                mbed_os_support_db[product_code].extend(_extract_versions(mbed_os_support))
+            if product_code and mbed_enabled:
+                mbed_enabled_db[product_code].extend(mbed_enabled)
 
         self._product_code_db[source] = product_code_db
         self._board_type_db[source] = board_type_db
+        self._mbed_support_db[source] = {
+            "mbed_os_support": mbed_os_support_db,
+            "mbed_enabled": mbed_enabled_db,
+        }
         self._add_products_and_boards(source, product_code_db, board_type_db)
 
         return product_code_db, board_type_db
@@ -132,11 +179,11 @@ class PlatformValidator(object):
     @staticmethod
     def _tools_source():
         """Yield target data from the platform database of this repo
-        :return: Yield a series of (<product code> : <board type>) tuples
-        :rtype: tuple(str, str)
+        :return: Yield a series of (<product code>, <board type>) tuples
+        :rtype: tuple(str, str, None, None)
         """
         for product_code, board_type in DEFAULT_PLATFORM_DB["daplink"].items():
-            yield product_code, board_type
+            yield product_code, board_type, None, None
 
     def _os_mbed_com_source(self):
         """Yield target data from the database hosted on os.mbed.com API.
@@ -146,7 +193,7 @@ class PlatformValidator(object):
 
         TODO: Remove file option when API returns private targets
 
-        :return: Yield a series of (<product code> : <board type>) tuples
+        :return: Yield a series of (<product code>, <board type>, <mbed os support>, <mbed enabled>) tuples
         :rtype: tuple(str, str)
         """
         if self._online_database:
@@ -161,7 +208,9 @@ class PlatformValidator(object):
                         attributes = target.get("attributes", {})
                         product_code = attributes.get("product_code", "").upper()
                         board_type = attributes.get("board_type", "").upper()
-                        yield product_code, board_type
+                        mbed_os_support = attributes.get("features", {}).get("mbed_os_support", [])
+                        mbed_enabled = attributes.get("features", {}).get("mbed_enabled", [])
+                        yield product_code, board_type, mbed_os_support, mbed_enabled
         else:
             response = requests.get(_MBED_OS_TARGET_API)
 
@@ -169,7 +218,7 @@ class PlatformValidator(object):
                 try:
                     json_data = response.json()
                 except ValueError:
-                    logging.error("Invalid JSON receieved from %s" % _MBED_OS_TARGET_API)
+                    logging.error("Invalid JSON received from %s" % _MBED_OS_TARGET_API)
                 else:
                     try:
                         target_list = json_data["data"]
@@ -180,12 +229,14 @@ class PlatformValidator(object):
                             attributes = target.get("attributes", {})
                             product_code = attributes.get("product_code", "").upper()
                             board_type = attributes.get("board_type", "").upper()
-                            yield product_code, board_type
+                            mbed_os_support = attributes.get("features", {}).get("mbed_os_support", [])
+                            mbed_enabled = attributes.get("features", {}).get("mbed_enabled", [])
+                            yield product_code, board_type, mbed_os_support, mbed_enabled
 
     def _mbed_os_source(self):
         """Yield target data from GitHub ARMmbed/mbed-os/targets/targets.json
-        :return: Yield a series of (<product code> : <board type>) tuples
-        :rtype: tuple(str, str)
+        :return: Yield a series of (<product code>, <board type>) tuples
+        :rtype: tuple(str, str, None, None)
         """
         if self._mbed_os_targets_path:
             with open(self._mbed_os_targets_path, "r") as mbed_os_target:
@@ -199,7 +250,7 @@ class PlatformValidator(object):
                         pass
                     else:
                         for detect_code in detect_codes:
-                            yield detect_code, board_type
+                            yield detect_code, board_type, None, None
 
     def _add_board_types(self, os_mbed_com_board_types, mbed_os_board_types, tools_board_type):
         """Initialise the analysis results with the board types and placeholder keys for this product code.
@@ -381,6 +432,7 @@ class PlatformValidator(object):
         template_kwargs = {
             "data_sources": DATA_SOURCE_LIST,
             "analysis_results": self._analysis_results,
+            "mbed_support": self._mbed_support_db[_OS_MBED_COM],
             "meta_data": self._source_meta_data,
             "show_all": self._show_all,
             "error_count": self._error_count,
