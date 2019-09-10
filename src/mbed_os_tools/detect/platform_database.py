@@ -219,6 +219,7 @@ DEFAULT_PLATFORM_DB = {
         u"1235": u"UBLOX_C027",
         u"1236": u"UBLOX_EVK_ODIN_W2",
         u"1237": u"UBLOX_EVK_NINA_B1",
+        u"1280": u"OKDO_ODIN_W2",
         u"1300": u"NUC472-NUTINY",
         u"1301": u"NUMBED",
         u"1302": u"NUMAKER_PFM_NUC472",
