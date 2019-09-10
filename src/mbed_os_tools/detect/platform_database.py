@@ -333,6 +333,7 @@ DEFAULT_PLATFORM_DB = {
         u"9012": u"SEEED_TINY_BLE",
         u"9014": u"WIO_3G",
         u"9015": u"WIO_BG96",
+        u"9017": u"WIO_EMW3166",
         u"9020": u"UHURU_RAVEN",
         u"9900": u"NRF51_MICROBIT",
         u"C002": u"VK_RZ_A1H",
