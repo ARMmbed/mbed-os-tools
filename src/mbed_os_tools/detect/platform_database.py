@@ -225,7 +225,7 @@ DEFAULT_PLATFORM_DB = {
         u"1302": u"NUMAKER_PFM_NUC472",
         u"1303": u"NUMAKER_PFM_M453",
         u"1304": u"NUMAKER_PFM_M487",
-        u"1305": u"NUMAKER_PFM_M2351",
+        u"1305": u"NU_PFM_M2351",
         u"1306": u"NUMAKER_PFM_NANO130",
         u"1307": u"NUMAKER_PFM_NUC240",
         u"1308": u"NUMAKER_IOT_M487",
