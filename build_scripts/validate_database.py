@@ -10,6 +10,7 @@ from collections import defaultdict
 from distutils.version import StrictVersion
 import requests
 import jinja2
+import dotenv
 from mbed_os_tools.detect.platform_database import DEFAULT_PLATFORM_DB
 
 logger = logging.getLogger(__name__)
@@ -19,7 +20,10 @@ jinja2_env = jinja2.Environment(
     autoescape=jinja2.select_autoescape(['html', 'xml'])
 )
 
-_MBED_OS_TARGET_API = "https://os.mbed.com/api/v4/targets"
+# The name of the environment variable that needs to be set to access the target API
+_AUTH_TOKEN_ENV_VAR = "OS_MBED_COM_TARGET_API_AUTH"
+
+_MBED_OS_TARGET_API = "https://os.mbed.com/api/v4/targets/all"
 
 _OS_MBED_COM = "Online Database (os.mbed.com)"
 _MBED_OS = "Mbed OS (targets.json)"
@@ -29,6 +33,10 @@ DATA_SOURCE_LIST = [_TOOLS, _MBED_OS, _OS_MBED_COM]
 
 # Re to extract version numbers in the form <major.minor> and <major> e.g. "5.12" from "Mbed OS 5.12"
 _version_number_re = re.compile(r"(\d+\.\d+|\d+)$")
+
+
+class ProcessingError(Exception):
+    pass
 
 
 def _sort_versions(version_set):
@@ -64,10 +72,8 @@ def _extract_versions(mbed_os_support):
 class PlatformValidator(object):
     """Validated known target data sources for a consistent Product ID and Board Type."""
 
-    def __init__(self, output_dir, mbed_os_targets_path, show_all, online_database):
+    def __init__(self, output_dir, mbed_os_targets_path, show_all):
         """Retrieve data from all sources.
-
-        TODO: Remove online_database when API includes private boards
 
         :param str output_dir: The output directory for the generated report.
         :param str mbed_os_targets_path: Path to the targets.json file which is part of the Mbed OS repo.
@@ -77,7 +83,6 @@ class PlatformValidator(object):
         self._output_dir = output_dir
         self._mbed_os_targets_path = mbed_os_targets_path
         self._show_all = show_all
-        self._online_database = online_database
 
         # Global counts of the issues encountered
         self._error_count = 0
@@ -107,16 +112,23 @@ class PlatformValidator(object):
         # Metadata associate with the source
         self._source_meta_data = {}
 
-        # Retrieve data from the os.mbed.com API and add to the overall set of product codes
-        self._retrieve_platform_data(_OS_MBED_COM, self._os_mbed_com_source)
+        try:
+            # Retrieve data from the os.mbed.com API and add to the overall set of product codes
+            self._retrieve_platform_data(_OS_MBED_COM, self._os_mbed_com_source)
 
-        # Retrieve data from the Mbed OS repository (targets.json) and add to the overall set of product codes
-        self._retrieve_platform_data(_MBED_OS, self._mbed_os_source)
+            # Retrieve data from the Mbed OS repository (targets.json) and add to the overall set of product codes
+            self._retrieve_platform_data(_MBED_OS, self._mbed_os_source)
 
-        # Add the local data (in this repo) into the overall set of product codes
-        self._retrieve_platform_data(_TOOLS, self._tools_source)
+            # Add the local data (in this repo) into the overall set of product codes
+            self._retrieve_platform_data(_TOOLS, self._tools_source)
 
-        logger.info("%d unique product codes for %d boards are defined in total", len(self._all_product_codes), len(self._all_board_types))
+        except ProcessingError:
+            self.processing_error = True
+        else:
+            self.processing_error = False
+            logger.info("%d unique product codes for %d boards are defined in total", len(self._all_product_codes), len(self._all_board_types))
+            self._validate_data_source()
+
 
     def _add_products_and_boards(self, source, product_code_db, board_type_db):
         """Add to the set of all product codes and board types found across all sources.
@@ -191,18 +203,24 @@ class PlatformValidator(object):
         Also handles target data from a temporary file which includes private targets as they not currently available
         from os.mbed.com
 
-        TODO: Remove file option when API returns private targets
-
         :return: Yield a series of (<product code>, <board type>, <mbed os support>, <mbed enabled>) tuples
         :rtype: tuple(str, str)
         """
-        if self._online_database:
-            with open(self._online_database, "r") as mbed_os_target:
-                json_data = json.loads(mbed_os_target.read())
+        response = requests.get(_MBED_OS_TARGET_API,
+                                headers={"Authorization": "Token %s" % os.getenv(_AUTH_TOKEN_ENV_VAR)})
+
+        if response.status_code == 200:
+            try:
+                json_data = response.json()
+            except ValueError:
+                logging.error("Invalid JSON received from %s" % _MBED_OS_TARGET_API)
+                raise ProcessingError()
+            else:
                 try:
                     target_list = json_data["data"]
                 except KeyError:
-                    logging.error("Invalid JSON received from local file")
+                    logging.error("Invalid JSON received from %s" % _MBED_OS_TARGET_API)
+                    raise ProcessingError()
                 else:
                     for target in target_list:
                         attributes = target.get("attributes", {})
@@ -211,34 +229,22 @@ class PlatformValidator(object):
                         mbed_os_support = attributes.get("features", {}).get("mbed_os_support", [])
                         mbed_enabled = attributes.get("features", {}).get("mbed_enabled", [])
                         yield product_code, board_type, mbed_os_support, mbed_enabled
+        elif response.status_code == 401:
+            logger.error("%s authentication failed (%s). Please check that the environment variable '%s' is configured "
+                         "with the token to access the target API. Message from the API:\n%s"
+                         % (_MBED_OS_TARGET_API, response.status_code, _AUTH_TOKEN_ENV_VAR, response.text))
+            raise ProcessingError()
         else:
-            response = requests.get(_MBED_OS_TARGET_API)
-
-            if response.status_code == 200:
-                try:
-                    json_data = response.json()
-                except ValueError:
-                    logging.error("Invalid JSON received from %s" % _MBED_OS_TARGET_API)
-                else:
-                    try:
-                        target_list = json_data["data"]
-                    except KeyError:
-                        logging.error("Invalid JSON received from %s" % _MBED_OS_TARGET_API)
-                    else:
-                        for target in target_list:
-                            attributes = target.get("attributes", {})
-                            product_code = attributes.get("product_code", "").upper()
-                            board_type = attributes.get("board_type", "").upper()
-                            mbed_os_support = attributes.get("features", {}).get("mbed_os_support", [])
-                            mbed_enabled = attributes.get("features", {}).get("mbed_enabled", [])
-                            yield product_code, board_type, mbed_os_support, mbed_enabled
+            logger.error("%s returned status code %s with the following message:\n%s"
+                         % (_MBED_OS_TARGET_API, response.status_code, response.text))
+            raise ProcessingError()
 
     def _mbed_os_source(self):
         """Yield target data from GitHub ARMmbed/mbed-os/targets/targets.json
         :return: Yield a series of (<product code>, <board type>) tuples
         :rtype: tuple(str, str, None, None)
         """
-        if self._mbed_os_targets_path:
+        try:
             with open(self._mbed_os_targets_path, "r") as mbed_os_target:
                 target_dict = json.loads(mbed_os_target.read())
 
@@ -251,6 +257,9 @@ class PlatformValidator(object):
                     else:
                         for detect_code in detect_codes:
                             yield detect_code, board_type, None, None
+        except IOError as error:
+            logger.error(error)
+            raise ProcessingError()
 
     def _add_board_types(self, os_mbed_com_board_types, mbed_os_board_types, tools_board_type):
         """Initialise the analysis results with the board types and placeholder keys for this product code.
@@ -321,7 +330,7 @@ class PlatformValidator(object):
             else:
                 self._add_message(source, "Board type defined multiple times.", error=True)
 
-    def check_for_mismatches(self, source, board_types):
+    def _check_for_mismatches(self, source, board_types):
         defined_board_types = self._remove_placeholders(board_types)
         match = False
         mismatch = False
@@ -355,7 +364,8 @@ class PlatformValidator(object):
 
         return match, mismatch
 
-    def validate_data_source(self):
+    def _validate_data_source(self):
+        """Validate and compare data sources for consistency."""
         for self._product_code in self._all_product_codes:
 
             mbed_os_tools_board_types = self._product_code_db[_TOOLS].get(self._product_code)
@@ -391,8 +401,8 @@ class PlatformValidator(object):
                 if "PLACEHOLDER" in self._tools_board_type:
                     self._add_message(_TOOLS, "Placeholder board type should be removed.", warning=True)
                 else:
-                    os_mbed_com_match, os_mbed_com_mismatch = self.check_for_mismatches(_OS_MBED_COM, os_mbed_com_board_types)
-                    mbed_os_match, mbed_os_mismatch = self.check_for_mismatches(_MBED_OS, mbed_os_board_types)
+                    os_mbed_com_match, os_mbed_com_mismatch = self._check_for_mismatches(_OS_MBED_COM, os_mbed_com_board_types)
+                    mbed_os_match, mbed_os_mismatch = self._check_for_mismatches(_MBED_OS, mbed_os_board_types)
 
                     if os_mbed_com_mismatch and mbed_os_mismatch:
                         self._add_message(_TOOLS, "Board type incorrectly defined.", error=True)
@@ -428,20 +438,24 @@ class PlatformValidator(object):
 
     def render_results(self):
         """Render summary results page in html."""
-        # Setup the key word arguments to pass to the jinja2 template
-        template_kwargs = {
-            "data_sources": DATA_SOURCE_LIST,
-            "analysis_results": self._analysis_results,
-            "mbed_support": self._mbed_support_db[_OS_MBED_COM],
-            "meta_data": self._source_meta_data,
-            "show_all": self._show_all,
-            "error_count": self._error_count,
-            "warning_count": self._warning_count,
-            "info_count": self._info_count,
-        }
 
-        # Re-render the index templates to reflect the new verification data.
-        self._render_templates(("index.html.jinja2", ), **template_kwargs)
+        if self.processing_error:
+            logger.warning("Unable to render results due to error processing source data.")
+        else:
+            # Setup the key word arguments to pass to the jinja2 template
+            template_kwargs = {
+                "data_sources": DATA_SOURCE_LIST,
+                "analysis_results": self._analysis_results,
+                "mbed_support": self._mbed_support_db[_OS_MBED_COM],
+                "meta_data": self._source_meta_data,
+                "show_all": self._show_all,
+                "error_count": self._error_count,
+                "warning_count": self._warning_count,
+                "info_count": self._info_count,
+            }
+
+            # Re-render the index templates to reflect the new verification data.
+            self._render_templates(("index.html.jinja2", ), **template_kwargs)
 
 
 def main():
@@ -452,9 +466,6 @@ def main():
     parser.add_argument("-o", "--output-dir", type=str, help="Output directory for the summary report.")
     parser.add_argument("-a", "--show-all", action="store_true", help="Show all boards in report not just issues.")
     parser.add_argument("-v", "--verbose", action="count", default=0, help="Verbosity, by default errors are reported.")
-
-    # TODO: Remove this option when API returns private boards
-    parser.add_argument("--online-database", type=str, help="JSON dump of the online database (rather than querying os.mbed.com.")
 
     arguments = parser.parse_args()
 
@@ -475,10 +486,13 @@ def main():
     else:
         output_dir = arguments.output_dir
 
-    platform_validator = PlatformValidator(output_dir, arguments.targets, arguments.show_all, arguments.online_database)
-    platform_validator.validate_data_source()
+    # Retrieve environment settings (if any) stored in a .env file
+    dotenv.load_dotenv(dotenv.find_dotenv(usecwd=True, raise_error_if_not_found=False))
+
+    platform_validator = PlatformValidator(output_dir, arguments.targets, arguments.show_all)
     platform_validator.render_results()
 
+    return platform_validator.processing_error
 
 if __name__ == "__main__":
     sys.exit(main())
