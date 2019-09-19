@@ -36,12 +36,13 @@ _version_number_re = re.compile(r"(\d+\.\d+|\d+)$")
 
 
 class ProcessingError(Exception):
+    """A error has occurred while processing a data source."""
     pass
 
 
 def _sort_versions(version_set):
     """Sort versions using semver structure
-    :param list version_set: A set of version strings in the form {"2.0", "5.12"}
+    :param set version_set: A set of version strings in the form {"2.0", "5.12"}
     :return: A sorted (highest first) non duplicate list of version numbers in the form {"5.12", "2.0"}
     :rtype: list
     """
@@ -67,6 +68,57 @@ def _extract_versions(mbed_os_support):
                 version_number += ".0"
             version_set.add(version_number)
     return _sort_versions(version_set)
+
+
+class MbedOSTargetData:
+    """Handle inherited values from target.json."""
+
+    def __init__(self, target_data):
+        """Retrieve the target build instructions from Mbed OS.
+
+        :param dict target_data: Target data retrieved from Mbed OS targets.json.
+        """
+        self._target_data = target_data
+
+    def _retrieve_value(self, board_type, key):
+        """Retrieve a value by traversing the hierarchy in targets.json
+
+        This method will recurse through the data until it finds a values.
+
+        :param str board_type: The board type for which to retrieve the key.
+        :param str key: Which key to retrieve from the data.
+        :return: Value of key (or None if it cannot be determined) and the source board type.
+        """
+        value = self._target_data[board_type].get(key)
+        if not value:
+            try:
+                # See if this board inherits from any other boards
+                inherit_board_types = self._target_data[board_type]["inherits"]
+            except KeyError:
+                # If this board doesn't inherit from anything we have hit the end of the data
+                value = None
+            else:
+                logger.debug("The board definition '%s' inherits from '%s'", board_type, "', '".join(inherit_board_types))
+                # The board can inherit from multiple definitions so try each in turn
+                for inherit_board_type in inherit_board_types:
+                    value, board_type = self._retrieve_value(inherit_board_type, key)
+                    if value:
+                        break
+        return value, board_type
+
+    def retrieve_value(self, board_type, key):
+        """Retrieve a value from targets.json
+
+        :param str board_type: The board type for which to retrieve the key.
+        :param str key: Which key to retrieve from the data.
+        :return: Value of key or None if it cannot be determined.
+        """
+        value, source = self._retrieve_value(board_type, key)
+
+        if value and source != board_type:
+            logger.info("Using the '%s' value of '%s' for '%s' inherited from '%s'", key, value, board_type, source)
+
+        return value
 
 
 class PlatformValidator(object):
@@ -104,12 +156,25 @@ class PlatformValidator(object):
         self._all_board_types = set()
 
         # Database of product codes and associated board types for each source
+        # { <source name>: { <board type>: [<product codes>] } }
         self._product_code_db = {}
+
         # Database of board types and associated product codes for each source
+        # { <source name>: { <product code>: [<board types>] } }
         self._board_type_db = {}
+
         # Mbed support information
+        # { <source name>: {
+        #     "mbed_os_support": { <product code> : [<mbed os versions>] }
+        #     "mbed_enabled": { <product code> : [<mbed enabled>] } }
+        # }
         self._mbed_support_db = {}
+
         # Metadata associate with the source
+        # { <source name | *>: {
+        #     "product_code_count": <int>,
+        #     "board_type_count": <int> }
+        # }
         self._source_meta_data = {}
 
         try:
@@ -128,7 +193,6 @@ class PlatformValidator(object):
             self.processing_error = False
             logger.info("%d unique product codes for %d boards are defined in total", len(self._all_product_codes), len(self._all_board_types))
             self._validate_data_source()
-
 
     def _add_products_and_boards(self, source, product_code_db, board_type_db):
         """Add to the set of all product codes and board types found across all sources.
@@ -164,15 +228,18 @@ class PlatformValidator(object):
         :return: A product code database and board type db.
         :rtype: tuple(dict, dict)
         """
-        product_code_db = defaultdict(list)
-        board_type_db = defaultdict(list)
+        # Remove duplicates as it is fine to list the product code or board type multiple times, as long as the
+        # value is identical.
+        product_code_db = defaultdict(set)
+        board_type_db = defaultdict(set)
+
         mbed_os_support_db = defaultdict(list)
         mbed_enabled_db = defaultdict(list)
 
         for product_code, board_type, mbed_os_support, mbed_enabled in data_source_func():
             if product_code and board_type:
-                board_type_db[board_type].append(product_code)
-                product_code_db[product_code].append(board_type)
+                board_type_db[board_type].add(product_code)
+                product_code_db[product_code].add(board_type)
             if product_code and mbed_os_support:
                 mbed_os_support_db[product_code].extend(_extract_versions(mbed_os_support))
             if product_code and mbed_enabled:
@@ -247,16 +314,16 @@ class PlatformValidator(object):
         try:
             with open(self._mbed_os_targets_path, "r") as mbed_os_target:
                 target_dict = json.loads(mbed_os_target.read())
+                target_data = MbedOSTargetData(target_dict)
 
                 for board_type, target in target_dict.items():
-                    try:
-                        detect_codes = target["detect_code"]
-                    except KeyError:
-                        # Ignore entries without product codes
-                        pass
-                    else:
-                        for detect_code in detect_codes:
-                            yield detect_code, board_type, None, None
+                    # Board types which are not public should not be included is possible definitional
+                    if target.get("public", True):
+                        # Get the detect code for this board or one it inherits from
+                        detect_codes = target_data.retrieve_value(board_type, "detect_code")
+                        if detect_codes:
+                            for detect_code in detect_codes:
+                                yield detect_code, board_type, None, None
         except IOError as error:
             logger.error(error)
             raise ProcessingError()
@@ -316,6 +383,12 @@ class PlatformValidator(object):
 
     @staticmethod
     def _remove_placeholders(board_types):
+        """ Remove place holders from a list of board types and return a new list.
+
+        :param list board_types: list of board types
+        :return: List of board types with place holders removed.
+        :rtype: list
+        """
         return [board_type for board_type in board_types if "PLACEHOLDER" not in board_type]
 
     def _check_board_type_list(self, source, board_types):
@@ -328,9 +401,16 @@ class PlatformValidator(object):
             if len(defined_board_types) == 1:
                 self._add_message(source, "Placeholder board type needs to be removed.", warning=True)
             else:
-                self._add_message(source, "Board type defined multiple times.", error=True)
+                self._add_message(source, "Different board types listed for the same product code.", error=True)
 
     def _check_for_mismatches(self, source, board_types):
+        """Check for mismatched between the
+
+        :param str source: The name of the data source
+        :param list board_types: List of boards type from the defined source for the product code being processed
+        :return: Whether or not a match or a mismatch with the internal platform database has been found.
+        :rtype: tuple(bool, bool)
+        """
         defined_board_types = self._remove_placeholders(board_types)
         match = False
         mismatch = False
@@ -373,7 +453,7 @@ class PlatformValidator(object):
                 self._tools_board_type = None
             else:
                 # There will be only one board type for a given product code in Mbed OS Tools due to the data structure
-                self._tools_board_type = mbed_os_tools_board_types[0]
+                self._tools_board_type = list(mbed_os_tools_board_types)[0]
 
             os_mbed_com_board_types = self._product_code_db[_OS_MBED_COM].get(self._product_code, [])
             mbed_os_board_types = self._product_code_db[_MBED_OS].get(self._product_code, [])
@@ -493,6 +573,7 @@ def main():
     platform_validator.render_results()
 
     return platform_validator.processing_error
+
 
 if __name__ == "__main__":
     sys.exit(main())
