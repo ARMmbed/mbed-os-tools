@@ -39,7 +39,7 @@ def read(fname):
 
 
 setup(name='mbed-ls',
-      version='1.7.8',
+      version='1.7.9',
       description=DESCRIPTION,
       long_description=read('README.md'),
       long_description_content_type='text/markdown',
@@ -58,7 +58,7 @@ setup(name='mbed-ls',
       },
       install_requires=[
           "PrettyTable>=0.7.2",
-          "mbed-os-tools==0.0.9"
+          "mbed-os-tools>=0.0.9,<0.1.0"
       ],
       tests_require=[
           "mock>=2",

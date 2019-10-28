@@ -43,7 +43,7 @@ def read(fname):
 
 
 setup(name='mbed-greentea',
-      version='1.7.2',
+      version='1.7.3',
       description=DESCRIPTION,
       long_description=read('README.md'),
       long_description_content_type='text/markdown',
@@ -59,7 +59,7 @@ setup(name='mbed-greentea',
           "console_scripts": ["mbedgt=mbed_greentea.mbed_greentea_cli:main",],
       },
       install_requires=[
-          "mbed-os-tools==0.0.9",
+          "mbed-os-tools>=0.0.9,<0.1.0",
           "mbed-host-tests>=1.5.0,<2"
       ],
       tests_require=[
