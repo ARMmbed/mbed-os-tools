@@ -120,6 +120,7 @@ DEFAULT_PLATFORM_DB = {
         u"0715": u"NUCLEO_L053R8",
         u"0720": u"NUCLEO_F401RE",
         u"0725": u"NUCLEO_F030R8",
+        u"0729": u"NUCLEO_G071RB",
         u"0730": u"NUCLEO_F072RB",
         u"0735": u"NUCLEO_F334R8",
         u"0740": u"NUCLEO_F411RE",

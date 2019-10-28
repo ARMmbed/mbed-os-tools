@@ -983,7 +983,7 @@ def main_cli(opts, args, gt_instance_uuid=None):
             """
             try:
                 with io.open(filename, encoding="utf-8", errors="backslashreplace", mode="w") as f:
-                    f.write(content.decode('utf-8'))
+                    f.write(content)
             except IOError as e:
                 gt_logger.gt_log_err("can't export to '%s', reason:"% filename)
                 gt_logger.gt_log_err(str(e))
@@ -1049,10 +1049,8 @@ def main_cli(opts, args, gt_instance_uuid=None):
         if test_platforms_match == 0:
             # No tests were executed
             gt_logger.gt_log_warn("no platform/target matching tests were found!")
-            test_exec_retcode += -10
         if target_platforms_match == 0:
             # No platforms were tested
             gt_logger.gt_log_warn("no matching platforms were found!")
-            test_exec_retcode += -100
 
     return (test_exec_retcode)
