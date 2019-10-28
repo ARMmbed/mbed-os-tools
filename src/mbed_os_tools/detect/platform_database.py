@@ -75,6 +75,7 @@ DEFAULT_PLATFORM_DB = {
         u"0311": u"K66F",
         u"0312": u"MTS_DRAGONFLY_L471QG",
         u"0315": u"MTS_MDOT_F411RE",
+        u"0316": u"MTS_DRAGONFLY_F413RH",
         u"0350": u"XDOT_L151CC",
         u"0400": u"MAXWSNENV",
         u"0405": u"MAX32600MBED",
