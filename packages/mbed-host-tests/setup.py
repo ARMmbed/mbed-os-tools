@@ -42,7 +42,7 @@ def read(fname):
 
 
 setup(name='mbed-host-tests',
-      version='1.5.8',
+      version='1.5.9',
       description=DESCRIPTION,
       long_description=read('README.md'),
       long_description_content_type='text/markdown',
@@ -60,7 +60,7 @@ setup(name='mbed-host-tests',
              "mbedflsh=mbed_host_tests.mbedflsh:main"],
       },
       install_requires=[
-        "mbed-os-tools==0.0.9"
+        "mbed-os-tools>=0.0.9,<0.1.0"
       ],
       tests_require=[
         "mock>=2"
