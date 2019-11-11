@@ -192,6 +192,7 @@ DEFAULT_PLATFORM_DB = {
         u"1018": u"SSCI824",
         u"1019": u"TY51822R3",
         u"1022": u"RO359B",
+        u"1026": u"MAKERDIARY_NRF52840_MDK",
         u"1034": u"LPC11U34",
         u"1040": u"LPC11U24",
         u"1045": u"LPC11U24",
