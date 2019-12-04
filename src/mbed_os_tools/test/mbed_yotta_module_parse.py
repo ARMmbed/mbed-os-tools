@@ -97,7 +97,7 @@ class YottaModule():
                 with open(path, 'r') as data_file:
                     self.__yotta_module = json.load(data_file)
         except IOError as e:
-            print("YottaModule: error - ", str(e))
+            print("YottaModule: error - %s" % str(e))
         return bool(self.__yotta_module)    # bool({}) == False
 
     def set_yotta_module(self, yotta_module):
