@@ -1,2 +1,4 @@
+mock>=2
+pytest>=3
 coverage
 coveralls

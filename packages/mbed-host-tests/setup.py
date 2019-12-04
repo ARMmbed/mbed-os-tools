@@ -31,6 +31,8 @@ DESCRIPTION = "mbed tools used to flash, reset and supervise test execution for 
 OWNER_NAMES = 'Qinghao Shi'
 OWNER_EMAILS = 'qinghao.shi@arm.com'
 
+repository_dir = os.path.dirname(__file__)
+
 
 def read(fname):
     """
@@ -38,8 +40,16 @@ def read(fname):
     @param fname: the name of the file to read, relative to the directory containing this file
     @return: The string content of the opened file
     """
-    return open(os.path.join(os.path.dirname(__file__), fname), encoding="utf8").read()
+    with open(os.path.join(repository_dir, fname),
+              encoding="utf8") as f:
+        return f.read()
 
+
+with open(os.path.join(repository_dir, 'requirements.txt')) as fh:
+    requirements = fh.readlines()
+
+with open(os.path.join(repository_dir, 'test_requirements.txt')) as fh:
+    test_requirements = fh.readlines()
 
 setup(name='mbed-host-tests',
       version='1.5.9',
@@ -55,14 +65,26 @@ setup(name='mbed-host-tests',
       license="Apache-2.0",
       test_suite='test',
       entry_points={
-        "console_scripts":
-            ["mbedhtrun=mbed_host_tests.mbedhtrun:main",
-             "mbedflsh=mbed_host_tests.mbedflsh:main"],
+          "console_scripts":
+              ["mbedhtrun=mbed_host_tests.mbedhtrun:main",
+               "mbedflsh=mbed_host_tests.mbedflsh:main"],
       },
-      install_requires=[
-        "mbed-os-tools>=0.0.9,<0.1.0"
-      ],
-      tests_require=[
-        "mock>=2"
-      ]
+      classifiers=(
+          'Development Status :: 5 - Production/Stable',
+          'Intended Audience :: Developers',
+          'License :: OSI Approved :: Apache Software License',
+          'Programming Language :: Python :: 2',
+          'Programming Language :: Python :: 2.7',
+          'Programming Language :: Python :: 3',
+          'Programming Language :: Python :: 3.5',
+          'Programming Language :: Python :: 3.6',
+          'Programming Language :: Python :: 3.7',
+          'Programming Language :: Python',
+          'Topic :: Software Development :: Build Tools',
+          'Topic :: Software Development :: Embedded Systems',
+          'Topic :: Software Development :: Testing',
+      ),
+      python_requires='>=2.7.10, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, <4',
+      install_requires=requirements,
+      tests_require=test_requirements
 )

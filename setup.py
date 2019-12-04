@@ -38,6 +38,9 @@ def read(fname):
 with open(os.path.join(repository_dir, 'requirements.txt')) as fh:
     requirements = fh.readlines()
 
+with open(os.path.join(repository_dir, 'test_requirements.txt')) as fh:
+    test_requirements = fh.readlines()
+
 setup(
     name="mbed-os-tools",
     version=read("src/mbed_os_tools/VERSION.txt").strip(),
@@ -70,7 +73,7 @@ setup(
     ),
     python_requires='>=2.7.10, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, <4',
     install_requires=requirements,
-    tests_require=read("test_requirements.txt").splitlines(),
+    tests_require=test_requirements,
     extras_require={
         "pyocd": ["pyocd==0.14.0"]
     },

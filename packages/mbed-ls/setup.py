@@ -30,6 +30,7 @@ OWNER_EMAILS = 'Graham.Hammond@arm.com, Mark.Edgeworth@arm.com'
 
 repository_dir = os.path.dirname(__file__)
 
+
 def read(fname):
     """
     Utility function to cat in a file (used for the README)
@@ -43,6 +44,9 @@ def read(fname):
 
 with open(os.path.join(repository_dir, 'requirements.txt')) as fh:
     requirements = fh.readlines()
+
+with open(os.path.join(repository_dir, 'test_requirements.txt')) as fh:
+    test_requirements = fh.readlines()
 
 setup(name='mbed-ls',
       version='1.7.9',
@@ -78,10 +82,7 @@ setup(name='mbed-ls',
           ],
       },
       install_requires=requirements,
-      tests_require=[
-          "mock>=2",
-          "pytest>=3"
-      ],
+      tests_require=test_requirements,
       extras_require={
           "colorized_logs": ["colorlog"]
       }
