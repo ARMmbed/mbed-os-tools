@@ -569,7 +569,7 @@ def run_test_thread(test_result_queue, test_queue, opts, mut, build, build_path,
             # In some cases we want to print console to see why test failed
             # even if we are not in verbose mode
             gt_logger.gt_log_tab("test failed, reporting console output (specified with --report-fails option)")
-            print
+            print()
             print(single_test_output)
 
     #greentea_release_target_id(mut['target_id'], gt_instance_uuid)
