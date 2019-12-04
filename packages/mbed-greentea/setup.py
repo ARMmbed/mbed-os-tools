@@ -37,7 +37,8 @@ repository_dir = os.path.dirname(__file__)
 def read(fname):
     """
     Utility function to cat in a file (used for the README)
-    @param fname: the name of the file to read, relative to the directory containing this file
+    @param fname: the name of the file to read,
+    relative to the directory containing this file
     @return: The string content of the opened file
     """
     with open(os.path.join(repository_dir, fname), mode='r') as f:
