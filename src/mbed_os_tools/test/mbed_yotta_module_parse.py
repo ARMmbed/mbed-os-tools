@@ -17,7 +17,7 @@ import os
 import json
 
 
-class YottaConfig():
+class YottaConfig(object):
 
     yotta_config = None
 
@@ -75,7 +75,7 @@ class YottaConfig():
         return None
 
 
-class YottaModule():
+class YottaModule(object):
 
     __yotta_module = None
     __greentea_client = 'greentea-client'

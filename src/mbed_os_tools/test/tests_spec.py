@@ -22,7 +22,7 @@ to Greentea.
 import json
 
 
-class TestBinary:
+class TestBinary(object):
     """
     Class representing a Test Binary.
     """
@@ -66,7 +66,7 @@ class TestBinary:
         return self.__comp_log
 
 
-class Test:
+class Test(object):
     """
     class representing a Test artifact that may contain more than one test binaries.
     """
@@ -136,7 +136,7 @@ class Test:
                                                                   compare_log)
 
 
-class TestBuild:
+class TestBuild(object):
     """
     class for Test build.
     """
@@ -245,7 +245,7 @@ class TestBuild:
         self.__tests[name] = test
 
 
-class TestSpec:
+class TestSpec(object):
     """
     Test specification. Contains Builds.
     """
