@@ -40,8 +40,7 @@ def read(fname):
     @param fname: the name of the file to read, relative to the directory containing this file
     @return: The string content of the opened file
     """
-    with open(os.path.join(repository_dir, fname),
-              encoding="utf8") as f:
+    with open(os.path.join(repository_dir, fname), mode='r') as f:
         return f.read()
 
 
@@ -51,6 +50,7 @@ with open(os.path.join(repository_dir, 'requirements.txt')) as fh:
 with open(os.path.join(repository_dir, 'test_requirements.txt')) as fh:
     test_requirements = fh.readlines()
 
+python_requires = '>=2.7.10, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, <4'
 setup(name='mbed-greentea',
       version='1.7.3',
       description=DESCRIPTION,
@@ -82,7 +82,7 @@ setup(name='mbed-greentea',
           'Topic :: Software Development :: Embedded Systems',
           'Topic :: Software Development :: Testing',
       ),
-      python_requires='>=2.7.10, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, <4',
+      python_requires=python_requires,
       install_requires=requirements,
       tests_require=test_requirements
-)
+      )
