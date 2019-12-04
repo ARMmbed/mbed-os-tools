@@ -22,7 +22,7 @@ except ImportError:
     COLORAMA = False
 
 
-class GreenTeaSimpleLockLogger:
+class GreenTeaSimpleLockLogger(object):
     """! Simple locking printing mechanism
     @details We are using parallel testing
     """
