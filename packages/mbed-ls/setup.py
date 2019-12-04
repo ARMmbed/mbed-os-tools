@@ -28,16 +28,27 @@ DESCRIPTION = "mbed-ls is a Python module that detects and lists mbed-enabled de
 OWNER_NAMES = 'Graham Hammond, Mark Edgeworth'
 OWNER_EMAILS = 'Graham.Hammond@arm.com, Mark.Edgeworth@arm.com'
 
+repository_dir = os.path.dirname(__file__)
+
 
 def read(fname):
     """
     Utility function to cat in a file (used for the README)
-    @param fname: the name of the file to read, relative to the directory containing this file
+    @param fname: the name of the file to read,
+    relative to the directory containing this file
     @return: The string content of the opened file
     """
-    return open(os.path.join(os.path.dirname(__file__), fname), encoding="utf8").read()
+    with open(os.path.join(repository_dir, fname), mode='r') as f:
+        return f.read()
 
 
+with open(os.path.join(repository_dir, 'requirements.txt')) as fh:
+    requirements = fh.readlines()
+
+with open(os.path.join(repository_dir, 'test_requirements.txt')) as fh:
+    test_requirements = fh.readlines()
+
+python_requires = '>=2.7.10, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, <4'
 setup(name='mbed-ls',
       version='1.7.9',
       description=DESCRIPTION,
@@ -51,19 +62,28 @@ setup(name='mbed-ls',
       packages=find_packages(),
       license="Apache-2.0",
       test_suite='test',
+      classifiers=(
+          'Development Status :: 5 - Production/Stable',
+          'Intended Audience :: Developers',
+          'License :: OSI Approved :: Apache Software License',
+          'Programming Language :: Python :: 2',
+          'Programming Language :: Python :: 2.7',
+          'Programming Language :: Python :: 3',
+          'Programming Language :: Python :: 3.5',
+          'Programming Language :: Python :: 3.6',
+          'Programming Language :: Python :: 3.7',
+          'Programming Language :: Python',
+          'Topic :: Software Development :: Build Tools',
+          'Topic :: Software Development :: Embedded Systems',
+      ),
+      python_requires=python_requires,
       entry_points={
-        "console_scripts": [
-            "mbedls=mbed_lstools:mbedls_main",
-        ],
+          "console_scripts": [
+              "mbedls=mbed_lstools:mbedls_main",
+          ],
       },
-      install_requires=[
-          "PrettyTable>=0.7.2",
-          "mbed-os-tools>=0.0.9,<0.1.0"
-      ],
-      tests_require=[
-          "mock>=2",
-          "pytest>=3"
-      ],
+      install_requires=requirements,
+      tests_require=test_requirements,
       extras_require={
           "colorized_logs": ["colorlog"]
       }

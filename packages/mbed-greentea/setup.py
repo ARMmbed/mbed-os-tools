@@ -27,21 +27,31 @@ from io import open
 from distutils.core import setup
 from setuptools import find_packages
 
-
 DESCRIPTION = "mbed 3.0 onwards test suite, codename Greentea. The test suite is a collection of tools that enable automated testing on mbed-enabled platforms"
 OWNER_NAMES = 'Anna Bridge, Qinghao Shi'
 OWNER_EMAILS = 'Anna.Bridge@arm.com, qinghao.shi@arm.com'
+
+repository_dir = os.path.dirname(__file__)
 
 
 def read(fname):
     """
     Utility function to cat in a file (used for the README)
-    @param fname: the name of the file to read, relative to the directory containing this file
+    @param fname: the name of the file to read,
+    relative to the directory containing this file
     @return: The string content of the opened file
     """
-    return open(os.path.join(os.path.dirname(__file__), fname), encoding="utf-8").read()
+    with open(os.path.join(repository_dir, fname), mode='r') as f:
+        return f.read()
 
 
+with open(os.path.join(repository_dir, 'requirements.txt')) as fh:
+    requirements = fh.readlines()
+
+with open(os.path.join(repository_dir, 'test_requirements.txt')) as fh:
+    test_requirements = fh.readlines()
+
+python_requires = '>=2.7.10, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, <4'
 setup(name='mbed-greentea',
       version='1.7.3',
       description=DESCRIPTION,
@@ -56,13 +66,24 @@ setup(name='mbed-greentea',
       license="Apache-2.0",
       test_suite='test',
       entry_points={
-          "console_scripts": ["mbedgt=mbed_greentea.mbed_greentea_cli:main",],
+          "console_scripts": ["mbedgt=mbed_greentea.mbed_greentea_cli:main", ],
       },
-      install_requires=[
-          "mbed-os-tools>=0.0.9,<0.1.0",
-          "mbed-host-tests>=1.5.0,<2"
-      ],
-      tests_require=[
-          "mock>=2"
-      ]
-)
+      classifiers=(
+          'Development Status :: 5 - Production/Stable',
+          'Intended Audience :: Developers',
+          'License :: OSI Approved :: Apache Software License',
+          'Programming Language :: Python :: 2',
+          'Programming Language :: Python :: 2.7',
+          'Programming Language :: Python :: 3',
+          'Programming Language :: Python :: 3.5',
+          'Programming Language :: Python :: 3.6',
+          'Programming Language :: Python :: 3.7',
+          'Programming Language :: Python',
+          'Topic :: Software Development :: Build Tools',
+          'Topic :: Software Development :: Embedded Systems',
+          'Topic :: Software Development :: Testing',
+      ),
+      python_requires=python_requires,
+      install_requires=requirements,
+      tests_require=test_requirements
+      )
