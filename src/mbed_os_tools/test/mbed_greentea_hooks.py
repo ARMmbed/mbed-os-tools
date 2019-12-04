@@ -24,7 +24,7 @@ List of available hooks:
 """
 
 
-class GreenteaTestHook():
+class GreenteaTestHook(object):
     """! Class used to define
     """
     name = None
@@ -204,7 +204,7 @@ class LcovHook(GreenteaCliTestHook):
         result = result.replace('>>', '')
         return result
 
-class GreenteaHooks():
+class GreenteaHooks(object):
     """! Class used to store all hooks
     @details Hooks command starts with '$' dollar sign
     """

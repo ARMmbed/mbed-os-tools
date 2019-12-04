@@ -24,7 +24,7 @@ def export_to_file(file_name, payload):
         with open(file_name, 'w') as f:
             f.write(payload)
     except IOError as e:
-        print("Exporting report to file failed: ", str(e))
+        print("Exporting report to file failed: %s" % str(e))
         result = False
     return result
 

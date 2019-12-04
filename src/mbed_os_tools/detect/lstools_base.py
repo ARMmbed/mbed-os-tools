@@ -28,6 +28,7 @@ from .platform_database import (
     LOCAL_PLATFORM_DATABASE,
     LOCAL_MOCKS_DATABASE,
 )
+from future.utils import with_metaclass
 
 mbedls_root_logger = logging.getLogger("mbedls")
 mbedls_root_logger.setLevel(logging.WARNING)
@@ -56,12 +57,10 @@ class FSInteraction(object):
     Never = 3
 
 
-class MbedLsToolsBase(object):
+class MbedLsToolsBase(with_metaclass(ABCMeta, object)):
     """ Base class for mbed-lstools, defines mbed-ls tools interface for
     mbed-enabled devices detection for various hosts
     """
-
-    __metaclass__ = ABCMeta
 
     # Which OSs are supported by this module
     # Note: more than one OS can be supported by mbed-lstools_* module
