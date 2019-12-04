@@ -21,12 +21,22 @@ DESCRIPTION = "The tools to build, test, and work with Mbed OS"
 OWNER_NAMES = "Jimmy Brisson, Brian Daniels"
 OWNER_EMAILS = "jimmy.brisson@arm.com, brian.daniels@arm.com"
 
+repository_dir = os.path.dirname(__file__)
 
-# Utility function to cat in a file (used for the README)
+
 def read(fname):
-    with open(os.path.join(os.path.dirname(__file__), fname), 'r') as f:
+    """
+    Utility function to cat in a file (used for the README)
+    @param fname: the name of the file to read, relative to the directory containing this file
+    @return: The string content of the opened file
+    """
+    with open(os.path.join(repository_dir, fname), mode='r',
+              encoding="utf8") as f:
         return f.read()
 
+
+with open(os.path.join(repository_dir, 'requirements.txt')) as fh:
+    requirements = fh.readlines()
 
 setup(
     name="mbed-os-tools",
@@ -44,19 +54,22 @@ setup(
     package_data={"": ["VERSION.txt"]},
     license="Apache-2.0",
     test_suite="test",
-    install_requires=[
-        "PySerial>=3.0,<4.0",
-        "requests>=2.0,<3.0",
-        "intelhex>=2.0,<3.0",
-        "future",
-        "PrettyTable>=0.7.2",
-        "fasteners",
-        "appdirs>=1.4,<2.0",
-        "junit-xml>=1.0,<2.0",
-        "lockfile",
-        "six>=1.0,<2.0",
-        "colorama>=0.3,<0.5",
-    ],
+    classifiers=(
+        'Development Status :: 5 - Production/Stable',
+        'Intended Audience :: Developers',
+        'License :: OSI Approved :: Apache Software License',
+        'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python',
+        'Topic :: Software Development :: Build Tools',
+        'Topic :: Software Development :: Embedded Systems',
+    ),
+    python_requires='>=2.7.10, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, <4',
+    install_requires=requirements,
     tests_require=read("test_requirements.txt").splitlines(),
     extras_require={
         "pyocd": ["pyocd==0.14.0"]
