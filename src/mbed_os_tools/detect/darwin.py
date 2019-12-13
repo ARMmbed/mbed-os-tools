@@ -47,7 +47,7 @@ def _plist_from_popen(popen):
         if soup.get_text() == '':
             # The output is not in the XML format
             return loads(out)
-        return loads(soup.prettify().encode('utf8'))
+        return loads(soup.decode().encode('utf8'))
     except ExpatError:
         return []
 
