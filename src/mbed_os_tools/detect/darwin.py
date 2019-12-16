@@ -42,7 +42,7 @@ def _plist_from_popen(popen):
     if not out:
         return []
     try:
-        # Beautiful soup ensures the XML is properly formed after it is parsed 
+        # Beautiful soup ensures the XML is properly formed after it is parsed
         # so that it can be used by other less lenient commands without problems
         xml_representation = BeautifulSoup(out.decode('utf8'), 'xml')
         if not xml_representation.get_text():
