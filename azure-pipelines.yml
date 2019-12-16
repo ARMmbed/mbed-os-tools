@@ -81,7 +81,6 @@ jobs:
                 displayName: "Install mbed-os test dependencies"
             -
                 script: "pip install lxml"
-                continueOnError: true
                 env: { STATIC_DEPS: true }
                 displayName: "Install lxml separately on Linux/MacOS"
             -
