@@ -44,7 +44,7 @@ def _plist_from_popen(popen):
     try:
         # Beautiful soup ensures the XML is properly formed
         soup = BeautifulSoup(out.decode('utf8'), 'xml')
-        if soup.get_text() == '':
+        if not soup.get_text():
             # The output is not in the XML format
             return loads(out)
         return loads(soup.decode().encode('utf8'))
