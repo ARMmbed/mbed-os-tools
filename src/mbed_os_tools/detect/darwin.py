@@ -17,6 +17,8 @@ import re
 import subprocess
 import platform
 
+from bs4 import BeautifulSoup
+
 try:
     from plistlib import loads
 except ImportError:
@@ -40,7 +42,13 @@ def _plist_from_popen(popen):
     if not out:
         return []
     try:
-        return loads(out)
+        # Beautiful soup ensures the XML is properly formed after it is parsed
+        # so that it can be used by other less lenient commands without problems
+        xml_representation = BeautifulSoup(out.decode('utf8'), 'xml')
+        if not xml_representation.get_text():
+            # The output is not in the XML format
+            return loads(out)
+        return loads(xml_representation.decode().encode('utf8'))
     except ExpatError:
         return []
 
@@ -85,9 +93,9 @@ def _dfs_usb_info(obj, parents):
     """
     output = {}
     if (
-        "BSD Name" in obj
-        and obj["BSD Name"].startswith("disk")
-        and mbed_volume_name_match.search(obj["IORegistryEntryName"])
+            "BSD Name" in obj
+            and obj["BSD Name"].startswith("disk")
+            and mbed_volume_name_match.search(obj["IORegistryEntryName"])
     ):
         disk_id = obj["BSD Name"]
         usb_info = {"serial": None, "vendor_id": None, "product_id": None, "tty": None}
@@ -177,12 +185,13 @@ class MbedLsToolsDarwin(MbedLsToolsBase):
         if self.mac_version >= 10.11:
             cmp_par = "-c"
 
+        usb_tree = []
         for usb_controller in usb_controllers:
             ioreg_usb = subprocess.Popen(
                 ["ioreg", "-a", "-r", cmp_par, usb_controller, "-l"],
                 stdout=subprocess.PIPE,
             )
-            usb_tree = _plist_from_popen(ioreg_usb)
+            usb_tree.extend(_plist_from_popen(ioreg_usb))
 
         r = {}
 
