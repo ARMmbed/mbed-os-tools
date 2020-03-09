@@ -187,6 +187,7 @@ DEFAULT_PLATFORM_DB = {
         u"0854": u"NUCLEO_L552ZE_Q",
         u"0855": u"DISCO_L562QE",
         u"0879": u"NUCLEO_F756ZG",
+        u"0885": u"B_L4S5I_IOT01A",
         u"0900": u"XPRO_SAMR21",
         u"0905": u"XPRO_SAMW25",
         u"0910": u"XPRO_SAML21",
