@@ -239,6 +239,7 @@ DEFAULT_PLATFORM_DB = {
         u"1308": u"NUMAKER_IOT_M487",
         u"1309": u"NUMAKER_M252KG",
         u"1310": u"NUMAKER_IOT_M263A",
+        u"1312": u"NU_M2354",
         u"1500": u"RHOMBIO_L476DMW1K",
         u"1549": u"LPC1549",
         u"1600": u"LPC4330_M4",
