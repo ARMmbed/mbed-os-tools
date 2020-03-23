@@ -70,8 +70,8 @@ def _is_mbed_volume(volume_string):
 
 def _get_cached_mounted_points():
     """! Get the volumes present on the system
-    @return List of mount points and their associated target id
-      Ex. [{ 'mount_point': 'D:', 'target_id_usb_id': 'xxxx'}, ...]
+    @return List of mount points and their associated volume string
+      Ex. [{ 'mount_point': 'D:', 'volume_string': 'xxxx'}, ...]
     """
     result = []
     try:
@@ -80,7 +80,7 @@ def _get_cached_mounted_points():
             winreg.HKEY_LOCAL_MACHINE, "SYSTEM\\MountedDevices"
         )
         for v in _iter_vals(mounted_devices_key):
-            # Valid entries have the following format: \DosDevices\D:
+            # Valid entries have the following format: \\DosDevices\\D:
             if "DosDevices" not in v[0]:
                 continue
 
