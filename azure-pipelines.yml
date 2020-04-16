@@ -37,19 +37,19 @@ jobs:
                     sendCoverage: "true"
                 mac_python_2_7:
                     python.version: "2.7"
-                    imageName: macos-10.13
+                    imageName: macOS-10.15
                     sendCoverage: "false"
                 mac_python_3_5:
                     python.version: "3.5"
-                    imageName: macos-10.13
+                    imageName: macOS-10.15
                     sendCoverage: "false"
                 mac_python_3_6:
                     python.version: "3.6"
-                    imageName: macos-10.13
+                    imageName: macOS-10.15
                     sendCoverage: "false"
                 mac_python_3_7:
                     python.version: "3.7"
-                    imageName: macos-10.13
+                    imageName: macOS-10.15
                     sendCoverage: "false"
                 windows_python_2_7:
                     python.version: "2.7"

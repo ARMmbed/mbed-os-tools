@@ -43,7 +43,8 @@ def _plist_from_popen(popen):
         return []
     try:
         try:
-            # Try simple and fast first if this fails fall back to the slower but better process
+            # Try simple and fast first if this fails fall back to the slower but
+            # more robust process.
             return loads(out)
         except ExpatError:
             # Beautiful soup ensures the XML is properly formed after it is parsed
