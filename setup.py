@@ -39,6 +39,10 @@ def read(fname):
 with open(os.path.join(repository_dir, 'requirements.txt')) as fh:
     requirements = fh.readlines()
 
+# soupsieve is not a direct requirement of this package, but left to it's own
+# devices a version >= 2.0 is installed for Python 2 which is not compatible.
+# Therefore perform the installation of a compatible package before any other
+# packages are installed.
 if sys.version_info.major == 2:
     requirements.insert(0, "soupsieve<2.0")
 
