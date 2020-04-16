@@ -42,13 +42,18 @@ def _plist_from_popen(popen):
     if not out:
         return []
     try:
-        # Beautiful soup ensures the XML is properly formed after it is parsed
-        # so that it can be used by other less lenient commands without problems
-        xml_representation = BeautifulSoup(out.decode('utf8'), 'xml')
-        if not xml_representation.get_text():
-            # The output is not in the XML format
+        try:
+            # Try simple and fast first if this fails fall back to the slower but better process
             return loads(out)
-        return loads(xml_representation.decode().encode('utf8'))
+        except ExpatError:
+            # Beautiful soup ensures the XML is properly formed after it is parsed
+            # so that it can be used by other less lenient commands without problems
+            xml_representation = BeautifulSoup(out.decode('utf8'), 'xml')
+
+            if not xml_representation.get_text():
+                # The output is not in the XML format
+                return loads(out)
+            return loads(xml_representation.decode().encode('utf8'))
     except ExpatError:
         return []
 
