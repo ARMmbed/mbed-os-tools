@@ -1,4 +1,4 @@
-soupsieve<2.0; python_version<"3.5"
+soupsieve<2.0
 PySerial>=3.0,<4.0
 requests>=2.0,<3.0
 intelhex>=2.0,<3.0
