@@ -14,6 +14,7 @@
 # limitations under the License.
 
 import os
+import sys
 from distutils.core import setup
 from setuptools import find_packages
 
@@ -37,6 +38,9 @@ def read(fname):
 
 with open(os.path.join(repository_dir, 'requirements.txt')) as fh:
     requirements = fh.readlines()
+
+if sys.version_info.major == 2:
+    requirements.insert(0, "soupsieve<2.0")
 
 with open(os.path.join(repository_dir, 'test_requirements.txt')) as fh:
     test_requirements = fh.readlines()
