@@ -10,5 +10,6 @@ lockfile
 six>=1.0,<2.0
 colorama>=0.3,<0.5
 # When using beautiful soup, the XML parser needs to be installed independently. It is only needed on macOs though.
+soupsieve<2.0; python_version<"3.5"
 beautifulsoup4
 lxml; sys_platform == 'darwin'
