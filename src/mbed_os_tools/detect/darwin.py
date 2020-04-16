@@ -48,7 +48,7 @@ def _plist_from_popen(popen):
         except ExpatError:
             # Beautiful soup ensures the XML is properly formed after it is parsed
             # so that it can be used by other less lenient commands without problems
-            xml_representation = BeautifulSoup(out.decode('utf8'), 'xml', parse_only=soup_strainer)
+            xml_representation = BeautifulSoup(out.decode('utf8'), 'xml')
 
             if not xml_representation.get_text():
                 # The output is not in the XML format
