@@ -301,6 +301,7 @@ DEFAULT_PLATFORM_DB = {
         u"5020": u"HOME_GATEWAY_6LOWPAN",
         u"5500": u"RZ_A1H",
         u"5501": u"GR_LYCHEE",
+        u"5502": u"GR_MANGO",
         u"6000": u"FUTURE_SEQUANA",
         u"6660": u"NZ32_SC151",
         u"7011": u"TMPM066",
