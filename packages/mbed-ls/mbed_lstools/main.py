@@ -49,7 +49,9 @@ def print_mbeds(mbeds, args, simple):
         from prettytable import PrettyTable, HEADER
         columns = ['platform_name', 'platform_name_unique', 'mount_point',
                     'serial_port', 'target_id', 'daplink_version']
-        pt = PrettyTable(columns, junction_char="|", hrules=HEADER)
+        columns_header = ['platform_name', 'platform_name_unique', 'mount_point',
+                    'serial_port', 'target_id', 'interface_version']
+        pt = PrettyTable(columns_header, junction_char="|", hrules=HEADER)
         pt.align = 'l'
         for d in devices:
             pt.add_row([d.get(col, None) or 'unknown' for col in columns])
