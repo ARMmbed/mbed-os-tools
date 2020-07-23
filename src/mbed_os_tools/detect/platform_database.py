@@ -172,6 +172,7 @@ DEFAULT_PLATFORM_DB = {
         u"0847": u"DISCO_H745I",
         u"0849": u"NUCLEO_G070RB",
         u"0850": u"NUCLEO_G431RB",
+        u"0852": u"NUCLEO_G031K8",
         u"0854": u"NUCLEO_L552ZE_Q",
         u"0855": u"DISCO_L562QE",
         u"0879": u"NUCLEO_F756ZG",
