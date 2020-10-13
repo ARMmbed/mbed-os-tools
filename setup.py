@@ -49,7 +49,6 @@ if sys.version_info.major == 2:
 with open(os.path.join(repository_dir, 'test_requirements.txt')) as fh:
     test_requirements = fh.readlines()
 
-python_requires = '>=2.7.10, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, <4'
 setup(
     name="mbed-os-tools",
     version=read("src/mbed_os_tools/VERSION.txt").strip(),
@@ -70,17 +69,15 @@ setup(
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: Apache Software License',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.5',
-        'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: 3.7',
-        'Programming Language :: Python',
+        "Programming Language :: Python",
+        "Programming Language :: Python :: 3 :: Only",
+        "Programming Language :: Python :: 3.5",
+        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
         'Topic :: Software Development :: Build Tools',
         'Topic :: Software Development :: Embedded Systems',
     ),
-    python_requires=python_requires,
+    python_requires=">=3.5,<4",
     install_requires=requirements,
     tests_require=test_requirements,
     extras_require={
