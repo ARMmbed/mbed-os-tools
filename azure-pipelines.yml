@@ -1,3 +1,13 @@
+# Trigger on a PR to master (this includes PRs from forks but secrets are not exposed).
+pr:
+  - master
+
+# Release to pypi when a release tag is pushed
+trigger:
+  tags:
+    include:
+      - v*
+
 stages:
   - stage: AnalyseTest
     displayName: 'Analyse and Test'
