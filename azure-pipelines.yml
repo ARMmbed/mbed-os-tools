@@ -1,154 +1,157 @@
-jobs:
-    -
-        job: code_style_check
+stages:
+  - stage: AnalyseTest
+    displayName: 'Analyse and Test'
+    jobs:
+      - job: code_style_check
+
         pool:
-            vmImage: ubuntu-16.04
+          vmImage: ubuntu-16.04
+
         steps:
-            -
-                task: UsePythonVersion@0
-                inputs:
-                    versionSpec: "3.7"
-                    architecture: x64
-            -
-                script: pip install --user flake8==3.7.3
-                displayName: "Install flake8"
-            -
-                script: python -m flake8
-                displayName: "Run flake8"
-    -
-        job: test
+          - task: UsePythonVersion@0
+            inputs:
+                versionSpec: "3.7"
+                architecture: x64
+          - script: pip install --user flake8==3.7.3
+            displayName: "Install flake8"
+
+          - script: python -m flake8
+            displayName: "Run flake8"
+
+      - job: test
         strategy:
-            matrix:
-                linux_python_2_7:
-                    python.version: "2.7"
-                    imageName: ubuntu-16.04
-                    sendCoverage: "false"
-                linux_python_3_5:
-                    python.version: "3.5"
-                    imageName: ubuntu-16.04
-                    sendCoverage: "false"
-                linux_python_3_6:
-                    python.version: "3.6"
-                    imageName: ubuntu-16.04
-                    sendCoverage: "false"
-                linux_python_3_7:
-                    python.version: "3.7"
-                    imageName: ubuntu-16.04
-                    sendCoverage: "false"
-                linux_python_3_8:
-                    python.version: "3.8"
-                    imageName: ubuntu-16.04
-                    sendCoverage: "true"
-                mac_python_2_7:
-                    python.version: "2.7"
-                    imageName: macOS-10.15
-                    sendCoverage: "false"
-                mac_python_3_5:
-                    python.version: "3.5"
-                    imageName: macOS-10.15
-                    sendCoverage: "false"
-                mac_python_3_6:
-                    python.version: "3.6"
-                    imageName: macOS-10.15
-                    sendCoverage: "false"
-                mac_python_3_7:
-                    python.version: "3.7"
-                    imageName: macOS-10.15
-                    sendCoverage: "false"
-                mac_python_3_8:
-                    python.version: "3.8"
-                    imageName: macOS-10.15
-                    sendCoverage: "false"
-                windows_python_2_7:
-                    python.version: "2.7"
-                    imageName: vs2017-win2016
-                    sendCoverage: "false"
-                windows_python_3_5:
-                    python.version: "3.5"
-                    imageName: vs2017-win2016
-                    sendCoverage: "false"
-                windows_python_3_6:
-                    python.version: "3.6"
-                    imageName: vs2017-win2016
-                    sendCoverage: "false"
-                windows_python_3_7:
-                    python.version: "3.7"
-                    imageName: vs2017-win2016
-                    sendCoverage: "false"
-                windows_python_3_8:
-                    python.version: "3.8"
-                    imageName: vs2017-win2016
-                    sendCoverage: "false"
-            maxParallel: 10
+          maxParallel: 10
+          matrix:
+            linux_python_2_7:
+              python.version: "2.7"
+              imageName: ubuntu-16.04
+              sendCoverage: "false"
+            linux_python_3_5:
+              python.version: "3.5"
+              imageName: ubuntu-16.04
+              sendCoverage: "false"
+            linux_python_3_6:
+              python.version: "3.6"
+              imageName: ubuntu-16.04
+              sendCoverage: "false"
+            linux_python_3_7:
+              python.version: "3.7"
+              imageName: ubuntu-16.04
+              sendCoverage: "false"
+            linux_python_3_8:
+              python.version: "3.8"
+              imageName: ubuntu-16.04
+              sendCoverage: "true"
+            mac_python_2_7:
+              python.version: "2.7"
+              imageName: macOS-10.15
+              sendCoverage: "false"
+            mac_python_3_5:
+              python.version: "3.5"
+              imageName: macOS-10.15
+              sendCoverage: "false"
+            mac_python_3_6:
+              python.version: "3.6"
+              imageName: macOS-10.15
+              sendCoverage: "false"
+            mac_python_3_7:
+              python.version: "3.7"
+              imageName: macOS-10.15
+              sendCoverage: "false"
+            mac_python_3_8:
+              python.version: "3.8"
+              imageName: macOS-10.15
+              sendCoverage: "false"
+            windows_python_2_7:
+              python.version: "2.7"
+              imageName: vs2017-win2016
+              sendCoverage: "false"
+            windows_python_3_5:
+              python.version: "3.5"
+              imageName: vs2017-win2016
+              sendCoverage: "false"
+            windows_python_3_6:
+              python.version: "3.6"
+              imageName: vs2017-win2016
+              sendCoverage: "false"
+            windows_python_3_7:
+              python.version: "3.7"
+              imageName: vs2017-win2016
+              sendCoverage: "false"
+            windows_python_3_8:
+              python.version: "3.8"
+              imageName: vs2017-win2016
+              sendCoverage: "false"
+
         pool:
-            vmImage: $(imageName)
+          vmImage: $(imageName)
+
         steps:
-            -
-                task: UsePythonVersion@0
-                inputs:
-                    versionSpec: $(python.version)
-                    architecture: x64
-            -
-                script: "python -m pip install --upgrade pip && pip install -r test_requirements.txt"
-                displayName: "Install mbed-os test dependencies"
-            -
-                script: "pip install lxml"
-                env: { STATIC_DEPS: true }
-                displayName: "Install lxml separately on Linux/MacOS"
-            -
-                script: 'pip install --user "urllib3<1.25"'
-                displayName: "Fix dependency issue for requests package"
-            -
-                script: "python -m coverage run setup.py test"
-                displayName: "Test mbed-os-tools"
-            -
-                bash: "python setup.py sdist && pip install dist/*"
-                displayName: "Install mbed-os-tools"
-            -
-                bash: "python setup.py sdist && pip install dist/*"
-                displayName: "Install mbed-ls"
-                workingDirectory: "packages/mbed-ls"
-            -
-                bash: "python setup.py sdist && pip install dist/*"
-                displayName: "Install mbed-host-tests"
-                workingDirectory: "packages/mbed-host-tests"
-            -
-                bash: "python setup.py sdist && pip install dist/*"
-                displayName: "Install mbed-greentea"
-                workingDirectory: "packages/mbed-greentea"
-            -
-                script: "python -m coverage run setup.py test"
-                displayName: "Test mbed-ls"
-                workingDirectory: "packages/mbed-ls"
-            -
-                script: "python -m coverage run setup.py test"
-                displayName: "Test mbed-host-tests"
-                workingDirectory: "packages/mbed-host-tests"
-            -
-                script: "python -m coverage run setup.py test"
-                displayName: "Test mbed-greentea"
-                workingDirectory: "packages/mbed-greentea"
-            -
-                script: |
-                    python -m coverage combine .coverage packages/*/.coverage
-                    python -m coveralls
-                condition: eq(variables['sendCoverage'], 'true')
-                displayName: "Send coverage results to coveralls"
-            -
-                script: "pip uninstall -y mbed-os-tools mbed-ls mbed-greentea mbed-host-tests"
-                displayName: "Uninstall sdist packages"
-            -
-                script: "pip install ."
-                displayName: "Ensure mbed-os-tools can be installed locally for development"
-            -
-                script: "pip install ."
-                displayName: "Ensure mbed-ls can be installed locally for development"
-                workingDirectory: "packages/mbed-ls"
-            -
-                script: "pip install ."
-                displayName: "Ensure mbed-host-tests can be installed locally for development"
-                workingDirectory: "packages/mbed-host-tests"
-            -
-                script: "pip install ."
-                displayName: "Ensure mbed-greentea can be installed locally for development"
-                workingDirectory: "packages/mbed-greentea"
+          - task: UsePythonVersion@0
+            inputs:
+              versionSpec: $(python.version)
+              architecture: x64
+
+          - script: "python -m pip install --upgrade pip && pip install -r test_requirements.txt"
+            displayName: "Install mbed-os test dependencies"
+
+          - script: "pip install lxml"
+            env: { STATIC_DEPS: true }
+            displayName: "Install lxml separately on Linux/MacOS"
+
+          - script: 'pip install --user "urllib3<1.25"'
+            displayName: "Fix dependency issue for requests package"
+
+          - script: "python -m coverage run setup.py test"
+            displayName: "Test mbed-os-tools"
+
+          - bash: "python setup.py sdist && pip install dist/*"
+            displayName: "Install mbed-os-tools"
+
+          - bash: "python setup.py sdist && pip install dist/*"
+            displayName: "Install mbed-ls"
+            workingDirectory: "packages/mbed-ls"
+
+          - bash: "python setup.py sdist && pip install dist/*"
+            displayName: "Install mbed-host-tests"
+            workingDirectory: "packages/mbed-host-tests"
+
+          - bash: "python setup.py sdist && pip install dist/*"
+            displayName: "Install mbed-greentea"
+            workingDirectory: "packages/mbed-greentea"
+
+          - script: "python -m coverage run setup.py test"
+            displayName: "Test mbed-ls"
+            workingDirectory: "packages/mbed-ls"
+
+          - script: "python -m coverage run setup.py test"
+            displayName: "Test mbed-host-tests"
+            workingDirectory: "packages/mbed-host-tests"
+
+          - script: "python -m coverage run setup.py test"
+            displayName: "Test mbed-greentea"
+            workingDirectory: "packages/mbed-greentea"
+
+          - script: |
+              python -m coverage combine .coverage packages/*/.coverage
+                  python -m coveralls
+            condition: eq(variables['sendCoverage'], 'true')
+            displayName: "Send coverage results to coveralls"
+
+          - script: "pip uninstall -y mbed-os-tools mbed-ls mbed-greentea mbed-host-tests"
+            displayName: "Uninstall sdist packages"
+
+          - script: "pip install ."
+            displayName: "Ensure mbed-os-tools can be installed locally for development"
+
+          - script: "pip install ."
+            displayName: "Ensure mbed-ls can be installed locally for development"
+            workingDirectory: "packages/mbed-ls"
+
+          - script: "pip install ."
+            displayName: "Ensure mbed-host-tests can be installed locally for development"
+            workingDirectory: "packages/mbed-host-tests"
+
+          - script: "pip install ."
+            displayName: "Ensure mbed-greentea can be installed locally for development"
+            workingDirectory: "packages/mbed-greentea"
