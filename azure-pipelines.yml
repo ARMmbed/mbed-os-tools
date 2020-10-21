@@ -2,7 +2,7 @@
 pr:
   - master
 
-# Release to pypi when a release tag is pushed
+# Release to PyPI when a tag (vX.X.X) is pushed to master
 trigger:
   tags:
     include:
@@ -165,3 +165,64 @@ stages:
           - script: "pip install ."
             displayName: "Ensure mbed-greentea can be installed locally for development"
             workingDirectory: "packages/mbed-greentea"
+
+  # Collect test and build stages together before the release stages to provide a pass/fail point for the status badge.
+  - stage: CiCheckpoint
+    displayName: 'CI Checkpoint'
+    dependsOn:
+      - AnalyseTest
+    jobs:
+      - job: ChecksPassing
+        displayName: 'Checks Passing'
+        # A dummy job is required due to a bug in Azure which runs the previous job if nothing is defined.
+        steps:
+          - bash: echo "All prerequisite stages have passed and the package should be suitable for release."
+
+  - stage: ProductionReleasePyPI
+    displayName: 'Production Release'
+    # Only allow production releases if the tests pass and a tag (vX.X.X) is pushed to master.
+    dependsOn:
+      - CiCheckpoint
+    condition: and(succeeded(), contains(variables['build.sourceBranch'], 'refs/tags/v'))
+    jobs:
+      - deployment: PyPIProductionRelease
+        displayName: 'PyPI Production Release'
+        # Create an environment to keep track of PyPI releases
+        environment: 'PyPI Release'
+        strategy:
+          runOnce:
+            deploy:
+              pool:
+                vmImage: 'ubuntu-latest'
+              steps:
+                - checkout: self
+
+                - task: UsePythonVersion@0
+                  inputs:
+                    versionSpec: '3.7'
+
+                - script: |
+                    python -m pip install --upgrade wheel
+                    python -m pip install --upgrade twine
+                    python -m pip install --upgrade setuptools-scm
+                  displayName: 'Install python modules required for release'
+
+                - template: pypi-release.yml
+                  parameters:
+                    repoName: mbed-os-tools
+                    wDirectory: $(Build.SourcesDirectory)
+
+                - template: pypi-release.yml
+                  parameters:
+                    repoName: mbed-ls
+                    wDirectory: packages/mbed-ls
+
+                - template: pypi-release.yml
+                  parameters:
+                    repoName: mbed-host-tests
+                    wDirectory: packages/mbed-host-tests
+
+                - template: pypi-release.yml
+                  parameters:
+                    repoName: mbed-greentea
+                    wDirectory: packages/mbed-greentea
