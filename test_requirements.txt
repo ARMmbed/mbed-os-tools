@@ -3,3 +3,4 @@ coveralls>=1,<2
 mock>=2,<4
 pytest>=3,<5
 wheel>=0.34
+setuptools-scm>=4.1
