@@ -154,15 +154,15 @@ stages:
           - script: "pip install ."
             displayName: "Ensure mbed-os-tools can be installed locally for development"
 
-          - script: "pip install ."
+          - script: "pip install -e ."
             displayName: "Ensure mbed-ls can be installed locally for development"
             workingDirectory: "packages/mbed-ls"
 
-          - script: "pip install ."
+          - script: "pip install -e ."
             displayName: "Ensure mbed-host-tests can be installed locally for development"
             workingDirectory: "packages/mbed-host-tests"
 
-          - script: "pip install ."
+          - script: "pip install -e ."
             displayName: "Ensure mbed-greentea can be installed locally for development"
             workingDirectory: "packages/mbed-greentea"
 
