@@ -15,7 +15,7 @@
 
 from sys import stdout
 from .mbed_base import Mbed
-from ... import __version__
+from . import __version__
 
 
 class HostTestResults(object):
