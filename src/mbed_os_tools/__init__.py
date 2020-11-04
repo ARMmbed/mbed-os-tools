@@ -12,9 +12,3 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-import os
-
-_version_file_path = os.path.join(os.path.dirname(__file__), "VERSION.txt")
-with open(_version_file_path, 'r') as _version_file:
-    __version__ = _version_file.read().strip()

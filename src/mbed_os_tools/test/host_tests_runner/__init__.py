@@ -19,3 +19,7 @@ This package contains basic host test implementation with algorithms to flash an
 Functionality can be overridden by set of plugins which can provide specialised flashing and reset implementations.
 
 """
+
+from setuptools_scm import get_version
+
+__version__ = get_version(root='../../../..', relative_to=__file__)

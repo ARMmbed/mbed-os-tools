@@ -63,6 +63,8 @@ class GreenteaCliFunctionality(unittest.TestCase):
         version = mbed_greentea_cli.get_greentea_version()
 
         self.assertIs(type(version), str)
+        extra_info_pos = version.find('dev')
+        version = version[:extra_info_pos-1]
 
         a, b, c = version.split('.')
 

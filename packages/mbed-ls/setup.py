@@ -50,7 +50,6 @@ with open(os.path.join(repository_dir, 'test_requirements.txt')) as fh:
 
 python_requires = '>=2.7.10, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, <4'
 setup(name='mbed-ls',
-      version='1.7.12',
       description=DESCRIPTION,
       long_description=read('README.md'),
       long_description_content_type='text/markdown',
@@ -76,6 +75,10 @@ setup(name='mbed-ls',
           'Topic :: Software Development :: Build Tools',
           'Topic :: Software Development :: Embedded Systems',
       ),
+      use_scm_version = {
+          "root": "../..",
+          "relative_to": __file__
+      },
       python_requires=python_requires,
       entry_points={
           "console_scripts": [

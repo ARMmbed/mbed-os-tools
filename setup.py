@@ -52,7 +52,6 @@ with open(os.path.join(repository_dir, 'test_requirements.txt')) as fh:
 python_requires = '>=2.7.10, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, <4'
 setup(
     name="mbed-os-tools",
-    version=read("src/mbed_os_tools/VERSION.txt").strip(),
     description=DESCRIPTION,
     long_description=read("README.md"),
     long_description_content_type='text/markdown',
@@ -63,7 +62,6 @@ setup(
     url="https://github.com/ARMmbed/mbed-os-tools",
     packages=find_packages("src"),
     package_dir={"": "src"},
-    package_data={"": ["VERSION.txt"]},
     license="Apache-2.0",
     test_suite="test",
     classifiers=(
@@ -81,6 +79,7 @@ setup(
         'Topic :: Software Development :: Build Tools',
         'Topic :: Software Development :: Embedded Systems',
     ),
+    use_scm_version=True,
     python_requires=python_requires,
     install_requires=requirements,
     tests_require=test_requirements,

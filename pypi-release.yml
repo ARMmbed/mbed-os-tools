@@ -1,0 +1,23 @@
+# File: simple-param.yml
+parameters:
+- name: repoName
+  type: string
+- name: wDirectory
+  type: string
+
+steps:
+  - task: TwineAuthenticate@1
+    displayName: 'Twine Authenticate ${{ parameters.repoName }}'
+    inputs:
+      pythonUploadServiceConnection: pypi-${{ parameters.repoName }}
+
+  # Build the python distribution from source
+  - script: "python setup.py sdist bdist_wheel --universal"
+    displayName: "Prepare ${{ parameters.repoName }} for release"
+    workingDirectory: ${{ parameters.wDirectory }}
+
+  # Use command line script to 'twine upload'. Use -r to pass the repository name and --config-file to pass the environment variable set by the authenticate task.
+  - script: |
+      python -m twine upload -r ${{ parameters.repoName }} --config-file $(PYPIRC_PATH) dist/*.whl
+    displayName: "Release ${{ parameters.repoName }} to pypi"
+    workingDirectory: ${{ parameters.wDirectory }}
