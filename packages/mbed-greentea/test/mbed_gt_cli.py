@@ -63,14 +63,12 @@ class GreenteaCliFunctionality(unittest.TestCase):
         version = mbed_greentea_cli.get_greentea_version()
 
         self.assertIs(type(version), str)
-        extra_info_pos = version.find('dev')
-        version = version[:extra_info_pos-1]
 
-        a, b, c = version.split('.')
+        version_list = version.split('.')
 
-        self.assertEqual(a.isdigit(), True)
-        self.assertEqual(b.isdigit(), True)
-        self.assertEqual(c.isdigit(), True)
+        self.assertEqual(version_list[0].isdigit(), True)
+        self.assertEqual(version_list[1].isdigit(), True)
+        self.assertEqual(version_list[2].isdigit(), True)
 
     def test_print_version(self):
         version = mbed_greentea_cli.get_greentea_version()
