@@ -1,2 +1,2 @@
-mbed-os-tools>=0.0.9,<0.1.0
+mbed-os-tools>=0.0.9
 mbed-host-tests>=1.5.0,<2
