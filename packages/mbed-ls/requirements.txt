@@ -1,2 +1,2 @@
-PrettyTable>=0.7.2
+PrettyTable<=1.0.1
 mbed-os-tools>=0.0.9
