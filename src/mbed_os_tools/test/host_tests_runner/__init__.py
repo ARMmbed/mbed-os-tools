@@ -20,6 +20,6 @@ Functionality can be overridden by set of plugins which can provide specialised 
 
 """
 
-from setuptools_scm import get_version
+from pkg_resources import get_distribution
 
-__version__ = get_version(root='../../../..', relative_to=__file__)
+__version__ = get_distribution("mbed-os-tools").version

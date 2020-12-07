@@ -2,7 +2,7 @@ PySerial>=3.0,<4.0
 requests>=2.0,<3.0
 intelhex>=2.0,<3.0
 future
-PrettyTable>=0.7.2
+PrettyTable<=1.0.1
 fasteners
 appdirs>=1.4,<2.0
 junit-xml>=1.0,<2.0
