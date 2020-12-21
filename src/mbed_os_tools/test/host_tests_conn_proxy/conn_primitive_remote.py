@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import time
 from .. import DEFAULT_BAUD_RATE
 from .conn_primitive import ConnectorPrimitive
 
@@ -30,6 +31,7 @@ class RemoteConnectorPrimitive(ConnectorPrimitive):
         self.platform_name = config.get('platform_name', None)
         self.baudrate = config.get('baudrate', DEFAULT_BAUD_RATE)
         self.image_path = config.get('image_path', None)
+        self.forced_reset_timeout = config.get('forced_reset_timeout', 0)
         self.allocate_requirements = {
             "platform_name": self.platform_name,
             "power_on": True,
@@ -83,7 +85,7 @@ class RemoteConnectorPrimitive(ConnectorPrimitive):
         try:
             self.__remote_flashing(self.image_path, forceflash=True)
             self.__remote_connect(baudrate=self.baudrate)
-            self.__remote_reset()
+            self.__remote_reset(delay=self.forced_reset_timeout)
         except Exception as error:
             self.logger.prn_err(str(error))
             self.__remote_release()
@@ -111,7 +113,7 @@ class RemoteConnectorPrimitive(ConnectorPrimitive):
         except Exception as error:
             self.logger.prn_err("RemoteConnectorPrimitive.disconnect() failed, reason: " + str(error))
 
-    def __remote_reset(self):
+    def __remote_reset(self, delay=0):
         """! Use GRM remote API to reset DUT """
         self.logger.prn_inf("remote resources reset...")
         if not self.selected_resource:
@@ -122,6 +124,11 @@ class RemoteConnectorPrimitive(ConnectorPrimitive):
         except Exception:
             self.logger.prn_inf("reset() failed")
             raise
+
+        # Post-reset sleep
+        if delay:
+            self.logger.prn_inf("waiting %.2f sec after reset"% delay)
+            time.sleep(delay)
 
     def __remote_flashing(self, filename, forceflash=False):
         """! Use GRM remote API to flash DUT """
@@ -184,7 +191,7 @@ class RemoteConnectorPrimitive(ConnectorPrimitive):
             self.__remote_release()
 
     def reset(self):
-        self.__remote_reset()
+        self.__remote_reset(delay=self.forced_reset_timeout)
 
     def __del__(self):
         self.finish()
