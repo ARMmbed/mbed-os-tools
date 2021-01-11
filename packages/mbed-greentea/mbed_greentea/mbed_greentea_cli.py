@@ -904,7 +904,7 @@ def main_cli(opts, args, gt_instance_uuid=None):
                 # A time of 0.1 seconds is a fairly arbitrary choice. It needs
                 # to balance CPU utilization and responsiveness to keyboard interrupts.
                 # Checking 10 times a second seems to be stable and responsive.
-                while t.isAlive():
+                while t.is_alive():
                     t.join(0.1)
 
                 test_return_data = test_result_queue.get(False)
