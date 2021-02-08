@@ -381,7 +381,8 @@ def run_test_thread(test_result_queue, test_queue, opts, mut, build, build_path,
     test_report = {}
 
     disk = mut['mount_point']
-    port = mut['serial_port']
+    # Set serial portl format used by mbedhtrun: 'serial_port' = '<serial_port_name>:<baudrate>'
+    port = "{}:{}".format(mut['serial_port'],mut['baud_rate']) 
     micro = mut['platform_name']
     program_cycle_s = get_platform_property(micro, "program_cycle_s")
     forced_reset_timeout = get_platform_property(micro, "forced_reset_timeout")
@@ -783,11 +784,7 @@ def main_cli(opts, args, gt_instance_uuid=None):
                 continue
 
             if mbed_dev['platform_name'] == platform_name:
-                # We will force configuration specific baudrate by adding baudrate to serial port
-                # Only add baudrate decoration for serial port if it's not already there
-                # Format used by mbedhtrun: 'serial_port' = '<serial_port_name>:<baudrate>'
-                if not sp.endswith(str(baudrate)):
-                    mbed_dev['serial_port'] = "%s:%d" % (mbed_dev['serial_port'], baudrate)
+                mbed_dev['baud_rate'] = baudrate
 
                 mut = mbed_dev
                 if mbed_dev not in muts_to_test:
@@ -820,7 +817,8 @@ def main_cli(opts, args, gt_instance_uuid=None):
                                                                  gt_logger.gt_bright(platform_name),
                                                                  gt_logger.gt_bright(test_build.get_toolchain())))
                 disk = mut['mount_point']
-                port = mut['serial_port']
+                # Set serial portl format used by mbedhtrun: 'serial_port' = '<serial_port_name>:<baudrate>'
+                port = "{}:{}".format(mut['serial_port'], mut['baud_rate'])
                 micro = mut['platform_name']
                 program_cycle_s = get_platform_property(micro, "program_cycle_s")
                 copy_method = opts.copy_method if opts.copy_method else 'shell'
