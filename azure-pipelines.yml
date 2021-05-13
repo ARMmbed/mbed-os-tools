@@ -36,10 +36,6 @@ stages:
               python.version: "2.7"
               imageName: ubuntu-16.04
               sendCoverage: "false"
-            linux_python_3_5:
-              python.version: "3.5"
-              imageName: ubuntu-16.04
-              sendCoverage: "false"
             linux_python_3_6:
               python.version: "3.6"
               imageName: ubuntu-16.04
@@ -56,10 +52,6 @@ stages:
               python.version: "2.7"
               imageName: macOS-10.15
               sendCoverage: "false"
-            mac_python_3_5:
-              python.version: "3.5"
-              imageName: macOS-10.15
-              sendCoverage: "false"
             mac_python_3_6:
               python.version: "3.6"
               imageName: macOS-10.15
@@ -74,10 +66,6 @@ stages:
               sendCoverage: "false"
             windows_python_2_7:
               python.version: "2.7"
-              imageName: vs2017-win2016
-              sendCoverage: "false"
-            windows_python_3_5:
-              python.version: "3.5"
               imageName: vs2017-win2016
               sendCoverage: "false"
             windows_python_3_6:
