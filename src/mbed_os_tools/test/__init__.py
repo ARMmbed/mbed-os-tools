@@ -359,6 +359,13 @@ def init_host_test_cli_params():
         help="Prints package version and exits",
     )
 
+    parser.add_option(
+        "",
+        "--format",
+        dest="format",
+        help="Image file format passed to pyocd (elf, bin, hex, axf...).",
+    )
+
     parser.description = (
         """Flash, reset and perform host supervised tests on mbed platforms"""
     )
