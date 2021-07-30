@@ -84,6 +84,6 @@ setup(
     install_requires=requirements,
     tests_require=test_requirements,
     extras_require={
-        "pyocd": ["pyocd==0.14.0"]
+        "pyocd": ["pyocd>=0.31.0"]
     },
 )
