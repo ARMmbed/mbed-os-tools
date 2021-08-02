@@ -18,7 +18,7 @@ from .host_test_plugins import HostTestPluginBase
 
 try:
     from pyocd.core.helpers import ConnectHelper
-    from pyocd.flash.loader import FileProgrammer
+    from pyocd.flash.file_programmer import FileProgrammer
     PYOCD_PRESENT = True
 except ImportError:
     PYOCD_PRESENT = False
