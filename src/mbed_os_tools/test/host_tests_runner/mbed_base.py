@@ -123,6 +123,19 @@ class Mbed:
                 self.logger.prn_wrn("Target ID not found: Skipping flash check and retry")
                 return True
 
+            if not copy_method in ["shell", "default"]:
+                # We're using a "copy method" that may not necessarily require
+                # an "Mbed Enabled" device. In this case we shouldn't use
+                # mbedls.detect to attempt to rediscover the mount point, as
+                # mbedls.detect is only compatible with Mbed Enabled devices.
+                # It's best just to return `True` and continue here. This will
+                # avoid the inevitable 2.5s delay caused by us repeatedly
+                # attempting to enumerate Mbed Enabled devices in the code
+                # below when none are connected. The user has specified a
+                # non-Mbed plugin copy method, so we shouldn't delay them by
+                # trying to check for Mbed Enabled devices.
+                return True
+
             bad_files = set(['FAIL.TXT'])
             # Re-try at max 5 times with 0.5 sec in delay
             for i in range(5):
