@@ -37,13 +37,25 @@ class SerialConnectorPrimitive(ConnectorPrimitive):
         self.skip_reset = config.get('skip_reset', False)
         self.serial = None
 
-        # Check if serial port for given target_id changed
-        # If it does we will use new port to open connections and make sure reset plugin
-        # later can reuse opened already serial port
-        #
-        # Note: This listener opens serial port and keeps connection so reset plugin uses
-        # serial port object not serial port name!
-        serial_port = HostTestPluginBase().check_serial_port_ready(self.port, target_id=self.target_id, timeout=self.polling_timeout)
+        # Assume the provided serial port is good. Don't attempt to use the
+        # target_id to re-discover the serial port, as the board may not be a
+        # fully valid DAPLink-compatable or Mbed Enabled board (it may be
+        # missing a mount point). Do not attempt to check if the serial port
+        # for given target_id changed. We will attempt to open the port and
+        # pass the already opened port object (not name) to the reset plugin.
+        serial_port = None
+        if self.port is not None:
+            # A serial port was provided.
+            # Don't pass in the target_id, so that no change in serial port via
+            # auto-discovery happens.
+            self.logger.prn_inf("using specified port '%s'" % (self.port))
+            serial_port = HostTestPluginBase().check_serial_port_ready(self.port, target_id=None, timeout=self.polling_timeout)
+        else:
+            # No serial port was provided.
+            # Fallback to auto-discovery via target_id.
+            self.logger.prn_inf("getting serial port via mbedls)")
+            serial_port = HostTestPluginBase().check_serial_port_ready(self.port, target_id=self.target_id, timeout=self.polling_timeout)
+
         if serial_port is None:
             raise ConnectorPrimitiveException("Serial port not ready!")
 
