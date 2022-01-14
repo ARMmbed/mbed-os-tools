@@ -15,7 +15,7 @@ stages:
       - job: code_style_check
 
         pool:
-          vmImage: ubuntu-16.04
+          vmImage: ubuntu-20.04
 
         steps:
           - task: UsePythonVersion@0
@@ -38,15 +38,15 @@ stages:
               sendCoverage: "false"
             linux_python_3_6:
               python.version: "3.6"
-              imageName: ubuntu-16.04
+              imageName: ubuntu-20.04
               sendCoverage: "false"
             linux_python_3_7:
               python.version: "3.7"
-              imageName: ubuntu-16.04
+              imageName: ubuntu-20.04
               sendCoverage: "false"
             linux_python_3_8:
               python.version: "3.8"
-              imageName: ubuntu-16.04
+              imageName: ubuntu-20.04
               sendCoverage: "true"
             mac_python_2_7:
               python.version: "2.7"
@@ -181,7 +181,7 @@ stages:
           runOnce:
             deploy:
               pool:
-                vmImage: 'ubuntu-latest'
+                vmImage: 'ubuntu-20.04'
               steps:
                 - checkout: self
 
