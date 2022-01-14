@@ -32,10 +32,6 @@ stages:
         strategy:
           maxParallel: 10
           matrix:
-            linux_python_2_7:
-              python.version: "2.7"
-              imageName: ubuntu-16.04
-              sendCoverage: "false"
             linux_python_3_6:
               python.version: "3.6"
               imageName: ubuntu-20.04
@@ -48,10 +44,6 @@ stages:
               python.version: "3.8"
               imageName: ubuntu-20.04
               sendCoverage: "true"
-            mac_python_2_7:
-              python.version: "2.7"
-              imageName: macOS-10.15
-              sendCoverage: "false"
             mac_python_3_6:
               python.version: "3.6"
               imageName: macOS-10.15
@@ -63,10 +55,6 @@ stages:
             mac_python_3_8:
               python.version: "3.8"
               imageName: macOS-10.15
-              sendCoverage: "false"
-            windows_python_2_7:
-              python.version: "2.7"
-              imageName: vs2017-win2016
               sendCoverage: "false"
             windows_python_3_6:
               python.version: "3.6"
