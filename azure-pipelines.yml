@@ -150,6 +150,8 @@ stages:
     jobs:
       - job: ChecksPassing
         displayName: 'Checks Passing'
+        pool:
+          vmImage: ubuntu-20.04
         # A dummy job is required due to a bug in Azure which runs the previous job if nothing is defined.
         steps:
           - bash: echo "All prerequisite stages have passed and the package should be suitable for release."
