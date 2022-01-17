@@ -165,6 +165,8 @@ stages:
     jobs:
       - deployment: PyPIProductionRelease
         displayName: 'PyPI Production Release'
+        pool:
+          vmImage: ubuntu-20.04
         # Create an environment to keep track of PyPI releases
         environment: 'PyPI Release'
         strategy:
