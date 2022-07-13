@@ -328,6 +328,7 @@ DEFAULT_PLATFORM_DB = {
         u"7013": u"TMPM46B",
         u"7014": u"TMPM3HQ",
         u"7015": u"TMPM4G9",
+		u"7020": u"TMPM4KN",
         u"7402": u"MBED_BR_HAT",
         u"7778": u"TEENSY3_1",
         u"8001": u"UNO_91H",
