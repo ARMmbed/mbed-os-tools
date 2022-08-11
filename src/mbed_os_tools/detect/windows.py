@@ -33,7 +33,7 @@ else:
     import winreg
 
 
-MAX_COMPOSITE_DEVICE_SUBDEVICES = 5
+MAX_COMPOSITE_DEVICE_SUBDEVICES = 8
 MBED_STORAGE_DEVICE_VENDOR_STRINGS = [
     "ven_mbed",
     "ven_segger",
