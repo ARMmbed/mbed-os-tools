@@ -15,8 +15,7 @@
 
 import os
 import sys
-from distutils.core import setup
-from setuptools import find_packages
+from setuptools import find_packages, setup
 
 DESCRIPTION = "The tools to build, test, and work with Mbed OS"
 OWNER_NAMES = "Jimmy Brisson, Brian Daniels"
