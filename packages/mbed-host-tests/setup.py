@@ -23,9 +23,8 @@ Author: Przemyslaw Wirkus <Przemyslaw.Wirkus@arm.com>
 """
 
 import os
-from distutils.core import setup
 from io import open
-from setuptools import find_packages
+from setuptools import find_packages, setup
 
 DESCRIPTION = "mbed tools used to flash, reset and supervise test execution for mbed-enabled devices"
 OWNER_NAMES = 'Qinghao Shi'

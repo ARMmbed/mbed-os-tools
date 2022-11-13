@@ -24,8 +24,7 @@ Author: Przemyslaw Wirkus <Przemyslaw.Wirkus@arm.com>
 
 import os
 from io import open
-from distutils.core import setup
-from setuptools import find_packages
+from setuptools import find_packages, setup
 
 DESCRIPTION = "mbed 3.0 onwards test suite, codename Greentea. The test suite is a collection of tools that enable automated testing on mbed-enabled platforms"
 OWNER_NAMES = 'Anna Bridge, Qinghao Shi'

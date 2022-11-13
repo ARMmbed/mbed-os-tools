@@ -20,9 +20,8 @@ Author: Przemyslaw Wirkus <Przemyslaw.Wirkus@arm.com>
 """
 
 import os
-from distutils.core import setup
 from io import open
-from setuptools import find_packages
+from setuptools import find_packages, setup
 
 DESCRIPTION = "mbed-ls is a Python module that detects and lists mbed-enabled devices connected to the host computer"
 OWNER_NAMES = 'Graham Hammond, Mark Edgeworth'
