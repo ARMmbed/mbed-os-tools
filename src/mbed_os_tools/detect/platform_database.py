@@ -81,6 +81,7 @@ DEFAULT_PLATFORM_DB = {
         u"0418": u"MAX32620FTHR",
         u"0419": u"MAX35103EVKIT2",
         u"0421": u"MAX32660EVSYS",
+        u"0422": u"MAX32666FTHR",
         u"0424": u"MAX32670EVKIT",
         u"0450": u"MTB_UBLOX_ODIN_W2",
         u"0451": u"MTB_MXCHIP_EMW3166",
